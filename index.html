@@ -51,10 +51,33 @@
 
   main {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
+    grid-template-columns: 1.3fr 1fr 1.1fr;
     gap: 8px;
     padding: 8px;
     height: calc(100vh - 56px);
+  }
+  .clock-and-roster {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .clock-section {
+    border-bottom: 1px solid #30363d;
+    flex-shrink: 0;
+  }
+  .roster-section {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px;
+  }
+  .section-label {
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    color: #8b949e;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
   }
   .col {
     background: #161b22;
@@ -228,6 +251,48 @@
   }
   .empty-slot .pick-num { min-width: 32px; font-weight: 600; }
 
+  /* Taken list */
+  .taken-row {
+    padding: 7px 10px;
+    margin: 3px 4px;
+    background: #0d1117;
+    border-radius: 6px;
+    border: 1px solid #30363d;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .taken-row.dale {
+    border-color: #16a34a;
+    background: #0d1f14;
+  }
+  .taken-row .pick-num {
+    font-weight: 700;
+    color: #8b949e;
+    min-width: 32px;
+    font-size: 11px;
+  }
+  .taken-row.dale .pick-num { color: #4ade80; }
+  .taken-row .jersey {
+    font-size: 12px;
+    min-width: 34px;
+    padding: 4px 4px;
+  }
+  .taken-row .name { flex: 1; font-size: 13px; }
+  .taken-row .coach-tag {
+    font-size: 10px;
+    color: #8b949e;
+    font-weight: 600;
+  }
+  .taken-empty {
+    text-align: center;
+    color: #6e7681;
+    padding: 20px;
+    font-size: 13px;
+    font-style: italic;
+  }
+
   /* Scrollbar */
   .col-body::-webkit-scrollbar { width: 6px; }
   .col-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
@@ -254,18 +319,23 @@
     </div>
     <div class="col-body" id="availList"></div>
   </section>
-  <section class="col">
+  <section class="col clock-and-roster">
     <div class="col-header">On the Clock</div>
-    <div class="col-body">
+    <div class="clock-section">
       <div class="clock-wrap" id="clockDisplay"></div>
     </div>
+    <div class="section-label">
+      <span>Coach Dale's Roster</span>
+      <span style="float:right" id="rosterCount">0/10</span>
+    </div>
+    <div class="roster-section" id="rosterList"></div>
   </section>
   <section class="col">
     <div class="col-header">
-      <span>Coach Dale's Roster</span>
-      <span class="count-badge" id="rosterCount">0/10</span>
+      <span>Players Taken</span>
+      <span class="count-badge" id="takenCount">0</span>
     </div>
-    <div class="col-body" id="rosterList"></div>
+    <div class="col-body" id="takenList"></div>
   </section>
 </main>
 
@@ -407,6 +477,27 @@ function render() {
   renderAvailable();
   renderClock();
   renderRoster();
+  renderTaken();
+}
+
+function renderTaken() {
+  const list = document.getElementById('takenList');
+  const taken = [...state.drafted].reverse(); // newest first
+  document.getElementById('takenCount').textContent = state.drafted.length;
+  if (taken.length === 0) {
+    list.innerHTML = '<div class="taken-empty">No picks yet</div>';
+    return;
+  }
+  list.innerHTML = taken.map(d => {
+    const p = getPlayer(d.jersey);
+    const isDale = d.coach === 'Dale';
+    return `<div class="taken-row ${isDale ? 'dale' : ''}">
+      <div class="pick-num">P${d.pickNum}</div>
+      <div class="jersey">#${p.jersey}</div>
+      <div class="name">${p.name}</div>
+      <div class="coach-tag">${d.coach}</div>
+    </div>`;
+  }).join('');
 }
 
 function renderAvailable() {
@@ -448,72 +539,4 @@ function renderClock() {
   }
   html += `<div class="clock-display">
     <div class="clock-label">PICK</div>
-    <div class="clock-pick-num">${pickNum}</div>
-    <div class="clock-round">Round ${order.round} &middot; ${order.pickInRound} of 6</div>
-    <div class="clock-coach ${isYou ? 'dale' : ''}">Coach ${order.coach}</div>
-  </div>`;
-  if (next) {
-    html += `<div class="next-up">Next: <strong>Coach ${next.coach}</strong> (Pick ${next.pick})</div>`;
-  }
-  display.innerHTML = html;
-}
-
-function renderRoster() {
-  const list = document.getElementById('rosterList');
-  const dalePicks = [2, 11, 14, 23, 26, 35, 38, 47, 50, 59];
-  let count = 0;
-  list.innerHTML = dalePicks.map(pn => {
-    const drafted = state.drafted.find(d => d.pickNum === pn);
-    if (drafted) {
-      count++;
-      const p = getPlayer(drafted.jersey);
-      return `<div class="roster-pick">
-        <div class="pick-num">P${pn}</div>
-        <div class="jersey">#${p.jersey}</div>
-        <div class="player-name">${p.name}</div>
-      </div>`;
-    }
-    return `<div class="empty-slot"><span class="pick-num">P${pn}</span><span>open</span></div>`;
-  }).join('');
-  document.getElementById('rosterCount').textContent = count + '/10';
-}
-
-// ---- Reset hold-to-confirm ----
-const resetBtn = document.getElementById('resetBtn');
-const fill = document.createElement('div');
-fill.className = 'fill';
-resetBtn.insertBefore(fill, resetBtn.firstChild);
-let holdTimer = null;
-let holdStart = 0;
-const HOLD_MS = 2500;
-
-function startHold(e) {
-  e && e.preventDefault();
-  holdStart = Date.now();
-  fill.style.width = '0%';
-  holdTimer = setInterval(() => {
-    const pct = Math.min(100, (Date.now() - holdStart) / HOLD_MS * 100);
-    fill.style.width = pct + '%';
-    if (pct >= 100) {
-      clearInterval(holdTimer);
-      holdTimer = null;
-      reset();
-      fill.style.width = '0%';
-    }
-  }, 40);
-}
-function endHold() {
-  if (holdTimer) { clearInterval(holdTimer); holdTimer = null; }
-  fill.style.width = '0%';
-}
-resetBtn.addEventListener('mousedown', startHold);
-resetBtn.addEventListener('mouseup', endHold);
-resetBtn.addEventListener('mouseleave', endHold);
-resetBtn.addEventListener('touchstart', startHold, { passive: false });
-resetBtn.addEventListener('touchend', endHold);
-resetBtn.addEventListener('touchcancel', endHold);
-
-render();
-</script>
-</body>
-</html>
+ 
