@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>Playmaker • Hoops — Warriors</title>
+<meta name="theme-color" content="#d4af37" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Hoops" />
+<style>
+  :root {
+    --bg: #07090d;
+    --bg-2: #0c1018;
+    --panel: rgba(20, 26, 36, 0.72);
+    --panel-solid: #141a24;
+    --panel-2: #1a2230;
+    --panel-3: #232c3e;
+    --border: rgba(212, 175, 55, 0.14);
+    --border-strong: rgba(212, 175, 55, 0.32);
+    --ink: #f4f1ea;
+    --ink-2: #d6d2c6;
+    --muted: #8a8f99;
+    --muted-2: #5d6573;
+    --gold: #d4af37;
+    --gold-2: #f0c75e;
+    --gold-glow: rgba(212, 175, 55, 0.28);
+    --made: #4ade80;
+    --made-glow: rgba(74, 222, 128, 0.28);
+    --missed: #ef4444;
+    --missed-glow: rgba(239, 68, 68, 0.28);
+    --court-1: #c2884c;
+    --court-2: #a06b34;
+    --court-3: #8c5a28;
+    --court-line: rgba(15, 12, 6, 0.78);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+    --shadow-lg: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; touch-action: manipulation; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(44, 92, 255, 0.06), transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    letter-spacing: 0.01em;
+  }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+
+  /* ---------- Header ---------- */
+  header.app-header {
+    padding: 12px 18px;
+    background: linear-gradient(180deg, rgba(20,26,36,0.95), rgba(20,26,36,0.7)), var(--bg-2);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0; z-index: 50;
+  }
+  header.app-header::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--gold), #b8902e);
+    display: flex; align-items: center; justify-content: center;
+    color: #1a1208; font-weight: 800; font-size: 15px;
+    box-shadow: 0 0 18px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .brand-name {
+    font-family: "Cinzel", "Playfair Display", Georgia, serif;
+    font-weight: 700; font-size: 15px; letter-spacing: 0.16em; color: var(--gold-2);
+  }
+  .brand-sub { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+  .header-spacer { flex: 1; }
+  .nav-btn {
+    background: transparent; border: 1px solid var(--border-strong);
+    color: var(--ink); padding: 8px 14px; border-radius: 9px;
+    font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover, .nav-btn.active { background: var(--gold); color: #1a1208; border-color: var(--gold); }
+  .nav-btn.danger:hover { background: var(--missed); color: white; border-color: var(--missed); }
+
+  /* ---------- Layout ---------- */
+  main { padding: 18px; max-width: 1600px; margin: 0 auto; }
+  h2 { font-size: 22px; margin: 0 0 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-2); font-weight: 700; }
+  h3 { font-size: 15px; margin: 0 0 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--panel); backdrop-filter: blur(8px);
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; box-shadow: var(--shadow-md);
+  }
+  .card.elev { box-shadow: var(--shadow-lg); }
+
+  /* ---------- Home ---------- */
+  .home-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
+  .games-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .game-card {
+    background: linear-gradient(135deg, var(--panel-solid), var(--panel-2));
+    border: 1px solid var(--border); border-radius: 14px; padding: 16px;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .game-card:hover { border-color: var(--border-strong); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .game-card .gc-date { font-size: 12px; letter-spacing: 0.16em; color: var(--gold-2); text-transform: uppercase; margin-bottom: 6px; }
+  .game-card .gc-vs { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .game-card .gc-score { font-size: 28px; font-weight: 800; letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+  .game-card .gc-result {
+    display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; letter-spacing: 0.16em; font-weight: 700; text-transform: uppercase;
+  }
+  .gc-result.win { background: rgba(74,222,128,0.15); color: var(--made); }
+  .gc-result.loss { background: rgba(239,68,68,0.15); color: var(--missed); }
+  .gc-result.tie { background: rgba(212,175,55,0.15); color: var(--gold-2); }
+  .gc-delete {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+    color: var(--missed); width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .game-card:hover .gc-delete { opacity: 1; }
+
+  .new-game-card {
+    background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02));
+    border: 2px dashed var(--border-strong); border-radius: 14px; padding: 24px;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    min-height: 140px; color: var(--gold-2); font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; font-size: 14px;
+  }
+  .new-game-card:hover { border-color: var(--gold); background: rgba(212,175,55,0.1); }
+  .new-game-card .ng-plus { font-size: 36px; line-height: 1; }
+
+  /* ---------- Game view ---------- */
+  .game-header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .scoreline {
+    display: flex; align-items: center; gap: 18px;
+    background: var(--panel-solid); border: 1px solid var(--border);
+    padding: 10px 18px; border-radius: 12px;
+  }
+  .scoreline .team-name { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .scoreline .team-score {
+    font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums;
+    line-height: 1; letter-spacing: 0.04em;
+  }
+  .scoreline .team-us .team-score { color: var(--gold-2); }
+  .scoreline .team-them .team-score { color: var(--ink); }
+  .scoreline .vs-dash { color: var(--muted); font-size: 22px; }
+  .game-meta { font-size: 12px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase; }
+  .game-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .quarter-tabs {
+    display: flex; gap: 0; background: var(--panel-solid); border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .quarter-tab {
+    flex: 1; min-width: 80px; padding: 10px 14px; border-radius: 9px; border: 0;
+    background: transparent; color: var(--ink-2); font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px; transition: all 0.2s;
+  }
+  .quarter-tab.active {
+    background: linear-gradient(180deg, var(--gold), #b8902e); color: #1a1208;
+    box-shadow: 0 0 14px var(--gold-glow);
+  }
+  .quarter-tab .qt-score {
+    display: block; font-size: 16px; font-weight: 800; margin-top: 2px;
+    font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+  }
+
+  /* Quarter layout */
+  .quarter-layout {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 16px; align-items: start;
+  }
+  @media (max-width: 1100px) {
+    .quarter-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Court */
+  .court-wrap { position: relative; }
+  .clock-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel-solid); border: 1px solid var(--border);
+    padding: 10px 14px; border-radius: 12px; margin-bottom: 10px;
+  }
+  .clock-display {
+    font-family: "SF Mono", Menlo, monospace; font-size: 28px; font-weight: 800;
+    color: var(--gold-2); letter-spacing: 0.08em; cursor: pointer;
+    padding: 4px 12px; border-radius: 8px; transition: background 0.2s;
+  }
+  .clock-display:hover { background: rgba(212,175,55,0.1); }
+  .clock-label { font-size: 10px; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; }
+
+  .court-svg {
+    width: 100%; height: auto; display: block;
+    border-radius: 14px; box-shadow: var(--shadow-lg);
+    background: linear-gradient(180deg, var(--court-1), var(--court-2) 60%, var(--court-3));
+    cursor: crosshair; touch-action: manipulation;
+  }
+  .court-overlay-msg {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.85); color: var(--gold-2); padding: 14px 22px;
+    border-radius: 10px; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid var(--border-strong); pointer-events: none;
+    text-align: center; max-width: 80%;
+  }
+  .shot-dot { transition: r 0.15s; }
+  .shot-dot.made { fill: var(--made); stroke: white; stroke-width: 1.5; }
+  .shot-dot.missed { fill: none; stroke: var(--missed); stroke-width: 3.5; }
+  .shot-dot.them.made { fill: var(--missed); stroke: rgba(0,0,0,0.4); }
+  .shot-dot.them.missed { fill: none; stroke: rgba(255,255,255,0.5); }
+
+  /* Right panel */
+  .panel-section { margin-bottom: 14px; }
+  .on-floor-grid { display: grid; gap: 8px; }
+  .player-card {
+    background: linear-gradient(135deg, var(--panel-solid), var(--panel-2));
+    border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+    transition: all 0.2s;
+  }
+  .player-card:hover { border-color: var(--border-strong); }
+  .pc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .pc-jersey {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
+    font-weight: 800; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pc-name { flex: 1; font-weight: 700; font-size: 14px; }
+  .pc-pts { font-size: 12px; color: var(--muted); letter-spacing: 0.12em; }
+  .pc-pts strong { color: var(--gold-2); font-weight: 700; }
+  .pc-sub-btn {
+    background: transparent; border: 1px solid var(--border-strong); color: var(--ink-2);
+    padding: 4px 10px; border-radius: 6px; font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .pc-sub-btn:hover { background: rgba(212,175,55,0.1); border-color: var(--gold); color: var(--gold-2); }
+  .pc-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  }
+  .stat-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px 6px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-2); user-select: none;
+  }
+  .stat-btn .sb-label { font-weight: 700; color: var(--gold-2); flex: 1; text-align: left; }
+  .stat-btn .sb-val { font-weight: 800; font-variant-numeric: tabular-nums; min-width: 16px; text-align: center; color: var(--ink); }
+  .stat-btn .sb-minus, .stat-btn .sb-plus {
+    width: 22px; height: 22px; border-radius: 5px; border: 0;
+    background: rgba(255,255,255,0.06); color: var(--ink); font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stat-btn .sb-plus { background: rgba(74,222,128,0.18); color: var(--made); }
+  .stat-btn .sb-minus { background: rgba(239,68,68,0.15); color: var(--missed); }
+  .stat-btn .sb-plus:hover { background: rgba(74,222,128,0.3); }
+  .stat-btn .sb-minus:hover { background: rgba(239,68,68,0.25); }
+
+  .empty-slot {
+    background: rgba(255,255,255,0.02); border: 2px dashed var(--border);
+    border-radius: 12px; padding: 18px; text-align: center; cursor: pointer;
+    color: var(--muted); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .empty-slot:hover { border-color: var(--gold); color: var(--gold-2); background: rgba(212,175,55,0.05); }
+
+  .bench-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bench-chip {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px; font-size: 12px;
+    color: var(--ink-2); cursor: pointer; transition: all 0.2s;
+  }
+  .bench-chip:hover { background: rgba(212,175,55,0.1); border-color: var(--gold); color: var(--gold-2); }
+
+  .opponent-bar {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.78);
+    backdrop-filter: blur(6px); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; animation: fadeIn 0.15s;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: linear-gradient(135deg, var(--panel-solid), var(--panel-2));
+    border: 1px solid var(--border-strong); border-radius: 16px;
+    padding: 22px; width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-lg { max-width: 640px; }
+  .modal h3 { color: var(--gold-2); margin-top: 0; font-size: 14px; letter-spacing: 0.18em; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-actions button { flex: 1; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px; border-radius: 9px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--ink);
+    font-size: 14px;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--gold); }
+
+  .btn {
+    padding: 12px 18px; border-radius: 10px; font-weight: 700; font-size: 13px;
+    letter-spacing: 0.14em; text-transform: uppercase; transition: all 0.15s;
+    border: 1px solid var(--border-strong); background: transparent; color: var(--ink);
+  }
+  .btn:hover { background: rgba(255,255,255,0.04); }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--gold), #b8902e); color: #1a1208;
+    border-color: var(--gold); box-shadow: 0 0 14px var(--gold-glow);
+  }
+  .btn-primary:hover { background: linear-gradient(180deg, var(--gold-2), var(--gold)); }
+  .btn-made { background: linear-gradient(180deg, #5be59a, #2eb86b); color: #052f14; border-color: var(--made); }
+  .btn-missed { background: linear-gradient(180deg, #ff6b6b, #c92020); color: white; border-color: var(--missed); }
+  .btn-big { padding: 22px 18px; font-size: 18px; letter-spacing: 0.2em; }
+  .btn-ghost { background: transparent; border-color: var(--border); color: var(--ink-2); }
+
+  /* Shot modal */
+  .team-toggle {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    background: var(--panel-3); border-radius: 10px; padding: 4px; margin-bottom: 14px;
+  }
+  .team-toggle button {
+    padding: 10px; border-radius: 8px; border: 0; background: transparent;
+    color: var(--ink-2); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px;
+  }
+  .team-toggle button.active { background: var(--gold); color: #1a1208; }
+
+  .player-pick-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;
+    margin-bottom: 14px;
+  }
+  .player-pick {
+    background: rgba(255,255,255,0.04); border: 2px solid var(--border);
+    border-radius: 10px; padding: 12px 8px; cursor: pointer;
+    text-align: center; transition: all 0.15s;
+  }
+  .player-pick:hover { border-color: var(--border-strong); }
+  .player-pick.active {
+    border-color: var(--gold); background: rgba(212,175,55,0.15);
+    box-shadow: 0 0 14px var(--gold-glow);
+  }
+  .player-pick .pp-num {
+    font-size: 22px; font-weight: 800; color: var(--gold-2); line-height: 1; margin-bottom: 4px;
+  }
+  .player-pick .pp-name { font-size: 11px; color: var(--ink-2); }
+
+  .made-missed-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .override-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-solid); border: 1px solid var(--border-strong);
+    color: var(--gold-2); padding: 12px 22px; border-radius: 10px;
+    font-size: 13px; letter-spacing: 0.1em; box-shadow: var(--shadow-lg);
+    z-index: 300; animation: toastIn 0.2s;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  .flash { animation: flash 0.6s; }
+  @keyframes flash {
+    0% { background-color: transparent; }
+    20% { background-color: var(--made-glow); }
+    100% { background-color: transparent; }
+  }
+  .flash-miss { animation: flashMiss 0.6s; }
+  @keyframes flashMiss {
+    0% { background-color: transparent; }
+    20% { background-color: var(--missed-glow); }
+    100% { background-color: transparent; }
+  }
+
+  /* Roster view */
+  .roster-list { display: grid; gap: 8px; }
+  .roster-row {
+    display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center;
+    background: var(--panel-solid); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px;
+  }
+  .roster-row input[type=text], .roster-row input[type=number] {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--ink);
+    padding: 6px 10px; border-radius: 7px; font-size: 13px;
+  }
+  .roster-row input[type=number] { width: 60px; }
+
+  /* Player detail */
+  .pd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .pd-grid { grid-template-columns: 1fr; } }
+  .stat-block {
+    background: var(--panel-solid); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; text-align: center;
+  }
+  .stat-block .sb-num { font-size: 30px; font-weight: 800; color: var(--gold-2); font-variant-numeric: tabular-nums; }
+  .stat-block .sb-lbl { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 8px; }
+
+  .zone-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .zone-table th, .zone-table td { padding: 8px 6px; text-align: left; border-bottom: 1px solid var(--border); }
+  .zone-table th { color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-size: 10px; font-weight: 600; }
+  .zone-table td:not(:first-child), .zone-table th:not(:first-child) { text-align: center; font-variant-numeric: tabular-nums; }
+
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .summary-table th, .summary-table td { padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  .summary-table th { color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-size: 10px; font-weight: 600; text-align: center; }
+  .summary-table td { font-variant-numeric: tabular-nums; text-align: center; }
+  .summary-table td:first-child, .summary-table th:first-child { text-align: left; }
+  .summary-table .name-cell { font-weight: 700; }
+  .summary-table .pm-pos { color: var(--made); font-weight: 700; }
+  .summary-table .pm-neg { color: var(--missed); font-weight: 700; }
+
+  .loader {
+    display: flex; align-items: center; justify-content: center; padding: 80px 20px;
+    color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; font-size: 13px;
+  }
+
+  .pill {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+  }
+  .pill.full { background: rgba(74,222,128,0.18); color: var(--made); }
+  .pill.partial { background: rgba(240,199,94,0.18); color: var(--gold-2); }
+
+  .iconbtn {
+    background: transparent; border: 1px solid var(--border); color: var(--ink-2);
+    width: 34px; height: 34px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .iconbtn:hover { border-color: var(--gold); color: var(--gold-2); }
+
+  .err-banner {
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+    color: var(--missed); padding: 10px 14px; border-radius: 9px; font-size: 13px; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand" id="brand-home">
+      <div class="brand-mark">P</div>
+      <div class="brand-text">
+        <span class="brand-name">PLAYMAKER</span>
+        <span class="brand-sub">Hoops · Warriors</span>
+      </div>
+    </div>
+    <div class="header-spacer"></div>
+    <button class="nav-btn" id="nav-roster">Roster</button>
+    <a class="nav-btn" href="/">Plays</a>
+  </header>
+
+  <div id="toast-root"></div>
+  <div id="modal-root"></div>
+  <main id="view-root"><div class="loader">Loading…</div></main>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+const SUPABASE_URL = 'https://vlcpgwxeybpzwidjackz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ============ UUID polyfill (some preview iframes block crypto.randomUUID) ============ */
+function uuid() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try { return uuid(); } catch(e) {}
+  }
+  // RFC4122-ish v4 fallback using Math.random — fine for our use (unique per device, no collisions in practice)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/* ============ STATE ============ */
+const state = {
+  view: 'home',
+  loading: true,
+  error: null,
+  games: [],
+  players: [],
+  currentGameId: null,
+  currentQuarter: 1,
+  events: [],   // for current game
+  stints: [],   // for current game
+  undoStack: [],
+  selectedPlayerId: null,
+};
+
+/* ============ COURT GEOMETRY ============ */
+// SVG viewBox 0 0 500 470 (1 unit = 0.1 ft, court 50ft × 47ft half)
+// NBA-style 3pt: 23'9" top arc + straight corner segments 3ft from sideline
+const HOOP = { x: 250, y: 53 };
+const ARC_R = 237.5;          // 23.75 ft top-of-key arc
+const CORNER_X_L = 30;        // left corner 3pt line (3 ft from sideline)
+const CORNER_X_R = 470;       // right corner 3pt line
+const CORNER_END_Y = 142;     // where straight corner line meets the arc
+const PAINT = { x1: 190, x2: 310, y1: 5, y2: 195 };
+
+function shotPoints(x, y) {
+  // Corner zone: 3pt only if past the straight line
+  if (y <= CORNER_END_Y) {
+    if (x <= CORNER_X_L || x >= CORNER_X_R) return 3;
+    return 2;
+  }
+  // Above corner zone: 3pt only if past the arc
+  const dx = x - HOOP.x, dy = y - HOOP.y;
+  return Math.hypot(dx, dy) > ARC_R ? 3 : 2;
+}
+
+function shotZone(x, y) {
+  if (x >= PAINT.x1 && x <= PAINT.x2 && y >= PAINT.y1 && y <= PAINT.y2) return 'paint';
+  if (y <= CORNER_END_Y && (x <= CORNER_X_L || x >= CORNER_X_R)) return 'corner3';
+  const dx = x - HOOP.x, dy = y - HOOP.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist > ARC_R) {
+    if (Math.abs(dx) > 130) return 'wing3';
+    return 'top3';
+  }
+  return 'mid';
+}
+
+/* ============ DATA OPS ============ */
+async function loadInitial() {
+  state.loading = true; render();
+  try {
+    const [pl, gm] = await Promise.all([
+      sb.from('players').select('*').order('name'),
+      sb.from('games').select('*').order('game_date', { ascending: false }),
+    ]);
+    if (pl.error) throw pl.error;
+    if (gm.error) throw gm.error;
+    state.players = pl.data || [];
+    state.games = gm.data || [];
+    state.error = null;
+    saveCache();
+  } catch (e) {
+    console.error(e);
+    state.error = `Database connection issue: ${e.message}. Showing cached data if available.`;
+    loadCache();
+  }
+  state.loading = false; render();
+}
+
+async function loadGameDetail(gameId) {
+  state.loading = true; render();
+  try {
+    const [ev, st] = await Promise.all([
+      sb.from('events').select('*').eq('game_id', gameId).order('created_at'),
+      sb.from('stints').select('*').eq('game_id', gameId).order('created_at'),
+    ]);
+    if (ev.error) throw ev.error;
+    if (st.error) throw st.error;
+    state.events = ev.data || [];
+    state.stints = st.data || [];
+    state.undoStack = [];
+  } catch (e) {
+    console.error(e);
+    toast('Could not load game data');
+  }
+  state.loading = false; render();
+}
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
+
+function saveCache() {
+  lsSet('hoops-cache', JSON.stringify({ games: state.games, players: state.players }));
+}
+function loadCache() {
+  try {
+    const c = JSON.parse(lsGet('hoops-cache') || '{}');
+    if (c.games) state.games = c.games;
+    if (c.players) state.players = c.players;
+  } catch (e) {}
+}
+
+async function createGame({ game_date, opponent, location, quarter_length_seconds }) {
+  const id = uuid();
+  const row = {
+    id, game_date, opponent: opponent || null,
+    location: location || null,
+    quarter_length_seconds: quarter_length_seconds || 480,
+    created_at: new Date().toISOString(),
+  };
+  state.games.unshift(row);
+  saveCache();
+  const { error } = await sb.from('games').insert(row);
+  if (error) { toast('Save failed: ' + error.message); }
+  return id;
+}
+
+async function deleteGame(id) {
+  state.games = state.games.filter(g => g.id !== id);
+  saveCache();
+  await sb.from('games').delete().eq('id', id);
+}
+
+async function logEvent(eventData) {
+  const id = uuid();
+  const row = {
+    id,
+    game_id: state.currentGameId,
+    quarter: state.currentQuarter,
+    created_at: new Date().toISOString(),
+    points: 0,
+    on_floor_player_ids: getOnFloorIds(state.currentQuarter),
+    seconds_remaining: getCurrentClockSeconds(),
+    ...eventData,
+  };
+  state.events.push(row);
+  state.undoStack.push({ type: 'event', id });
+  const { error } = await sb.from('events').insert(row);
+  if (error) toast('Save failed (will retry)');
+  render();
+}
+
+async function deleteEvent(eventId) {
+  state.events = state.events.filter(e => e.id !== eventId);
+  await sb.from('events').delete().eq('id', eventId);
+}
+
+async function adjustStat(playerId, eventType, delta) {
+  if (delta > 0) {
+    await logEvent({ team: 'us', player_id: playerId, event_type: eventType });
+    flashCard(playerId, 'good');
+  } else {
+    // Find the most recent matching event in this quarter and delete it
+    const match = [...state.events].reverse().find(
+      e => e.player_id === playerId && e.event_type === eventType
+        && e.quarter === state.currentQuarter && e.team === 'us'
+    );
+    if (match) {
+      await deleteEvent(match.id);
+      // pop from undo stack if it was the most recent
+      const top = state.undoStack[state.undoStack.length - 1];
+      if (top && top.type === 'event' && top.id === match.id) state.undoStack.pop();
+      render();
+    } else {
+      toast('Nothing to undo');
+    }
+  }
+}
+
+async function adjustOpponentStat(eventType, delta) {
+  if (delta > 0) {
+    await logEvent({ team: 'them', player_id: null, event_type: eventType });
+  } else {
+    const match = [...state.events].reverse().find(
+      e => e.team === 'them' && e.event_type === eventType
+        && e.quarter === state.currentQuarter && e.player_id === null
+    );
+    if (match) {
+      await deleteEvent(match.id);
+      render();
+    }
+  }
+}
+
+async function startStint(playerId, secsRemaining, quarter = state.currentQuarter) {
+  const id = uuid();
+  const row = {
+    id, game_id: state.currentGameId, quarter,
+    player_id: playerId,
+    started_seconds_remaining: secsRemaining,
+    ended_seconds_remaining: null,
+    created_at: new Date().toISOString(),
+  };
+  state.stints.push(row);
+  state.undoStack.push({ type: 'stint-start', id });
+  const { error } = await sb.from('stints').insert(row);
+  if (error) toast('Save failed');
+  render();
+}
+
+async function endStint(stintId, secsRemaining) {
+  const stint = state.stints.find(s => s.id === stintId);
+  if (!stint) return;
+  stint.ended_seconds_remaining = secsRemaining;
+  state.undoStack.push({ type: 'stint-end', id: stintId });
+  await sb.from('stints').update({ ended_seconds_remaining: secsRemaining }).eq('id', stintId);
+  render();
+}
+
+async function undoLastAction() {
+  const action = state.undoStack.pop();
+  if (!action) { toast('Nothing to undo'); return; }
+  if (action.type === 'event') {
+    await deleteEvent(action.id);
+  } else if (action.type === 'stint-start') {
+    state.stints = state.stints.filter(s => s.id !== action.id);
+    await sb.from('stints').delete().eq('id', action.id);
+  } else if (action.type === 'stint-end') {
+    const stint = state.stints.find(s => s.id === action.id);
+    if (stint) {
+      stint.ended_seconds_remaining = null;
+      await sb.from('stints').update({ ended_seconds_remaining: null }).eq('id', action.id);
+    }
+  }
+  toast('Undone');
+  render();
+}
+
+async function addPlayer(name, jersey_number) {
+  const id = uuid();
+  const row = { id, name, jersey_number: jersey_number || null, active: true, created_at: new Date().toISOString() };
+  state.players.push(row);
+  state.players.sort((a, b) => a.name.localeCompare(b.name));
+  saveCache();
+  await sb.from('players').insert(row);
+  render();
+}
+
+async function updatePlayer(id, updates) {
+  const p = state.players.find(p => p.id === id);
+  if (!p) return;
+  Object.assign(p, updates);
+  saveCache();
+  await sb.from('players').update(updates).eq('id', id);
+  render();
+}
+
+async function deletePlayer(id) {
+  state.players = state.players.filter(p => p.id !== id);
+  saveCache();
+  await sb.from('players').delete().eq('id', id);
+  render();
+}
+
+/* ============ COMPUTATIONS ============ */
+function getCurrentGame() {
+  return state.games.find(g => g.id === state.currentGameId);
+}
+
+// Manually-tracked clock for the active quarter (in seconds remaining)
+function getQuarterLengthSec() {
+  const g = getCurrentGame();
+  return g?.quarter_length_seconds || 480;
+}
+
+function getCurrentClockSeconds() {
+  const key = `clock-${state.currentGameId}-${state.currentQuarter}`;
+  const v = lsGet(key);
+  if (v != null) return parseInt(v);
+  return getQuarterLengthSec();
+}
+function setCurrentClockSeconds(secs) {
+  const key = `clock-${state.currentGameId}-${state.currentQuarter}`;
+  lsSet(key, String(Math.max(0, Math.min(getQuarterLengthSec(), secs))));
+}
+
+// Returns array of player_ids currently on floor for given quarter
+function getOnFloorIds(quarter) {
+  return state.stints
+    .filter(s => s.quarter === quarter && s.ended_seconds_remaining === null)
+    .map(s => s.player_id);
+}
+
+function pointsForEvent(e) {
+  switch (e.event_type) {
+    case 'shot_made_2': return 2;
+    case 'shot_made_3': return 3;
+    case 'ft_made': return 1;
+    default: return 0;
+  }
+}
+
+function getQuarterScore(quarter, team) {
+  return state.events
+    .filter(e => e.quarter === quarter && e.team === team)
+    .reduce((sum, e) => sum + pointsForEvent(e), 0);
+}
+
+function getGameScore(team) {
+  return [1,2,3,4].reduce((s, q) => s + getQuarterScore(q, team), 0);
+}
+
+function getPlayerStats(playerId, quarter) {
+  const evts = state.events.filter(e =>
+    e.player_id === playerId && (quarter == null || e.quarter === quarter) && e.team === 'us'
+  );
+  const c = (t) => evts.filter(e => e.event_type === t).length;
+  const m2 = c('shot_made_2'), x2 = c('shot_missed_2');
+  const m3 = c('shot_made_3'), x3 = c('shot_missed_3');
+  const fm = c('ft_made'), fx = c('ft_missed');
+  const fga = m2 + x2 + m3 + x3;
+  const fgm = m2 + m3;
+  const pts = m2*2 + m3*3 + fm;
+  return {
+    pts,
+    fgm, fga,
+    fgPct: fga ? Math.round(fgm / fga * 100) : null,
+    p2m: m2, p2a: m2+x2,
+    p3m: m3, p3a: m3+x3,
+    p3Pct: (m3+x3) ? Math.round(m3 / (m3+x3) * 100) : null,
+    ftm: fm, fta: fm+fx,
+    ftPct: (fm+fx) ? Math.round(fm/(fm+fx)*100) : null,
+    ast: c('assist'),
+    oreb: c('oreb'),
+    dreb: c('dreb'),
+    reb: c('oreb') + c('dreb'),
+    stl: c('steal'),
+    blk: c('block'),
+    to: c('turnover'),
+    pf: c('foul'),
+  };
+}
+
+function getPlusMinus(playerId) {
+  let pm = 0;
+  for (const e of state.events) {
+    const points = pointsForEvent(e);
+    if (!points) continue;
+    const onFloor = (e.on_floor_player_ids || []).includes(playerId);
+    if (!onFloor) continue;
+    pm += (e.team === 'us' ? points : -points);
+  }
+  return pm;
+}
+
+// Total seconds played in this game for a player
+function getMinutesPlayed(playerId) {
+  let totalSec = 0;
+  const qLen = getQuarterLengthSec();
+  for (const s of state.stints) {
+    if (s.player_id !== playerId) continue;
+    const start = s.started_seconds_remaining;
+    const end = s.ended_seconds_remaining ?? (s.quarter === state.currentQuarter ? getCurrentClockSeconds() : 0);
+    totalSec += Math.max(0, start - end);
+  }
+  return totalSec;
+}
+
+function fmtClock(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/* ============ RENDER ============ */
+function $(sel) { return document.querySelector(sel); }
+function el(tag, props = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'html') e.innerHTML = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) c.forEach(cc => e.append(cc?.nodeType ? cc : document.createTextNode(String(cc))));
+    else e.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return e;
+}
+
+function render() {
+  const root = $('#view-root');
+  root.innerHTML = '';
+  if (state.loading) { root.append(el('div', { class: 'loader' }, 'Loading…')); return; }
+  if (state.error) root.append(el('div', { class: 'err-banner' }, state.error));
+  if (state.view === 'home') renderHome(root);
+  else if (state.view === 'game') renderGame(root);
+  else if (state.view === 'player') renderPlayerDetail(root);
+  else if (state.view === 'roster') renderRoster(root);
+}
+
+/* ----- HOME ----- */
+function renderHome(root) {
+  const home = el('div', { class: 'home-grid' });
+  home.append(el('h2', {}, 'Games'));
+
+  const grid = el('div', { class: 'games-grid' });
+  // New game card
+  grid.append(el('div', { class: 'new-game-card', onclick: openNewGameModal },
+    el('div', { class: 'ng-plus' }, '+'),
+    el('div', {}, 'New Game'),
+  ));
+
+  for (const g of state.games) {
+    const us = getGameScoreFor(g.id, 'us');
+    const them = getGameScoreFor(g.id, 'them');
+    const result = us > them ? 'win' : us < them ? 'loss' : 'tie';
+    const date = new Date(g.game_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const card = el('div', { class: 'game-card', onclick: () => openGame(g.id) },
+      el('div', { class: 'gc-date' }, date),
+      el('div', { class: 'gc-vs' }, `Warriors vs ${g.opponent || 'TBD'}`),
+      el('div', { class: 'gc-score' }, `${us} – ${them}`),
+      (us > 0 || them > 0) ? el('span', { class: `gc-result ${result}` }, result) : null,
+      el('button', {
+        class: 'gc-delete', title: 'Delete',
+        onclick: (ev) => { ev.stopPropagation(); confirmDelete(g); },
+      }, '×'),
+    );
+    grid.append(card);
+  }
+  home.append(grid);
+  root.append(home);
+}
+
+// Compute scores from game-level cache (we don't have events for non-current games unless loaded)
+// Use cached "summary" if present, else 0.
+function getGameScoreFor(gameId, team) {
+  if (state.currentGameId === gameId) return getGameScore(team);
+  try {
+    const cache = JSON.parse(lsGet(`gscore-${gameId}`) || '{}');
+    return cache[team] || 0;
+  } catch(e) { return 0; }
+}
+function cacheGameScore(gameId) {
+  lsSet(`gscore-${gameId}`, JSON.stringify({
+    us: getGameScore('us'), them: getGameScore('them'),
+  }));
+}
+
+function openNewGameModal() {
+  const today = new Date().toISOString().slice(0,10);
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'New Game'),
+      el('div', { class: 'field' },
+        el('label', {}, 'Date'),
+        el('input', { type: 'date', value: today, id: 'ng-date' }),
+      ),
+      el('div', { class: 'field' },
+        el('label', {}, 'Opponent'),
+        el('input', { type: 'text', placeholder: 'e.g. Eagles', id: 'ng-opp' }),
+      ),
+      el('div', { class: 'field' },
+        el('label', {}, 'Quarter Length (minutes)'),
+        el('input', { type: 'number', value: '8', min: '1', max: '20', id: 'ng-qlen' }),
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-primary', onclick: async () => {
+          try {
+            const date = $('#ng-date').value;
+            const opp = $('#ng-opp').value.trim();
+            const qlen = (parseInt($('#ng-qlen').value) || 8) * 60;
+            if (!date) return toast('Date required');
+            const id = await createGame({ game_date: date, opponent: opp, location: 'Oasis Middle School', quarter_length_seconds: qlen });
+            closeModal();
+            await openGame(id);
+          } catch (err) {
+            console.error('Create game failed:', err);
+            toast('Error: ' + (err.message || err));
+          }
+        }}, 'Create'),
+      ),
+    )
+  );
+}
+
+function confirmDelete(g) {
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Delete Game?'),
+      el('p', { style: 'color: var(--ink-2); font-size: 14px;' },
+        `Delete ${g.game_date} vs ${g.opponent || 'TBD'}? This cannot be undone.`),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-missed', onclick: async () => {
+          await deleteGame(g.id);
+          lsRm(`gscore-${g.id}`);
+          closeModal();
+          render();
+        }}, 'Delete'),
+      ),
+    )
+  );
+}
+
+async function openGame(id) {
+  state.currentGameId = id;
+  state.currentQuarter = 1;
+  state.view = 'game';
+  await loadGameDetail(id);
+  cacheGameScore(id);
+}
+
+/* ----- GAME ----- */
+function renderGame(root) {
+  const g = getCurrentGame();
+  if (!g) { state.view = 'home'; return render(); }
+
+  const usScore = getGameScore('us');
+  const themScore = getGameScore('them');
+
+  const wrap = el('div');
+
+  // Header
+  const date = new Date(g.game_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  const header = el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; cacheGameScore(g.id); render(); } }, '←'),
+    el('div', { class: 'scoreline' },
+      el('div', { class: 'team-us', style: 'text-align:right' },
+        el('div', { class: 'team-name' }, 'Warriors'),
+        el('div', { class: 'team-score' }, String(usScore)),
+      ),
+      el('span', { class: 'vs-dash' }, '–'),
+      el('div', { class: 'team-them' },
+        el('div', { class: 'team-name' }, g.opponent || 'TBD'),
+        el('div', { class: 'team-score' }, String(themScore)),
+      ),
+    ),
+    el('div', { class: 'game-meta' }, date + (g.location ? ` · ${g.location}` : '')),
+    el('div', { class: 'header-spacer' }),
+    el('div', { class: 'game-actions' },
+      el('button', { class: 'nav-btn', onclick: undoLastAction }, '↶ Undo'),
+    ),
+  );
+  wrap.append(header);
+
+  // Quarter tabs
+  const tabs = el('div', { class: 'quarter-tabs' });
+  for (const q of [1,2,3,4]) {
+    const us = getQuarterScore(q, 'us'), them = getQuarterScore(q, 'them');
+    tabs.append(el('button', {
+      class: `quarter-tab ${state.currentQuarter === q ? 'active' : ''}`,
+      onclick: () => { state.currentQuarter = q; render(); },
+    },
+      el('span', {}, `Q${q}`),
+      el('span', { class: 'qt-score' }, `${us}-${them}`),
+    ));
+  }
+  tabs.append(el('button', {
+    class: `quarter-tab ${state.currentQuarter === 'sum' ? 'active' : ''}`,
+    onclick: () => { state.currentQuarter = 'sum'; render(); },
+  }, 'Summary'));
+  wrap.append(tabs);
+
+  if (state.currentQuarter === 'sum') {
+    wrap.append(renderSummary());
+  } else {
+    wrap.append(renderQuarter());
+  }
+
+  root.append(wrap);
+  cacheGameScore(g.id);
+}
+
+/* ----- QUARTER LAYOUT ----- */
+function renderQuarter() {
+  const onFloorIds = getOnFloorIds(state.currentQuarter);
+
+  const layout = el('div', { class: 'quarter-layout' });
+
+  // LEFT: clock + court
+  const left = el('div', { class: 'court-wrap' });
+
+  // Clock bar
+  left.append(el('div', { class: 'clock-bar' },
+    el('div', {},
+      el('div', { class: 'clock-label' }, 'Time Remaining'),
+      el('div', { class: 'clock-display', onclick: openClockEditor }, fmtClock(getCurrentClockSeconds())),
+    ),
+    el('div', { style: 'display:flex; gap:6px;' },
+      el('button', { class: 'nav-btn', onclick: () => { setCurrentClockSeconds(getCurrentClockSeconds() - 30); render(); } }, '−30s'),
+      el('button', { class: 'nav-btn', onclick: () => { setCurrentClockSeconds(getCurrentClockSeconds() - 10); render(); } }, '−10s'),
+      el('button', { class: 'nav-btn', onclick: () => { setCurrentClockSeconds(getQuarterLengthSec()); render(); } }, 'Reset'),
+    ),
+  ));
+
+  // Court
+  left.append(buildCourtSvg());
+
+  layout.append(left);
+
+  // RIGHT: on-floor + bench + opponent
+  const right = el('div');
+
+  right.append(el('h3', {}, `Q${state.currentQuarter} · On Floor`));
+  const floorGrid = el('div', { class: 'on-floor-grid panel-section' });
+  for (let i = 0; i < 5; i++) {
+    if (onFloorIds[i]) {
+      floorGrid.append(renderPlayerCard(onFloorIds[i]));
+    } else {
+      floorGrid.append(el('div', { class: 'empty-slot', onclick: () => openAddStarterModal() },
+        '+ Tap to add player'));
+    }
+  }
+  right.append(floorGrid);
+
+  // Bench
+  const benchPlayers = state.players.filter(p => p.active && !onFloorIds.includes(p.id));
+  if (benchPlayers.length) {
+    right.append(el('h3', {}, 'Bench'));
+    const bench = el('div', { class: 'bench-chips panel-section' });
+    for (const p of benchPlayers) {
+      bench.append(el('button', {
+        class: 'bench-chip',
+        onclick: () => openSubInModal(p.id),
+      }, p.jersey_number ? `#${p.jersey_number} ${shortName(p.name)}` : shortName(p.name)));
+    }
+    right.append(bench);
+  }
+
+  // Opponent rebound counters
+  const themOreb = state.events.filter(e => e.team==='them' && e.event_type==='oreb' && e.quarter===state.currentQuarter).length;
+  const themDreb = state.events.filter(e => e.team==='them' && e.event_type==='dreb' && e.quarter===state.currentQuarter).length;
+  right.append(el('h3', {}, 'Opponent Rebounds (Q' + state.currentQuarter + ')'));
+  const oppBar = el('div', { class: 'opponent-bar panel-section' },
+    el('div', { class: 'stat-btn' },
+      el('button', { class: 'sb-minus', onclick: () => adjustOpponentStat('oreb', -1) }, '−'),
+      el('span', { class: 'sb-label' }, 'O-Reb'),
+      el('span', { class: 'sb-val' }, String(themOreb)),
+      el('button', { class: 'sb-plus', onclick: () => adjustOpponentStat('oreb', +1) }, '+'),
+    ),
+    el('div', { class: 'stat-btn' },
+      el('button', { class: 'sb-minus', onclick: () => adjustOpponentStat('dreb', -1) }, '−'),
+      el('span', { class: 'sb-label' }, 'D-Reb'),
+      el('span', { class: 'sb-val' }, String(themDreb)),
+      el('button', { class: 'sb-plus', onclick: () => adjustOpponentStat('dreb', +1) }, '+'),
+    ),
+  );
+  right.append(oppBar);
+
+  layout.append(right);
+  return layout;
+}
+
+function shortName(name) {
+  return name.split(' ')[0];
+}
+
+function renderPlayerCard(playerId) {
+  const p = state.players.find(p => p.id === playerId);
+  if (!p) return el('div');
+  const stats = getPlayerStats(playerId, state.currentQuarter);
+  const card = el('div', { class: 'player-card', id: `pcard-${playerId}` },
+    el('div', { class: 'pc-head' },
+      el('div', { class: 'pc-jersey' }, p.jersey_number || (p.name[0])),
+      el('div', { class: 'pc-name', onclick: () => openPlayerDetail(playerId), style: 'cursor:pointer' }, shortName(p.name)),
+      el('div', { class: 'pc-pts' },
+        el('strong', {}, String(stats.pts)), ' pts · ',
+        `${stats.fgm}/${stats.fga}`,
+      ),
+      el('button', { class: 'pc-sub-btn', onclick: () => openSubOutModal(playerId) }, 'Sub'),
+    ),
+    el('div', { class: 'pc-stats' },
+      statBtn(playerId, 'AST', 'assist', stats.ast),
+      statBtn(playerId, 'OREB', 'oreb', stats.oreb),
+      statBtn(playerId, 'DREB', 'dreb', stats.dreb),
+      statBtn(playerId, 'STL', 'steal', stats.stl),
+      statBtn(playerId, 'BLK', 'block', stats.blk),
+      statBtn(playerId, 'TO', 'turnover', stats.to),
+      statBtn(playerId, 'PF', 'foul', stats.pf),
+      el('div', { class: 'stat-btn', style: 'justify-content: center; cursor: pointer;', onclick: () => openPlayerDetail(playerId) },
+        el('span', { class: 'sb-label', style: 'text-align:center' }, 'View'),
+      ),
+    ),
+  );
+  return card;
+}
+
+function statBtn(playerId, label, eventType, val) {
+  return el('div', { class: 'stat-btn' },
+    el('button', { class: 'sb-minus', onclick: () => adjustStat(playerId, eventType, -1) }, '−'),
+    el('span', { class: 'sb-label' }, label),
+    el('span', { class: 'sb-val' }, String(val)),
+    el('button', { class: 'sb-plus', onclick: () => adjustStat(playerId, eventType, +1) }, '+'),
+  );
+}
+
+function flashCard(playerId, kind) {
+  const el = document.getElementById(`pcard-${playerId}`);
+  if (!el) return;
+  el.classList.add(kind === 'good' ? 'flash' : 'flash-miss');
+  setTimeout(() => el.classList.remove('flash', 'flash-miss'), 600);
+}
+
+/* ----- COURT ----- */
+function buildCourtSvg() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 500 470');
+  svg.setAttribute('class', 'court-svg');
+
+  // Court bg gradient pattern (wood subtle)
+  // (background applied via CSS gradient on <rect>; using svg rect for crispness)
+  const bg = document.createElementNS(ns, 'rect');
+  bg.setAttribute('width', '500'); bg.setAttribute('height', '470');
+  bg.setAttribute('fill', 'transparent');
+  svg.appendChild(bg);
+
+  // Court lines: stroke = court-line color
+  const line = (d, w = 2.5) => {
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('stroke', 'rgba(15,12,6,0.78)');
+    p.setAttribute('stroke-width', String(w));
+    p.setAttribute('fill', 'none');
+    return p;
+  };
+  // Sideline / baseline
+  svg.appendChild(line('M 5 5 L 495 5 L 495 465 L 5 465 Z', 3));
+  // 3pt line: NBA-style — straight corners (3ft from sideline) + 23'9" top arc
+  svg.appendChild(line('M 30 5 L 30 142 A 237.5 237.5 0 0 0 470 142 L 470 5'));
+  // Paint (key) — 12ft wide × 19ft from baseline to FT line
+  svg.appendChild(line('M 190 5 L 190 195 L 310 195 L 310 5'));
+  // FT circle top half (solid, basket side)
+  svg.appendChild(line('M 190 195 A 60 60 0 0 1 310 195'));
+  // FT circle bottom half (dashed, midcourt side)
+  const ftBack = line('M 190 195 A 60 60 0 0 0 310 195');
+  ftBack.setAttribute('stroke-dasharray', '6 6');
+  svg.appendChild(ftBack);
+  // Restricted area (4ft semicircle around hoop)
+  svg.appendChild(line('M 210 53 A 40 40 0 0 0 290 53'));
+  // Backboard (4ft from baseline)
+  svg.appendChild(line('M 220 45 L 280 45', 4));
+  // Hoop (4'9" from baseline)
+  const hoop = document.createElementNS(ns, 'circle');
+  hoop.setAttribute('cx', '250'); hoop.setAttribute('cy', '53');
+  hoop.setAttribute('r', '9'); hoop.setAttribute('fill', 'none');
+  hoop.setAttribute('stroke', '#d83a2c'); hoop.setAttribute('stroke-width', '2.5');
+  svg.appendChild(hoop);
+  // Half-court center circle (top half)
+  svg.appendChild(line('M 190 465 A 60 60 0 0 1 310 465'));
+
+  // Plot all shots for this quarter
+  for (const e of state.events) {
+    if (e.quarter !== state.currentQuarter) continue;
+    if (e.court_x == null || e.court_y == null) continue;
+    if (!['shot_made_2','shot_missed_2','shot_made_3','shot_missed_3'].includes(e.event_type)) continue;
+    const made = e.event_type.includes('made');
+    const teamCls = e.team === 'them' ? 'them' : 'us';
+    const shape = document.createElementNS(ns, 'circle');
+    shape.setAttribute('cx', String(e.court_x));
+    shape.setAttribute('cy', String(e.court_y));
+    shape.setAttribute('r', '7');
+    shape.setAttribute('class', `shot-dot ${teamCls} ${made ? 'made' : 'missed'}`);
+    svg.appendChild(shape);
+  }
+
+  // Tap handler
+  svg.addEventListener('click', (ev) => {
+    const pt = svgPoint(svg, ev);
+    openShotModal(pt.x, pt.y);
+  });
+
+  return svg;
+}
+
+function svgPoint(svg, ev) {
+  const rect = svg.getBoundingClientRect();
+  const x = (ev.clientX - rect.left) / rect.width * 500;
+  const y = (ev.clientY - rect.top) / rect.height * 470;
+  return { x: Math.round(x), y: Math.round(y) };
+}
+
+/* ----- SHOT MODAL ----- */
+function openShotModal(x, y) {
+  const onFloorIds = getOnFloorIds(state.currentQuarter);
+  // Default to opponent if no Warriors are on floor (so opponent shots can always be logged)
+  const ctx = { team: onFloorIds.length ? 'us' : 'them', playerId: null, x, y };
+  let pts = shotPoints(x, y);
+  let isFT = false;
+
+  function update() {
+    const root = $('#modal-root');
+    root.innerHTML = '';
+    const teamSeg = el('div', { class: 'team-toggle' },
+      el('button', { class: ctx.team === 'us' ? 'active' : '', onclick: () => { ctx.team = 'us'; ctx.playerId = null; update(); } }, 'Warriors'),
+      el('button', { class: ctx.team === 'them' ? 'active' : '', onclick: () => { ctx.team = 'them'; ctx.playerId = null; update(); } }, getCurrentGame().opponent || 'Other Team'),
+    );
+
+    const playerGrid = ctx.team === 'us'
+      ? (onFloorIds.length
+        ? el('div', { class: 'player-pick-grid' },
+            ...onFloorIds.map(pid => {
+              const p = state.players.find(x => x.id === pid);
+              return el('div', {
+                class: `player-pick ${ctx.playerId === pid ? 'active' : ''}`,
+                onclick: () => { ctx.playerId = pid; update(); },
+              },
+                el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+                el('div', { class: 'pp-name' }, shortName(p.name)),
+              );
+            })
+          )
+        : el('div', { style: 'text-align:center; color:var(--muted); font-size:12px; letter-spacing:0.14em; text-transform:uppercase; padding:14px;' }, 'No Warriors on floor — set lineup first'))
+      : null;
+
+    const valueDisplay = el('div', { style: 'text-align:center; margin: 6px 0 12px; color: var(--gold-2); font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; font-size: 13px;' },
+      isFT ? 'Free Throw (1pt)' : `${pts}-Point Shot`,
+    );
+
+    const made = el('button', {
+      class: 'btn btn-made btn-big',
+      onclick: () => doShot(true),
+    }, 'Made ✓');
+    const miss = el('button', {
+      class: 'btn btn-missed btn-big',
+      onclick: () => doShot(false),
+    }, 'Missed ✕');
+
+    function doShot(success) {
+      if (ctx.team === 'us' && !ctx.playerId) return toast('Pick a player');
+      const evType = isFT
+        ? (success ? 'ft_made' : 'ft_missed')
+        : (pts === 3 ? (success ? 'shot_made_3' : 'shot_missed_3') : (success ? 'shot_made_2' : 'shot_missed_2'));
+      logEvent({
+        team: ctx.team,
+        player_id: ctx.team === 'us' ? ctx.playerId : null,
+        event_type: evType,
+        court_x: isFT ? 250 : ctx.x,
+        court_y: isFT ? 190 : ctx.y,
+        points: success ? (isFT ? 1 : pts) : 0,
+      });
+      closeModal();
+      if (ctx.team === 'us' && ctx.playerId) flashCard(ctx.playerId, success ? 'good' : 'miss');
+    }
+
+    const overrides = el('div', { class: 'override-row' },
+      el('button', { class: 'btn btn-ghost', onclick: () => { isFT = false; pts = 2; update(); } }, '2pt'),
+      el('button', { class: 'btn btn-ghost', onclick: () => { isFT = false; pts = 3; update(); } }, '3pt'),
+      el('button', { class: 'btn btn-ghost', onclick: () => { isFT = true; update(); } }, 'Free Throw'),
+    );
+
+    const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
+      el('div', { class: 'modal' },
+        el('h3', {}, ctx.team === 'us' ? 'Shot — Pick Player' : 'Opponent Shot'),
+        teamSeg,
+        playerGrid,
+        valueDisplay,
+        el('div', { class: 'made-missed-row' }, made, miss),
+        el('div', { style: 'text-align:center; margin-top: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;' }, 'Override'),
+        overrides,
+        el('div', { style: 'margin-top: 12px; text-align: center;' },
+          el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        ),
+      )
+    );
+    root.append(modal);
+  }
+  update();
+}
+
+/* ----- SUB MODALS ----- */
+function openClockEditor() {
+  const cur = getCurrentClockSeconds();
+  const m = Math.floor(cur/60), s = cur%60;
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Set Time Remaining'),
+      el('div', { class: 'field' },
+        el('label', {}, 'Minutes'),
+        el('input', { type: 'number', id: 'ck-m', value: String(m), min: '0', max: '20' }),
+      ),
+      el('div', { class: 'field' },
+        el('label', {}, 'Seconds'),
+        el('input', { type: 'number', id: 'ck-s', value: String(s), min: '0', max: '59' }),
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-primary', onclick: () => {
+          const mm = parseInt($('#ck-m').value) || 0;
+          const ss = parseInt($('#ck-s').value) || 0;
+          setCurrentClockSeconds(mm*60 + ss);
+          closeModal(); render();
+        }}, 'Set'),
+      ),
+    )
+  );
+}
+
+function openAddStarterModal() {
+  const onFloorIds = getOnFloorIds(state.currentQuarter);
+  const available = state.players.filter(p => p.active && !onFloorIds.includes(p.id));
+  if (!available.length) return toast('No bench players');
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, `Add to Q${state.currentQuarter} On Floor`),
+      el('div', { class: 'player-pick-grid' },
+        ...available.map(p => el('div', {
+          class: 'player-pick',
+          onclick: async () => {
+            const startSec = onFloorIds.length === 0 ? getQuarterLengthSec() : getCurrentClockSeconds();
+            await startStint(p.id, startSec);
+            closeModal();
+          },
+        },
+          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+          el('div', { class: 'pp-name' }, shortName(p.name)),
+        ))
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+      ),
+    )
+  );
+}
+
+function openSubInModal(playerId) {
+  // Player tapped from bench — sub them in. Need to pick someone to sub OUT (or fill empty slot).
+  const onFloorIds = getOnFloorIds(state.currentQuarter);
+  if (onFloorIds.length < 5) {
+    // Just add them
+    const startSec = onFloorIds.length === 0 ? getQuarterLengthSec() : getCurrentClockSeconds();
+    return startStint(playerId, startSec);
+  }
+  // Otherwise need to swap
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Sub In — Replace Whom?'),
+      el('div', { class: 'player-pick-grid' },
+        ...onFloorIds.map(pid => {
+          const p = state.players.find(x => x.id === pid);
+          return el('div', { class: 'player-pick', onclick: () => promptSwap(pid, playerId) },
+            el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+            el('div', { class: 'pp-name' }, shortName(p.name)),
+          );
+        })
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+      ),
+    )
+  );
+}
+
+function openSubOutModal(playerId) {
+  // Player on floor tapped sub button — pick replacement from bench
+  const onFloorIds = getOnFloorIds(state.currentQuarter);
+  const bench = state.players.filter(p => p.active && !onFloorIds.includes(p.id));
+  if (!bench.length) return toast('No bench players available');
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Sub In For…'),
+      el('div', { class: 'player-pick-grid' },
+        ...bench.map(p => el('div', { class: 'player-pick', onclick: () => promptSwap(playerId, p.id) },
+          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+          el('div', { class: 'pp-name' }, shortName(p.name)),
+        ))
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+      ),
+    )
+  );
+}
+
+function promptSwap(outId, inId) {
+  const cur = getCurrentClockSeconds();
+  const m = Math.floor(cur/60), s = cur%60;
+  const outP = state.players.find(p => p.id === outId);
+  const inP = state.players.find(p => p.id === inId);
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Time of Substitution'),
+      el('p', { style: 'color: var(--ink-2); font-size: 13px; margin-bottom: 14px;' },
+        `${shortName(outP.name)} OUT, ${shortName(inP.name)} IN`),
+      el('div', { class: 'field' },
+        el('label', {}, 'Minutes Remaining'),
+        el('input', { type: 'number', id: 'sw-m', value: String(m), min: '0', max: '20' }),
+      ),
+      el('div', { class: 'field' },
+        el('label', {}, 'Seconds Remaining'),
+        el('input', { type: 'number', id: 'sw-s', value: String(s), min: '0', max: '59' }),
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-primary', onclick: async () => {
+          const mm = parseInt($('#sw-m').value) || 0;
+          const ss = parseInt($('#sw-s').value) || 0;
+          const t = mm*60 + ss;
+          // End out player's open stint
+          const outStint = state.stints.find(s => s.player_id === outId && s.quarter === state.currentQuarter && s.ended_seconds_remaining === null);
+          if (outStint) await endStint(outStint.id, t);
+          // Start in player's stint
+          await startStint(inId, t);
+          // Update displayed clock
+          setCurrentClockSeconds(t);
+          closeModal();
+        }}, 'Sub'),
+      ),
+    )
+  );
+}
+
+/* ----- SUMMARY ----- */
+function renderSummary() {
+  const wrap = el('div');
+  // Totals across game per player
+  const playersWithStats = state.players
+    .map(p => ({ p, stats: getPlayerStats(p.id, null), pm: getPlusMinus(p.id), mins: getMinutesPlayed(p.id) }))
+    .filter(x => {
+      // Only show players with any event or stint in this game
+      const hasEvt = state.events.some(e => e.player_id === x.p.id);
+      const hasStint = state.stints.some(s => s.player_id === x.p.id);
+      return hasEvt || hasStint;
+    })
+    .sort((a, b) => b.stats.pts - a.stats.pts);
+
+  const table = el('table', { class: 'summary-table' });
+  table.innerHTML = `
+    <thead><tr>
+      <th>Player</th><th>MIN</th><th>PTS</th><th>FG</th><th>3PT</th><th>FT</th>
+      <th>AST</th><th>OREB</th><th>DREB</th><th>STL</th><th>BLK</th><th>TO</th><th>PF</th><th>+/−</th>
+    </tr></thead>
+  `;
+  const tbody = el('tbody');
+  for (const { p, stats: s, pm, mins } of playersWithStats) {
+    const pmCls = pm > 0 ? 'pm-pos' : pm < 0 ? 'pm-neg' : '';
+    tbody.append(el('tr', {},
+      el('td', { class: 'name-cell', onclick: () => openPlayerDetail(p.id), style: 'cursor:pointer' }, shortName(p.name)),
+      el('td', {}, fmtClock(mins)),
+      el('td', { style: 'font-weight:700;color:var(--gold-2)' }, String(s.pts)),
+      el('td', {}, `${s.fgm}/${s.fga}`),
+      el('td', {}, `${s.p3m}/${s.p3a}`),
+      el('td', {}, `${s.ftm}/${s.fta}`),
+      el('td', {}, String(s.ast)),
+      el('td', {}, String(s.oreb)),
+      el('td', {}, String(s.dreb)),
+      el('td', {}, String(s.stl)),
+      el('td', {}, String(s.blk)),
+      el('td', {}, String(s.to)),
+      el('td', {}, String(s.pf)),
+      el('td', { class: pmCls }, (pm > 0 ? '+' : '') + pm),
+    ));
+  }
+  table.append(tbody);
+  wrap.append(el('div', { class: 'card' },
+    el('h3', {}, 'Box Score'),
+    table,
+  ));
+
+  // Quarter breakdown
+  const qbWrap = el('div', { class: 'card', style: 'margin-top: 16px;' });
+  qbWrap.append(el('h3', {}, 'Quarter Scores'));
+  const qbTable = el('table', { class: 'summary-table' });
+  qbTable.innerHTML = `<thead><tr><th>Team</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Total</th></tr></thead>`;
+  const qbBody = el('tbody');
+  qbBody.append(el('tr', {},
+    el('td', { class: 'name-cell' }, 'Warriors'),
+    ...[1,2,3,4].map(q => el('td', {}, String(getQuarterScore(q, 'us')))),
+    el('td', { style: 'font-weight:700;color:var(--gold-2)' }, String(getGameScore('us'))),
+  ));
+  qbBody.append(el('tr', {},
+    el('td', { class: 'name-cell' }, getCurrentGame().opponent || 'Opponent'),
+    ...[1,2,3,4].map(q => el('td', {}, String(getQuarterScore(q, 'them')))),
+    el('td', { style: 'font-weight:700' }, String(getGameScore('them'))),
+  ));
+  qbTable.append(qbBody);
+  qbWrap.append(qbTable);
+  wrap.append(qbWrap);
+
+  // Team shooting zones
+  const zoneWrap = el('div', { class: 'card', style: 'margin-top: 16px;' });
+  zoneWrap.append(el('h3', {}, 'Shot Zones — Warriors'));
+  zoneWrap.append(buildZoneTable(state.events.filter(e => e.team === 'us')));
+  wrap.append(zoneWrap);
+
+  return wrap;
+}
+
+function buildZoneTable(evts) {
+  const zones = ['paint','mid','corner3','wing3','top3'];
+  const labels = { paint:'Paint', mid:'Mid-Range', corner3:'Corner 3', wing3:'Wing 3', top3:'Top of Key 3' };
+  const rows = zones.map(z => {
+    const m = evts.filter(e => e.event_type.includes('made') && !e.event_type.includes('ft') && shotZone(e.court_x, e.court_y) === z).length;
+    const x = evts.filter(e => e.event_type.includes('missed') && !e.event_type.includes('ft') && shotZone(e.court_x, e.court_y) === z).length;
+    return { z, m, x, a: m+x, pct: m+x ? Math.round(m/(m+x)*100) : null };
+  });
+  const t = el('table', { class: 'zone-table' });
+  t.innerHTML = '<thead><tr><th>Zone</th><th>Made</th><th>Att</th><th>%</th></tr></thead>';
+  const tb = el('tbody');
+  for (const r of rows) {
+    tb.append(el('tr', {},
+      el('td', {}, labels[r.z]),
+      el('td', {}, String(r.m)),
+      el('td', {}, String(r.a)),
+      el('td', {}, r.pct == null ? '—' : `${r.pct}%`),
+    ));
+  }
+  t.append(tb);
+  return t;
+}
+
+/* ----- PLAYER DETAIL ----- */
+function openPlayerDetail(playerId) {
+  state.selectedPlayerId = playerId;
+  state.view = 'player';
+  render();
+}
+
+function renderPlayerDetail(root) {
+  const p = state.players.find(p => p.id === state.selectedPlayerId);
+  if (!p) { state.view = 'game'; return render(); }
+  const stats = getPlayerStats(p.id, null);
+  const pm = getPlusMinus(p.id);
+  const mins = getMinutesPlayed(p.id);
+
+  const wrap = el('div');
+
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'game'; render(); } }, '←'),
+    el('div', {},
+      el('div', { class: 'team-name', style: 'color:var(--gold-2); font-weight:700; font-size: 22px; letter-spacing: 0.04em' }, p.name),
+      el('div', { class: 'game-meta' }, `Jersey ${p.jersey_number || '—'} · ${fmtClock(mins)} played · ${(pm > 0 ? '+' : '') + pm} +/−`),
+    ),
+  ));
+
+  const grid = el('div', { class: 'pd-grid' });
+
+  // Left: Shot chart
+  const chartCard = el('div', { class: 'card' });
+  chartCard.append(el('h3', {}, 'Shot Chart'));
+  chartCard.append(buildPlayerShotChart(p.id));
+  // Legend
+  chartCard.append(el('div', { style: 'display:flex; gap:14px; margin-top:10px; font-size:11px; color:var(--muted); justify-content:center' },
+    el('div', {}, '● Made · ○ Missed'),
+  ));
+  grid.append(chartCard);
+
+  // Right: Totals + zones
+  const stCard = el('div', { class: 'card' });
+  stCard.append(el('h3', {}, 'Totals'));
+  const totals = el('div', { class: 'totals-grid' },
+    statBlock(stats.pts, 'Pts'),
+    statBlock(`${stats.fgm}/${stats.fga}`, 'FG'),
+    statBlock(stats.fgPct == null ? '—' : `${stats.fgPct}%`, 'FG%'),
+    statBlock(`${stats.p3m}/${stats.p3a}`, '3PT'),
+    statBlock(`${stats.ftm}/${stats.fta}`, 'FT'),
+    statBlock(stats.ast, 'AST'),
+    statBlock(stats.reb, 'REB'),
+    statBlock(stats.stl, 'STL'),
+    statBlock(stats.blk, 'BLK'),
+    statBlock(stats.to, 'TO'),
+    statBlock(stats.pf, 'PF'),
+    statBlock((pm > 0 ? '+' : '') + pm, '+/−'),
+  );
+  stCard.append(totals);
+  stCard.append(el('h3', { style: 'margin-top:18px' }, 'Shot Zones'));
+  const evts = state.events.filter(e => e.player_id === p.id);
+  stCard.append(buildZoneTable(evts));
+  grid.append(stCard);
+
+  wrap.append(grid);
+  root.append(wrap);
+}
+
+function statBlock(num, lbl) {
+  return el('div', { class: 'stat-block' },
+    el('div', { class: 'sb-num' }, String(num)),
+    el('div', { class: 'sb-lbl' }, lbl),
+  );
+}
+
+function buildPlayerShotChart(playerId) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 500 470');
+  svg.setAttribute('class', 'court-svg');
+  svg.style.cursor = 'default';
+
+  const line = (d, w = 2.5, dash = null) => {
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('stroke', 'rgba(15,12,6,0.78)');
+    p.setAttribute('stroke-width', String(w));
+    p.setAttribute('fill', 'none');
+    if (dash) p.setAttribute('stroke-dasharray', dash);
+    return p;
+  };
+  svg.appendChild(line('M 5 5 L 495 5 L 495 465 L 5 465 Z', 3));
+  svg.appendChild(line('M 30 5 L 30 142 A 237.5 237.5 0 0 0 470 142 L 470 5'));
+  svg.appendChild(line('M 190 5 L 190 195 L 310 195 L 310 5'));
+  svg.appendChild(line('M 190 195 A 60 60 0 0 1 310 195'));
+  svg.appendChild(line('M 190 195 A 60 60 0 0 0 310 195', 2.5, '6 6'));
+  svg.appendChild(line('M 210 53 A 40 40 0 0 0 290 53'));
+  svg.appendChild(line('M 220 45 L 280 45', 4));
+  const hoop = document.createElementNS(ns, 'circle');
+  hoop.setAttribute('cx', '250'); hoop.setAttribute('cy', '53');
+  hoop.setAttribute('r', '9'); hoop.setAttribute('fill', 'none');
+  hoop.setAttribute('stroke', '#d83a2c'); hoop.setAttribute('stroke-width', '2.5');
+  svg.appendChild(hoop);
+
+  const evts = state.events.filter(e => e.player_id === playerId);
+  for (const e of evts) {
+    if (e.court_x == null || e.court_y == null) continue;
+    if (!['shot_made_2','shot_missed_2','shot_made_3','shot_missed_3'].includes(e.event_type)) continue;
+    const made = e.event_type.includes('made');
+    const c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', String(e.court_x));
+    c.setAttribute('cy', String(e.court_y));
+    c.setAttribute('r', '8');
+    c.setAttribute('class', `shot-dot us ${made ? 'made' : 'missed'}`);
+    svg.appendChild(c);
+  }
+  return svg;
+}
+
+/* ----- ROSTER ----- */
+function renderRoster(root) {
+  const wrap = el('div');
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
+    el('h2', { style: 'margin:0' }, 'Roster'),
+    el('div', { class: 'header-spacer' }),
+    el('button', { class: 'btn btn-primary', onclick: openAddPlayerModal }, '+ Add Player'),
+  ));
+  const list = el('div', { class: 'roster-list card' });
+  const sorted = [...state.players].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
+  for (const p of sorted) {
+    list.append(el('div', { class: 'roster-row' },
+      el('input', { type: 'number', value: p.jersey_number || '', placeholder: '#',
+        onchange: (e) => updatePlayer(p.id, { jersey_number: parseInt(e.target.value) || null }) }),
+      el('input', { type: 'text', value: p.name,
+        onchange: (e) => updatePlayer(p.id, { name: e.target.value }) }),
+      el('button', { class: 'iconbtn', title: 'Remove', onclick: () => {
+        if (confirm(`Remove ${p.name} from roster?`)) deletePlayer(p.id);
+      }}, '×'),
+    ));
+  }
+  wrap.append(list);
+  root.append(wrap);
+}
+
+function openAddPlayerModal() {
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Add Player'),
+      el('div', { class: 'field' },
+        el('label', {}, 'Name'),
+        el('input', { type: 'text', id: 'np-name', placeholder: 'First Last' }),
+      ),
+      el('div', { class: 'field' },
+        el('label', {}, 'Jersey Number (optional)'),
+        el('input', { type: 'number', id: 'np-num', placeholder: '#' }),
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-primary', onclick: async () => {
+          const name = $('#np-name').value.trim();
+          const num = parseInt($('#np-num').value) || null;
+          if (!name) return toast('Name required');
+          await addPlayer(name, num);
+          closeModal();
+        }}, 'Add'),
+      ),
+    )
+  );
+}
+
+/* ============ MODALS / TOAST ============ */
+function openModal(content) {
+  const root = $('#modal-root');
+  root.innerHTML = '';
+  const bg = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } }, content);
+  root.append(bg);
+}
+function closeModal() {
+  $('#modal-root').innerHTML = '';
+}
+function toast(msg) {
+  const root = $('#toast-root');
+  const t = el('div', { class: 'toast' }, msg);
+  root.innerHTML = '';
+  root.append(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+/* ============ NAV ============ */
+$('#brand-home').onclick = () => { state.view = 'home'; render(); };
+$('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
+
+/* ============ INIT ============ */
+loadInitial();
+</script>
+</body>
+</html>
