@@ -861,6 +861,7 @@ function $(sel) { return document.querySelector(sel); }
 function el(tag, props = {}, ...children) {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
     if (k === 'class') e.className = v;
     else if (k === 'style') e.style.cssText = v;
     else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2).toLowerCase(), v);
@@ -1389,27 +1390,61 @@ function openAddStarterModal() {
   const onFloorIds = getOnFloorIds(state.currentQuarter);
   const available = state.players.filter(p => p.active && !onFloorIds.includes(p.id));
   if (!available.length) return toast('No bench players');
-  openModal(
-    el('div', { class: 'modal' },
-      el('h3', {}, `Add to Q${state.currentQuarter} On Floor`),
-      el('div', { class: 'player-pick-grid' },
-        ...available.map(p => el('div', {
-          class: 'player-pick',
-          onclick: async () => {
-            const startSec = onFloorIds.length === 0 ? getQuarterLengthSec() : getCurrentClockSeconds();
-            await startStint(p.id, startSec);
-            closeModal();
-          },
+  const slotsLeft = 5 - onFloorIds.length;
+  const selected = new Set();
+
+  function update() {
+    const root = $('#modal-root');
+    root.innerHTML = '';
+    const grid = el('div', { class: 'player-pick-grid' },
+      ...available.map(p => el('div', {
+        class: `player-pick ${selected.has(p.id) ? 'active' : ''}`,
+        onclick: () => {
+          if (selected.has(p.id)) {
+            selected.delete(p.id);
+          } else {
+            if (selected.size >= slotsLeft) return toast(`Max ${slotsLeft}`);
+            selected.add(p.id);
+          }
+          update();
         },
-          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
-          el('div', { class: 'pp-name' }, shortName(p.name)),
-        ))
-      ),
-      el('div', { class: 'modal-actions' },
-        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
-      ),
-    )
-  );
+      },
+        el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+        el('div', { class: 'pp-name' }, shortName(p.name)),
+      ))
+    );
+
+    const counter = el('div', {
+      style: 'text-align:center; margin-bottom:12px; font-size:13px; letter-spacing:0.16em; text-transform:uppercase; font-weight:700;'
+        + (selected.size === slotsLeft ? ' color:var(--made);' : ' color:var(--gold-2);'),
+    }, `${selected.size} / ${slotsLeft} selected`);
+
+    const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
+      el('div', { class: 'modal modal-lg' },
+        el('h3', {}, slotsLeft === 5 ? `Pick 5 Starters — Q${state.currentQuarter}` : `Add Up To ${slotsLeft} — Q${state.currentQuarter}`),
+        counter,
+        grid,
+        el('div', { class: 'modal-actions' },
+          el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+          el('button', {
+            class: 'btn btn-primary',
+            disabled: selected.size === 0 ? '' : null,
+            style: selected.size === 0 ? 'opacity:0.4; pointer-events:none;' : '',
+            onclick: async () => {
+              if (!selected.size) return;
+              const startSec = onFloorIds.length === 0 ? getQuarterLengthSec() : getCurrentClockSeconds();
+              for (const pid of selected) {
+                await startStint(pid, startSec);
+              }
+              closeModal();
+            },
+          }, `Load ${selected.size}`),
+        ),
+      )
+    );
+    root.append(modal);
+  }
+  update();
 }
 
 function openSubInModal(playerId) {
