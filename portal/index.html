@@ -541,6 +541,7 @@ function render(){
 
   if (!session){
     document.getElementById('app').innerHTML = renderLogin();
+    attachViewHandlers(null, '', []);
     return;
   }
 
