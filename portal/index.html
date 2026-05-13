@@ -241,6 +241,51 @@ input,textarea,select{font:inherit;color:inherit;}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--charcoal);color:var(--warm-white);padding:14px 20px;border-left:3px solid var(--gold);font-size:13px;z-index:200;animation:toastIn .3s ease;}
 @keyframes toastIn{from{opacity:0;transform:translateY(20px);}}
 
+/* ============== ADMIN CALENDAR (master) ============== */
+.cal-flight.master{border-left-width:3px;font-weight:500;}
+.cal-flight .client-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle;}
+.cal-flight-tip{position:absolute;display:none;background:var(--charcoal);color:var(--warm-white);padding:10px 14px;font-size:12px;line-height:1.5;border-left:3px solid var(--gold);z-index:50;width:280px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;}
+.cal-flight:hover .cal-flight-tip{display:block;top:100%;left:0;}
+.cal-flight-tip strong{display:block;color:var(--gold-light);font-family:var(--serif);font-size:14px;font-style:italic;}
+.client-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;justify-content:center;}
+.client-legend-item{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ash);}
+.client-legend-item .dot{width:12px;height:12px;border-radius:50%;}
+
+/* ============== ADMIN FLIGHT EDIT (compact form sections) ============== */
+.flight-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--mist);}
+.flight-tab{padding:12px 20px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ash);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;}
+.flight-tab:hover{color:var(--charcoal);}
+.flight-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.flight-tab .count{margin-left:6px;font-size:10px;padding:2px 6px;background:var(--cream);color:var(--ash);border-radius:8px;}
+.flight-tab.active .count{background:var(--gold-pale);color:var(--gold);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+.exp-row{display:grid;grid-template-columns:120px 160px 1fr 100px 32px;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--mist);}
+.exp-row:last-child{border-bottom:none;}
+.exp-row select,.exp-row input{padding:6px 8px;border:1px solid var(--mist);background:#fff;font-size:12px;}
+.exp-row .num input{text-align:right;font-variant-numeric:tabular-nums;}
+.exp-row button.remove{color:var(--red);font-size:18px;line-height:1;}
+
+/* Receipt OCR */
+.receipt-zone{border:2px dashed var(--mist);padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);}
+.receipt-zone:hover,.receipt-zone.drag{border-color:var(--gold);background:var(--gold-pale);}
+.receipt-zone p{font-family:var(--serif);font-size:16px;font-style:italic;color:var(--ash);}
+.receipt-zone .hint{font-family:var(--sans);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);margin-top:8px;}
+.receipt-preview{display:flex;gap:14px;align-items:flex-start;padding:14px;background:#fff;border:1px solid var(--mist);}
+.receipt-preview img{width:120px;height:120px;object-fit:cover;border:1px solid var(--mist);}
+.receipt-ai-status{flex:1;}
+.receipt-ai-status .step{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--ash);}
+.receipt-ai-status .step.done{color:var(--green);}
+.receipt-ai-status .step.active{color:var(--gold);font-weight:500;}
+.receipt-ai-status .spin{display:inline-block;width:10px;height:10px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.filter-bar select,.filter-bar input{padding:8px 12px;border:1px solid var(--mist);background:#fff;font-size:12px;color:var(--charcoal);}
+.filter-bar label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);}
+
 /* ============== RESPONSIVE ============== */
 .menu-toggle{display:none;}
 @media(max-width:900px){
@@ -274,6 +319,7 @@ input,textarea,select{font:inherit;color:inherit;}
       "name": "Robert Smith",
       "company": "Smith Holdings LLC",
       "phone": "+1-239-555-0142",
+      "color": "#A08450",
       "aircraft": { "tail": "N123JT", "model": "Citation XLS+", "year": 2019, "home_base": "KAPF" },
       "status": "available",
       "status_note": "Aircraft ready. Crew on standby.",
@@ -283,6 +329,7 @@ input,textarea,select{font:inherit;color:inherit;}
         "hobbs_current": 2847.3,
         "hobbs_at_next_phase": 2900,
         "next_phase": "Phase 1-2 inspection",
+        "cmms": "Cescom",
         "squawks": []
       },
       "docs": [
@@ -298,6 +345,7 @@ input,textarea,select{font:inherit;color:inherit;}
       "name": "David Chen",
       "company": "Pacific Logistics LLC",
       "phone": "+1-949-555-0288",
+      "color": "#6B8CAE",
       "aircraft": { "tail": "N456PL", "model": "King Air 350i", "year": 2017, "home_base": "KSNA" },
       "status": "maintenance",
       "status_note": "Annual inspection · est. complete May 22",
@@ -307,6 +355,7 @@ input,textarea,select{font:inherit;color:inherit;}
         "hobbs_current": 4218.6,
         "hobbs_at_next_phase": 4250,
         "next_phase": "Hot section inspection",
+        "cmms": "Traxxall",
         "squawks": [
           { "item": "Left engine torque indicator intermittent", "severity": "minor" }
         ]
@@ -438,7 +487,15 @@ input,textarea,select{font:inherit;color:inherit;}
     {"id":"n2","client_id":"c1","type":"flight_requested","message":"Your return-leg request KTEB→KAPF is pending crew assignment.","date":"2026-05-12","read":false},
     {"id":"n3","client_id":"c1","type":"document_expiring","message":"Insurance Certificate expires in 30 days (Jun 12).","date":"2026-05-12","read":true},
     {"id":"n4","client_id":"c2","type":"maintenance","message":"Annual inspection in progress. Est. completion May 22.","date":"2026-05-10","read":false}
-  ]
+  ],
+  "crew": [
+    {"id":"crew1","name":"Capt. James Williams","role":"PIC","email":"jwilliams@example.com","phone":"+1-239-555-0301","ratings":["CE-525","CE-525S","CE-560XL"],"home_base":"KAPF","notes":"Primary captain for N123JT. 8,200 TT."},
+    {"id":"crew2","name":"FO Daniel Davis","role":"SIC","email":"ddavis@example.com","phone":"+1-239-555-0302","ratings":["CE-525","CE-525S"],"home_base":"KAPF","notes":"Type rated CE-525 series."},
+    {"id":"crew3","name":"Capt. Helen Marsh","role":"PIC","email":"hmarsh@example.com","phone":"+1-239-555-0303","ratings":["CE-525","CE-560XL","CL-604"],"home_base":"KRSW","notes":"Backup captain. Available weekends."},
+    {"id":"crew4","name":"Capt. Marcus Lee","role":"PIC","email":"mlee@example.com","phone":"+1-949-555-0411","ratings":["BE-300","BE-1900"],"home_base":"KSNA","notes":"King Air specialist. Primary for N456PL."},
+    {"id":"crew5","name":"FO Jenna Park","role":"SIC","email":"jpark@example.com","phone":"+1-949-555-0412","ratings":["BE-300"],"home_base":"KSNA","notes":"King Air SIC."}
+  ],
+  "_meta": { "version": 2 }
 }
 </script>
 
@@ -451,12 +508,24 @@ const SESSION_KEY = 'j3t-portal-session';
 function loadState(){
   try{
     const saved = localStorage.getItem(LS_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved){
+      const s = JSON.parse(saved);
+      // Schema migration — if version is older or missing, reseed
+      if (!s._meta || s._meta.version !== SEED._meta.version){
+        return JSON.parse(JSON.stringify(SEED));
+      }
+      return s;
+    }
   }catch(e){}
-  return JSON.parse(JSON.stringify(SEED));  // deep copy
+  return JSON.parse(JSON.stringify(SEED));
 }
 function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function resetState(){ localStorage.removeItem(LS_KEY); state = JSON.parse(JSON.stringify(SEED)); }
+const PALETTE = ['#A08450','#6B8CAE','#B27C5A','#7FA77B','#9B6C8A','#C8A96A','#5E7F6E','#A65C5C'];
+function nextColor(){
+  const used = state.clients.map(c=>c.color);
+  return PALETTE.find(c=>!used.includes(c)) || PALETTE[state.clients.length % PALETTE.length];
+}
 
 let state = loadState();
 
@@ -596,6 +665,9 @@ function renderShell(session, path, parts){
   // Sidebar links depend on role
   const adminLinks = [
     ['admin', 'Clients', I.users],
+    ['admin/calendar', 'Master Calendar', I.cal],
+    ['admin/flights', 'All Flights', I.plane],
+    ['admin/crew', 'Crew', I.users],
     ['admin/settings', 'Settings', I.settings],
     ['admin/data', 'Demo Data', I.docs]
   ];
@@ -655,7 +727,16 @@ function renderView(role, path, parts, clientId){
   if (role === 'admin'){
     if (path === 'admin' || path === 'admin/') return adminDashboard();
     if (path === 'admin/clients/new') return adminClientForm(null);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='maintenance') return adminMaintenance(parts[2]);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='documents') return adminClientDocs(parts[2]);
     if (parts[0]==='admin' && parts[1]==='clients' && parts[2]) return adminClientForm(parts[2]);
+    if (path === 'admin/calendar') return adminMasterCalendar();
+    if (path === 'admin/flights') return adminAllFlights();
+    if (path === 'admin/flights/new') return adminFlightEdit(null);
+    if (parts[0]==='admin' && parts[1]==='flights' && parts[2]) return adminFlightEdit(parts[2]);
+    if (path === 'admin/crew') return adminCrewList();
+    if (path === 'admin/crew/new') return adminCrewForm(null);
+    if (parts[0]==='admin' && parts[1]==='crew' && parts[2]) return adminCrewForm(parts[2]);
     if (path === 'admin/settings') return adminSettings();
     if (path === 'admin/data') return adminData();
     return adminDashboard();
@@ -1205,9 +1286,11 @@ function adminDashboard(){
               <strong>${h`${c.aircraft.tail}`}</strong> &middot; ${h`${c.aircraft.model}`} (${c.aircraft.year}) &middot; ${h`${c.aircraft.home_base}`}
             </div>
             <div style="margin:8px 0;"><span class="pill ${h`${c.status}`}">${h`${c.status}`}</span></div>
-            <div class="admin-actions">
+            <div class="admin-actions" style="flex-wrap:wrap;">
               <button class="btn primary sm" onclick="impersonate('${c.id}')">View as owner &rarr;</button>
-              <a href="#admin/clients/${c.id}" data-nav="admin/clients/${c.id}" class="btn ghost sm">Edit</a>
+              <a href="#admin/clients/${c.id}" data-nav="admin/clients/${c.id}" class="btn ghost sm">Edit info</a>
+              <a href="#admin/clients/${c.id}/maintenance" data-nav="admin/clients/${c.id}/maintenance" class="btn ghost sm">Maintenance</a>
+              <a href="#admin/clients/${c.id}/documents" data-nav="admin/clients/${c.id}/documents" class="btn ghost sm">Documents</a>
             </div>
           </div>
         `).join('')}
@@ -1336,6 +1419,682 @@ function adminData(){
     </div>`;
 }
 
+/* ============== ADMIN: MASTER CALENDAR ============== */
+let adminCalMonth = null;
+function adminMasterCalendar(){
+  if (!adminCalMonth) adminCalMonth = new Date().toISOString().slice(0,7);
+  const [yr,mo] = adminCalMonth.split('-').map(Number);
+  const firstDay = new Date(yr,mo-1,1);
+  const startDow = firstDay.getDay();
+  const daysInMonth = new Date(yr,mo,0).getDate();
+  const monthName = firstDay.toLocaleString('en-US',{month:'long',year:'numeric'});
+  const today = new Date().toISOString().slice(0,10);
+
+  const cells=[];
+  for (let i=0;i<startDow;i++){const d=new Date(yr,mo-1,-(startDow-1-i));cells.push({date:d.toISOString().slice(0,10),num:d.getDate(),muted:true});}
+  for (let d=1;d<=daysInMonth;d++){const ds=`${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;cells.push({date:ds,num:d,muted:false});}
+  while (cells.length<42){const last=new Date(cells[cells.length-1].date);last.setDate(last.getDate()+1);cells.push({date:last.toISOString().slice(0,10),num:last.getDate(),muted:true});}
+
+  const dows=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  function prev(){const d=new Date(yr,mo-2,1);return d.toISOString().slice(0,7);}
+  function next(){const d=new Date(yr,mo,1);return d.toISOString().slice(0,7);}
+
+  return raw`
+    ${topbar('Master Calendar', 'All clients · all flights')}
+    <div class="view">
+      <div class="cal-head">
+        <h2 class="cal-month">${monthName}</h2>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="cal-nav">
+            <button onclick="adminCalMonth='${prev()}';render();">&lsaquo;</button>
+            <button onclick="adminCalMonth='${new Date().toISOString().slice(0,7)}';render();">Today</button>
+            <button onclick="adminCalMonth='${next()}';render();">&rsaquo;</button>
+          </div>
+          <a href="#admin/flights/new" data-nav="admin/flights/new" class="btn primary">${I.plus}New flight</a>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${dows.map(d=>raw`<div class="cal-dow">${d}</div>`).join('')}
+        ${cells.map(cell=>{
+          const dayFlights = state.flights.filter(f=>f.departure.date===cell.date);
+          return raw`
+            <div class="cal-cell ${cell.muted?'muted':''} ${cell.date===today?'today':''}">
+              <div class="cal-num">${cell.num}</div>
+              ${dayFlights.map(f=>{
+                const c = state.clients.find(x=>x.id===f.client_id);
+                if (!c) return '';
+                return raw`
+                  <a class="cal-flight master ${h`${f.status}`}" style="border-left-color:${c.color};background:${c.color}18;color:${c.color};" onclick="navigate('#admin/flights/${f.id}')">
+                    <strong><span class="client-dot" style="background:${c.color};"></span>${h`${f.departure.time}`} · ${h`${f.departure.airport}`}→${h`${f.arrival.airport}`}</strong>
+                    <div class="cal-flight-tip">
+                      <strong>${h`${c.name}`}</strong>
+                      ${h`${c.aircraft.tail}`} · ${h`${c.aircraft.model}`}<br>
+                      ${h`${f.departure.airport}`}→${h`${f.arrival.airport}`} · ${h`${f.departure.time}`}<br>
+                      PIC: ${h`${f.crew.pic||'unassigned'}`} · SIC: ${h`${f.crew.sic||'unassigned'}`}<br>
+                      Status: ${h`${f.status}`}
+                      ${f.notes?raw`<br><em style="color:var(--stone);">${h`${f.notes}`}</em>`:''}
+                    </div>
+                  </a>
+                `;
+              }).join('')}
+            </div>`;
+        }).join('')}
+      </div>
+      <div class="client-legend">
+        ${state.clients.map(c=>raw`<span class="client-legend-item"><span class="dot" style="background:${c.color};"></span>${h`${c.name.split(' ')[0]} · ${c.aircraft.tail}`}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ============== ADMIN: ALL FLIGHTS ============== */
+function adminAllFlights(){
+  const q = window.adminFlightFilter || {client:'all',status:'all'};
+  let flights = [...state.flights];
+  if (q.client !== 'all') flights = flights.filter(f=>f.client_id===q.client);
+  if (q.status !== 'all') flights = flights.filter(f=>f.status===q.status);
+  flights.sort((a,b)=>b.departure.date.localeCompare(a.departure.date));
+
+  return raw`
+    ${topbar('All Flights', flights.length + ' shown')}
+    <div class="view">
+      <div class="filter-bar">
+        <label>Client:</label>
+        <select onchange="window.adminFlightFilter={...(window.adminFlightFilter||{client:'all',status:'all'}),client:this.value};render();">
+          <option value="all">All clients</option>
+          ${state.clients.map(c=>raw`<option value="${c.id}" ${q.client===c.id?'selected':''}>${h`${c.name}`} (${h`${c.aircraft.tail}`})</option>`).join('')}
+        </select>
+        <label>Status:</label>
+        <select onchange="window.adminFlightFilter={...(window.adminFlightFilter||{client:'all',status:'all'}),status:this.value};render();">
+          <option value="all">All</option>
+          <option value="requested" ${q.status==='requested'?'selected':''}>Requested</option>
+          <option value="confirmed" ${q.status==='confirmed'?'selected':''}>Confirmed</option>
+          <option value="completed" ${q.status==='completed'?'selected':''}>Completed</option>
+          <option value="cancelled" ${q.status==='cancelled'?'selected':''}>Cancelled</option>
+        </select>
+        <a href="#admin/flights/new" data-nav="admin/flights/new" class="btn primary" style="margin-left:auto;">${I.plus}New flight</a>
+      </div>
+      ${flights.length===0 ? raw`<div class="empty"><h3>No flights match</h3></div>` : raw`
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Date</th><th>Client</th><th>Route</th><th>PIC</th><th>Status</th><th class="num">Invoice</th></tr></thead>
+        <tbody>
+          ${flights.map(f=>{const c=state.clients.find(x=>x.id===f.client_id)||{};return raw`
+            <tr onclick="navigate('#admin/flights/${f.id}')">
+              <td>${fmtDate(f.departure.date)} ${h`${f.departure.time||''}`}</td>
+              <td><span class="client-dot" style="background:${c.color||'#999'};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;"></span><strong>${h`${c.name||'?'}`}</strong><br><span class="muted" style="font-size:11px;">${h`${c.aircraft?c.aircraft.tail:'?'}`}</span></td>
+              <td><strong>${h`${f.departure.airport}`} → ${h`${f.arrival.airport}`}</strong></td>
+              <td class="muted">${h`${f.crew.pic||'unassigned'}`}</td>
+              <td><span class="pill ${h`${f.status}`}">${h`${f.status}`}</span></td>
+              <td class="num">${f.invoice?raw`${fmtMoney(f.invoice.amount)} <span class="pill ${h`${f.invoice.status}`}" style="margin-left:6px;">${h`${f.invoice.status}`}</span>`:'—'}</td>
+            </tr>
+          `;}).join('')}
+        </tbody>
+      </table></div>`}
+    </div>`;
+}
+
+/* ============== ADMIN: FLIGHT EDIT ============== */
+function adminFlightEdit(flightId){
+  const isNew = !flightId;
+  const f = isNew ? {
+    id: uid('f'), client_id: state.clients[0]?.id || '',
+    status: 'requested',
+    departure: {airport:'',name:'',date:new Date().toISOString().slice(0,10),time:'08:00'},
+    arrival: {airport:'',name:'',date:new Date().toISOString().slice(0,10),time:'10:00'},
+    passengers: {count:1,primary:''},
+    crew: {pic:null,sic:null},
+    catering:'',ground:'',notes:'',
+    created_at: new Date().toISOString().slice(0,10),created_by:'admin',
+    expenses:[], invoice:null
+  } : state.flights.find(x=>x.id===flightId);
+  if (!f) return errorView('Flight not found');
+
+  const c = state.clients.find(x=>x.id===f.client_id) || state.clients[0];
+  const expTotal = (f.expenses||[]).reduce((s,e)=>s+e.amount,0);
+
+  const breadcrumb = [['#admin/flights','All flights']];
+
+  return raw`
+    ${topbar(isNew?'New flight':'Flight editor', isNew?'':(f.departure.airport+' → '+f.arrival.airport), breadcrumb)}
+    <div class="view">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <div>
+          <h2 style="font-family:var(--serif);font-size:24px;font-weight:300;color:var(--charcoal);">
+            ${isNew?raw`New <em style="color:var(--gold);font-style:italic;">flight</em>`:raw`${h`${f.departure.airport}`} <em style="color:var(--gold);">&rarr;</em> ${h`${f.arrival.airport}`}`}
+          </h2>
+          ${!isNew?raw`<span class="pill ${h`${f.status}`}" style="margin-top:6px;display:inline-block;">${h`${f.status}`}</span>
+            <span style="margin-left:8px;font-size:11px;color:var(--ash);">${h`${c.name}`} · ${h`${c.aircraft.tail}`}</span>`:''}
+        </div>
+        ${!isNew?raw`
+          <div style="display:flex;gap:8px;">
+            ${f.status==='requested'?raw`<button class="btn primary sm" onclick="setFlightStatus('${f.id}','confirmed')">Confirm flight</button>`:''}
+            ${f.status==='confirmed'?raw`<button class="btn primary sm" onclick="setFlightStatus('${f.id}','completed')">Mark completed</button>`:''}
+            ${f.status!=='cancelled' && f.status!=='completed'?raw`<button class="btn ghost sm" onclick="setFlightStatus('${f.id}','cancelled')">Cancel</button>`:''}
+            <button class="btn danger sm" onclick="if(confirm('Delete this flight permanently?')){state.flights=state.flights.filter(x=>x.id!=='${f.id}');saveState();toast('Flight deleted');location.hash='#admin/flights';}">Delete</button>
+          </div>
+        `:''}
+      </div>
+
+      <div class="flight-tabs" id="flightTabs">
+        <div class="flight-tab active" data-tab="details">Details</div>
+        <div class="flight-tab" data-tab="crew">Crew</div>
+        <div class="flight-tab" data-tab="expenses">Expenses<span class="count">${(f.expenses||[]).length}</span></div>
+        <div class="flight-tab" data-tab="receipts">Receipts</div>
+        <div class="flight-tab" data-tab="invoice">Invoice</div>
+      </div>
+
+      <form id="adminFlightForm">
+        <input type="hidden" id="f_id" value="${h`${f.id}`}">
+
+        <div class="tab-pane active" data-pane="details">
+          <div class="fd-panel" style="margin-bottom:16px;">
+            <h3>Client &amp; routing</h3>
+            <div class="row2">
+              <div class="field light-field"><label>Client</label>
+                <select id="f_client" ${!isNew?'disabled':''}>
+                  ${state.clients.map(cl=>raw`<option value="${cl.id}" ${cl.id===f.client_id?'selected':''}>${h`${cl.name}`} (${h`${cl.aircraft.tail}`})</option>`).join('')}
+                </select>
+              </div>
+              <div class="field light-field"><label>Status</label>
+                <select id="f_status">
+                  <option value="requested" ${f.status==='requested'?'selected':''}>Requested</option>
+                  <option value="confirmed" ${f.status==='confirmed'?'selected':''}>Confirmed</option>
+                  <option value="completed" ${f.status==='completed'?'selected':''}>Completed</option>
+                  <option value="cancelled" ${f.status==='cancelled'?'selected':''}>Cancelled</option>
+                </select>
+              </div>
+            </div>
+            <h4 style="font-family:var(--serif);font-size:14px;margin:14px 0 8px;color:var(--ash);font-weight:400;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Departure</h4>
+            <div class="row2">
+              <div class="field light-field"><label>Airport (ICAO)</label><input id="dep_airport" value="${h`${f.departure.airport}`}" required></div>
+              <div class="field light-field"><label>Airport name</label><input id="dep_name" value="${h`${f.departure.name||''}`}"></div>
+            </div>
+            <div class="row2">
+              <div class="field light-field"><label>Date</label><input type="date" id="dep_date" value="${h`${f.departure.date}`}" required></div>
+              <div class="field light-field"><label>Time</label><input type="time" id="dep_time" value="${h`${f.departure.time}`}" required></div>
+            </div>
+            <h4 style="font-family:var(--serif);font-size:14px;margin:14px 0 8px;color:var(--ash);font-weight:400;letter-spacing:2px;text-transform:uppercase;font-size:10px;">Arrival</h4>
+            <div class="row2">
+              <div class="field light-field"><label>Airport (ICAO)</label><input id="arr_airport" value="${h`${f.arrival.airport}`}" required></div>
+              <div class="field light-field"><label>Airport name</label><input id="arr_name" value="${h`${f.arrival.name||''}`}"></div>
+            </div>
+            <div class="row2">
+              <div class="field light-field"><label>Date</label><input type="date" id="arr_date" value="${h`${f.arrival.date}`}" required></div>
+              <div class="field light-field"><label>Time</label><input type="time" id="arr_time" value="${h`${f.arrival.time}`}" required></div>
+            </div>
+          </div>
+          <div class="fd-panel">
+            <h3>Trip details</h3>
+            <div class="row2">
+              <div class="field light-field"><label>Passenger count</label><input type="number" id="pax_count" min="1" max="9" value="${f.passengers.count}"></div>
+              <div class="field light-field"><label>Primary passenger</label><input id="pax_name" value="${h`${f.passengers.primary||''}`}"></div>
+            </div>
+            <div class="field light-field"><label>Catering</label><input id="catering" value="${h`${f.catering||''}`}"></div>
+            <div class="field light-field"><label>Ground transport</label><input id="ground" value="${h`${f.ground||''}`}"></div>
+            <div class="field light-field"><label>Notes</label><textarea id="notes" rows="3">${h`${f.notes||''}`}</textarea></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="crew">
+          <div class="fd-panel">
+            <h3>Crew assignment</h3>
+            <div class="row2">
+              <div class="field light-field"><label>Captain (PIC)</label>
+                <select id="crew_pic">
+                  <option value="">— Unassigned —</option>
+                  ${state.crew.filter(cr=>cr.role==='PIC').map(cr=>raw`<option value="${h`${cr.name}`}" ${f.crew.pic===cr.name?'selected':''}>${h`${cr.name}`} (${cr.ratings.join(', ')})</option>`).join('')}
+                </select>
+              </div>
+              <div class="field light-field"><label>First Officer (SIC)</label>
+                <select id="crew_sic">
+                  <option value="">— Unassigned —</option>
+                  ${state.crew.map(cr=>raw`<option value="${h`${cr.name}`}" ${f.crew.sic===cr.name?'selected':''}>${h`${cr.name}`} ${cr.role==='PIC'?'(capt)':''}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <p style="font-family:var(--serif);font-style:italic;color:var(--ash);font-size:14px;margin-top:14px;">Crew rosters managed in <a href="#admin/crew" data-nav="admin/crew" style="color:var(--gold);">Crew</a>. Owner-hired captains can be typed in manually here too.</p>
+            <div class="field light-field" style="margin-top:14px;"><label>Or custom captain (owner-hired)</label><input id="crew_pic_custom" placeholder="e.g. Capt. owner's hire"></div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="expenses">
+          <div class="fd-panel">
+            <h3>Flight expenses · <span style="color:var(--gold);">${fmtMoney(expTotal)}</span></h3>
+            <div id="expList">
+              ${(f.expenses||[]).map((e,i)=>renderExpenseRow(e,i)).join('')}
+            </div>
+            <button type="button" class="btn ghost sm" style="margin-top:12px;" onclick="addExpenseRow()">${I.plus}Add expense</button>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="receipts">
+          <div class="fd-panel">
+            <h3>Receipt upload &middot; <em style="color:var(--gold);font-style:italic;">AI auto-categorize</em></h3>
+            <p style="font-family:var(--serif);font-size:14px;color:var(--ash);margin-bottom:14px;font-style:italic;">Drop a photo of a receipt. AI will extract vendor, amount, and category. Review and adjust, then it gets added to expenses.</p>
+            <label class="receipt-zone" for="receiptFile">
+              <p>Drop receipt photo here or click to upload</p>
+              <p class="hint">JPG, PNG · automatic OCR</p>
+              <input type="file" id="receiptFile" accept="image/*" style="display:none;" onchange="handleReceiptUpload(this)">
+            </label>
+            <div id="receiptPreview" style="margin-top:14px;"></div>
+            <div style="margin-top:14px;padding:12px;background:var(--cream);border-left:3px solid var(--gold);font-size:12px;font-family:var(--serif);font-style:italic;color:var(--ash);line-height:1.6;">
+              <strong style="font-style:normal;color:var(--gold);font-weight:600;">Preview build:</strong> AI extraction is simulated for this prototype. Production will use OpenAI Vision API or Google Document AI for real OCR (~$0.01 per receipt). Output goes through the same review form you'll see when you upload.
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane" data-pane="invoice">
+          <div class="fd-panel">
+            <h3>Invoice ${f.invoice?raw`<span style="font-size:12px;color:var(--ash);font-weight:400;font-style:italic;font-family:var(--serif);">· ${h`${f.invoice.number}`}</span>`:''}</h3>
+            ${f.invoice?raw`
+              <div class="row2">
+                <div class="field light-field"><label>Invoice number</label><input id="inv_number" value="${h`${f.invoice.number}`}"></div>
+                <div class="field light-field"><label>Amount</label><input type="number" id="inv_amount" value="${f.invoice.amount}" step="0.01"></div>
+              </div>
+              <div class="row2">
+                <div class="field light-field"><label>Status (override)</label>
+                  <select id="inv_status">
+                    <option value="outstanding" ${f.invoice.status==='outstanding'?'selected':''}>Outstanding</option>
+                    <option value="paid" ${f.invoice.status==='paid'?'selected':''}>Paid</option>
+                  </select>
+                </div>
+                <div class="field light-field"><label>Due date</label><input type="date" id="inv_due" value="${h`${f.invoice.due_date||''}`}"></div>
+              </div>
+              <div class="field light-field"><label>Paid date (if paid)</label><input type="date" id="inv_paid" value="${h`${f.invoice.paid_date||''}`}"></div>
+              <button type="button" class="btn danger sm" onclick="removeInvoice()">Remove invoice</button>
+            `:raw`
+              <p style="font-family:var(--serif);font-style:italic;color:var(--ash);">No invoice yet.</p>
+              <button type="button" class="btn primary sm" style="margin-top:8px;" onclick="createInvoice('${f.id}')">${I.plus}Create invoice</button>
+            `}
+            <div style="margin-top:14px;padding:12px;background:var(--cream);border-left:3px solid var(--gold);font-size:12px;font-family:var(--serif);font-style:italic;color:var(--ash);line-height:1.6;">
+              <strong style="font-style:normal;color:var(--gold);font-weight:600;">Production:</strong> Status will auto-sync from Zoho Books webhook. The override here is a manual safety net.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:24px;">
+          <a href="#admin/flights" data-nav="admin/flights" class="btn ghost">Cancel</a>
+          <button type="submit" class="btn primary">${isNew?'Create flight':'Save changes'}</button>
+        </div>
+      </form>
+    </div>`;
+}
+
+function renderExpenseRow(e, i){
+  return raw`
+    <div class="exp-row" data-idx="${i}">
+      <select data-field="category">
+        ${['fuel','fbo','catering','crew','maintenance','ground','landing','other'].map(c=>raw`<option ${e.category===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+      <input data-field="vendor" placeholder="Vendor" value="${h`${e.vendor||''}`}">
+      <input data-field="description" placeholder="Description" value="${h`${e.description||''}`}">
+      <div class="num"><input data-field="amount" type="number" step="0.01" value="${e.amount||0}"></div>
+      <button type="button" class="remove" onclick="this.closest('.exp-row').remove()">×</button>
+    </div>`;
+}
+
+function addExpenseRow(){
+  const list = document.getElementById('expList');
+  const div = document.createElement('div');
+  div.innerHTML = renderExpenseRow({category:'fuel',vendor:'',description:'',amount:0}, list.children.length);
+  list.appendChild(div.firstElementChild);
+}
+
+function setFlightStatus(id, status){
+  const f = state.flights.find(x=>x.id===id);
+  if (!f) return;
+  f.status = status;
+  // If becoming confirmed, push notification
+  if (status==='confirmed'){
+    state.notifications.push({
+      id: uid('n'), client_id: f.client_id, type:'flight_confirmed',
+      message: `Flight ${f.departure.airport}→${f.arrival.airport} on ${f.departure.date} confirmed.`,
+      date: new Date().toISOString().slice(0,10), read:false
+    });
+  }
+  saveState();
+  toast('Status: ' + status);
+  render();
+}
+
+function createInvoice(flightId){
+  const f = state.flights.find(x=>x.id===flightId);
+  if (!f) return;
+  const expTotal = (f.expenses||[]).reduce((s,e)=>s+e.amount,0);
+  f.invoice = {
+    id: uid('inv'),
+    number: 'INV-' + new Date().getFullYear() + '-' + String(state.flights.filter(x=>x.invoice).length+1).padStart(4,'0'),
+    amount: Math.max(expTotal, 0),
+    status: 'outstanding',
+    due_date: new Date(Date.now()+30*86400000).toISOString().slice(0,10),
+    paid_date: null
+  };
+  saveState();
+  toast('Invoice created');
+  render();
+}
+
+function removeInvoice(){
+  const id = document.getElementById('f_id').value;
+  const f = state.flights.find(x=>x.id===id);
+  if (f){ f.invoice = null; saveState(); toast('Invoice removed'); render(); }
+}
+
+/* Receipt upload + AI OCR simulation */
+function handleReceiptUpload(input){
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const url = e.target.result;
+    const preview = document.getElementById('receiptPreview');
+    preview.innerHTML = raw`
+      <div class="receipt-preview">
+        <img src="${url}" alt="Receipt">
+        <div class="receipt-ai-status" id="ocrStatus">
+          <div class="step active" data-s="1"><span class="spin"></span> Uploading image…</div>
+          <div class="step" data-s="2">Detecting text regions…</div>
+          <div class="step" data-s="3">Extracting vendor / amount / date…</div>
+          <div class="step" data-s="4">Categorizing…</div>
+        </div>
+      </div>`;
+    runOCRSim(url);
+  };
+  reader.readAsDataURL(file);
+}
+
+function runOCRSim(imageUrl){
+  // Simulate AI extraction with reasonable random defaults
+  const vendors = {
+    fuel: ['Avfuel KAPF', 'Signature Aviation', 'Atlantic Aviation KSEA', 'Million Air KDAL', 'World Fuel'],
+    fbo: ['Naples Jet Center', 'Atlantic KAPF', 'Signature KTEB', 'Million Air'],
+    catering: ['Skyline Catering', 'Air Catering Naples', 'DFW Inflight'],
+    ground: ['Sentient Cars', 'Town Car NYC'],
+    maintenance: ['West Star Aviation', 'Duncan Aviation', 'CessnaSC']
+  };
+  const cats = Object.keys(vendors);
+  const cat = cats[Math.floor(Math.random()*cats.length)];
+  const vendor = vendors[cat][Math.floor(Math.random()*vendors[cat].length)];
+  const amount = (Math.random()*3000 + 200).toFixed(2);
+  const desc = cat==='fuel' ? `${Math.floor(Math.random()*300+200)} gal` : '';
+
+  const steps = document.querySelectorAll('#ocrStatus .step');
+  const advance = (i, after) => {
+    if (i > 0) {
+      steps[i-1].classList.remove('active');
+      steps[i-1].classList.add('done');
+      steps[i-1].querySelector('.spin')?.remove();
+    }
+    if (i < steps.length) {
+      steps[i].classList.add('active');
+      steps[i].insertAdjacentHTML('afterbegin','<span class="spin"></span> ');
+      setTimeout(() => advance(i+1, after), 500 + Math.random()*400);
+    } else {
+      after();
+    }
+  };
+
+  advance(1, () => {
+    // After "completion" show the editable form below
+    document.getElementById('receiptPreview').insertAdjacentHTML('beforeend', raw`
+      <div style="margin-top:14px;padding:14px;background:#fff;border:1px solid var(--gold-pale);">
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">AI extracted &middot; review &amp; adjust</div>
+        <div class="row2">
+          <div class="field light-field"><label>Category</label>
+            <select id="ocr_cat">
+              ${['fuel','fbo','catering','crew','maintenance','ground','landing','other'].map(c=>raw`<option value="${c}" ${c===cat?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field light-field"><label>Amount</label><input id="ocr_amt" type="number" step="0.01" value="${amount}"></div>
+        </div>
+        <div class="field light-field"><label>Vendor</label><input id="ocr_vendor" value="${h`${vendor}`}"></div>
+        <div class="field light-field"><label>Description</label><input id="ocr_desc" value="${h`${desc}`}"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">
+          <button type="button" class="btn ghost sm" onclick="document.getElementById('receiptPreview').innerHTML='';document.getElementById('receiptFile').value='';">Discard</button>
+          <button type="button" class="btn primary sm" onclick="saveOcrExpense()">Add to expenses</button>
+        </div>
+      </div>
+    `);
+  });
+}
+
+function saveOcrExpense(){
+  const cat = document.getElementById('ocr_cat').value;
+  const amt = parseFloat(document.getElementById('ocr_amt').value)||0;
+  const vendor = document.getElementById('ocr_vendor').value.trim();
+  const desc = document.getElementById('ocr_desc').value.trim();
+  // Switch to expenses tab and add the row
+  document.querySelectorAll('.flight-tab').forEach(t => t.classList.toggle('active', t.dataset.tab==='expenses'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.dataset.pane==='expenses'));
+  const list = document.getElementById('expList');
+  const div = document.createElement('div');
+  div.innerHTML = renderExpenseRow({category:cat,vendor,description:desc,amount:amt}, list.children.length);
+  list.appendChild(div.firstElementChild);
+  document.getElementById('receiptPreview').innerHTML = '';
+  document.getElementById('receiptFile').value = '';
+  toast('Expense added from receipt');
+}
+
+/* ============== ADMIN: CREW ============== */
+function adminCrewList(){
+  return raw`
+    ${topbar('Crew', state.crew.length + ' on roster')}
+    <div class="view">
+      <div class="section-head" style="margin-bottom:18px;">
+        <h2 class="section-title">Crew <em>roster</em></h2>
+        <a href="#admin/crew/new" data-nav="admin/crew/new" class="btn primary">${I.plus}New crew member</a>
+      </div>
+      <div class="admin-clients">
+        ${state.crew.map(cr=>raw`
+          <div class="admin-client">
+            <div class="admin-client-head">
+              <div class="admin-avatar" style="background:${cr.role==='PIC'?'var(--gold)':'var(--ash)'};">${h`${initials(cr.name)}`}</div>
+              <div>
+                <div class="admin-client-name">${h`${cr.name}`}</div>
+                <div class="admin-client-co">${h`${cr.role==='PIC'?'Captain':'First Officer'}`} · ${h`${cr.home_base}`}</div>
+              </div>
+            </div>
+            <div class="admin-client-aircraft">
+              <strong>Ratings:</strong> ${cr.ratings.join(', ')}
+            </div>
+            <div style="font-size:12px;color:var(--ash);font-family:var(--serif);font-style:italic;margin:6px 0;">${h`${cr.notes||''}`}</div>
+            <div class="admin-actions">
+              <a href="#admin/crew/${cr.id}" data-nav="admin/crew/${cr.id}" class="btn ghost sm">Edit</a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function adminCrewForm(crewId){
+  const isNew = !crewId;
+  const cr = isNew ? {id:uid('crew'),name:'',role:'PIC',email:'',phone:'',ratings:[],home_base:'',notes:''} : state.crew.find(x=>x.id===crewId);
+  if (!cr) return errorView('Crew member not found');
+  return raw`
+    ${topbar(isNew?'New crew member':'Edit crew', isNew?'':h`${cr.name}`, [['#admin/crew','Crew']])}
+    <div class="view" style="max-width:680px;">
+      <form id="crewForm">
+        <input type="hidden" id="cr_id" value="${h`${cr.id}`}">
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Personal</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Name</label><input id="cr_name" value="${h`${cr.name}`}" required></div>
+            <div class="field light-field"><label>Role</label>
+              <select id="cr_role"><option value="PIC" ${cr.role==='PIC'?'selected':''}>Captain (PIC)</option><option value="SIC" ${cr.role==='SIC'?'selected':''}>First Officer (SIC)</option></select>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field light-field"><label>Email</label><input type="email" id="cr_email" value="${h`${cr.email||''}`}"></div>
+            <div class="field light-field"><label>Phone</label><input id="cr_phone" value="${h`${cr.phone||''}`}"></div>
+          </div>
+          <div class="field light-field"><label>Home base (ICAO)</label><input id="cr_base" value="${h`${cr.home_base||''}`}"></div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Qualifications</h3>
+          <div class="field light-field"><label>Type ratings (comma-separated)</label><input id="cr_ratings" value="${h`${cr.ratings.join(', ')}`}" placeholder="CE-525, CE-560XL"></div>
+          <div class="field light-field"><label>Notes</label><textarea id="cr_notes" rows="3">${h`${cr.notes||''}`}</textarea></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:space-between;">
+          ${!isNew?raw`<button type="button" class="btn danger" onclick="deleteCrew('${cr.id}')">Delete</button>`:'<span></span>'}
+          <div style="display:flex;gap:12px;">
+            <a href="#admin/crew" data-nav="admin/crew" class="btn ghost">Cancel</a>
+            <button type="submit" class="btn primary">${isNew?'Create':'Save'}</button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+}
+
+function deleteCrew(id){
+  if (!confirm('Remove this crew member from the roster?')) return;
+  state.crew = state.crew.filter(x=>x.id!==id);
+  saveState();
+  toast('Crew removed');
+  location.hash = '#admin/crew';
+}
+
+/* ============== ADMIN: MAINTENANCE EDITOR ============== */
+function adminMaintenance(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!c) return errorView('Client not found');
+  const m = c.maintenance;
+  return raw`
+    ${topbar('Maintenance', c.name + ' · ' + c.aircraft.tail, [['#admin','Clients'],['#admin/clients/'+c.id,c.name]])}
+    <div class="view" style="max-width:780px;">
+      <form id="mxForm">
+        <input type="hidden" id="mx_cid" value="${h`${c.id}`}">
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>CMMS source</h3>
+          <div class="row2">
+            <div class="field light-field"><label>System</label>
+              <select id="mx_cmms">
+                ${['Cescom','CAMP','Traxxall','Flightdocs','none'].map(s=>raw`<option ${m.cmms===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field light-field"><label>Current Hobbs</label><input type="number" id="mx_hobbs" step="0.1" value="${m.hobbs_current}"></div>
+          </div>
+          <p style="font-family:var(--serif);font-style:italic;color:var(--ash);font-size:13px;margin-top:8px;">Production: this will read live from Cescom/CAMP/etc. API. For now, manual entry.</p>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Annual inspection</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Last annual</label><input type="date" id="mx_last_annual" value="${m.last_annual}"></div>
+            <div class="field light-field"><label>Next annual</label><input type="date" id="mx_next_annual" value="${m.next_annual}"></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Phase / scheduled</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Next item</label><input id="mx_next_phase" value="${h`${m.next_phase}`}"></div>
+            <div class="field light-field"><label>Hobbs at next</label><input type="number" id="mx_hobbs_phase" value="${m.hobbs_at_next_phase}"></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Open squawks</h3>
+          <div id="sqList">
+            ${m.squawks.map((s,i)=>renderSquawkRow(s,i)).join('')}
+          </div>
+          <button type="button" class="btn ghost sm" style="margin-top:10px;" onclick="addSquawkRow()">${I.plus}Add squawk</button>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Status (visible to owner)</h3>
+          <div class="row2">
+            <div class="field light-field"><label>State</label>
+              <select id="c_status_edit">
+                <option value="available" ${c.status==='available'?'selected':''}>Available</option>
+                <option value="maintenance" ${c.status==='maintenance'?'selected':''}>In maintenance</option>
+                <option value="repositioning" ${c.status==='repositioning'?'selected':''}>Repositioning</option>
+              </select>
+            </div>
+            <div class="field light-field"><label>Status note</label><input id="c_status_note_edit" value="${h`${c.status_note}`}"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <a href="#admin/clients/${c.id}" data-nav="admin/clients/${c.id}" class="btn ghost">Cancel</a>
+          <button type="submit" class="btn primary">Save maintenance</button>
+        </div>
+      </form>
+    </div>`;
+}
+
+function renderSquawkRow(s, i){
+  return raw`
+    <div class="exp-row" data-sq="${i}" style="grid-template-columns:1fr 120px 32px;">
+      <input data-sqfield="item" value="${h`${s.item||''}`}" placeholder="Description">
+      <select data-sqfield="severity">
+        ${['minor','major','urgent'].map(sev=>raw`<option ${s.severity===sev?'selected':''}>${sev}</option>`).join('')}
+      </select>
+      <button type="button" class="remove" onclick="this.closest('[data-sq]').remove()">×</button>
+    </div>`;
+}
+
+function addSquawkRow(){
+  const list = document.getElementById('sqList');
+  const div = document.createElement('div');
+  div.innerHTML = renderSquawkRow({item:'',severity:'minor'}, list.children.length);
+  list.appendChild(div.firstElementChild);
+}
+
+/* ============== ADMIN: CLIENT DOCS ============== */
+function adminClientDocs(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!c) return errorView('Client not found');
+  return raw`
+    ${topbar('Documents', c.name + ' · ' + c.aircraft.tail, [['#admin','Clients'],['#admin/clients/'+c.id,c.name]])}
+    <div class="view">
+      <div class="section-head">
+        <h2 class="section-title">${h`${c.name}`}'s <em>documents</em></h2>
+        <button class="btn primary" onclick="addDocPrompt('${c.id}')">${I.plus}Add document</button>
+      </div>
+      <div class="docs-grid">
+        ${c.docs.map(d=>{
+          const exp = d.expires_at?daysFromNow(d.expires_at):null;
+          const expiring = exp!==null && exp<60;
+          return raw`
+            <div class="doc">
+              <div class="doc-icon"></div>
+              <div class="doc-type">${h`${d.type}`}</div>
+              <div class="doc-name">${h`${d.name}`}</div>
+              <div class="doc-meta">
+                ${d.expires_at?raw`<span class="${expiring?'doc-expiring':''}">Expires ${fmtDateShort(d.expires_at)}${expiring?` (${exp}d)`:''}</span>`:raw`<span>No expiration</span>`}
+                <span>${h`${d.size}`}</span>
+              </div>
+              <div style="display:flex;gap:6px;margin-top:10px;">
+                <button class="btn sm ghost" onclick="editDocPrompt('${c.id}','${d.id}')">Edit</button>
+                <button class="btn sm danger" onclick="if(confirm('Remove this document?')){const cl=state.clients.find(x=>x.id==='${c.id}');cl.docs=cl.docs.filter(x=>x.id!=='${d.id}');saveState();render();}">Remove</button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function addDocPrompt(clientId){
+  const name = prompt('Document name (e.g. "Insurance Certificate 2026")');
+  if (!name) return;
+  const type = prompt('Type — insurance / registration / poa / training / other', 'insurance');
+  if (!type) return;
+  const expires = prompt('Expiration date (YYYY-MM-DD) or leave blank', '');
+  const c = state.clients.find(x=>x.id===clientId);
+  c.docs.push({
+    id: uid('d'), name, type, expires_at: expires || null,
+    uploaded_at: new Date().toISOString().slice(0,10), size: '— KB'
+  });
+  saveState(); toast('Document added'); render();
+}
+
+function editDocPrompt(clientId, docId){
+  const c = state.clients.find(x=>x.id===clientId);
+  const d = c.docs.find(x=>x.id===docId);
+  if (!d) return;
+  const name = prompt('Name', d.name);
+  if (name===null) return;
+  const expires = prompt('Expiration (YYYY-MM-DD) or blank', d.expires_at||'');
+  d.name = name; d.expires_at = expires || null;
+  saveState(); toast('Document updated'); render();
+}
+
 /* ============== SHARED COMPONENTS ============== */
 function topbar(title, subtitle, breadcrumbs){
   const bc = breadcrumbs ? breadcrumbs.map(([href,label])=>raw`<a href="${href}" data-nav="${href.replace('#','')}" style="color:var(--ash);">${h`${label}`}</a> <span style="color:var(--mist);">/</span> `).join('') : '';
@@ -1450,6 +2209,7 @@ function attachViewHandlers(session, path, parts){
         email: $('#c_email').value.trim().toLowerCase(),
         company: $('#c_company').value.trim(),
         phone: $('#c_phone').value.trim(),
+        color: existing ? existing.color : nextColor(),
         aircraft: {
           tail: $('#c_tail').value.toUpperCase().trim(),
           model: $('#c_model').value.trim(),
@@ -1461,7 +2221,7 @@ function attachViewHandlers(session, path, parts){
         maintenance: existing ? existing.maintenance : {
           last_annual: '2025-01-01', next_annual: '2026-12-31',
           hobbs_current: 0, hobbs_at_next_phase: 100,
-          next_phase: 'Initial inspection', squawks: []
+          next_phase: 'Initial inspection', cmms: 'none', squawks: []
         },
         docs: existing ? existing.docs : []
       };
@@ -1474,6 +2234,132 @@ function attachViewHandlers(session, path, parts){
       }
       saveState();
       location.hash = '#admin';
+    });
+  }
+
+  // Admin flight tab switching
+  const tabs = document.querySelectorAll('.flight-tab');
+  if (tabs.length){
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.toggle('active', x===t));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.dataset.pane === t.dataset.tab));
+    }));
+  }
+
+  // Admin flight form
+  const aff = document.getElementById('adminFlightForm');
+  if (aff){
+    aff.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = $('#f_id').value;
+      const existing = state.flights.find(f=>f.id===id);
+      const isNew = !existing;
+      const picCustom = $('#crew_pic_custom') ? $('#crew_pic_custom').value.trim() : '';
+      const picVal = picCustom || ($('#crew_pic') ? $('#crew_pic').value : '');
+      const sicVal = $('#crew_sic') ? $('#crew_sic').value : '';
+
+      // Collect expenses
+      const expenses = $$('.exp-row').map(row => {
+        const fld = (name) => row.querySelector(`[data-field="${name}"]`).value;
+        return {
+          category: fld('category'),
+          vendor: fld('vendor').trim(),
+          description: fld('description').trim(),
+          amount: parseFloat(fld('amount'))||0
+        };
+      }).filter(x => x.amount > 0 || x.vendor);
+
+      const data = {
+        id,
+        client_id: $('#f_client').value || (existing?existing.client_id:state.clients[0].id),
+        status: $('#f_status').value,
+        departure: {
+          airport: $('#dep_airport').value.toUpperCase().trim(),
+          name: $('#dep_name').value.trim(),
+          date: $('#dep_date').value,
+          time: $('#dep_time').value
+        },
+        arrival: {
+          airport: $('#arr_airport').value.toUpperCase().trim(),
+          name: $('#arr_name').value.trim(),
+          date: $('#arr_date').value,
+          time: $('#arr_time').value
+        },
+        passengers: {
+          count: parseInt($('#pax_count').value, 10) || 1,
+          primary: $('#pax_name').value.trim()
+        },
+        crew: { pic: picVal || null, sic: sicVal || null },
+        catering: $('#catering').value.trim(),
+        ground: $('#ground').value.trim(),
+        notes: $('#notes').value.trim(),
+        expenses,
+        invoice: existing ? existing.invoice : null,
+        created_at: existing ? existing.created_at : new Date().toISOString().slice(0,10),
+        created_by: existing ? existing.created_by : 'admin'
+      };
+      // Update invoice fields if present
+      if (existing && existing.invoice && $('#inv_number')){
+        existing.invoice.number = $('#inv_number').value.trim();
+        existing.invoice.amount = parseFloat($('#inv_amount').value)||0;
+        existing.invoice.status = $('#inv_status').value;
+        existing.invoice.due_date = $('#inv_due').value || null;
+        existing.invoice.paid_date = $('#inv_paid').value || null;
+        data.invoice = existing.invoice;
+      }
+      if (existing){ Object.assign(existing, data); toast('Flight updated'); }
+      else { state.flights.push(data); toast('Flight created'); }
+      saveState();
+      location.hash = '#admin/flights/' + id;
+    });
+  }
+
+  // Crew form
+  const crf = document.getElementById('crewForm');
+  if (crf){
+    crf.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = $('#cr_id').value;
+      const existing = state.crew.find(x=>x.id===id);
+      const ratings = $('#cr_ratings').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const data = {
+        id, name: $('#cr_name').value.trim(),
+        role: $('#cr_role').value,
+        email: $('#cr_email').value.trim(),
+        phone: $('#cr_phone').value.trim(),
+        home_base: $('#cr_base').value.toUpperCase().trim(),
+        ratings, notes: $('#cr_notes').value.trim()
+      };
+      if (existing){ Object.assign(existing, data); toast('Crew updated'); }
+      else { state.crew.push(data); toast('Crew added'); }
+      saveState();
+      location.hash = '#admin/crew';
+    });
+  }
+
+  // Maintenance form
+  const mxf = document.getElementById('mxForm');
+  if (mxf){
+    mxf.addEventListener('submit', e => {
+      e.preventDefault();
+      const cid = $('#mx_cid').value;
+      const c = state.clients.find(x=>x.id===cid);
+      if (!c) return;
+      c.maintenance.cmms = $('#mx_cmms').value;
+      c.maintenance.hobbs_current = parseFloat($('#mx_hobbs').value)||0;
+      c.maintenance.last_annual = $('#mx_last_annual').value;
+      c.maintenance.next_annual = $('#mx_next_annual').value;
+      c.maintenance.next_phase = $('#mx_next_phase').value.trim();
+      c.maintenance.hobbs_at_next_phase = parseFloat($('#mx_hobbs_phase').value)||0;
+      c.maintenance.squawks = $$('[data-sq]').map(row=>({
+        item: row.querySelector('[data-sqfield="item"]').value.trim(),
+        severity: row.querySelector('[data-sqfield="severity"]').value
+      })).filter(s=>s.item);
+      c.status = $('#c_status_edit').value;
+      c.status_note = $('#c_status_note_edit').value.trim();
+      saveState();
+      toast('Maintenance updated');
+      location.hash = '#admin/clients/' + cid;
     });
   }
 }
