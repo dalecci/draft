@@ -281,6 +281,27 @@ input,textarea,select{font:inherit;color:inherit;}
 .receipt-ai-status .spin{display:inline-block;width:10px;height:10px;border:2px solid var(--gold);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* Squawk status colors */
+.sq-row{position:relative;}
+.sq-row::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:4px;height:60%;background:var(--ash);border-radius:2px;}
+.sq-row.sq-status-todo::before{background:var(--ash);}
+.sq-row.sq-status-in_progress::before{background:var(--amber);}
+.sq-row.sq-status-done::before{background:var(--green);}
+.sq-row.sq-status-done input[data-sqfield="item"]{text-decoration:line-through;color:var(--ash);}
+.sq-row select[data-sqfield="status"]{font-weight:500;}
+.sq-row.sq-status-todo select[data-sqfield="status"]{color:var(--ash);}
+.sq-row.sq-status-in_progress select[data-sqfield="status"]{color:var(--amber);background:rgba(217,165,83,.08);}
+.sq-row.sq-status-done select[data-sqfield="status"]{color:var(--green);background:rgba(127,167,123,.08);}
+
+/* Toggle box */
+.toggle-box{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--cream);border:1px solid var(--mist);margin-bottom:18px;cursor:pointer;transition:all .2s;}
+.toggle-box:hover{border-color:var(--gold-pale);}
+.toggle-box input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--gold);}
+.toggle-box .toggle-title{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--charcoal);}
+.toggle-box .toggle-desc{font-family:var(--serif);font-style:italic;color:var(--ash);font-size:13px;margin-left:auto;}
+.toggle-box.off{opacity:.7;}
+.toggle-box.off .toggle-title{color:var(--ash);}
+
 /* Filter bar */
 .filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
 .filter-bar select,.filter-bar input{padding:8px 12px;border:1px solid var(--mist);background:#fff;font-size:12px;color:var(--charcoal);}
@@ -1170,15 +1191,25 @@ function ownerMaintenance(clientId){
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-head"><h2 class="section-title">Open <em>discrepancies</em></h2></div>
-        ${m.squawks && m.squawks.length>0 ? raw`
-          <div class="table-wrap"><table class="table">
-            <thead><tr><th>Item</th><th>Severity</th></tr></thead>
-            <tbody>${m.squawks.map(s=>raw`<tr><td>${h`${s.item}`}</td><td><span class="pill ${s.severity==='major'?'urgent':'pending'}">${h`${s.severity}`}</span></td></tr>`).join('')}</tbody>
-          </table></div>
-        ` : raw`<div class="empty"><h3>No open items</h3><p>All systems in nominal condition.</p></div>`}
-      </div>
+      ${m.squawks_visible !== false ? (() => {
+        const visibleSquawks = (m.squawks||[]).filter(s => s.status !== 'done');
+        return raw`
+        <div class="section">
+          <div class="section-head"><h2 class="section-title">Open <em>discrepancies</em></h2></div>
+          ${visibleSquawks.length>0 ? raw`
+            <div class="table-wrap"><table class="table">
+              <thead><tr><th>Item</th><th>Severity</th><th>Status</th></tr></thead>
+              <tbody>${visibleSquawks.map(s=>raw`
+                <tr>
+                  <td>${h`${s.item}`}</td>
+                  <td><span class="pill ${s.severity==='major'||s.severity==='urgent'?'urgent':'pending'}">${h`${s.severity}`}</span></td>
+                  <td><span class="pill ${s.status==='in_progress'?'pending':'requested'}" style="text-transform:none;">${s.status==='in_progress'?'Being worked':'Awaiting'}</span></td>
+                </tr>
+              `).join('')}</tbody>
+            </table></div>
+          ` : raw`<div class="empty"><h3>No open items</h3><p>All systems in nominal condition.</p></div>`}
+        </div>`;
+      })() : ''}
 
       <div style="margin-top:32px;padding:18px;background:var(--cream);border-left:3px solid var(--gold);font-family:var(--serif);font-style:italic;color:var(--ash);">
         Hobbs hours sync nightly from the aircraft's logbook. Maintenance scheduling is coordinated with your preferred MRO; vendor invoices flow through J3T at actual cost (no markups).
@@ -1991,11 +2022,20 @@ function adminMaintenance(clientId){
           </div>
         </div>
         <div class="fd-panel" style="margin-bottom:16px;">
-          <h3>Open squawks</h3>
-          <div id="sqList">
+          <h3>Open squawks &amp; <em style="color:var(--gold);font-style:italic;">internal tracking</em></h3>
+          <label class="toggle-box ${m.squawks_visible===false?'off':''}" id="sqVisToggle">
+            <input type="checkbox" id="mx_sq_visible" ${m.squawks_visible!==false?'checked':''} onchange="this.closest('.toggle-box').classList.toggle('off',!this.checked);">
+            <span class="toggle-title">Show squawks section to owner</span>
+            <span class="toggle-desc">When off, your team can still track here — owner won't see this section on their maintenance page.</span>
+          </label>
+          <div id="sqList" style="padding-left:12px;">
             ${m.squawks.map((s,i)=>renderSquawkRow(s,i)).join('')}
           </div>
           <button type="button" class="btn ghost sm" style="margin-top:10px;" onclick="addSquawkRow()">${I.plus}Add squawk</button>
+          <p style="font-family:var(--serif);font-style:italic;color:var(--ash);font-size:13px;margin-top:14px;padding-top:12px;border-top:1px solid var(--mist);">
+            <strong style="color:var(--gold);font-weight:600;font-style:normal;">Owner sees:</strong>
+            only squawks with status <em>To do</em> or <em>In progress</em>. <em>Done</em> items are kept internally for your records.
+          </p>
         </div>
         <div class="fd-panel" style="margin-bottom:16px;">
           <h3>Status (visible to owner)</h3>
@@ -2019,11 +2059,17 @@ function adminMaintenance(clientId){
 }
 
 function renderSquawkRow(s, i){
+  const st = s.status || 'todo';
   return raw`
-    <div class="exp-row" data-sq="${i}" style="grid-template-columns:1fr 120px 32px;">
+    <div class="exp-row sq-row sq-status-${st}" data-sq="${i}" style="grid-template-columns:1fr 110px 130px 32px;">
       <input data-sqfield="item" value="${h`${s.item||''}`}" placeholder="Description">
       <select data-sqfield="severity">
         ${['minor','major','urgent'].map(sev=>raw`<option ${s.severity===sev?'selected':''}>${sev}</option>`).join('')}
+      </select>
+      <select data-sqfield="status" onchange="this.closest('.sq-row').className='exp-row sq-row sq-status-'+this.value;">
+        <option value="todo" ${st==='todo'?'selected':''}>● To do</option>
+        <option value="in_progress" ${st==='in_progress'?'selected':''}>◐ In progress</option>
+        <option value="done" ${st==='done'?'selected':''}>✓ Done</option>
       </select>
       <button type="button" class="remove" onclick="this.closest('[data-sq]').remove()">×</button>
     </div>`;
@@ -2353,8 +2399,10 @@ function attachViewHandlers(session, path, parts){
       c.maintenance.hobbs_at_next_phase = parseFloat($('#mx_hobbs_phase').value)||0;
       c.maintenance.squawks = $$('[data-sq]').map(row=>({
         item: row.querySelector('[data-sqfield="item"]').value.trim(),
-        severity: row.querySelector('[data-sqfield="severity"]').value
+        severity: row.querySelector('[data-sqfield="severity"]').value,
+        status: row.querySelector('[data-sqfield="status"]').value
       })).filter(s=>s.item);
+      c.maintenance.squawks_visible = $('#mx_sq_visible').checked;
       c.status = $('#c_status_edit').value;
       c.status_note = $('#c_status_note_edit').value.trim();
       saveState();
