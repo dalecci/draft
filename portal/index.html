@@ -526,19 +526,48 @@ const SEED = JSON.parse(document.getElementById('seed').textContent);
 const LS_KEY = 'j3t-portal-state-v1';
 const SESSION_KEY = 'j3t-portal-session';
 
+function migrateState(s){
+  // Soft migrations — upgrade fields without wiping user data
+  (s.clients||[]).forEach(c => {
+    if (!c.maintenance) c.maintenance = {};
+    const m = c.maintenance;
+    // Old single-phase → phases[] array
+    if (!m.phases){
+      if (m.next_phase || m.hobbs_at_next_phase){
+        m.phases = [{
+          id: 'p-'+Math.random().toString(36).slice(2,8),
+          name: m.next_phase || 'Phase inspection',
+          hobbs_at: m.hobbs_at_next_phase || null,
+          due_date: null
+        }];
+      } else {
+        m.phases = [];
+      }
+      delete m.next_phase;
+      delete m.hobbs_at_next_phase;
+    }
+    // Default visibility flags
+    if (m.annual_visible === undefined) m.annual_visible = true;
+    if (m.phases_visible === undefined) m.phases_visible = true;
+    if (m.squawks_visible === undefined) m.squawks_visible = true;
+    // Ensure squawks have status
+    (m.squawks||[]).forEach(sq => { if (!sq.status) sq.status = 'todo'; });
+  });
+  return s;
+}
+
 function loadState(){
   try{
     const saved = localStorage.getItem(LS_KEY);
     if (saved){
       const s = JSON.parse(saved);
-      // Schema migration — if version is older or missing, reseed
       if (!s._meta || s._meta.version !== SEED._meta.version){
         return JSON.parse(JSON.stringify(SEED));
       }
-      return s;
+      return migrateState(s);
     }
   }catch(e){}
-  return JSON.parse(JSON.stringify(SEED));
+  return migrateState(JSON.parse(JSON.stringify(SEED)));
 }
 function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function resetState(){ localStorage.removeItem(LS_KEY); state = JSON.parse(JSON.stringify(SEED)); }
@@ -789,7 +818,8 @@ function ownerDashboard(clientId){
   const ytdSpend = flights.filter(f=>f.status==='completed' && f.invoice && f.invoice.status==='paid' && f.invoice.paid_date && f.invoice.paid_date.startsWith('2026'))
     .reduce((s,f)=>s+f.invoice.amount, 0);
 
-  const annualDue = daysFromNow(c.maintenance.next_annual);
+  // Compute soonest upcoming inspection across visible annual + phases
+  const nextInspection = computeNextInspection(c.maintenance);
   const insuranceDoc = c.docs.find(d=>d.type==='insurance');
   const insuranceDue = insuranceDoc ? daysFromNow(insuranceDoc.expires_at) : null;
 
@@ -821,11 +851,12 @@ function ownerDashboard(clientId){
           <div class="card-meta">${outstanding.length} ${outstanding.length===1?'invoice':'invoices'} pending</div>
         </div>
 
+        ${nextInspection ? raw`
         <div class="card" onclick="navigate('#maintenance')">
           <div class="card-label"><span>Next Inspection</span></div>
-          <div class="card-value">${annualDue>0?annualDue:0}<em> days</em></div>
-          <div class="card-meta">Annual &middot; ${fmtDate(c.maintenance.next_annual)}</div>
-        </div>
+          <div class="card-value">${nextInspection.value}<em> ${nextInspection.unit}</em></div>
+          <div class="card-meta">${h`${nextInspection.label}`}</div>
+        </div>` : ''}
 
         <div class="card" onclick="navigate('#costs')">
           <div class="card-label"><span>YTD Operating</span></div>
@@ -1162,33 +1193,42 @@ function ownerDocuments(clientId){
 function ownerMaintenance(clientId){
   const c = state.clients.find(x=>x.id===clientId);
   const m = c.maintenance;
-  const daysToAnnual = daysFromNow(m.next_annual);
-  const annualPct = Math.max(0, Math.min(100, (365 - daysToAnnual) / 365 * 100));
-  const phasePct = Math.max(0, Math.min(100, (m.hobbs_current / m.hobbs_at_next_phase) * 100));
+
+  // Always-visible Aircraft Status card
+  const statusCard = raw`
+    <div class="mx-card">
+      <div class="mx-card-label">Aircraft Status</div>
+      <div style="margin-top:10px;"><span class="pill ${h`${c.status}`}" style="font-size:11px;padding:6px 12px;">${h`${c.status}`}</span></div>
+      <div style="font-family:var(--serif);font-style:italic;color:var(--ash);margin-top:12px;font-size:14px;">${h`${c.status_note}`}</div>
+    </div>`;
+
+  // Annual card (visible only if annual_visible !== false)
+  let annualCard = '';
+  if (m.annual_visible !== false && m.next_annual){
+    const daysToAnnual = daysFromNow(m.next_annual);
+    const annualPct = Math.max(0, Math.min(100, (365 - daysToAnnual) / 365 * 100));
+    annualCard = raw`
+      <div class="mx-card">
+        <div class="mx-card-label">Annual Inspection</div>
+        <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);">${daysToAnnual} <em style="font-style:italic;color:var(--gold);">days</em></div>
+        <div class="mx-progress"><div class="mx-progress-bar ${annualPct>85?'warn':''} ${annualPct>95?'critical':''}" style="width:${annualPct}%"></div></div>
+        <div class="mx-meta"><span>Last: ${fmtDate(m.last_annual)}</span><span>Next: ${fmtDate(m.next_annual)}</span></div>
+      </div>`;
+  }
+
+  // Phase cards (visible only if phases_visible !== false)
+  let phaseCards = '';
+  if (m.phases_visible !== false && Array.isArray(m.phases)){
+    phaseCards = m.phases.map(p => renderPhaseCard(p, m.hobbs_current)).join('');
+  }
 
   return raw`
     ${topbar('Maintenance', c.aircraft.tail + ' · ' + c.aircraft.model)}
     <div class="view">
       <div class="mx-grid">
-        <div class="mx-card">
-          <div class="mx-card-label">Annual Inspection</div>
-          <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);">${daysToAnnual} <em style="font-style:italic;color:var(--gold);">days</em></div>
-          <div class="mx-progress"><div class="mx-progress-bar ${annualPct>85?'warn':''} ${annualPct>95?'critical':''}" style="width:${annualPct}%"></div></div>
-          <div class="mx-meta"><span>Last: ${fmtDate(m.last_annual)}</span><span>Next: ${fmtDate(m.next_annual)}</span></div>
-        </div>
-
-        <div class="mx-card">
-          <div class="mx-card-label">${h`${m.next_phase}`}</div>
-          <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);">${(m.hobbs_at_next_phase - m.hobbs_current).toFixed(1)} <em style="font-style:italic;color:var(--gold);">hrs</em></div>
-          <div class="mx-progress"><div class="mx-progress-bar ${phasePct>85?'warn':''} ${phasePct>95?'critical':''}" style="width:${phasePct}%"></div></div>
-          <div class="mx-meta"><span>Current: ${m.hobbs_current.toFixed(1)} hrs</span><span>At: ${m.hobbs_at_next_phase} hrs</span></div>
-        </div>
-
-        <div class="mx-card">
-          <div class="mx-card-label">Aircraft Status</div>
-          <div style="margin-top:10px;"><span class="pill ${h`${c.status}`}" style="font-size:11px;padding:6px 12px;">${h`${c.status}`}</span></div>
-          <div style="font-family:var(--serif);font-style:italic;color:var(--ash);margin-top:12px;font-size:14px;">${h`${c.status_note}`}</div>
-        </div>
+        ${annualCard}
+        ${phaseCards}
+        ${statusCard}
       </div>
 
       ${m.squawks_visible !== false ? (() => {
@@ -1278,6 +1318,84 @@ function ownerCosts(clientId){
     </div>`;
 }
 
+function computeNextInspection(m){
+  // Returns the soonest VISIBLE inspection (annual or phase), or null if all hidden/empty.
+  const candidates = [];
+  if (m.annual_visible !== false && m.next_annual){
+    const d = daysFromNow(m.next_annual);
+    candidates.push({ daysEquiv: d, value: d, unit: 'days', label: 'Annual · ' + fmtDate(m.next_annual) });
+  }
+  if (m.phases_visible !== false && Array.isArray(m.phases)){
+    m.phases.forEach(p => {
+      const hobbsRemaining = (p.hobbs_at != null) ? (p.hobbs_at - m.hobbs_current) : null;
+      const daysRemaining = p.due_date ? daysFromNow(p.due_date) : null;
+      if (hobbsRemaining != null){
+        candidates.push({ daysEquiv: (hobbsRemaining/3)*7, value: hobbsRemaining.toFixed(1), unit: 'hrs', label: p.name });
+      }
+      if (daysRemaining != null){
+        candidates.push({ daysEquiv: daysRemaining, value: daysRemaining, unit: 'days', label: p.name + ' · ' + fmtDate(p.due_date) });
+      }
+    });
+  }
+  if (candidates.length === 0) return null;
+  candidates.sort((a,b)=>a.daysEquiv - b.daysEquiv);
+  return candidates[0];
+}
+
+function renderPhaseCard(p, hobbsCurrent){
+  // Compute "binding constraint" — whichever (hobbs or date) is sooner
+  const hobbsRemaining = (p.hobbs_at != null) ? (p.hobbs_at - hobbsCurrent) : null;
+  const daysRemaining = p.due_date ? daysFromNow(p.due_date) : null;
+
+  // Choose which to lead with — the sooner one
+  // Convert both to "days-ish" for comparison: assume ~3 hrs flown per week
+  let lead = null, sub = null;
+  if (hobbsRemaining != null && daysRemaining != null){
+    const hobbsDaysEquiv = (hobbsRemaining / 3) * 7;  // rough heuristic
+    if (hobbsDaysEquiv <= daysRemaining){
+      lead = { kind:'hobbs', val: hobbsRemaining };
+      sub  = { kind:'date',  val: p.due_date, days: daysRemaining };
+    } else {
+      lead = { kind:'date', val: p.due_date, days: daysRemaining };
+      sub  = { kind:'hobbs', val: hobbsRemaining };
+    }
+  } else if (hobbsRemaining != null){
+    lead = { kind:'hobbs', val: hobbsRemaining };
+  } else if (daysRemaining != null){
+    lead = { kind:'date', val: p.due_date, days: daysRemaining };
+  } else {
+    lead = { kind:'none' };
+  }
+
+  // Progress bar based on leading constraint
+  let pct = 0, value = '', sublabel = '';
+  if (lead.kind === 'hobbs'){
+    value = raw`${lead.val.toFixed(1)} <em style="font-style:italic;color:var(--gold);">hrs</em>`;
+    if (p.hobbs_at){
+      pct = Math.max(0, Math.min(100, (hobbsCurrent / p.hobbs_at) * 100));
+    }
+    sublabel = `Current: ${hobbsCurrent.toFixed(1)} hrs · At: ${p.hobbs_at} hrs`;
+  } else if (lead.kind === 'date'){
+    value = raw`${lead.days} <em style="font-style:italic;color:var(--gold);">days</em>`;
+    pct = Math.max(0, Math.min(100, ((365 - lead.days) / 365) * 100));
+    sublabel = `Due ${fmtDate(p.due_date)}`;
+  } else {
+    value = raw`<em style="font-style:italic;color:var(--ash);">—</em>`;
+    sublabel = 'No threshold set';
+  }
+
+  const sublineHTML = sub ? raw`<div style="font-family:var(--serif);font-size:12px;font-style:italic;color:var(--ash);margin-top:4px;">or ${sub.kind==='hobbs'?`${sub.val.toFixed(1)} hrs`:`by ${fmtDateShort(sub.val)}`}</div>` : '';
+
+  return raw`
+    <div class="mx-card">
+      <div class="mx-card-label">${h`${p.name}`}</div>
+      <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);line-height:1;">${value}</div>
+      ${sublineHTML}
+      <div class="mx-progress" style="margin-top:14px;"><div class="mx-progress-bar ${pct>85?'warn':''} ${pct>95?'critical':''}" style="width:${pct}%"></div></div>
+      <div class="mx-meta"><span>${h`${sublabel}`}</span></div>
+    </div>`;
+}
+
 function exportMonthlyCSV(clientId){
   const c = state.clients.find(x=>x.id===clientId);
   const flights = state.flights.filter(f=>f.client_id===clientId && f.status==='completed' && f.invoice);
@@ -1342,7 +1460,7 @@ function adminClientForm(clientId){
   const c = isNew ? {
     id: uid('c'), name:'', email:'', company:'', phone:'',
     aircraft:{tail:'',model:'',year:2024,home_base:''}, status:'available',
-    status_note:'', maintenance:{last_annual:'',next_annual:'',hobbs_current:0,hobbs_at_next_phase:0,next_phase:'',squawks:[]}, docs:[]
+    status_note:'', maintenance:{last_annual:'',next_annual:'',hobbs_current:0,phases:[],squawks:[],annual_visible:true,phases_visible:true,squawks_visible:true,cmms:'none'}, docs:[]
   } : state.clients.find(x=>x.id===clientId);
 
   if (!c) return errorView('Client not found');
@@ -2009,17 +2127,34 @@ function adminMaintenance(clientId){
         </div>
         <div class="fd-panel" style="margin-bottom:16px;">
           <h3>Annual inspection</h3>
+          <label class="toggle-box ${m.annual_visible===false?'off':''}">
+            <input type="checkbox" id="mx_annual_visible" ${m.annual_visible!==false?'checked':''} onchange="this.closest('.toggle-box').classList.toggle('off',!this.checked);">
+            <span class="toggle-title">Show annual to owner</span>
+            <span class="toggle-desc">Off &rarr; annual card hidden on owner dashboard &amp; maintenance page.</span>
+          </label>
           <div class="row2">
-            <div class="field light-field"><label>Last annual</label><input type="date" id="mx_last_annual" value="${m.last_annual}"></div>
-            <div class="field light-field"><label>Next annual</label><input type="date" id="mx_next_annual" value="${m.next_annual}"></div>
+            <div class="field light-field"><label>Last annual</label><input type="date" id="mx_last_annual" value="${h`${m.last_annual||''}`}"></div>
+            <div class="field light-field"><label>Next annual</label><input type="date" id="mx_next_annual" value="${h`${m.next_annual||''}`}"></div>
           </div>
         </div>
+
         <div class="fd-panel" style="margin-bottom:16px;">
-          <h3>Phase / scheduled</h3>
-          <div class="row2">
-            <div class="field light-field"><label>Next item</label><input id="mx_next_phase" value="${h`${m.next_phase}`}"></div>
-            <div class="field light-field"><label>Hobbs at next</label><input type="number" id="mx_hobbs_phase" value="${m.hobbs_at_next_phase}"></div>
+          <h3>Phase / scheduled <em style="color:var(--gold);font-style:italic;font-size:14px;">&middot; whichever comes first</em></h3>
+          <label class="toggle-box ${m.phases_visible===false?'off':''}">
+            <input type="checkbox" id="mx_phases_visible" ${m.phases_visible!==false?'checked':''} onchange="this.closest('.toggle-box').classList.toggle('off',!this.checked);">
+            <span class="toggle-title">Show phase items to owner</span>
+            <span class="toggle-desc">Off &rarr; entire phase section hidden from owner.</span>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 120px 160px 32px;gap:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);padding:0 0 6px;">
+            <div>Item</div><div>Hobbs at</div><div>Due date</div><div></div>
           </div>
+          <div id="phaseList">
+            ${(m.phases||[]).map((p,i)=>renderPhaseRow(p,i)).join('')}
+          </div>
+          <button type="button" class="btn ghost sm" style="margin-top:10px;" onclick="addPhaseRow()">${I.plus}Add phase item</button>
+          <p style="font-family:var(--serif);font-style:italic;color:var(--ash);font-size:13px;margin-top:14px;padding-top:12px;border-top:1px solid var(--mist);line-height:1.6;">
+            Each item can have a Hobbs threshold, a calendar date, or both. The owner sees <strong style="color:var(--gold);font-weight:600;font-style:normal;">whichever is sooner</strong> on their dashboard.
+          </p>
         </div>
         <div class="fd-panel" style="margin-bottom:16px;">
           <h3>Open squawks &amp; <em style="color:var(--gold);font-style:italic;">internal tracking</em></h3>
@@ -2078,7 +2213,24 @@ function renderSquawkRow(s, i){
 function addSquawkRow(){
   const list = document.getElementById('sqList');
   const div = document.createElement('div');
-  div.innerHTML = renderSquawkRow({item:'',severity:'minor'}, list.children.length);
+  div.innerHTML = renderSquawkRow({item:'',severity:'minor',status:'todo'}, list.children.length);
+  list.appendChild(div.firstElementChild);
+}
+
+function renderPhaseRow(p, i){
+  return raw`
+    <div class="exp-row" data-ph="${i}" style="grid-template-columns:1fr 120px 160px 32px;">
+      <input data-phfield="name" value="${h`${p.name||''}`}" placeholder="e.g. Phase 1-2 inspection">
+      <input data-phfield="hobbs_at" type="number" step="0.1" value="${p.hobbs_at??''}" placeholder="(optional)">
+      <input data-phfield="due_date" type="date" value="${h`${p.due_date||''}`}">
+      <button type="button" class="remove" onclick="this.closest('[data-ph]').remove()">×</button>
+    </div>`;
+}
+
+function addPhaseRow(){
+  const list = document.getElementById('phaseList');
+  const div = document.createElement('div');
+  div.innerHTML = renderPhaseRow({name:'',hobbs_at:null,due_date:null}, list.children.length);
   list.appendChild(div.firstElementChild);
 }
 
@@ -2265,9 +2417,10 @@ function attachViewHandlers(session, path, parts){
         status: $('#c_status').value,
         status_note: $('#c_note').value.trim(),
         maintenance: existing ? existing.maintenance : {
-          last_annual: '2025-01-01', next_annual: '2026-12-31',
-          hobbs_current: 0, hobbs_at_next_phase: 100,
-          next_phase: 'Initial inspection', cmms: 'none', squawks: []
+          last_annual: '', next_annual: '',
+          hobbs_current: 0, phases: [], squawks: [],
+          annual_visible: true, phases_visible: true, squawks_visible: true,
+          cmms: 'none'
         },
         docs: existing ? existing.docs : []
       };
@@ -2395,8 +2548,17 @@ function attachViewHandlers(session, path, parts){
       c.maintenance.hobbs_current = parseFloat($('#mx_hobbs').value)||0;
       c.maintenance.last_annual = $('#mx_last_annual').value;
       c.maintenance.next_annual = $('#mx_next_annual').value;
-      c.maintenance.next_phase = $('#mx_next_phase').value.trim();
-      c.maintenance.hobbs_at_next_phase = parseFloat($('#mx_hobbs_phase').value)||0;
+      c.maintenance.annual_visible = $('#mx_annual_visible').checked;
+      c.maintenance.phases = $$('[data-ph]').map((row,i)=>{
+        const existing = (c.maintenance.phases||[])[i];
+        return {
+          id: existing ? existing.id : 'p-'+Math.random().toString(36).slice(2,8),
+          name: row.querySelector('[data-phfield="name"]').value.trim(),
+          hobbs_at: row.querySelector('[data-phfield="hobbs_at"]').value ? parseFloat(row.querySelector('[data-phfield="hobbs_at"]').value) : null,
+          due_date: row.querySelector('[data-phfield="due_date"]').value || null
+        };
+      }).filter(p=>p.name);
+      c.maintenance.phases_visible = $('#mx_phases_visible').checked;
       c.maintenance.squawks = $$('[data-sq]').map(row=>({
         item: row.querySelector('[data-sqfield="item"]').value.trim(),
         severity: row.querySelector('[data-sqfield="severity"]').value,
