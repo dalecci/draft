@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>J3T Owner Portal</title>
+<meta name="description" content="J3T Management — owner portal. Aircraft status, flights, maintenance, documents.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0F0F0F">
+<link rel="manifest" href='data:application/manifest+json;utf8,{"name":"J3T Owner Portal","short_name":"J3T Portal","start_url":"./","display":"standalone","background_color":"%231C1C1C","theme_color":"%230F0F0F","icons":[]}'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap"></noscript>
+<style>
+:root{
+  --ink:#0F0F0F;--charcoal:#1C1C1C;--charcoal-2:#252525;--warm-white:#F7F5F0;--cream:#EDE9E0;--mist:#D8D4CB;--stone:#9A9488;--ash:#65625B;
+  --gold:#A08450;--gold-light:#C8A96A;--gold-pale:#EAD9B8;--gold-dim:rgba(160,132,80,.15);
+  --green:#7FA77B;--red:#C46B5C;--amber:#D9A553;
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'Montserrat',sans-serif;
+  --side-w:240px;--header-h:64px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{font-family:var(--sans);background:var(--warm-white);color:var(--ink);overflow-x:hidden;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea,select{font:inherit;color:inherit;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+/* ============== LOGIN ============== */
+.auth-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--charcoal);padding:40px 20px;position:relative;overflow:hidden;}
+.auth-shell::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle at 50% 50%,rgba(160,132,80,.06),transparent 60%);pointer-events:none;}
+.auth-compass{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(72%,640px);opacity:.05;pointer-events:none;}
+.auth-card{position:relative;z-index:2;width:100%;max-width:440px;padding:48px 44px;background:rgba(28,28,28,.7);backdrop-filter:blur(12px);border:1px solid rgba(160,132,80,.25);}
+.auth-mark{text-align:center;font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:5px;color:var(--warm-white);margin-bottom:8px;}
+.auth-mark span{color:var(--gold);}
+.auth-sub{text-align:center;font-family:var(--sans);font-size:10px;letter-spacing:4px;color:var(--stone);text-transform:uppercase;margin-bottom:36px;}
+.auth-card h1{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--warm-white);line-height:1.1;margin-bottom:8px;text-align:center;}
+.auth-card h1 em{font-style:italic;color:var(--gold);}
+.auth-tag{text-align:center;font-family:var(--serif);font-size:14px;font-style:italic;color:var(--stone);margin-bottom:32px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-bottom:8px;}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;background:rgba(0,0,0,.3);border:1px solid rgba(160,132,80,.3);color:var(--warm-white);font-size:14px;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+.auth-btn{display:block;width:100%;padding:14px;background:var(--gold);color:var(--ink);font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;border:1px solid var(--gold);margin-top:8px;transition:all .2s;}
+.auth-btn:hover{background:var(--gold-light);border-color:var(--gold-light);}
+.demo-list{margin-top:32px;padding-top:24px;border-top:1px solid rgba(160,132,80,.15);}
+.demo-list-title{font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-bottom:12px;text-align:center;}
+.demo-acc{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;margin-bottom:6px;background:rgba(0,0,0,.25);border:1px solid rgba(160,132,80,.12);cursor:pointer;transition:all .2s;}
+.demo-acc:hover{border-color:var(--gold);background:rgba(160,132,80,.08);}
+.demo-acc-name{font-family:var(--serif);font-size:14px;color:var(--warm-white);font-style:italic;}
+.demo-acc-role{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.auth-foot{text-align:center;margin-top:28px;font-size:10px;letter-spacing:2px;color:rgba(154,148,136,.5);}
+
+/* ============== APP SHELL ============== */
+.app-shell{display:grid;grid-template-columns:var(--side-w) 1fr;min-height:100vh;}
+.sidebar{background:var(--charcoal);color:var(--warm-white);padding:24px 0;display:flex;flex-direction:column;border-right:1px solid rgba(160,132,80,.15);position:sticky;top:0;height:100vh;overflow-y:auto;}
+.side-brand{padding:0 24px 20px;border-bottom:1px solid rgba(160,132,80,.12);margin-bottom:20px;}
+.side-brand-mark{font-family:var(--sans);font-size:16px;font-weight:600;letter-spacing:4px;color:var(--warm-white);}
+.side-brand-mark span{color:var(--gold);}
+.side-brand-sub{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-top:4px;}
+.side-nav{flex:1;padding:0 14px;}
+.side-link{display:flex;align-items:center;gap:14px;padding:11px 14px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(247,245,240,.65);font-weight:500;border-left:2px solid transparent;margin-bottom:2px;transition:all .2s;}
+.side-link:hover{color:var(--warm-white);background:rgba(160,132,80,.06);}
+.side-link.active{color:var(--gold);border-left-color:var(--gold);background:rgba(160,132,80,.08);}
+.side-link svg{width:16px;height:16px;flex-shrink:0;}
+.side-foot{padding:16px 24px 0;border-top:1px solid rgba(160,132,80,.12);margin-top:14px;}
+.side-user{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.side-avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:14px;font-weight:500;flex-shrink:0;}
+.side-user-info{min-width:0;flex:1;}
+.side-user-name{font-family:var(--serif);font-size:14px;color:var(--warm-white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.side-user-role{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--stone);}
+.side-logout{margin-top:8px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(154,148,136,.6);transition:color .2s;}
+.side-logout:hover{color:var(--gold);}
+.side-impersonate{margin:0 14px 14px;padding:10px;background:rgba(217,165,83,.1);border:1px solid rgba(217,165,83,.3);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);text-align:center;}
+.side-impersonate strong{display:block;font-family:var(--serif);font-size:12px;font-style:italic;color:var(--gold-light);text-transform:none;letter-spacing:0;margin:4px 0;font-weight:400;}
+.side-impersonate a{display:block;margin-top:6px;color:var(--gold);font-size:9px;}
+
+.main{min-width:0;background:var(--warm-white);}
+.topbar{height:var(--header-h);padding:0 32px;display:flex;align-items:center;justify-content:space-between;background:var(--warm-white);border-bottom:1px solid var(--mist);position:sticky;top:0;z-index:10;}
+.topbar-title{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--charcoal);}
+.topbar-title em{font-style:italic;color:var(--gold);}
+.topbar-actions{display:flex;gap:12px;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--gold);color:var(--gold);background:transparent;transition:all .2s;cursor:pointer;text-decoration:none;}
+.btn:hover{background:var(--gold);color:var(--warm-white);}
+.btn.primary{background:var(--gold);color:var(--warm-white);}
+.btn.primary:hover{background:var(--gold-light);border-color:var(--gold-light);}
+.btn.ghost{border-color:var(--mist);color:var(--ash);}
+.btn.ghost:hover{border-color:var(--charcoal);color:var(--charcoal);background:transparent;}
+.btn.danger{border-color:var(--red);color:var(--red);}
+.btn.danger:hover{background:var(--red);color:#fff;}
+.btn svg{width:14px;height:14px;}
+.btn.sm{padding:6px 12px;font-size:10px;letter-spacing:1.5px;}
+
+.view{padding:32px 32px 64px;max-width:1280px;}
+
+/* ============== STATUS PILL ============== */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border:1px solid;border-radius:2px;}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
+.pill.available,.pill.confirmed,.pill.paid,.pill.completed{color:var(--green);border-color:rgba(127,167,123,.4);background:rgba(127,167,123,.08);}
+.pill.maintenance,.pill.requested,.pill.outstanding,.pill.pending{color:var(--amber);border-color:rgba(217,165,83,.4);background:rgba(217,165,83,.08);}
+.pill.repositioning,.pill.cancelled{color:var(--ash);border-color:rgba(101,98,91,.4);background:rgba(101,98,91,.08);}
+.pill.urgent{color:var(--red);border-color:rgba(196,107,92,.4);background:rgba(196,107,92,.08);}
+
+/* ============== DASHBOARD CARDS ============== */
+.dash-status{margin-bottom:24px;padding:18px 24px;background:var(--charcoal);color:var(--warm-white);border-left:3px solid var(--gold);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.dash-status-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-bottom:6px;}
+.dash-status-value{font-family:var(--serif);font-size:20px;font-style:italic;color:var(--gold-light);}
+
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:32px;}
+.card{background:#fff;border:1px solid var(--mist);padding:24px;transition:transform .2s,box-shadow .2s,border-color .2s;cursor:pointer;}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(15,15,15,.08);border-color:var(--gold-pale);}
+.card-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.card-value{font-family:var(--serif);font-size:32px;font-weight:300;color:var(--charcoal);line-height:1;margin-bottom:8px;}
+.card-value em{font-style:italic;color:var(--gold);}
+.card-value.lg{font-size:40px;}
+.card-meta{font-size:12px;color:var(--ash);font-family:var(--serif);font-style:italic;}
+.card-meta strong{color:var(--charcoal);font-weight:500;font-style:normal;font-family:var(--sans);font-size:11px;letter-spacing:1px;}
+
+/* ============== SECTION ============== */
+.section{margin-bottom:40px;}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--mist);}
+.section-title{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--charcoal);}
+.section-title em{font-style:italic;color:var(--gold);}
+.section-link{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:600;}
+
+/* ============== TABLE ============== */
+.table-wrap{background:#fff;border:1px solid var(--mist);overflow:hidden;}
+.table{width:100%;border-collapse:collapse;font-size:13px;}
+.table thead th{background:var(--cream);font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ash);padding:12px 16px;text-align:left;border-bottom:1px solid var(--mist);}
+.table tbody td{padding:14px 16px;border-bottom:1px solid var(--mist);font-family:var(--serif);font-size:14px;color:var(--charcoal);}
+.table tbody tr:last-child td{border-bottom:none;}
+.table tbody tr{transition:background .15s;cursor:pointer;}
+.table tbody tr:hover{background:var(--cream);}
+.table .num{text-align:right;font-feature-settings:'tnum';font-variant-numeric:tabular-nums;font-family:var(--sans);}
+.table .muted{color:var(--ash);}
+
+/* ============== CALENDAR ============== */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cal-month{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--charcoal);}
+.cal-month em{font-style:italic;color:var(--gold);}
+.cal-nav{display:flex;gap:8px;}
+.cal-nav button{width:36px;height:36px;border:1px solid var(--mist);display:flex;align-items:center;justify-content:center;color:var(--ash);transition:all .2s;}
+.cal-nav button:hover{border-color:var(--gold);color:var(--gold);}
+.cal-grid{background:var(--mist);display:grid;grid-template-columns:repeat(7,1fr);gap:1px;border:1px solid var(--mist);}
+.cal-dow{background:var(--cream);padding:10px 12px;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ash);}
+.cal-cell{background:#fff;min-height:96px;padding:8px;position:relative;}
+.cal-cell.muted{background:#f9f7f3;color:var(--mist);}
+.cal-cell.today{background:rgba(160,132,80,.08);}
+.cal-cell.today .cal-num{color:var(--gold);font-weight:600;}
+.cal-num{font-size:11px;color:var(--ash);font-weight:500;}
+.cal-flight{display:block;margin-top:4px;padding:4px 6px;font-size:10px;line-height:1.3;cursor:pointer;border-left:2px solid var(--gold);background:rgba(160,132,80,.08);color:var(--charcoal);transition:all .15s;}
+.cal-flight.requested{border-left-color:var(--amber);background:rgba(217,165,83,.1);}
+.cal-flight.completed{border-left-color:var(--green);background:rgba(127,167,123,.08);color:var(--ash);}
+.cal-flight:hover{background:var(--gold);color:#fff;}
+.cal-flight strong{display:block;font-weight:600;}
+
+/* ============== FLIGHT DETAIL ============== */
+.fd-head{background:var(--charcoal);color:var(--warm-white);padding:32px;margin:-32px -32px 32px;}
+.fd-route{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.fd-airport{font-family:var(--serif);font-size:56px;font-weight:300;line-height:1;}
+.fd-arrow{font-family:var(--serif);font-size:32px;color:var(--gold);}
+.fd-airport-name{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-top:4px;}
+.fd-meta{display:flex;gap:32px;margin-top:24px;flex-wrap:wrap;}
+.fd-meta-item{}
+.fd-meta-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--stone);margin-bottom:6px;}
+.fd-meta-value{font-family:var(--serif);font-size:18px;font-style:italic;color:var(--gold-light);}
+.fd-sections{display:grid;grid-template-columns:2fr 1fr;gap:24px;}
+@media(max-width:900px){.fd-sections{grid-template-columns:1fr;}}
+.fd-panel{background:#fff;border:1px solid var(--mist);padding:24px;}
+.fd-panel h3{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--charcoal);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--mist);}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:10px;font-size:13px;}
+.kv dt{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);padding-top:2px;}
+.kv dd{font-family:var(--serif);font-size:15px;color:var(--charcoal);}
+
+/* ============== DOCUMENTS ============== */
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.doc{background:#fff;border:1px solid var(--mist);padding:20px;display:flex;flex-direction:column;gap:8px;transition:all .2s;}
+.doc:hover{border-color:var(--gold-pale);transform:translateY(-2px);}
+.doc-icon{width:32px;height:40px;border:1px solid var(--gold);position:relative;margin-bottom:10px;}
+.doc-icon::before{content:'';position:absolute;top:0;right:0;width:10px;height:10px;background:linear-gradient(135deg,transparent 50%,var(--gold) 50%);}
+.doc-name{font-family:var(--serif);font-size:16px;color:var(--charcoal);line-height:1.3;}
+.doc-type{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.doc-meta{font-size:11px;color:var(--ash);margin-top:auto;display:flex;justify-content:space-between;}
+.doc-expiring{color:var(--amber);}
+
+/* ============== MAINTENANCE ============== */
+.mx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+.mx-card{background:#fff;border:1px solid var(--mist);padding:20px;}
+.mx-card-label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.mx-progress{height:6px;background:var(--mist);margin:14px 0 8px;overflow:hidden;}
+.mx-progress-bar{height:100%;background:var(--gold);transition:width .3s;}
+.mx-progress-bar.warn{background:var(--amber);}
+.mx-progress-bar.critical{background:var(--red);}
+.mx-meta{font-size:11px;color:var(--ash);display:flex;justify-content:space-between;}
+
+/* ============== COSTS ============== */
+.costs-chart{background:#fff;border:1px solid var(--mist);padding:32px;margin-bottom:24px;}
+.bar-row{display:grid;grid-template-columns:140px 1fr 100px;gap:14px;align-items:center;padding:10px 0;font-size:13px;}
+.bar-row+.bar-row{border-top:1px solid var(--mist);}
+.bar-label{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ash);}
+.bar-track{height:10px;background:var(--cream);position:relative;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(to right,var(--gold) 0%,var(--gold-light) 100%);transition:width .3s;}
+.bar-val{text-align:right;font-family:var(--serif);font-size:16px;color:var(--charcoal);font-feature-settings:'tnum';}
+
+/* ============== ADMIN ============== */
+.admin-clients{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px;}
+.admin-client{background:#fff;border:1px solid var(--mist);padding:20px;transition:all .2s;}
+.admin-client:hover{border-color:var(--gold-pale);transform:translateY(-2px);box-shadow:0 8px 28px rgba(15,15,15,.06);}
+.admin-client-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.admin-avatar{width:48px;height:48px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;font-weight:500;flex-shrink:0;}
+.admin-client-name{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--charcoal);}
+.admin-client-co{font-size:11px;color:var(--ash);}
+.admin-client-aircraft{padding:12px 0;margin:8px 0;border-top:1px solid var(--mist);border-bottom:1px solid var(--mist);font-family:var(--serif);font-size:14px;color:var(--charcoal);}
+.admin-client-aircraft strong{color:var(--gold);font-weight:500;}
+.admin-actions{display:flex;gap:8px;margin-top:14px;}
+
+/* ============== EMPTY STATE ============== */
+.empty{padding:64px 24px;text-align:center;color:var(--ash);}
+.empty h3{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--charcoal);margin-bottom:8px;}
+
+/* ============== MODAL ============== */
+.modal-bg{position:fixed;inset:0;background:rgba(15,15,15,.6);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:var(--warm-white);max-width:560px;width:100%;max-height:90vh;overflow-y:auto;border:1px solid var(--mist);}
+.modal-head{padding:24px 32px;border-bottom:1px solid var(--mist);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h2{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--charcoal);}
+.modal-head h2 em{font-style:italic;color:var(--gold);}
+.modal-close{font-size:24px;color:var(--ash);line-height:1;}
+.modal-body{padding:24px 32px;}
+.modal-foot{padding:18px 32px;border-top:1px solid var(--mist);display:flex;gap:12px;justify-content:flex-end;background:var(--cream);}
+
+/* Light versions of fields (for modal/admin) */
+.light-field label{color:var(--ash);}
+.light-field input,.light-field select,.light-field textarea{background:#fff;border:1px solid var(--mist);color:var(--charcoal);}
+.light-field input:focus,.light-field select:focus,.light-field textarea:focus{border-color:var(--gold);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--charcoal);color:var(--warm-white);padding:14px 20px;border-left:3px solid var(--gold);font-size:13px;z-index:200;animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px);}}
+
+/* ============== RESPONSIVE ============== */
+.menu-toggle{display:none;}
+@media(max-width:900px){
+  :root{--side-w:0px;}
+  .app-shell{grid-template-columns:1fr;}
+  .sidebar{position:fixed;left:-260px;top:0;width:260px;z-index:50;height:100vh;transition:left .25s;}
+  .sidebar.open{left:0;}
+  .menu-toggle{display:inline-flex;width:36px;height:36px;align-items:center;justify-content:center;border:1px solid var(--mist);color:var(--charcoal);margin-right:12px;}
+  .topbar{padding:0 20px;}
+  .view{padding:20px 20px 64px;}
+  .fd-head{padding:24px 20px;margin:-20px -20px 24px;}
+  .fd-airport{font-size:40px;}
+  .row2{grid-template-columns:1fr;}
+  .table thead{display:none;}
+  .table tbody td{display:block;padding:8px 16px;border-bottom:none;}
+  .table tbody tr{display:block;padding:14px 0;border-bottom:1px solid var(--mist);}
+}
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<!-- Seed data -->
+<script id="seed" type="application/json">
+{
+  "clients": [
+    {
+      "id": "c1",
+      "email": "smith@example.com",
+      "name": "Robert Smith",
+      "company": "Smith Holdings LLC",
+      "phone": "+1-239-555-0142",
+      "aircraft": { "tail": "N123JT", "model": "Citation XLS+", "year": 2019, "home_base": "KAPF" },
+      "status": "available",
+      "status_note": "Aircraft ready. Crew on standby.",
+      "maintenance": {
+        "last_annual": "2025-11-12",
+        "next_annual": "2026-11-12",
+        "hobbs_current": 2847.3,
+        "hobbs_at_next_phase": 2900,
+        "next_phase": "Phase 1-2 inspection",
+        "squawks": []
+      },
+      "docs": [
+        { "id":"d1", "name":"Insurance Certificate 2026", "type":"insurance", "expires_at":"2026-06-12", "uploaded_at":"2025-06-12", "size":"1.2 MB" },
+        { "id":"d2", "name":"Aircraft Registration", "type":"registration", "expires_at":"2027-03-01", "uploaded_at":"2024-03-01", "size":"380 KB" },
+        { "id":"d3", "name":"Power of Attorney — Maintenance", "type":"poa", "expires_at":null, "uploaded_at":"2024-01-15", "size":"640 KB" },
+        { "id":"d4", "name":"Pilot Training Records — Williams", "type":"training", "expires_at":"2026-08-30", "uploaded_at":"2025-08-30", "size":"2.1 MB" }
+      ]
+    },
+    {
+      "id": "c2",
+      "email": "chen@example.com",
+      "name": "David Chen",
+      "company": "Pacific Logistics LLC",
+      "phone": "+1-949-555-0288",
+      "aircraft": { "tail": "N456PL", "model": "King Air 350i", "year": 2017, "home_base": "KSNA" },
+      "status": "maintenance",
+      "status_note": "Annual inspection · est. complete May 22",
+      "maintenance": {
+        "last_annual": "2025-05-20",
+        "next_annual": "2026-05-22",
+        "hobbs_current": 4218.6,
+        "hobbs_at_next_phase": 4250,
+        "next_phase": "Hot section inspection",
+        "squawks": [
+          { "item": "Left engine torque indicator intermittent", "severity": "minor" }
+        ]
+      },
+      "docs": [
+        { "id":"d5", "name":"Insurance Certificate 2026", "type":"insurance", "expires_at":"2026-12-01", "uploaded_at":"2025-12-01", "size":"1.1 MB" },
+        { "id":"d6", "name":"Aircraft Registration", "type":"registration", "expires_at":"2026-11-15", "uploaded_at":"2024-11-15", "size":"420 KB" },
+        { "id":"d7", "name":"Power of Attorney — Operations", "type":"poa", "expires_at":null, "uploaded_at":"2024-02-08", "size":"720 KB" }
+      ]
+    }
+  ],
+  "flights": [
+    {
+      "id":"f1","client_id":"c1","status":"confirmed",
+      "departure":{"airport":"KAPF","name":"Naples Municipal","date":"2026-05-20","time":"08:00"},
+      "arrival":{"airport":"KTEB","name":"Teterboro","date":"2026-05-20","time":"11:30"},
+      "passengers":{"count":4,"primary":"Robert Smith"},
+      "crew":{"pic":"Capt. James Williams","sic":"FO Daniel Davis"},
+      "catering":"Continental breakfast + coffee service","ground":"Sentient car to Manhattan at KTEB",
+      "notes":"Weight & balance for 4 pax + light luggage. Owner requested 8:00 wheels-up.",
+      "created_at":"2026-05-10","created_by":"admin","expenses":[],"invoice":null
+    },
+    {
+      "id":"f2","client_id":"c1","status":"requested",
+      "departure":{"airport":"KTEB","name":"Teterboro","date":"2026-05-23","time":"15:00"},
+      "arrival":{"airport":"KAPF","name":"Naples Municipal","date":"2026-05-23","time":"18:00"},
+      "passengers":{"count":3,"primary":"Robert Smith"},
+      "crew":{"pic":null,"sic":null},
+      "catering":"TBD","ground":"None","notes":"Owner requested return leg. Awaiting confirmation on crew availability.",
+      "created_at":"2026-05-12","created_by":"client","expenses":[],"invoice":null
+    },
+    {
+      "id":"f3","client_id":"c1","status":"completed",
+      "departure":{"airport":"KAPF","name":"Naples Municipal","date":"2026-04-28","time":"09:15"},
+      "arrival":{"airport":"KASE","name":"Aspen","date":"2026-04-28","time":"13:40"},
+      "passengers":{"count":2,"primary":"Robert Smith"},
+      "crew":{"pic":"Capt. James Williams","sic":"FO Daniel Davis"},
+      "catering":"Light snacks + champagne","ground":"Rental at KASE",
+      "notes":"Weather routing via DEN. Smooth flight.",
+      "created_at":"2026-04-15","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":4280,"vendor":"KAPF Avfuel","description":"460 gal @ $9.30"},
+        {"category":"fuel","amount":3650,"vendor":"KASE Atlantic","description":"380 gal @ $9.60"},
+        {"category":"fbo","amount":425,"vendor":"KASE Atlantic","description":"Ramp + handling"},
+        {"category":"catering","amount":280,"vendor":"Skyline Catering","description":"Mixed snacks + 2 btl champagne"}
+      ],
+      "invoice":{"id":"inv-2026-0042","amount":18650,"status":"paid","number":"INV-2026-0042","due_date":"2026-05-15","paid_date":"2026-05-08"}
+    },
+    {
+      "id":"f4","client_id":"c1","status":"completed",
+      "departure":{"airport":"KASE","name":"Aspen","date":"2026-05-02","time":"11:00"},
+      "arrival":{"airport":"KAPF","name":"Naples Municipal","date":"2026-05-02","time":"17:20"},
+      "passengers":{"count":2,"primary":"Robert Smith"},
+      "crew":{"pic":"Capt. James Williams","sic":"FO Daniel Davis"},
+      "catering":"Lunch + coffee","ground":"None",
+      "notes":"Return leg. ATC routing east of DEN. Light chop FL400.",
+      "created_at":"2026-04-15","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":4120,"vendor":"KASE Atlantic","description":"430 gal @ $9.60"},
+        {"category":"fbo","amount":580,"vendor":"KAPF Naples Jet Center","description":"Ramp + hangar overnight"},
+        {"category":"catering","amount":195,"vendor":"Aspen Catering","description":"2 lunch boxes"},
+        {"category":"crew","amount":850,"vendor":"Crew per diem","description":"2 nights × 2 crew"}
+      ],
+      "invoice":{"id":"inv-2026-0045","amount":17200,"status":"outstanding","number":"INV-2026-0045","due_date":"2026-05-30","paid_date":null}
+    },
+    {
+      "id":"f5","client_id":"c1","status":"completed",
+      "departure":{"airport":"KAPF","name":"Naples Municipal","date":"2026-03-18","time":"07:30"},
+      "arrival":{"airport":"KDAL","name":"Dallas Love Field","date":"2026-03-18","time":"10:45"},
+      "passengers":{"count":5,"primary":"Robert Smith"},
+      "crew":{"pic":"Capt. Helen Marsh","sic":"FO Daniel Davis"},
+      "catering":"Breakfast service","ground":"Town car at KDAL",
+      "notes":"Business meeting, day trip.",
+      "created_at":"2026-03-10","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":3920,"vendor":"KAPF Avfuel","description":"420 gal @ $9.30"},
+        {"category":"fuel","amount":3340,"vendor":"KDAL Million Air","description":"360 gal @ $9.30"},
+        {"category":"fbo","amount":350,"vendor":"KDAL Million Air","description":"Day ramp"}
+      ],
+      "invoice":{"id":"inv-2026-0033","amount":14820,"status":"paid","number":"INV-2026-0033","due_date":"2026-04-10","paid_date":"2026-04-04"}
+    },
+    {
+      "id":"f6","client_id":"c1","status":"completed",
+      "departure":{"airport":"KDAL","name":"Dallas Love Field","date":"2026-03-18","time":"20:00"},
+      "arrival":{"airport":"KAPF","name":"Naples Municipal","date":"2026-03-18","time":"23:15"},
+      "passengers":{"count":5,"primary":"Robert Smith"},
+      "crew":{"pic":"Capt. Helen Marsh","sic":"FO Daniel Davis"},
+      "catering":"Dinner","ground":"None",
+      "notes":"Day trip return.",
+      "created_at":"2026-03-10","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":3380,"vendor":"KDAL Million Air","description":"360 gal @ $9.40"},
+        {"category":"catering","amount":420,"vendor":"DFW Inflight","description":"5 dinners + bar"}
+      ],
+      "invoice":{"id":"inv-2026-0034","amount":12100,"status":"paid","number":"INV-2026-0034","due_date":"2026-04-10","paid_date":"2026-04-04"}
+    },
+    {
+      "id":"f7","client_id":"c2","status":"completed",
+      "departure":{"airport":"KSNA","name":"John Wayne","date":"2026-04-15","time":"07:00"},
+      "arrival":{"airport":"KSEA","name":"Seattle Tacoma","date":"2026-04-15","time":"10:30"},
+      "passengers":{"count":3,"primary":"David Chen"},
+      "crew":{"pic":"Capt. Marcus Lee","sic":"FO Jenna Park"},
+      "catering":"Continental","ground":"Rental car",
+      "notes":"Routine corporate trip.",
+      "created_at":"2026-04-05","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":2840,"vendor":"KSNA Atlantic","description":"380 gal @ $7.50"},
+        {"category":"fbo","amount":280,"vendor":"KSEA Signature","description":"Ramp"}
+      ],
+      "invoice":{"id":"inv-2026-0040","amount":11200,"status":"paid","number":"INV-2026-0040","due_date":"2026-05-15","paid_date":"2026-05-02"}
+    },
+    {
+      "id":"f8","client_id":"c2","status":"completed",
+      "departure":{"airport":"KSEA","name":"Seattle Tacoma","date":"2026-04-17","time":"14:00"},
+      "arrival":{"airport":"KSNA","name":"John Wayne","date":"2026-04-17","time":"17:15"},
+      "passengers":{"count":3,"primary":"David Chen"},
+      "crew":{"pic":"Capt. Marcus Lee","sic":"FO Jenna Park"},
+      "catering":"Light lunch","ground":"None",
+      "notes":"Return leg.","created_at":"2026-04-05","created_by":"admin",
+      "expenses":[
+        {"category":"fuel","amount":2920,"vendor":"KSEA Signature","description":"390 gal @ $7.50"},
+        {"category":"crew","amount":420,"vendor":"Crew per diem","description":"2 nights × 2 crew"}
+      ],
+      "invoice":{"id":"inv-2026-0041","amount":10800,"status":"outstanding","number":"INV-2026-0041","due_date":"2026-05-25","paid_date":null}
+    }
+  ],
+  "notifications": [
+    {"id":"n1","client_id":"c1","type":"flight_confirmed","message":"Flight KAPF→KTEB on May 20 confirmed. Crew assigned.","date":"2026-05-12","read":false},
+    {"id":"n2","client_id":"c1","type":"flight_requested","message":"Your return-leg request KTEB→KAPF is pending crew assignment.","date":"2026-05-12","read":false},
+    {"id":"n3","client_id":"c1","type":"document_expiring","message":"Insurance Certificate expires in 30 days (Jun 12).","date":"2026-05-12","read":true},
+    {"id":"n4","client_id":"c2","type":"maintenance","message":"Annual inspection in progress. Est. completion May 22.","date":"2026-05-10","read":false}
+  ]
+}
+</script>
+
+<script>
+/* ============== STATE ============== */
+const SEED = JSON.parse(document.getElementById('seed').textContent);
+const LS_KEY = 'j3t-portal-state-v1';
+const SESSION_KEY = 'j3t-portal-session';
+
+function loadState(){
+  try{
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) return JSON.parse(saved);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(SEED));  // deep copy
+}
+function saveState(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function resetState(){ localStorage.removeItem(LS_KEY); state = JSON.parse(JSON.stringify(SEED)); }
+
+let state = loadState();
+
+function getSession(){
+  try{ return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ return null; }
+}
+function setSession(s){ if(s){ sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); } else { sessionStorage.removeItem(SESSION_KEY); } }
+
+/* ============== HELPERS ============== */
+const $ = (s,r=document) => r.querySelector(s);
+const $$ = (s,r=document) => Array.from(r.querySelectorAll(s));
+const h = (str, ...args) => {  // template helper, escapes by default
+  let out = str[0];
+  for (let i=0;i<args.length;i++) out += String(args[i]).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])) + str[i+1];
+  return out;
+};
+const raw = (str, ...args) => {
+  let out = str[0];
+  for (let i=0;i<args.length;i++) out += args[i] + str[i+1];
+  return out;
+};
+function initials(name){ return name.split(/\s+/).map(p=>p[0]).join('').slice(0,2).toUpperCase(); }
+function fmtDate(d, opts={month:'short',day:'numeric',year:'numeric'}){
+  if (!d) return '—';
+  return new Date(d+'T12:00:00').toLocaleDateString('en-US', opts);
+}
+function fmtDateShort(d){ return fmtDate(d,{month:'short',day:'numeric'}); }
+function fmtMoney(n){ return '$' + (Math.round(n)).toLocaleString('en-US'); }
+function fmtTime(t){ return t || '—'; }
+function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a))/86400000); }
+function daysFromNow(d){ return daysBetween(new Date().toISOString().slice(0,10), d); }
+function uid(prefix){ return prefix + '-' + Math.random().toString(36).slice(2,8); }
+function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;'); }
+
+/* ============== ROUTER ============== */
+function parseRoute(){
+  const hash = location.hash.replace(/^#\/?/, '') || '';
+  const parts = hash.split('/').filter(Boolean);
+  return { path: parts.join('/'), parts };
+}
+window.addEventListener('hashchange', render);
+window.addEventListener('load', render);
+window.addEventListener('click', e => {
+  const a = e.target.closest('a[data-nav]');
+  if (a) {
+    e.preventDefault();
+    location.hash = a.getAttribute('data-nav');
+  }
+});
+
+function navigate(hash){ location.hash = hash; }
+
+/* ============== NOTIFY (TOAST) ============== */
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+/* ============== SVG ICONS ============== */
+const I = {
+  dash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="1"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  plane: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+  docs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  wrench: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+  bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>'
+};
+
+/* ============== MAIN RENDER ============== */
+function render(){
+  const session = getSession();
+  const route = parseRoute();
+
+  if (!session){
+    document.getElementById('app').innerHTML = renderLogin();
+    return;
+  }
+
+  // Role-based default route
+  let path = route.path;
+  if (!path) path = session.role === 'admin' ? 'admin' : 'dashboard';
+
+  document.getElementById('app').innerHTML = renderShell(session, path, route.parts);
+  // Attach view-specific handlers
+  attachViewHandlers(session, path, route.parts);
+}
+
+/* ============== LOGIN VIEW ============== */
+function renderLogin(){
+  return raw`
+  <div class="auth-shell">
+    <svg class="auth-compass" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#A08450" stroke-width=".6" aria-hidden="true">
+      <circle cx="200" cy="200" r="184"/><circle cx="200" cy="200" r="146"/><circle cx="200" cy="200" r="102"/>
+      <line x1="200" y1="8" x2="200" y2="392"/><line x1="8" y1="200" x2="392" y2="200"/>
+      <line x1="64" y1="64" x2="336" y2="336"/><line x1="336" y1="64" x2="64" y2="336"/>
+      <polygon points="200,34 208,192 366,200 208,208 200,366 192,208 34,200 192,192" stroke-width=".9" opacity=".85"/>
+    </svg>
+    <div class="auth-card">
+      <p class="auth-mark">J3<span>T</span></p>
+      <p class="auth-sub">Owner Portal &middot; Part 91</p>
+      <h1>Welcome <em>back.</em></h1>
+      <p class="auth-tag">Sign in to your aircraft portal.</p>
+      <form id="loginForm">
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
+        <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="(any value — this is a demo)" autocomplete="current-password"></div>
+        <button type="submit" class="auth-btn">Sign in</button>
+      </form>
+      <div class="demo-list">
+        <p class="demo-list-title">Demo Accounts &middot; click to autofill</p>
+        <div class="demo-acc" data-fill="admin@j3taviation.com"><span class="demo-acc-name">J3T Administrator</span><span class="demo-acc-role">Admin</span></div>
+        <div class="demo-acc" data-fill="smith@example.com"><span class="demo-acc-name">Robert Smith &middot; N123JT</span><span class="demo-acc-role">Owner</span></div>
+        <div class="demo-acc" data-fill="chen@example.com"><span class="demo-acc-name">David Chen &middot; N456PL</span><span class="demo-acc-role">Owner</span></div>
+      </div>
+      <p class="auth-foot">Preview build · not for production use</p>
+    </div>
+  </div>`;
+}
+
+/* ============== APP SHELL ============== */
+function renderShell(session, path, parts){
+  const isAdmin = session.role === 'admin';
+  const viewingClient = isAdmin && session.impersonating ? state.clients.find(c=>c.id===session.impersonating) : null;
+  const isImpersonating = !!viewingClient;
+  const effectiveRole = isImpersonating ? 'owner' : session.role;
+  const clientId = isImpersonating ? viewingClient.id : (effectiveRole==='owner' ? session.userId : null);
+
+  // Sidebar links depend on role
+  const adminLinks = [
+    ['admin', 'Clients', I.users],
+    ['admin/settings', 'Settings', I.settings],
+    ['admin/data', 'Demo Data', I.docs]
+  ];
+  const ownerLinks = [
+    ['dashboard', 'Dashboard', I.dash],
+    ['calendar', 'Calendar', I.cal],
+    ['flights', 'Flights', I.plane],
+    ['documents', 'Documents', I.docs],
+    ['maintenance', 'Maintenance', I.wrench],
+    ['costs', 'Costs', I.chart]
+  ];
+  const links = effectiveRole === 'admin' ? adminLinks : ownerLinks;
+
+  const userName = isImpersonating ? viewingClient.name : (isAdmin ? 'J3T Administrator' : (state.clients.find(c=>c.id===session.userId)||{}).name);
+  const userRole = isImpersonating ? 'Owner (impersonated)' : (isAdmin ? 'Administrator' : 'Aircraft Owner');
+
+  const sideLinks = links.map(([p,label,icon]) => raw`<a href="#${p}" data-nav="${p}" class="side-link ${path.startsWith(p)?'active':''}">${icon}<span>${label}</span></a>`).join('');
+
+  const impersonateBanner = isImpersonating ? raw`
+    <div class="side-impersonate">
+      Viewing as
+      <strong>${h`${viewingClient.name}`}</strong>
+      <a href="#admin" data-nav="admin">Return to admin</a>
+    </div>
+  ` : '';
+
+  const view = renderView(effectiveRole, path, parts, clientId);
+
+  return raw`
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="side-brand">
+          <div class="side-brand-mark">J3<span>T</span></div>
+          <div class="side-brand-sub">Owner Portal</div>
+        </div>
+        ${impersonateBanner}
+        <nav class="side-nav">${sideLinks}</nav>
+        <div class="side-foot">
+          <div class="side-user">
+            <div class="side-avatar">${h`${initials(userName||'??')}`}</div>
+            <div class="side-user-info">
+              <div class="side-user-name">${h`${userName||'Unknown'}`}</div>
+              <div class="side-user-role">${h`${userRole}`}</div>
+            </div>
+          </div>
+          <button class="side-logout" id="logoutBtn">Sign out &rarr;</button>
+        </div>
+      </aside>
+      <main class="main">
+        ${view}
+      </main>
+    </div>`;
+}
+
+/* ============== VIEW DISPATCH ============== */
+function renderView(role, path, parts, clientId){
+  if (role === 'admin'){
+    if (path === 'admin' || path === 'admin/') return adminDashboard();
+    if (path === 'admin/clients/new') return adminClientForm(null);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2]) return adminClientForm(parts[2]);
+    if (path === 'admin/settings') return adminSettings();
+    if (path === 'admin/data') return adminData();
+    return adminDashboard();
+  }
+  // Owner views (or admin impersonating)
+  if (path === 'dashboard') return ownerDashboard(clientId);
+  if (path === 'calendar') return ownerCalendar(clientId);
+  if (path === 'flights') return ownerFlights(clientId);
+  if (parts[0]==='flights' && parts[1]==='new') return ownerFlightRequest(clientId);
+  if (parts[0]==='flights' && parts[1]) return ownerFlightDetail(parts[1], clientId);
+  if (path === 'documents') return ownerDocuments(clientId);
+  if (path === 'maintenance') return ownerMaintenance(clientId);
+  if (path === 'costs') return ownerCosts(clientId);
+  return ownerDashboard(clientId);
+}
+
+/* ============== OWNER DASHBOARD ============== */
+function ownerDashboard(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!c) return errorView('Client not found');
+
+  const flights = state.flights.filter(f=>f.client_id===clientId);
+  const upcoming = flights.filter(f=>f.status==='confirmed' || f.status==='requested').sort((a,b)=>a.departure.date.localeCompare(b.departure.date));
+  const nextFlight = upcoming[0];
+
+  const outstanding = flights.filter(f=>f.invoice && f.invoice.status==='outstanding');
+  const outstandingTotal = outstanding.reduce((s,f)=>s+f.invoice.amount, 0);
+
+  const ytdSpend = flights.filter(f=>f.status==='completed' && f.invoice && f.invoice.status==='paid' && f.invoice.paid_date && f.invoice.paid_date.startsWith('2026'))
+    .reduce((s,f)=>s+f.invoice.amount, 0);
+
+  const annualDue = daysFromNow(c.maintenance.next_annual);
+  const insuranceDoc = c.docs.find(d=>d.type==='insurance');
+  const insuranceDue = insuranceDoc ? daysFromNow(insuranceDoc.expires_at) : null;
+
+  const notifs = state.notifications.filter(n=>n.client_id===clientId && !n.read).slice(0,3);
+
+  return raw`
+    ${topbar('Dashboard', 'Welcome back, ' + h`${c.name.split(' ')[0]}`)}
+    <div class="view">
+      <div class="dash-status">
+        <div>
+          <div class="dash-status-label">Aircraft Status &middot; ${h`${c.aircraft.tail}`} ${h`${c.aircraft.model}`}</div>
+          <div class="dash-status-value">${h`${c.status_note}`}</div>
+        </div>
+        <div><span class="pill ${h`${c.status}`}">${h`${c.status}`}</span></div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card" onclick="navigate('#flights/${nextFlight?nextFlight.id:''}')">
+          <div class="card-label"><span>Next Flight</span></div>
+          ${nextFlight ? raw`
+            <div class="card-value lg">${h`${nextFlight.departure.airport}`}<em>&rarr;</em>${h`${nextFlight.arrival.airport}`}</div>
+            <div class="card-meta"><strong>${fmtDateShort(nextFlight.departure.date)}</strong> &middot; ${h`${nextFlight.departure.time}`} &middot; <span class="pill ${h`${nextFlight.status}`}">${h`${nextFlight.status}`}</span></div>
+          ` : raw`<div class="card-value">—</div><div class="card-meta">No upcoming flights</div>`}
+        </div>
+
+        <div class="card" onclick="navigate('#flights')">
+          <div class="card-label"><span>Outstanding</span></div>
+          <div class="card-value">${outstandingTotal>0 ? fmtMoney(outstandingTotal) : '$0'}</div>
+          <div class="card-meta">${outstanding.length} ${outstanding.length===1?'invoice':'invoices'} pending</div>
+        </div>
+
+        <div class="card" onclick="navigate('#maintenance')">
+          <div class="card-label"><span>Next Inspection</span></div>
+          <div class="card-value">${annualDue>0?annualDue:0}<em> days</em></div>
+          <div class="card-meta">Annual &middot; ${fmtDate(c.maintenance.next_annual)}</div>
+        </div>
+
+        <div class="card" onclick="navigate('#costs')">
+          <div class="card-label"><span>YTD Operating</span></div>
+          <div class="card-value">${fmtMoney(ytdSpend)}</div>
+          <div class="card-meta">${flights.filter(f=>f.status==='completed').length} flights completed</div>
+        </div>
+
+        <div class="card" onclick="navigate('#documents')">
+          <div class="card-label"><span>Documents</span></div>
+          <div class="card-value">${c.docs.length}<em> on file</em></div>
+          <div class="card-meta">${insuranceDue!==null && insuranceDue<60 ? raw`<span style="color:var(--amber)">Insurance expires in ${insuranceDue} days</span>` : 'All current'}</div>
+        </div>
+
+        <div class="card" onclick="navigate('#flights/new')">
+          <div class="card-label"><span>Request a Flight</span></div>
+          <div class="card-value" style="font-size:24px;">New trip <em>&rarr;</em></div>
+          <div class="card-meta">Submit a request, we'll confirm in 24h</div>
+        </div>
+      </div>
+
+      ${notifs.length > 0 ? raw`
+        <div class="section">
+          <div class="section-head">
+            <h2 class="section-title">Recent <em>activity</em></h2>
+          </div>
+          ${notifs.map(n=>raw`
+            <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--mist);">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:6px;flex-shrink:0;"></div>
+              <div style="flex:1;">
+                <div style="font-family:var(--serif);font-size:16px;color:var(--charcoal);">${h`${n.message}`}</div>
+                <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);margin-top:4px;">${fmtDateShort(n.date)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Recent <em>flights</em></h2>
+          <a href="#flights" data-nav="flights" class="section-link">View all &rarr;</a>
+        </div>
+        ${flightsTable(flights.filter(f=>f.status==='completed').slice(0,3))}
+      </div>
+    </div>`;
+}
+
+function flightsTable(flights){
+  if (flights.length===0) return raw`<div class="empty"><h3>No flights yet</h3><p>Your past trips will appear here.</p></div>`;
+  return raw`
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Date</th><th>Route</th><th>Crew</th><th>Status</th><th class="num">Invoice</th></tr></thead>
+      <tbody>
+        ${flights.map(f=>raw`
+          <tr onclick="navigate('#flights/${f.id}')">
+            <td>${fmtDate(f.departure.date)}</td>
+            <td><strong>${h`${f.departure.airport}`} &rarr; ${h`${f.arrival.airport}`}</strong></td>
+            <td class="muted">${h`${f.crew.pic||'TBD'}`}</td>
+            <td><span class="pill ${h`${f.status}`}">${h`${f.status}`}</span></td>
+            <td class="num">${f.invoice ? raw`${fmtMoney(f.invoice.amount)} <span class="pill ${h`${f.invoice.status}`}" style="margin-left:8px;">${h`${f.invoice.status}`}</span>` : '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table></div>`;
+}
+
+/* ============== OWNER CALENDAR ============== */
+let calMonth = null;  // YYYY-MM
+function ownerCalendar(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!calMonth) calMonth = new Date().toISOString().slice(0,7);
+  const [yr, mo] = calMonth.split('-').map(Number);
+  const firstDay = new Date(yr, mo-1, 1);
+  const startDow = firstDay.getDay();
+  const daysInMonth = new Date(yr, mo, 0).getDate();
+  const monthName = firstDay.toLocaleString('en-US',{month:'long',year:'numeric'});
+
+  const today = new Date().toISOString().slice(0,10);
+  const flights = state.flights.filter(f=>f.client_id===clientId);
+
+  // Build grid: 6 rows × 7 cols = 42 cells
+  const cells = [];
+  // Lead from prev month
+  for (let i=0;i<startDow;i++){
+    const d = new Date(yr, mo-1, -(startDow-1-i));
+    cells.push({date:d.toISOString().slice(0,10), num:d.getDate(), muted:true});
+  }
+  for (let d=1;d<=daysInMonth;d++){
+    const ds = `${yr}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells.push({date:ds, num:d, muted:false});
+  }
+  while (cells.length<42){
+    const last = new Date(cells[cells.length-1].date);
+    last.setDate(last.getDate()+1);
+    cells.push({date:last.toISOString().slice(0,10), num:last.getDate(), muted:true});
+  }
+
+  const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  function prevMonth(){ const d = new Date(yr, mo-2, 1); return d.toISOString().slice(0,7); }
+  function nextMonth(){ const d = new Date(yr, mo, 1); return d.toISOString().slice(0,7); }
+
+  return raw`
+    ${topbar('Calendar', 'Flight schedule')}
+    <div class="view">
+      <div class="cal-head">
+        <div>
+          <h2 class="cal-month">${monthName}</h2>
+          <div style="font-size:11px;color:var(--ash);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;">${c.aircraft.tail} &middot; ${c.aircraft.model}</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="cal-nav">
+            <button onclick="calMonth='${prevMonth()}';render();">&lsaquo;</button>
+            <button onclick="calMonth='${new Date().toISOString().slice(0,7)}';render();">Today</button>
+            <button onclick="calMonth='${nextMonth()}';render();">&rsaquo;</button>
+          </div>
+          <a href="#flights/new" data-nav="flights/new" class="btn primary">${I.plus}Request flight</a>
+        </div>
+      </div>
+      <div class="cal-grid">
+        ${dows.map(d=>raw`<div class="cal-dow">${d}</div>`).join('')}
+        ${cells.map(cell=>{
+          const dayFlights = flights.filter(f=>f.departure.date===cell.date);
+          return raw`
+            <div class="cal-cell ${cell.muted?'muted':''} ${cell.date===today?'today':''}">
+              <div class="cal-num">${cell.num}</div>
+              ${dayFlights.map(f=>raw`
+                <a class="cal-flight ${h`${f.status}`}" onclick="navigate('#flights/${f.id}')">
+                  <strong>${h`${f.departure.time}`} &middot; ${h`${f.departure.airport}`}&rarr;${h`${f.arrival.airport}`}</strong>
+                </a>
+              `).join('')}
+            </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:24px;justify-content:center;margin-top:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);">
+        <span><span style="display:inline-block;width:10px;height:10px;border-left:2px solid var(--gold);background:rgba(160,132,80,.1);margin-right:6px;"></span>Confirmed</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-left:2px solid var(--amber);background:rgba(217,165,83,.1);margin-right:6px;"></span>Requested</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-left:2px solid var(--green);background:rgba(127,167,123,.08);margin-right:6px;"></span>Completed</span>
+      </div>
+    </div>`;
+}
+
+/* ============== OWNER FLIGHTS LIST ============== */
+function ownerFlights(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  const flights = state.flights.filter(f=>f.client_id===clientId).sort((a,b)=>b.departure.date.localeCompare(a.departure.date));
+  return raw`
+    ${topbar('Flights', c.aircraft.tail + ' history')}
+    <div class="view">
+      <div class="section-head" style="margin-bottom:18px;">
+        <h2 class="section-title">All <em>flights</em></h2>
+        <a href="#flights/new" data-nav="flights/new" class="btn primary">${I.plus}Request flight</a>
+      </div>
+      ${flightsTable(flights)}
+    </div>`;
+}
+
+/* ============== OWNER FLIGHT DETAIL ============== */
+function ownerFlightDetail(flightId, clientId){
+  const f = state.flights.find(x=>x.id===flightId && x.client_id===clientId);
+  if (!f) return errorView('Flight not found');
+  const c = state.clients.find(x=>x.id===clientId);
+
+  const expByCat = {};
+  (f.expenses||[]).forEach(e=>{ expByCat[e.category] = (expByCat[e.category]||0) + e.amount; });
+  const expTotal = (f.expenses||[]).reduce((s,e)=>s+e.amount,0);
+
+  return raw`
+    ${topbar('Flight detail', f.departure.airport+' → '+f.arrival.airport, [['#flights','Flights']])}
+    <div class="view">
+      <div class="fd-head">
+        <div class="fd-route">
+          <div>
+            <div class="fd-airport">${h`${f.departure.airport}`}</div>
+            <div class="fd-airport-name">${h`${f.departure.name}`} &middot; ${h`${f.departure.time}`}</div>
+          </div>
+          <div class="fd-arrow">&rarr;</div>
+          <div>
+            <div class="fd-airport">${h`${f.arrival.airport}`}</div>
+            <div class="fd-airport-name">${h`${f.arrival.name}`} &middot; ${h`${f.arrival.time}`}</div>
+          </div>
+        </div>
+        <div class="fd-meta">
+          <div class="fd-meta-item"><div class="fd-meta-label">Date</div><div class="fd-meta-value">${fmtDate(f.departure.date)}</div></div>
+          <div class="fd-meta-item"><div class="fd-meta-label">Status</div><div><span class="pill ${h`${f.status}`}">${h`${f.status}`}</span></div></div>
+          <div class="fd-meta-item"><div class="fd-meta-label">Aircraft</div><div class="fd-meta-value">${h`${c.aircraft.tail}`} &middot; ${h`${c.aircraft.model}`}</div></div>
+        </div>
+      </div>
+
+      <div class="fd-sections">
+        <div>
+          <div class="fd-panel" style="margin-bottom:24px;">
+            <h3>Trip details</h3>
+            <dl class="kv">
+              <dt>Crew (PIC)</dt><dd>${h`${f.crew.pic || 'Awaiting assignment'}`}</dd>
+              <dt>Crew (SIC)</dt><dd>${h`${f.crew.sic || 'Awaiting assignment'}`}</dd>
+              <dt>Passengers</dt><dd>${f.passengers.count} &middot; ${h`${f.passengers.primary}`}</dd>
+              <dt>Catering</dt><dd>${h`${f.catering||'None requested'}`}</dd>
+              <dt>Ground</dt><dd>${h`${f.ground||'None requested'}`}</dd>
+              <dt>Notes</dt><dd style="font-family:var(--sans);font-size:13px;color:var(--ash);">${h`${f.notes||'—'}`}</dd>
+            </dl>
+          </div>
+
+          ${(f.expenses && f.expenses.length>0) ? raw`
+            <div class="fd-panel">
+              <h3>Expenses &middot; ${fmtMoney(expTotal)}</h3>
+              <table class="table" style="border:none;">
+                <thead><tr><th>Category</th><th>Vendor</th><th>Description</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  ${f.expenses.map(e=>raw`
+                    <tr><td><span class="pill" style="color:var(--gold);border-color:var(--gold-pale);background:rgba(160,132,80,.05);">${h`${e.category}`}</span></td>
+                    <td>${h`${e.vendor}`}</td><td class="muted">${h`${e.description}`}</td>
+                    <td class="num"><strong>${fmtMoney(e.amount)}</strong></td></tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+        </div>
+
+        <div>
+          ${f.invoice ? raw`
+            <div class="fd-panel" style="background:${f.invoice.status==='paid'?'rgba(127,167,123,.05)':'rgba(217,165,83,.05)'};border-color:${f.invoice.status==='paid'?'rgba(127,167,123,.3)':'rgba(217,165,83,.3)'};">
+              <h3>Invoice</h3>
+              <div style="text-align:center;margin:12px 0 20px;">
+                <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--ash);margin-bottom:6px;">${h`${f.invoice.number}`}</div>
+                <div style="font-family:var(--serif);font-size:42px;font-weight:300;color:var(--charcoal);line-height:1;">${fmtMoney(f.invoice.amount)}</div>
+                <div style="margin-top:12px;"><span class="pill ${h`${f.invoice.status}`}">${h`${f.invoice.status}`}</span></div>
+              </div>
+              <dl class="kv">
+                <dt>Due date</dt><dd>${fmtDate(f.invoice.due_date)}</dd>
+                ${f.invoice.paid_date ? raw`<dt>Paid</dt><dd>${fmtDate(f.invoice.paid_date)}</dd>` : ''}
+              </dl>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--mist);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ash);">
+                <em style="color:var(--gold);font-style:normal;font-weight:600;">Live sync placeholder</em><br>
+                <span style="text-transform:none;letter-spacing:0;font-family:var(--serif);font-size:13px;font-style:italic;">Zoho integration disabled in this preview — invoice status will sync from Zoho Books in production.</span>
+              </div>
+            </div>
+          ` : raw`
+            <div class="fd-panel">
+              <h3>Invoice</h3>
+              <p style="color:var(--ash);font-family:var(--serif);font-style:italic;">Invoice will be issued after flight completion.</p>
+            </div>
+          `}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============== OWNER FLIGHT REQUEST ============== */
+function ownerFlightRequest(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  return raw`
+    ${topbar('Request a flight', 'Submit a new trip request', [['#dashboard','Dashboard']])}
+    <div class="view" style="max-width:680px;">
+      <form id="flightForm">
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Departure</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Airport (ICAO)</label><input id="dep_airport" placeholder="KAPF" required></div>
+            <div class="field light-field"><label>Airport name</label><input id="dep_name" placeholder="Naples Municipal"></div>
+          </div>
+          <div class="row2">
+            <div class="field light-field"><label>Date</label><input type="date" id="dep_date" required></div>
+            <div class="field light-field"><label>Time</label><input type="time" id="dep_time" required></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Arrival</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Airport (ICAO)</label><input id="arr_airport" placeholder="KTEB" required></div>
+            <div class="field light-field"><label>Airport name</label><input id="arr_name" placeholder="Teterboro"></div>
+          </div>
+          <div class="row2">
+            <div class="field light-field"><label>Date</label><input type="date" id="arr_date" required></div>
+            <div class="field light-field"><label>Time</label><input type="time" id="arr_time" required></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Trip</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Passengers</label><input type="number" id="pax_count" value="1" min="1" max="9" required></div>
+            <div class="field light-field"><label>Primary passenger</label><input id="pax_name" value="${h`${c.name}`}"></div>
+          </div>
+          <div class="field light-field"><label>Captain (hired by you, optional)</label><input id="captain" placeholder="Capt. Smith"></div>
+          <div class="field light-field"><label>Catering</label><input id="catering" placeholder="Light breakfast, coffee"></div>
+          <div class="field light-field"><label>Ground transport</label><input id="ground" placeholder="Sentient car at destination"></div>
+          <div class="field light-field"><label>Notes</label><textarea id="notes" rows="3" placeholder="Anything else we should know"></textarea></div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <a href="#dashboard" data-nav="dashboard" class="btn ghost">Cancel</a>
+          <button type="submit" class="btn primary">Submit request</button>
+        </div>
+      </form>
+    </div>`;
+}
+
+/* ============== OWNER DOCUMENTS ============== */
+function ownerDocuments(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  return raw`
+    ${topbar('Documents', 'Vault for ' + c.aircraft.tail)}
+    <div class="view">
+      <div class="section-head">
+        <h2 class="section-title">Aircraft &amp; <em>operations</em></h2>
+        <button class="btn ghost" onclick="toast('Upload disabled in preview')">${I.plus}Upload</button>
+      </div>
+      <div class="docs-grid">
+        ${c.docs.map(d=>{
+          const exp = d.expires_at ? daysFromNow(d.expires_at) : null;
+          const expiring = exp !== null && exp < 60;
+          return raw`
+            <div class="doc">
+              <div class="doc-icon"></div>
+              <div class="doc-type">${h`${d.type}`}</div>
+              <div class="doc-name">${h`${d.name}`}</div>
+              <div class="doc-meta">
+                ${d.expires_at ? raw`<span class="${expiring?'doc-expiring':''}">Expires ${fmtDateShort(d.expires_at)}${expiring?` (${exp} d)`:''}</span>` : raw`<span>No expiration</span>`}
+                <span>${h`${d.size}`}</span>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <button class="btn sm ghost" onclick="toast('Download disabled in preview')">Download</button>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:32px;padding:18px;background:var(--cream);border-left:3px solid var(--gold);font-family:var(--serif);font-style:italic;color:var(--ash);">
+        Documents are stored privately for your aircraft only. Insurance and registration renewals trigger automatic email reminders 60 days before expiration.
+      </div>
+    </div>`;
+}
+
+/* ============== OWNER MAINTENANCE ============== */
+function ownerMaintenance(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  const m = c.maintenance;
+  const daysToAnnual = daysFromNow(m.next_annual);
+  const annualPct = Math.max(0, Math.min(100, (365 - daysToAnnual) / 365 * 100));
+  const phasePct = Math.max(0, Math.min(100, (m.hobbs_current / m.hobbs_at_next_phase) * 100));
+
+  return raw`
+    ${topbar('Maintenance', c.aircraft.tail + ' · ' + c.aircraft.model)}
+    <div class="view">
+      <div class="mx-grid">
+        <div class="mx-card">
+          <div class="mx-card-label">Annual Inspection</div>
+          <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);">${daysToAnnual} <em style="font-style:italic;color:var(--gold);">days</em></div>
+          <div class="mx-progress"><div class="mx-progress-bar ${annualPct>85?'warn':''} ${annualPct>95?'critical':''}" style="width:${annualPct}%"></div></div>
+          <div class="mx-meta"><span>Last: ${fmtDate(m.last_annual)}</span><span>Next: ${fmtDate(m.next_annual)}</span></div>
+        </div>
+
+        <div class="mx-card">
+          <div class="mx-card-label">${h`${m.next_phase}`}</div>
+          <div style="font-family:var(--serif);font-size:30px;font-weight:300;color:var(--charcoal);">${(m.hobbs_at_next_phase - m.hobbs_current).toFixed(1)} <em style="font-style:italic;color:var(--gold);">hrs</em></div>
+          <div class="mx-progress"><div class="mx-progress-bar ${phasePct>85?'warn':''} ${phasePct>95?'critical':''}" style="width:${phasePct}%"></div></div>
+          <div class="mx-meta"><span>Current: ${m.hobbs_current.toFixed(1)} hrs</span><span>At: ${m.hobbs_at_next_phase} hrs</span></div>
+        </div>
+
+        <div class="mx-card">
+          <div class="mx-card-label">Aircraft Status</div>
+          <div style="margin-top:10px;"><span class="pill ${h`${c.status}`}" style="font-size:11px;padding:6px 12px;">${h`${c.status}`}</span></div>
+          <div style="font-family:var(--serif);font-style:italic;color:var(--ash);margin-top:12px;font-size:14px;">${h`${c.status_note}`}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2 class="section-title">Open <em>discrepancies</em></h2></div>
+        ${m.squawks && m.squawks.length>0 ? raw`
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th>Item</th><th>Severity</th></tr></thead>
+            <tbody>${m.squawks.map(s=>raw`<tr><td>${h`${s.item}`}</td><td><span class="pill ${s.severity==='major'?'urgent':'pending'}">${h`${s.severity}`}</span></td></tr>`).join('')}</tbody>
+          </table></div>
+        ` : raw`<div class="empty"><h3>No open items</h3><p>All systems in nominal condition.</p></div>`}
+      </div>
+
+      <div style="margin-top:32px;padding:18px;background:var(--cream);border-left:3px solid var(--gold);font-family:var(--serif);font-style:italic;color:var(--ash);">
+        Hobbs hours sync nightly from the aircraft's logbook. Maintenance scheduling is coordinated with your preferred MRO; vendor invoices flow through J3T at actual cost (no markups).
+      </div>
+    </div>`;
+}
+
+/* ============== OWNER COSTS ============== */
+function ownerCosts(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  const flights = state.flights.filter(f=>f.client_id===clientId && f.status==='completed' && f.invoice);
+
+  const ytd2026 = flights.filter(f=>f.departure.date.startsWith('2026'));
+  const ytdTotal = ytd2026.reduce((s,f)=>s+f.invoice.amount, 0);
+
+  const byCat = {};
+  ytd2026.forEach(f=>{
+    (f.expenses||[]).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+e.amount; });
+  });
+  const catTotal = Object.values(byCat).reduce((s,v)=>s+v,0) || 1;
+  const sortedCats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+
+  return raw`
+    ${topbar('Costs', 'YTD operating overview · ' + c.aircraft.tail)}
+    <div class="view">
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-label">YTD 2026 Total</div>
+          <div class="card-value lg">${fmtMoney(ytdTotal)}</div>
+          <div class="card-meta">${ytd2026.length} completed flights</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Avg. per Flight</div>
+          <div class="card-value">${ytd2026.length>0 ? fmtMoney(ytdTotal/ytd2026.length) : '$0'}</div>
+          <div class="card-meta">Includes all categories</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Flight Hours YTD</div>
+          <div class="card-value">${(ytd2026.length * 3.5).toFixed(1)}<em> hrs</em></div>
+          <div class="card-meta">Estimate based on routing</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><h2 class="section-title">Expenses by <em>category</em></h2></div>
+        <div class="costs-chart">
+          ${sortedCats.length>0 ? sortedCats.map(([cat,amt])=>raw`
+            <div class="bar-row">
+              <div class="bar-label">${h`${cat}`}</div>
+              <div class="bar-track"><div class="bar-fill" style="width:${(amt/sortedCats[0][1])*100}%"></div></div>
+              <div class="bar-val">${fmtMoney(amt)}</div>
+            </div>
+          `).join('') : raw`<p style="text-align:center;color:var(--ash);padding:32px;">No completed flights this year yet.</p>`}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2 class="section-title">Monthly <em>export</em></h2>
+          <button class="btn ghost" onclick="exportMonthlyCSV('${clientId}')">Download CSV &middot; YTD</button>
+        </div>
+        <p style="font-family:var(--serif);font-size:15px;color:var(--ash);font-style:italic;padding:16px 0;">
+          Export all flight + expense data as CSV for import into Quickbooks, Excel, or your accountant's system. Direct Quickbooks Online sync coming in production.
+        </p>
+      </div>
+    </div>`;
+}
+
+function exportMonthlyCSV(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  const flights = state.flights.filter(f=>f.client_id===clientId && f.status==='completed' && f.invoice);
+  let csv = 'Date,Route,Crew,Invoice,Status,Total\n';
+  flights.forEach(f=>{
+    csv += `${f.departure.date},${f.departure.airport}-${f.arrival.airport},"${f.crew.pic||''}",${f.invoice.number},${f.invoice.status},${f.invoice.amount}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `j3t-${c.aircraft.tail}-flights.csv`;
+  a.click();
+  toast('CSV exported');
+}
+
+/* ============== ADMIN DASHBOARD ============== */
+function adminDashboard(){
+  return raw`
+    ${topbar('Clients', state.clients.length + ' active accounts')}
+    <div class="view">
+      <div class="section-head">
+        <h2 class="section-title">All <em>clients</em></h2>
+        <a href="#admin/clients/new" data-nav="admin/clients/new" class="btn primary">${I.plus}New client</a>
+      </div>
+      <div class="admin-clients">
+        ${state.clients.map(c=>raw`
+          <div class="admin-client">
+            <div class="admin-client-head">
+              <div class="admin-avatar">${h`${initials(c.name)}`}</div>
+              <div>
+                <div class="admin-client-name">${h`${c.name}`}</div>
+                <div class="admin-client-co">${h`${c.company}`}</div>
+              </div>
+            </div>
+            <div class="admin-client-aircraft">
+              <strong>${h`${c.aircraft.tail}`}</strong> &middot; ${h`${c.aircraft.model}`} (${c.aircraft.year}) &middot; ${h`${c.aircraft.home_base}`}
+            </div>
+            <div style="margin:8px 0;"><span class="pill ${h`${c.status}`}">${h`${c.status}`}</span></div>
+            <div class="admin-actions">
+              <button class="btn primary sm" onclick="impersonate('${c.id}')">View as owner &rarr;</button>
+              <a href="#admin/clients/${c.id}" data-nav="admin/clients/${c.id}" class="btn ghost sm">Edit</a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function impersonate(clientId){
+  const s = getSession();
+  s.impersonating = clientId;
+  setSession(s);
+  location.hash = '#dashboard';
+}
+
+/* ============== ADMIN CLIENT FORM ============== */
+function adminClientForm(clientId){
+  const isNew = !clientId;
+  const c = isNew ? {
+    id: uid('c'), name:'', email:'', company:'', phone:'',
+    aircraft:{tail:'',model:'',year:2024,home_base:''}, status:'available',
+    status_note:'', maintenance:{last_annual:'',next_annual:'',hobbs_current:0,hobbs_at_next_phase:0,next_phase:'',squawks:[]}, docs:[]
+  } : state.clients.find(x=>x.id===clientId);
+
+  if (!c) return errorView('Client not found');
+
+  return raw`
+    ${topbar(isNew?'New client':'Edit client', isNew?'Set up a new owner portal':h`${c.name}`, [['#admin','Clients']])}
+    <div class="view" style="max-width:760px;">
+      <form id="clientForm">
+        <input type="hidden" id="c_id" value="${h`${c.id}`}">
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Owner</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Name</label><input id="c_name" value="${h`${c.name}`}" required></div>
+            <div class="field light-field"><label>Company</label><input id="c_company" value="${h`${c.company}`}"></div>
+          </div>
+          <div class="row2">
+            <div class="field light-field"><label>Email</label><input type="email" id="c_email" value="${h`${c.email}`}" required></div>
+            <div class="field light-field"><label>Phone</label><input id="c_phone" value="${h`${c.phone}`}"></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Aircraft</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Tail number</label><input id="c_tail" value="${h`${c.aircraft.tail}`}" required></div>
+            <div class="field light-field"><label>Model</label><input id="c_model" value="${h`${c.aircraft.model}`}" required></div>
+          </div>
+          <div class="row2">
+            <div class="field light-field"><label>Year</label><input type="number" id="c_year" value="${c.aircraft.year}"></div>
+            <div class="field light-field"><label>Home base (ICAO)</label><input id="c_base" value="${h`${c.aircraft.home_base}`}"></div>
+          </div>
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Status</h3>
+          <div class="row2">
+            <div class="field light-field"><label>State</label>
+              <select id="c_status">
+                <option value="available" ${c.status==='available'?'selected':''}>Available</option>
+                <option value="maintenance" ${c.status==='maintenance'?'selected':''}>In maintenance</option>
+                <option value="repositioning" ${c.status==='repositioning'?'selected':''}>Repositioning</option>
+              </select>
+            </div>
+            <div class="field light-field"><label>Note</label><input id="c_note" value="${h`${c.status_note}`}"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:space-between;">
+          ${!isNew ? raw`<button type="button" class="btn danger" onclick="deleteClient('${c.id}')">Delete</button>` : '<span></span>'}
+          <div style="display:flex;gap:12px;">
+            <a href="#admin" data-nav="admin" class="btn ghost">Cancel</a>
+            <button type="submit" class="btn primary">${isNew?'Create client':'Save changes'}</button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+}
+
+function deleteClient(id){
+  if (!confirm('Delete this client? Their flights and data will also be removed.')) return;
+  state.clients = state.clients.filter(c=>c.id!==id);
+  state.flights = state.flights.filter(f=>f.client_id!==id);
+  state.notifications = state.notifications.filter(n=>n.client_id!==id);
+  saveState();
+  toast('Client deleted');
+  location.hash = '#admin';
+}
+
+/* ============== ADMIN SETTINGS ============== */
+function adminSettings(){
+  return raw`
+    ${topbar('Settings', 'Portal configuration')}
+    <div class="view" style="max-width:680px;">
+      <div class="fd-panel" style="margin-bottom:16px;">
+        <h3>Integrations &middot; coming in production</h3>
+        <p style="font-family:var(--serif);font-size:15px;color:var(--ash);line-height:1.8;padding:8px 0;">These will be wired in once the preview lands as a production build.</p>
+        <ul style="list-style:none;padding:0;">
+          <li style="padding:12px 0;border-bottom:1px solid var(--mist);"><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Zoho Books</strong><br><span style="font-family:var(--serif);font-style:italic;color:var(--ash);">Webhook sync for invoice paid/outstanding status.</span></li>
+          <li style="padding:12px 0;border-bottom:1px solid var(--mist);"><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Quickbooks Online</strong><br><span style="font-family:var(--serif);font-style:italic;color:var(--ash);">Direct sync for client accounting export.</span></li>
+          <li style="padding:12px 0;"><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;">Email/SMS notifications</strong><br><span style="font-family:var(--serif);font-style:italic;color:var(--ash);">Postmark + Twilio for transactional alerts.</span></li>
+        </ul>
+      </div>
+      <div class="fd-panel">
+        <h3>Brand</h3>
+        <p style="font-family:var(--serif);font-size:15px;color:var(--ash);">Portal inherits J3T styling — Cormorant Garamond + Montserrat, charcoal + gold palette. Matches j3taviation.com exactly.</p>
+      </div>
+    </div>`;
+}
+
+/* ============== ADMIN DATA ============== */
+function adminData(){
+  return raw`
+    ${topbar('Demo data', 'Preview controls')}
+    <div class="view" style="max-width:680px;">
+      <div class="fd-panel">
+        <h3>Reset demo data</h3>
+        <p style="font-family:var(--serif);font-size:15px;color:var(--ash);line-height:1.8;padding:8px 0;">All portal data is stored in your browser only (no backend yet). If you've added clients, requested flights, or made changes, you can reset to the original demo state below.</p>
+        <button class="btn danger" onclick="if(confirm('Reset all demo data to defaults?')){resetState();saveState();toast('Demo data reset');location.hash='#admin';}">Reset to defaults</button>
+      </div>
+      <div class="fd-panel" style="margin-top:16px;">
+        <h3>What's stored where</h3>
+        <ul style="list-style:none;padding:0;font-family:var(--serif);font-size:14px;color:var(--ash);line-height:1.9;">
+          <li><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:var(--sans);">Client &amp; flight data</strong><br>Browser localStorage. Persists between sessions on this device only.</li>
+          <li style="margin-top:14px;"><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:var(--sans);">Login session</strong><br>Browser sessionStorage. Clears when you close the tab.</li>
+          <li style="margin-top:14px;"><strong style="color:var(--gold);font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:var(--sans);">Production plan</strong><br>Move to Supabase (Postgres) or Cloudflare D1 with passwordless email auth.</li>
+        </ul>
+      </div>
+    </div>`;
+}
+
+/* ============== SHARED COMPONENTS ============== */
+function topbar(title, subtitle, breadcrumbs){
+  const bc = breadcrumbs ? breadcrumbs.map(([href,label])=>raw`<a href="${href}" data-nav="${href.replace('#','')}" style="color:var(--ash);">${h`${label}`}</a> <span style="color:var(--mist);">/</span> `).join('') : '';
+  return raw`
+    <div class="topbar">
+      <div style="display:flex;align-items:center;">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          ${bc ? raw`<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;">${bc}</div>` : ''}
+          <h1 class="topbar-title">${h`${title}`} ${subtitle ? raw`<em style="font-size:14px;color:var(--ash);margin-left:8px;font-style:italic;">${h`${subtitle}`}</em>` : ''}</h1>
+        </div>
+      </div>
+      <div class="topbar-actions"></div>
+    </div>`;
+}
+
+function errorView(msg){
+  return raw`${topbar('Not found','')}<div class="view"><div class="empty"><h3>${h`${msg}`}</h3><a href="#" data-nav="" class="btn ghost" style="margin-top:14px;">Go back</a></div></div>`;
+}
+
+/* ============== HANDLERS ============== */
+function attachViewHandlers(session, path, parts){
+  // Logout
+  const lo = document.getElementById('logoutBtn');
+  if (lo) lo.addEventListener('click', ()=>{ setSession(null); location.hash=''; });
+
+  // Login
+  const lf = document.getElementById('loginForm');
+  if (lf){
+    lf.addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      if (email === 'admin@j3taviation.com'){
+        setSession({role:'admin', userId:'admin', impersonating:null});
+        location.hash = '#admin';
+      } else {
+        const client = state.clients.find(c=>c.email.toLowerCase()===email);
+        if (!client){ toast('No account found for ' + email); return; }
+        setSession({role:'owner', userId:client.id});
+        location.hash = '#dashboard';
+      }
+      render();
+    });
+    $$('.demo-acc').forEach(el => {
+      el.addEventListener('click', ()=>{
+        document.getElementById('loginEmail').value = el.dataset.fill;
+        document.getElementById('loginPassword').value = 'demo';
+      });
+    });
+  }
+
+  // Flight request form
+  const ff = document.getElementById('flightForm');
+  if (ff){
+    ff.addEventListener('submit', e => {
+      e.preventDefault();
+      const clientId = session.impersonating || session.userId;
+      const newFlight = {
+        id: uid('f'),
+        client_id: clientId,
+        status: 'requested',
+        departure: {
+          airport: $('#dep_airport').value.toUpperCase().trim(),
+          name: $('#dep_name').value.trim(),
+          date: $('#dep_date').value,
+          time: $('#dep_time').value
+        },
+        arrival: {
+          airport: $('#arr_airport').value.toUpperCase().trim(),
+          name: $('#arr_name').value.trim(),
+          date: $('#arr_date').value,
+          time: $('#arr_time').value
+        },
+        passengers: {
+          count: parseInt($('#pax_count').value, 10),
+          primary: $('#pax_name').value.trim()
+        },
+        crew: { pic: $('#captain').value.trim() || null, sic: null },
+        catering: $('#catering').value.trim(),
+        ground: $('#ground').value.trim(),
+        notes: $('#notes').value.trim(),
+        created_at: new Date().toISOString().slice(0,10),
+        created_by: session.role === 'admin' ? 'admin' : 'client',
+        expenses: [],
+        invoice: null
+      };
+      state.flights.push(newFlight);
+      state.notifications.push({
+        id: uid('n'),
+        client_id: clientId,
+        type: 'flight_requested',
+        message: `Flight request ${newFlight.departure.airport}→${newFlight.arrival.airport} on ${newFlight.departure.date} submitted.`,
+        date: new Date().toISOString().slice(0,10),
+        read: false
+      });
+      saveState();
+      toast('Flight request submitted');
+      location.hash = '#calendar';
+    });
+  }
+
+  // Client form
+  const cf = document.getElementById('clientForm');
+  if (cf){
+    cf.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = $('#c_id').value;
+      const existing = state.clients.find(c=>c.id===id);
+      const data = {
+        id,
+        name: $('#c_name').value.trim(),
+        email: $('#c_email').value.trim().toLowerCase(),
+        company: $('#c_company').value.trim(),
+        phone: $('#c_phone').value.trim(),
+        aircraft: {
+          tail: $('#c_tail').value.toUpperCase().trim(),
+          model: $('#c_model').value.trim(),
+          year: parseInt($('#c_year').value, 10),
+          home_base: $('#c_base').value.toUpperCase().trim()
+        },
+        status: $('#c_status').value,
+        status_note: $('#c_note').value.trim(),
+        maintenance: existing ? existing.maintenance : {
+          last_annual: '2025-01-01', next_annual: '2026-12-31',
+          hobbs_current: 0, hobbs_at_next_phase: 100,
+          next_phase: 'Initial inspection', squawks: []
+        },
+        docs: existing ? existing.docs : []
+      };
+      if (existing){
+        Object.assign(existing, data);
+        toast('Client updated');
+      } else {
+        state.clients.push(data);
+        toast('Client created');
+      }
+      saveState();
+      location.hash = '#admin';
+    });
+  }
+}
+
+</script>
+</body>
+</html>
