@@ -450,6 +450,168 @@
     background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
     color: var(--missed); padding: 10px 14px; border-radius: 9px; font-size: 13px; margin-bottom: 12px;
   }
+
+  /* Workout view */
+  .wo-wrap { display: grid; gap: 16px; }
+  .wo-timer-card {
+    background: linear-gradient(180deg, rgba(20,26,36,0.95), rgba(12,16,24,0.95)), var(--panel-solid);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-md);
+  }
+  @media (max-width: 700px) {
+    .wo-timer-card { grid-template-columns: 1fr; }
+  }
+  .wo-clock {
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 64px;
+    font-weight: 800;
+    color: var(--gold-2);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    text-shadow: 0 0 24px var(--gold-glow);
+  }
+  .wo-clock.running { color: var(--made); text-shadow: 0 0 24px var(--made-glow); }
+  .wo-clock.done { color: var(--missed); text-shadow: 0 0 24px var(--missed-glow); animation: woFlash 0.6s ease-in-out 3; }
+  @keyframes woFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .wo-clock-sub { text-align: center; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+  .wo-clock-col { display: flex; flex-direction: column; }
+  .wo-ctrl-col { display: flex; flex-direction: column; gap: 10px; }
+  .wo-ctrl-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .wo-ctrl-row label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .wo-secs-input {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: var(--ink);
+    padding: 8px 10px; border-radius: 8px; font-size: 16px; width: 80px;
+    font-variant-numeric: tabular-nums; text-align: center;
+  }
+  .wo-preset {
+    background: transparent; border: 1px solid var(--border); color: var(--ink-2);
+    padding: 6px 10px; border-radius: 7px; font-size: 11px; letter-spacing: 0.1em;
+  }
+  .wo-preset:hover { border-color: var(--gold); color: var(--gold-2); }
+  .wo-big-btn {
+    background: var(--gold); color: #1a1208; border: none;
+    padding: 12px 22px; border-radius: 10px;
+    font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 800;
+    box-shadow: 0 0 18px var(--gold-glow);
+  }
+  .wo-big-btn:hover { background: var(--gold-2); }
+  .wo-big-btn.pause { background: var(--gold-2); }
+  .wo-big-btn.ghost {
+    background: transparent; color: var(--ink); border: 1px solid var(--border-strong); box-shadow: none;
+  }
+  .wo-big-btn.ghost:hover { background: var(--panel-2); }
+
+  .wo-table-wrap { overflow-x: auto; }
+  .wo-table {
+    width: 100%; min-width: 700px;
+    border-collapse: separate; border-spacing: 0;
+    background: var(--panel-solid); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden;
+  }
+  .wo-table th, .wo-table td {
+    padding: 0; border-bottom: 1px solid var(--border);
+  }
+  .wo-table tr:last-child td { border-bottom: none; }
+  .wo-table th {
+    background: rgba(0,0,0,0.3);
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .wo-table th.wo-ex-th { padding: 6px; }
+  .wo-ex-input {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+    color: var(--gold-2);
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+    text-align: center;
+  }
+  .wo-ex-input:focus { outline: none; border-color: var(--gold); }
+  .wo-ex-input::placeholder { color: var(--muted-2); font-weight: 500; }
+  .wo-name-cell {
+    padding: 12px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.15);
+    min-width: 160px;
+  }
+  .wo-jersey {
+    display: inline-block;
+    width: 24px; text-align: center;
+    color: var(--gold-2);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    margin-right: 6px;
+    opacity: 0.7;
+  }
+  .wo-cell {
+    position: relative;
+    padding: 0;
+    text-align: center;
+    min-width: 90px;
+  }
+  .wo-cell-btn {
+    width: 100%;
+    height: 56px;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-size: 24px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .wo-cell-btn:hover { background: rgba(212,175,55,0.08); }
+  .wo-cell-btn:active { background: var(--gold-glow); }
+  .wo-cell-btn.has-val { color: var(--gold-2); }
+  .wo-cell-btn.zero { color: var(--muted-2); font-weight: 400; }
+  .wo-cell-minus {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: transparent;
+    border: none;
+    color: var(--muted-2);
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .wo-cell:hover .wo-cell-minus { opacity: 1; }
+  .wo-cell-minus:hover { color: var(--missed); background: rgba(239,68,68,0.1); }
+  .wo-flash {
+    animation: woTap 0.35s ease-out;
+  }
+  @keyframes woTap {
+    0% { background: var(--gold-glow); }
+    100% { background: transparent; }
+  }
+  .wo-empty {
+    text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+  }
 </style>
 </head>
 <body>
@@ -462,6 +624,7 @@
       </div>
     </div>
     <div class="header-spacer"></div>
+    <button class="nav-btn" id="nav-workout">Workout</button>
     <button class="nav-btn" id="nav-roster">Roster</button>
     <a class="nav-btn" href="/">Plays</a>
   </header>
@@ -885,6 +1048,7 @@ function render() {
   else if (state.view === 'game') renderGame(root);
   else if (state.view === 'player') renderPlayerDetail(root);
   else if (state.view === 'roster') renderRoster(root);
+  else if (state.view === 'workout') renderWorkout(root);
 }
 
 /* ----- HOME ----- */
@@ -1799,6 +1963,276 @@ function openAddPlayerModal() {
   );
 }
 
+/* ============ WORKOUT VIEW ============ */
+const WO_LS_KEY = 'hoops-workout-v1';
+const workout = {
+  exercises: ['', '', '', '', ''],      // 5 column titles
+  counts: {},                            // { [playerId]: [n,n,n,n,n] }
+  timerSeconds: 30,                      // configured duration
+  timerRemaining: 30,                    // current countdown value
+  timerRunning: false,
+  timerEndAt: null,                      // epoch ms when current run ends
+  intervalId: null,
+};
+
+function loadWorkout() {
+  try {
+    const raw = lsGet(WO_LS_KEY);
+    if (!raw) return;
+    const o = JSON.parse(raw);
+    if (Array.isArray(o.exercises) && o.exercises.length === 5) workout.exercises = o.exercises;
+    if (o.counts && typeof o.counts === 'object') workout.counts = o.counts;
+    if (Number.isFinite(o.timerSeconds) && o.timerSeconds > 0) {
+      workout.timerSeconds = o.timerSeconds;
+      workout.timerRemaining = o.timerSeconds;
+    }
+  } catch(e) {}
+}
+function saveWorkout() {
+  lsSet(WO_LS_KEY, JSON.stringify({
+    exercises: workout.exercises,
+    counts: workout.counts,
+    timerSeconds: workout.timerSeconds,
+  }));
+}
+
+function woGetCount(playerId, idx) {
+  const row = workout.counts[playerId];
+  if (!Array.isArray(row)) return 0;
+  return row[idx] || 0;
+}
+function woSetCount(playerId, idx, val) {
+  if (!workout.counts[playerId]) workout.counts[playerId] = [0,0,0,0,0];
+  workout.counts[playerId][idx] = Math.max(0, val);
+  saveWorkout();
+}
+
+function woTickStart() {
+  if (workout.intervalId) clearInterval(workout.intervalId);
+  workout.intervalId = setInterval(() => {
+    if (!workout.timerRunning) return;
+    const remaining = Math.max(0, Math.ceil((workout.timerEndAt - Date.now()) / 1000));
+    workout.timerRemaining = remaining;
+    woUpdateClockDisplay();
+    if (remaining <= 0) {
+      workout.timerRunning = false;
+      clearInterval(workout.intervalId);
+      workout.intervalId = null;
+      woPlayBeep();
+      woUpdateClockDisplay();
+      woUpdateButtons();
+    }
+  }, 100);
+}
+function woStartTimer() {
+  if (workout.timerRemaining <= 0) workout.timerRemaining = workout.timerSeconds;
+  workout.timerEndAt = Date.now() + workout.timerRemaining * 1000;
+  workout.timerRunning = true;
+  woTickStart();
+  woUpdateClockDisplay();
+  woUpdateButtons();
+}
+function woPauseTimer() {
+  workout.timerRunning = false;
+  if (workout.intervalId) { clearInterval(workout.intervalId); workout.intervalId = null; }
+  woUpdateClockDisplay();
+  woUpdateButtons();
+}
+function woResetTimer() {
+  workout.timerRunning = false;
+  if (workout.intervalId) { clearInterval(workout.intervalId); workout.intervalId = null; }
+  workout.timerRemaining = workout.timerSeconds;
+  woUpdateClockDisplay();
+  woUpdateButtons();
+}
+
+let woAudioCtx = null;
+function woPlayBeep() {
+  try {
+    if (!woAudioCtx) woAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = woAudioCtx;
+    const now = ctx.currentTime;
+    [0, 0.25, 0.5].forEach((t) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, now + t);
+      g.gain.exponentialRampToValueAtTime(0.4, now + t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + t + 0.18);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(now + t); o.stop(now + t + 0.2);
+    });
+  } catch(e) {}
+}
+
+function woFormat(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+function woUpdateClockDisplay() {
+  const clk = $('#wo-clock');
+  if (!clk) return;
+  clk.textContent = woFormat(workout.timerRemaining);
+  clk.classList.remove('running', 'done');
+  if (workout.timerRunning) clk.classList.add('running');
+  else if (workout.timerRemaining === 0) clk.classList.add('done');
+}
+function woUpdateButtons() {
+  const start = $('#wo-start');
+  const pause = $('#wo-pause');
+  if (!start || !pause) return;
+  if (workout.timerRunning) { start.style.display = 'none'; pause.style.display = ''; }
+  else { start.style.display = ''; pause.style.display = 'none'; }
+}
+
+function renderWorkout(root) {
+  const wrap = el('div', { class: 'wo-wrap' });
+
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
+    el('h2', { style: 'margin:0' }, 'Workout'),
+    el('div', { class: 'header-spacer' }),
+    el('button', { class: 'btn btn-ghost', onclick: () => {
+      if (confirm('Clear all rep counts? Exercise titles stay.')) {
+        workout.counts = {};
+        saveWorkout();
+        render();
+      }
+    }}, 'Clear Counts'),
+  ));
+
+  // Timer card
+  const secsInput = el('input', {
+    type: 'number', min: '1', max: '3600', value: String(workout.timerSeconds),
+    class: 'wo-secs-input', id: 'wo-secs',
+    onchange: (e) => {
+      const v = parseInt(e.target.value) || 30;
+      workout.timerSeconds = Math.max(1, Math.min(3600, v));
+      e.target.value = workout.timerSeconds;
+      if (!workout.timerRunning) {
+        workout.timerRemaining = workout.timerSeconds;
+        woUpdateClockDisplay();
+      }
+      saveWorkout();
+    },
+  });
+
+  const mkPreset = (n, label) => el('button', { class: 'wo-preset', onclick: () => {
+    workout.timerSeconds = n;
+    secsInput.value = n;
+    if (!workout.timerRunning) {
+      workout.timerRemaining = n;
+      woUpdateClockDisplay();
+    }
+    saveWorkout();
+  }}, label);
+
+  const timerCard = el('div', { class: 'wo-timer-card' },
+    el('div', { class: 'wo-clock-col' },
+      el('div', { class: 'wo-clock', id: 'wo-clock' }, woFormat(workout.timerRemaining)),
+      el('div', { class: 'wo-clock-sub' }, 'Time Remaining'),
+    ),
+    el('div', { class: 'wo-ctrl-col' },
+      el('div', { class: 'wo-ctrl-row' },
+        el('label', {}, 'Seconds'),
+        secsInput,
+        mkPreset(15, '15s'),
+        mkPreset(30, '30s'),
+        mkPreset(45, '45s'),
+        mkPreset(60, '60s'),
+        mkPreset(120, '2m'),
+      ),
+      el('div', { class: 'wo-ctrl-row' },
+        el('button', { class: 'wo-big-btn', id: 'wo-start', onclick: woStartTimer },
+          workout.timerRemaining === workout.timerSeconds ? '▶ Start' : '▶ Resume'),
+        el('button', { class: 'wo-big-btn pause', id: 'wo-pause', style: 'display:none', onclick: woPauseTimer }, '⏸ Pause'),
+        el('button', { class: 'wo-big-btn ghost', onclick: woResetTimer }, '↺ Reset'),
+      ),
+    ),
+  );
+  wrap.append(timerCard);
+
+  // Player x exercise grid
+  const players = [...state.players].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
+
+  if (players.length === 0) {
+    wrap.append(el('div', { class: 'wo-empty' }, 'No players yet — add some on the Roster page'));
+    root.append(wrap);
+    woUpdateButtons();
+    return;
+  }
+
+  const table = el('table', { class: 'wo-table' });
+  const thead = el('thead');
+  const headRow = el('tr');
+  headRow.append(el('th', {}, 'Player'));
+  for (let i = 0; i < 5; i++) {
+    headRow.append(el('th', { class: 'wo-ex-th' },
+      el('input', {
+        type: 'text', class: 'wo-ex-input',
+        placeholder: `Exercise ${i+1}`,
+        value: workout.exercises[i] || '',
+        onchange: (e) => { workout.exercises[i] = e.target.value; saveWorkout(); },
+      }),
+    ));
+  }
+  thead.append(headRow);
+  table.append(thead);
+
+  const tbody = el('tbody');
+  for (const p of players) {
+    const row = el('tr');
+    const jersey = p.jersey_number != null && p.jersey_number !== '' ? `#${p.jersey_number}` : '';
+    row.append(el('td', { class: 'wo-name-cell' },
+      el('span', { class: 'wo-jersey' }, jersey),
+      p.name,
+    ));
+    for (let i = 0; i < 5; i++) {
+      const cellId = `wo-cell-${p.id}-${i}`;
+      const val = woGetCount(p.id, i);
+      const btn = el('button', {
+        class: 'wo-cell-btn' + (val > 0 ? ' has-val' : ' zero'),
+        id: cellId,
+        onclick: (ev) => {
+          const cur = woGetCount(p.id, i);
+          woSetCount(p.id, i, cur + 1);
+          const b = ev.currentTarget;
+          b.textContent = woGetCount(p.id, i);
+          b.classList.remove('zero'); b.classList.add('has-val');
+          // brief flash
+          const td = b.closest('td');
+          if (td) {
+            td.classList.remove('wo-flash');
+            // force reflow to restart animation
+            void td.offsetWidth;
+            td.classList.add('wo-flash');
+          }
+        },
+      }, val);
+      const minus = el('button', {
+        class: 'wo-cell-minus', title: 'Subtract 1',
+        onclick: (ev) => {
+          ev.stopPropagation();
+          const cur = woGetCount(p.id, i);
+          if (cur <= 0) return;
+          woSetCount(p.id, i, cur - 1);
+          const next = woGetCount(p.id, i);
+          btn.textContent = next;
+          if (next === 0) { btn.classList.add('zero'); btn.classList.remove('has-val'); }
+        },
+      }, '−');
+      row.append(el('td', { class: 'wo-cell' }, btn, minus));
+    }
+    tbody.append(row);
+  }
+  table.append(tbody);
+  wrap.append(el('div', { class: 'wo-table-wrap' }, table));
+
+  root.append(wrap);
+  woUpdateButtons();
+}
+
 /* ============ MODALS / TOAST ============ */
 function openModal(content) {
   const root = $('#modal-root');
@@ -1820,8 +2254,10 @@ function toast(msg) {
 /* ============ NAV ============ */
 $('#brand-home').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
+$('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
 
 /* ============ INIT ============ */
+loadWorkout();
 loadInitial();
 </script>
 </body>
