@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0B0C" />
+<meta name="description" content="CLF Worship + Tech — Sound Training. DiGiCo Quantum 338 training, runbooks and certification for the audio team." />
+<meta name="robots" content="noindex,nofollow" />
+<title>CLF Worship + Tech — Sound Training</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0B0B0C; --surface:#0F0F11; --surface-2:#161618; --card:#161618;
+    --border:#26262B; --border-2:#34343B;
+    --text:#F4F4F5; --muted:#9A9AA2; --faint:#6B6B73;
+    --accent:#FFFFFF; --accent-soft:#E6E6E6;
+    --t0:#8A8A93; --t1:#5BA8F0; --t2:#3FB984; --t3:#E0A93C;
+    --danger:#F0584F; --warn:#E0A93C; --ok:#3FB984;
+    --r:14px; --r-sm:10px;
+    --maxw:1180px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  ::selection{background:#3a3a44}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#2c2c33;border-radius:9px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+    padding:12px 18px;background:rgba(11,11,12,.86);backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:11px;cursor:pointer;min-width:0}
+  .logo{
+    width:38px;height:38px;border-radius:50%;background:#000;border:1.5px solid #3a3a40;
+    display:grid;place-items:center;flex:none;
+    font-weight:800;letter-spacing:.5px;font-size:13px;color:#fff;
+  }
+  .brand-txt{display:flex;flex-direction:column;min-width:0}
+  .brand-txt b{font-size:14px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+  .brand-txt span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-spacer{flex:1}
+  .roleswitch{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px}
+  .roleswitch button{
+    border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:999px;
+    cursor:pointer;font-weight:600;font-size:12.5px;transition:.15s;
+  }
+  .roleswitch button.on{background:var(--accent);color:#000}
+  .whoami{display:flex;align-items:center;gap:8px}
+  .whoami select{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    padding:7px 12px;font-size:12.5px;cursor:pointer;max-width:170px;
+  }
+
+  /* ---------- Layout ---------- */
+  .shell{display:flex;max-width:var(--maxw);margin:0 auto;width:100%}
+  .side{
+    width:232px;flex:none;padding:20px 14px;border-right:1px solid var(--border);
+    position:sticky;top:63px;height:calc(100vh - 63px);overflow:auto;
+  }
+  .side h6{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:18px 8px 8px}
+  .side h6:first-child{margin-top:0}
+  .navlink{
+    display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r-sm);
+    color:var(--muted);cursor:pointer;font-weight:500;transition:.13s;font-size:14px;
+  }
+  .navlink:hover{background:var(--surface-2);color:var(--text)}
+  .navlink.active{background:var(--surface-2);color:var(--text);box-shadow:inset 2px 0 0 var(--accent)}
+  .navlink .ic{width:18px;text-align:center;opacity:.85;flex:none}
+  .navlink .badge{margin-left:auto;background:#000;border:1px solid var(--border-2);color:var(--muted);
+    font-size:11px;padding:1px 7px;border-radius:999px}
+  .main{flex:1;min-width:0;padding:26px 26px 120px;width:100%}
+  .wrap{max-width:880px;margin:0 auto}
+
+  /* ---------- Mobile bottom nav ---------- */
+  .botnav{display:none}
+  @media(max-width:880px){
+    .side{display:none}
+    .main{padding:18px 16px 96px}
+    .topbar{padding:10px 14px;gap:10px}
+    .brand-txt span{display:none}
+    .botnav{
+      display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
+      background:rgba(11,11,12,.94);backdrop-filter:blur(14px);
+      border-top:1px solid var(--border);padding:8px 6px calc(8px + var(--safe-b));
+    }
+    .botnav button{
+      flex:1;border:0;background:transparent;color:var(--muted);
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      font-size:10.5px;font-weight:600;cursor:pointer;padding:4px 2px;
+    }
+    .botnav button .ic{font-size:18px}
+    .botnav button.active{color:var(--accent)}
+    .whoami select{max-width:120px}
+    .roleswitch button{padding:7px 11px}
+  }
+
+  /* ---------- Generic ---------- */
+  .pagehead{margin-bottom:20px}
+  .pagehead h1{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.02em}
+  .pagehead p{color:var(--muted);margin-top:5px;font-size:14px}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+  .card.tap{cursor:pointer;transition:.15s}
+  .card.tap:hover{border-color:var(--border-2);transform:translateY(-1px)}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:760px){.g3,.g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .muted{color:var(--muted)}
+  .faint{color:var(--faint)}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;
+    padding:3px 9px;border-radius:999px;border:1px solid var(--border-2);color:var(--muted);background:#000}
+  .pill.t0{color:var(--t0);border-color:#3a3a40}
+  .pill.t1{color:var(--t1);border-color:#22405e}
+  .pill.t2{color:var(--t2);border-color:#1f4a39}
+  .pill.t3{color:var(--t3);border-color:#5a4824}
+  .pill.ok{color:var(--ok);border-color:#1f4a39}
+  .pill.warn{color:var(--warn);border-color:#5a4824}
+  .pill.danger{color:var(--danger);border-color:#5e2722}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .tag{font-size:11px;color:var(--muted);background:#000;border:1px solid var(--border);
+    padding:2px 8px;border-radius:6px}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;justify-content:center;
+    background:var(--accent);color:#000;border:0;border-radius:var(--r-sm);
+    padding:11px 18px;font-weight:700;cursor:pointer;font-size:14px;transition:.13s;
+  }
+  .btn:hover{opacity:.9}
+  .btn.sec{background:var(--surface-2);color:var(--text);border:1px solid var(--border-2)}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+  .btn.danger{background:transparent;color:var(--danger);border:1px solid #5e2722}
+  .btn.sm{padding:7px 13px;font-size:12.5px}
+  .btn.block{width:100%}
+  .progress{height:7px;background:#000;border:1px solid var(--border);border-radius:999px;overflow:hidden}
+  .progress > i{display:block;height:100%;background:var(--accent);border-radius:999px;transition:width .4s}
+  .stat{display:flex;flex-direction:column;gap:3px}
+  .stat b{font-size:26px;font-weight:800;letter-spacing:-.02em}
+  .stat span{font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;color:var(--faint);font-weight:600;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--border)}
+  td{padding:11px 12px;border-bottom:1px solid var(--border)}
+  tr:last-child td{border-bottom:0}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r)}
+  input.f,select.f,textarea.f{
+    width:100%;background:#000;border:1px solid var(--border-2);border-radius:var(--r-sm);
+    padding:11px 13px;font-size:14px;outline:none;transition:.13s;
+  }
+  input.f:focus,select.f:focus,textarea.f:focus{border-color:#55555f}
+  label.fl{display:block;font-size:12.5px;color:var(--muted);margin:14px 0 6px;font-weight:600}
+  label.fl:first-child{margin-top:0}
+  .crumb{font-size:13px;color:var(--muted);margin-bottom:14px;cursor:pointer;display:inline-flex;gap:6px}
+  .crumb:hover{color:var(--text)}
+  .empty{text-align:center;padding:46px 20px;color:var(--faint);border:1px dashed var(--border-2);border-radius:var(--r)}
+  .vthumb{
+    aspect-ratio:16/9;border-radius:var(--r-sm);background:
+      radial-gradient(circle at 30% 25%,#1d1d22,#0c0c0e);
+    display:grid;place-items:center;position:relative;overflow:hidden;border:1px solid var(--border)}
+  .vthumb .play{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.92);
+    display:grid;place-items:center;color:#000;font-size:16px;padding-left:3px}
+  .vthumb .lbl{position:absolute;top:8px;left:8px}
+  .vthumb .dur{position:absolute;bottom:8px;right:8px;font-size:11px;background:rgba(0,0,0,.7);
+    padding:2px 7px;border-radius:5px;color:#ddd}
+  .ratio{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+  .ratio iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .toast{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + var(--safe-b));
+    background:#fff;color:#000;padding:11px 20px;border-radius:999px;font-weight:600;font-size:13.5px;
+    z-index:200;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 8px 30px rgba(0,0,0,.5);
+  }
+  .toast.show{opacity:1;bottom:calc(96px + var(--safe-b))}
+  @media(min-width:881px){.toast{bottom:26px}.toast.show{bottom:36px}}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(3px);
+    z-index:150;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--surface-2);border:1px solid var(--border-2);border-radius:var(--r);
+    width:100%;max-width:520px;padding:24px}
+  .modal h3{font-size:19px;font-weight:700;margin-bottom:4px}
+  .modal .x{float:right;cursor:pointer;color:var(--muted);font-size:20px;line-height:1}
+  .checkrow{display:flex;align-items:flex-start;gap:11px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .checkrow:last-child{border-bottom:0}
+  .checkbox{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--border-2);flex:none;
+    cursor:pointer;display:grid;place-items:center;color:transparent;font-size:13px;font-weight:800;transition:.13s}
+  .checkbox.on{background:var(--ok);border-color:var(--ok);color:#000}
+  .kpi{display:flex;align-items:center;gap:14px}
+  .kpi .ring{width:54px;height:54px;flex:none}
+  .accordion{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
+  .acc-h{padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;background:var(--card)}
+  .acc-h:hover{background:var(--surface-2)}
+  .acc-b{padding:0 18px;max-height:0;overflow:hidden;transition:max-height .3s,padding .3s}
+  .accordion.open .acc-b{max-height:1400px;padding:6px 18px 18px}
+  .acc-h .chev{margin-left:auto;color:var(--muted);transition:.25s}
+  .accordion.open .acc-h .chev{transform:rotate(90deg)}
+  .modnum{width:30px;height:30px;border-radius:8px;background:#000;border:1px solid var(--border-2);
+    display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
+  .panic-btn{
+    display:flex;flex-direction:column;gap:6px;padding:18px;border-radius:var(--r);
+    border:1px solid #5e2722;background:linear-gradient(180deg,#1a0f0e,#120b0b);cursor:pointer;transition:.13s}
+  .panic-btn:hover{border-color:var(--danger)}
+  .panic-btn b{font-size:15px}
+  .panic-btn span{font-size:12.5px;color:var(--muted)}
+  .hero{
+    border:1px solid var(--border);border-radius:var(--r);padding:26px;
+    background:radial-gradient(120% 140% at 0% 0%,#19191d,#0c0c0e);margin-bottom:22px}
+  .hero h2{font-size:clamp(20px,3.6vw,26px);font-weight:800;letter-spacing:-.02em}
+  .hero p{color:var(--muted);margin-top:6px;max-width:560px}
+  .listrow{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
+  .listrow:last-child{border-bottom:0}
+  .num-chip{width:26px;height:26px;border-radius:7px;background:#000;border:1px solid var(--border-2);
+    display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);flex:none}
+  .switchbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .chip{padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:.13s}
+  .chip.on{background:var(--accent);color:#000;border-color:var(--accent)}
+  .note{font-size:12.5px;color:var(--faint);background:#000;border:1px solid var(--border);
+    border-radius:var(--r-sm);padding:11px 14px}
+  .footer{max-width:var(--maxw);margin:0 auto;padding:30px 26px 40px;color:var(--faint);font-size:12px;
+    border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand" onclick="go('#home')">
+    <div class="logo">CLF</div>
+    <div class="brand-txt">
+      <b>Sound Training</b>
+      <span>CLF Worship + Tech · Excellence in Heart &amp; Art</span>
+    </div>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="whoami" id="whoami"></div>
+  <div class="roleswitch" id="roleswitch"></div>
+</div>
+
+<div class="shell">
+  <nav class="side" id="side"></nav>
+  <main class="main"><div id="view" class="wrap"></div></main>
+</div>
+
+<div class="footer">
+  CLF Worship + Tech — Sound Training · DiGiCo Quantum 338 ·
+  <span class="faint">Preview build — sign-in &amp; cloud sync coming next. Data is stored on this device only.</span>
+</div>
+
+<nav class="botnav" id="botnav"></nav>
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script>
+/* ============================================================
+   CLF Worship + Tech — Sound Training  (preview, no auth yet)
+   Single-file SPA · hash router · localStorage persistence
+   ============================================================ */
+const LS_KEY='clf_sound_v1';
+const TIERS=[
+  {n:0,name:'Observer',cls:'t0',desc:'Watches & shadows. No console access.'},
+  {n:1,name:'Assistant',cls:'t1',desc:'Patches, line-checks, runs supervised.'},
+  {n:2,name:'Operator',cls:'t2',desc:'Runs a standard Sunday solo.'},
+  {n:3,name:'Lead / Trainer',cls:'t3',desc:'Runs events, troubleshoots live, trains others.'}
+];
+const TRACKS=[
+  {id:'A',name:'Foundations',tag:'Audio basics & our room'},
+  {id:'B',name:'Core Console',tag:'Operating the DiGiCo 338'},
+  {id:'C',name:'Integrations',tag:'Waves & KLANG IEM'},
+  {id:'D',name:'Doing It Live',tag:'Mixing & Sunday flow'},
+  {id:'E',name:'Resilience',tag:'Troubleshooting & recovery'},
+  {id:'F',name:'Certification',tag:'Sign-offs & tier exams'}
+];
+
+/* ---------- Seed data ---------- */
+function seed(){
+  const V=(id,title,track,tier,cat,tags,dur,desc)=>(
+    {id,title,track,tier,cat,tags,dur,desc,embed:'',status:'planned'});
+  const videos=[
+    // Track A
+    V('a1','Audio 101: Signal Flow & Gain Structure','A',0,'Foundations',['basics','signal-flow'],11,'Mic → preamp → console → speakers. Gain vs. volume, dB, why gain structure matters before you touch a fader.'),
+    V('a2','EQ, Compression & Gates in Plain English','A',0,'Foundations',['basics','eq','dynamics'],13,'What each tool does and when worship actually needs it. No jargon.'),
+    V('a3','Feedback: Why It Happens & How to Kill It','A',0,'Foundations',['basics','feedback'],8,'The fast mental model and the 3 moves to stop ringing in service.'),
+    V('a4','Our Room & Our System','A',1,'Our Church',['clf','system','signal-flow'],14,'Booth location, stage box, racks, the snake/patch reality, power-on order — filmed in our room.'),
+    V('a5','DiGiCo Quantum 338 — Hardware Tour','A',1,'Console',['digico-338','hardware'],15,'Three screens, banks, layers, worksurface, master section, what the lights mean.'),
+    // Track B
+    V('b1','Sessions & File Management','B',2,'Console',['digico-338','sessions'],10,'Load the Sunday session, save vs save-as, never overwrite the master template, USB backup.'),
+    V('b2','Input Channel Strip — Input, Gain & Filters','B',2,'Console',['digico-338','channel-strip'],12,'The top of the strip: input select, gain, phantom, HPF/LPF.'),
+    V('b3','Channel Strip — EQ & Dynamics','B',2,'Console',['digico-338','channel-strip','eq'],13,'On-board EQ, gate and compressor on the 338, with worship presets.'),
+    V('b4','Channel Strip — Routing, Pan & Inserts','B',2,'Console',['digico-338','routing'],11,'Sends, direct outs, inserts, naming & color discipline.'),
+    V('b5','Buses: Groups, Auxes, Matrix & Mains','B',2,'Console',['digico-338','buses','aux','groups'],14,'What each bus is FOR at CLF — drum/vocal groups, aux-fed FX, matrix to lobby/cry room/stream.'),
+    V('b6','Snapshots & Macros','B',2,'Console',['digico-338','snapshots','macros'],13,'What snapshots control on Sunday, recall safe, the macro buttons you actually press — and how not to break one.'),
+    // Track C
+    V('c1','Waves / SoundGrid: What Runs on It','C',2,'Integrations',['waves','soundgrid'],12,'The plugin chain at CLF, the SoundGrid rack, recall.'),
+    V('c2','Waves: When the Server Drops','C',3,'Integrations',['waves','troubleshooting'],9,'The failure mode and exactly what you do live.'),
+    V('c3','KLANG Immersive IEM — How It Works','C',2,'Integrations',['klang','iem','monitors'],13,'The band’s in-ear world: the KLANG app, building/saving mixes, the immersive panner.'),
+    V('c4','KLANG: "I Can’t Hear Myself" Fixes','C',3,'Integrations',['klang','iem','troubleshooting'],8,'Common monitor complaints solved from the booth.'),
+    // Track D
+    V('d1','Gain Structure & Mixing for Worship','D',2,'Live',['mixing','worship'],14,'Getting a band up, vocals on top, mixing the room we actually have.'),
+    V('d2','Spoken Word / Sermon Mode','D',2,'Live',['mixing','message'],8,'Switching from music to message and back without drama.'),
+    V('d3','Stream Mix vs House Mix','D',3,'Live',['mixing','stream','matrix'],10,'Why they differ and how we feed both.'),
+    V('d4','Sunday Pacing — The Service Flow','D',2,'Live',['runbook','pacing','clf'],12,'Minute-by-minute: line check → walk-in → countdown → set → message → response → dismissal.'),
+    V('d5','Events & Non-Standard Services','D',3,'Live',['events','clf'],13,'Baptisms, communion, guest speakers, special music, Christmas/Easter, weddings/funerals — what changes.'),
+    // Track E
+    V('e1','Troubleshooting: No Audio in the Room','E',2,'Resilience',['troubleshooting','emergency'],9,'The decision tree, top to bottom.'),
+    V('e2','Troubleshooting: Feedback in Service','E',2,'Resilience',['troubleshooting','feedback'],6,'Calm, fast, repeatable.'),
+    V('e3','Troubleshooting: Dead Channel','E',2,'Resilience',['troubleshooting'],7,'Is it the mic, the patch, the channel, or the snapshot?'),
+    V('e4','Console Freeze / Redundancy / Engine Loss','E',3,'Resilience',['troubleshooting','digico-338'],11,'Worst case, handled.'),
+    // Track F
+    V('f1','Tier 1 Sign-off: Assistant Practical','F',1,'Certification',['cert','tier-1'],5,'What you must demonstrate to a Lead to unlock Assistant.'),
+    V('f2','Tier 2 Sign-off: Operator Practical','F',2,'Certification',['cert','tier-2'],5,'Run a full mock Sunday solo, observed.'),
+    V('f3','Tier 3 Sign-off: Lead Practical','F',3,'Certification',['cert','tier-3'],5,'Events, troubleshooting under pressure, training others.')
+  ];
+  const PL=(id,name,track,tier,desc,vids)=>({id,name,track,tier,desc,videoIds:vids});
+  const playlists=[
+    PL('p_a','Module 1–3 · Foundations','A',0,'Start here. Audio basics, our room, and a tour of the 338.',['a1','a2','a3','a4','a5']),
+    PL('p_b1','Module 4–5 · Sessions & Channel Strip','B',2,'Files, then a deep dive on the input channel strip.',['b1','b2','b3','b4']),
+    PL('p_b2','Module 6–7 · Buses, Snapshots & Macros','B',2,'How signal is grouped & routed, and the snapshot/macro world.',['b5','b6']),
+    PL('p_c','Module 8–9 · Waves & KLANG','C',2,'The two big integrations at CLF.',['c1','c2','c3','c4']),
+    PL('p_d','Module 10–12 · Doing It Live','D',2,'Mixing for worship, Sunday pacing, and events.',['d1','d2','d3','d4','d5']),
+    PL('p_e','Module 13 · Troubleshooting','E',2,'The decision trees. Watch before you ever run solo.',['e1','e2','e3','e4']),
+    PL('p_cert','Module 15 · Certification Path','F',1,'The practical sign-offs for each tier.',['f1','f2','f3']),
+    PL('p_new','New Volunteer Onboarding','A',0,'Everything a brand-new Observer should watch in week one.',['a1','a3','a4','d4','e2'])
+  ];
+  const vol=(id,name,email,tier,group,joined,done)=>({id,name,email,tier,group,joined,done});
+  const today=new Date();
+  const d=(o)=>{const x=new Date(today);x.setDate(x.getDate()+o);return x.toISOString().slice(0,10);};
+  const volunteers=[
+    vol('v1','Bri Curzio','bri@clflife.com',3,'A','2024-01-10',['a1','a2','a3','a4','a5','b1','b2','b3','b4','b5','b6','c1','c3','d1','d4','e1','e2','f1','f2','f3']),
+    vol('v2','Marcus Reed','marcus@clflife.com',2,'A','2025-02-02',['a1','a2','a3','a4','a5','b1','b2','b3','b4','b5','f1','f2']),
+    vol('v3','Hannah Liu','hannah@clflife.com',2,'B','2025-03-15',['a1','a2','a3','a4','a5','b1','b2','b3','f1']),
+    vol('v4','Devon Pratt','devon@clflife.com',1,'B','2025-06-01',['a1','a2','a3','a4','f1']),
+    vol('v5','Ari Gomez','ari@clflife.com',1,'A','2025-09-12',['a1','a2','a3','a4']),
+    vol('v6','Taylor Innes','taylor@clflife.com',0,'C','2026-01-20',['a1','a3']),
+    vol('v7','Jordan Frey','jordan@clflife.com',0,'C','2026-03-04',['a1']),
+    vol('v8','Sam Okafor','sam@clflife.com',0,'C','2026-04-28',[])
+  ];
+  const A=(id,tgtType,tgt,itemType,item,due)=>({id,tgtType,tgt,itemType,item,due,at:d(-7)});
+  const assignments=[
+    A('as1','all','*','playlist','p_new',d(14)),
+    A('as2','group','C','playlist','p_a',d(21)),
+    A('as3','volunteer','v4','playlist','p_b1',d(10)),
+    A('as4','volunteer','v5','playlist','p_b1',d(-2)),
+    A('as5','group','B','playlist','p_c',d(30)),
+    A('as6','volunteer','v3','playlist','p_b2',d(7))
+  ];
+  return {videos,playlists,volunteers,assignments,
+    progress:{}, // computed/extra completions live in vol.done; this holds signoffs
+    signoffs:{}, // {volId:{plId:by}} certification sign-offs
+    cards:defaultCards(), session:{role:'volunteer',vid:'v6'}};
+}
+
+function defaultCards(){
+  return {
+    runbook:{title:'Sunday Runbook',icon:'⏱',body:[
+      ['T-90 min','Power on in order: stage box → console → amps last. Load THIS Sunday’s session (never the master template).'],
+      ['T-75 min','Line check every input against the patch sheet. Label & color verified. Confirm Waves server online, KLANG online.'],
+      ['T-45 min','Band soundcheck. Build monitors first (KLANG), then FOH. Save a "post-check" snapshot.'],
+      ['T-15 min','House music up. Confirm stream mix live. Talkback works. Mute groups armed.'],
+      ['Countdown','Recall WALK-IN snapshot. Verify lobby/cry-room matrix feeds.'],
+      ['Worship set','Ride vocals on top. Watch stage volume. Recall per-song snapshots only if used.'],
+      ['Message','Recall MESSAGE snapshot. Pastor mic up, band muted, FX off speech.'],
+      ['Response','Recall RESPONSE/MUSIC snapshot. Pads/soft band. Watch for spontaneous moments.'],
+      ['Dismissal','House music up. Save service file as dated copy. Begin shutdown checklist.']
+    ]},
+    pre:{title:'Pre-Service Checklist',icon:'✅',body:[
+      'Power-on order followed (stage box → console → amps last)',
+      'Correct dated session loaded — NOT the master template',
+      'Every input line-checked against patch sheet',
+      'Channel labels & colors correct',
+      'Waves / SoundGrid server online & recalled',
+      'KLANG online; all IEM packs charged & paired',
+      'Wireless mics: batteries fresh, RF clean',
+      'Talkback to stage + monitor world works',
+      'Stream mix confirmed live with audio',
+      'Lobby / cry room / overflow matrix feeds confirmed',
+      'WALK-IN snapshot recalled, mute groups armed'
+    ]},
+    post:{title:'Post-Service / Shutdown Checklist',icon:'\u{1F50C}',body:[
+      'Save service file as a dated copy (do not overwrite master)',
+      'USB backup of the session pulled',
+      'Wireless mics off, batteries on charger',
+      'IEM packs collected & charging',
+      'Faders/gains to safe, mains down',
+      'Power-off order: amps first → console → stage box',
+      'Booth tidy, cables dressed',
+      'Log any issues + who to tell (text the Lead)'
+    ]},
+    panic:{title:'Panic Card — Live Failures',icon:'\u{1F6A8}',body:[
+      ['No audio in the room','Check MAINS not muted/down → master mute group → matrix to house → amp power. Work backward from speakers.'],
+      ['Feedback / ringing','Pull the offending fader/aux ~6dB. Don’t chase EQ live. If monitors: pull that KLANG send.'],
+      ['Dead channel','Mic on? → gain up & phantom? → right patch/input? → channel muted or wrong snapshot? → swap to a spare.'],
+      ['Waves server dropped','Channels may mute/bypass. Confirm console audio still passes; disable Waves inserts if needed; recall last good. Call the Lead.'],
+      ['KLANG / IEM down','Confirm KLANG online. Band can use a console aux as backup mix. Communicate calmly via talkback.'],
+      ['Console freeze','Don’t power-cycle mid-service unless dead. Use the redundant engine if armed. Get the Lead. Patch a backup if available.']
+    ]},
+    macros:{title:'Snapshot & Macro Cheat Sheet',icon:'\u{1F3B9}',body:[
+      ['WALK-IN','House music routed, band muted, mics safe.'],
+      ['WORSHIP','Band & vocals live, FX on, monitors active.'],
+      ['MESSAGE','Pastor mic up, band muted, speech FX off, stream ducked correctly.'],
+      ['RESPONSE','Soft band/pads, vocals ready, FX up.'],
+      ['MUTE ALL (macro)','Panic mute — everything to mute group instantly.'],
+      ['TALKBACK (macro)','Booth → stage / monitor world momentary.'],
+      ['STREAM SAFE (macro)','Confirms matrix feed to broadcast is live & correct.']
+    ]}
+  };
+}
+
+/* ---------- State ---------- */
+let DB=load();
+function load(){
+  try{const r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}
+  const s=seed();save(s);return s;
+}
+function save(s){DB=s||DB;localStorage.setItem(LS_KEY,JSON.stringify(DB));}
+function resetData(){if(confirm('Reset all demo data back to defaults?')){localStorage.removeItem(LS_KEY);DB=load();go('#home');toast('Demo data reset');}}
+
+/* ---------- Helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const vById=id=>DB.videos.find(v=>v.id===id);
+const plById=id=>DB.playlists.find(p=>p.id===id);
+const volById=id=>DB.volunteers.find(v=>v.id===id);
+const curVol=()=>volById(DB.session.vid)||DB.volunteers[0];
+const isAdmin=()=>DB.session.role==='admin';
+function tierPill(n){const t=TIERS[n];return `<span class="pill ${t.cls}">Tier ${n} · ${t.name}</span>`;}
+function fmtDate(s){if(!s)return '';const x=new Date(s+'T00:00:00');return x.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});}
+function daysTo(s){const x=new Date(s+'T00:00:00');return Math.round((x-new Date(new Date().toISOString().slice(0,10)+'T00:00:00'))/864e5);}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200);}
+function go(h){location.hash=h;}
+function uid(p){return p+Math.random().toString(36).slice(2,8);}
+
+/* assignments resolved for a volunteer */
+function assignmentsFor(vid){
+  const v=volById(vid);if(!v)return [];
+  return DB.assignments.filter(a=>
+    a.tgtType==='all' ||
+    (a.tgtType==='group'&&a.tgt===v.group) ||
+    (a.tgtType==='volunteer'&&a.tgt===vid));
+}
+function videoIdsForAssignment(a){
+  if(a.itemType==='video')return [a.item];
+  const p=plById(a.item);return p?p.videoIds.slice():[];
+}
+function assignedVideoIds(vid){
+  const set=new Set();
+  assignmentsFor(vid).forEach(a=>videoIdsForAssignment(a).forEach(x=>set.add(x)));
+  return [...set];
+}
+function isDone(vid,videoId){const v=volById(vid);return v&&v.done.includes(videoId);}
+function toggleDone(vid,videoId){
+  const v=volById(vid);if(!v)return;
+  const i=v.done.indexOf(videoId);
+  if(i>=0)v.done.splice(i,1);else v.done.push(videoId);
+  save();
+}
+function pct(done,total){return total?Math.round(done/total*100):0;}
+
+function ring(p,size=54){
+  const r=size/2-5,c=2*Math.PI*r,off=c*(1-p/100);
+  return `<svg class="ring" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#26262B" stroke-width="5"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="54%" text-anchor="middle" font-size="${size*0.26}" font-weight="800" fill="#F4F4F5">${p}%</text></svg>`;
+}
+
+/* ---------- Nav ---------- */
+const VOL_NAV=[
+  ['#home','\u{1F3E0}','Home'],
+  ['#paths','\u{1F4DA}','Paths'],
+  ['#library','\u{1F3AC}','Library'],
+  ['#runbook','⏱','Runbook'],
+  ['#me','\u{1F464}','Me']
+];
+const ADMIN_NAV=[
+  ['#admin','\u{1F4CA}','Dashboard'],
+  ['#admin/volunteers','\u{1F465}','Volunteers'],
+  ['#admin/videos','\u{1F3AC}','Videos'],
+  ['#admin/paths','\u{1F4DA}','Playlists'],
+  ['#admin/assignments','\u{1F4CC}','Assignments'],
+  ['#admin/curriculum','\u{1F5FA}','Curriculum'],
+  ['#admin/data','⚙','Demo Data']
+];
+function renderChrome(){
+  const admin=isAdmin();
+  $('#roleswitch').innerHTML=
+    `<button class="${!admin?'on':''}" onclick="setRole('volunteer')">Volunteer</button>
+     <button class="${admin?'on':''}" onclick="setRole('admin')">Admin</button>`;
+  if(admin){
+    $('#whoami').innerHTML=`<span class="pill">Admin portal</span>`;
+  }else{
+    $('#whoami').innerHTML=`<span class="muted" style="font-size:12px">Viewing as</span>
+      <select onchange="DB.session.vid=this.value;save();route()">
+      ${DB.volunteers.map(v=>`<option value="${v.id}" ${v.id===DB.session.vid?'selected':''}>${esc(v.name)} (T${v.tier})</option>`).join('')}
+      </select>`;
+  }
+  const nav=admin?ADMIN_NAV:VOL_NAV;
+  const cur='#'+(location.hash.replace(/^#/,'').split('/')[0]||(admin?'admin':'home'));
+  $('#side').innerHTML=
+    `<h6>${admin?'Admin':'Training'}</h6>`+
+    nav.map(([h,i,l])=>{
+      const active=('#'+(h.replace(/^#/,'').split('/')[0]))===cur;
+      let badge='';
+      if(h==='#home'&&!admin){const v=curVol();const a=assignedVideoIds(v.id);const left=a.filter(x=>!isDone(v.id,x)).length;if(left)badge=`<span class="badge">${left}</span>`;}
+      if(h==='#admin/volunteers'&&admin)badge=`<span class="badge">${DB.volunteers.length}</span>`;
+      return `<div class="navlink ${active?'active':''}" onclick="go('${h}')"><span class="ic">${i}</span>${l}${badge}</div>`;
+    }).join('')+
+    (admin?'':`<h6>Quick Access</h6>
+      <div class="navlink" onclick="go('#panic')"><span class="ic">\u{1F6A8}</span>Panic Card</div>
+      <div class="navlink" onclick="go('#troubleshoot')"><span class="ic">\u{1F527}</span>Troubleshooting</div>`);
+  $('#botnav').innerHTML=nav.slice(0,5).map(([h,i,l])=>{
+    const active=('#'+(h.replace(/^#/,'').split('/')[0]))===cur;
+    return `<button class="${active?'active':''}" onclick="go('${h}')"><span class="ic">${i}</span>${l}</button>`;
+  }).join('');
+}
+function setRole(r){DB.session.role=r;save();go(r==='admin'?'#admin':'#home');}
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+function route(){
+  renderChrome();
+  const h=location.hash.replace(/^#/,'')||'home';
+  const [p,a,b]=h.split('/');
+  const el=$('#view');window.scrollTo(0,0);
+  if(isAdmin()&&!p.startsWith('admin')&&!['panic','runbook','card','troubleshoot','video'].includes(p)){
+    // admin lands on dashboard for vol-only routes
+  }
+  try{
+    if(p==='home')return el.innerHTML=viewHome();
+    if(p==='library')return el.innerHTML=viewLibrary();
+    if(p==='paths')return el.innerHTML=viewPaths();
+    if(p==='path')return el.innerHTML=viewPath(a);
+    if(p==='video')return el.innerHTML=viewVideo(a);
+    if(p==='me')return el.innerHTML=viewMe();
+    if(p==='runbook')return el.innerHTML=viewCards();
+    if(p==='card')return el.innerHTML=viewCard(a);
+    if(p==='panic')return el.innerHTML=viewCard('panic');
+    if(p==='troubleshoot')return el.innerHTML=viewTroubleshoot(a);
+    if(p==='admin'&&!a)return el.innerHTML=viewAdminDash();
+    if(p==='admin'&&a==='volunteers')return el.innerHTML=viewAdminVolunteers();
+    if(p==='admin'&&a==='volunteer')return el.innerHTML=viewAdminVolunteer(b);
+    if(p==='admin'&&a==='videos')return el.innerHTML=viewAdminVideos();
+    if(p==='admin'&&a==='paths')return el.innerHTML=viewAdminPaths();
+    if(p==='admin'&&a==='assignments')return el.innerHTML=viewAdminAssignments();
+    if(p==='admin'&&a==='curriculum')return el.innerHTML=viewCurriculum();
+    if(p==='admin'&&a==='data')return el.innerHTML=viewAdminData();
+    el.innerHTML=viewHome();
+  }catch(err){el.innerHTML=`<div class="empty">Something went wrong rendering this view.<br><span class="faint">${esc(err.message)}</span></div>`;}
+}
+window.addEventListener('hashchange',route);
+
+/* ============================================================
+   VOLUNTEER VIEWS
+   ============================================================ */
+function videoCard(v,vid){
+  const done=isDone(vid,v.id);
+  const t=TIERS[v.tier];
+  return `<div class="card tap" onclick="go('#video/${v.id}')">
+    <div class="vthumb">
+      <span class="lbl pill ${t.cls}">T${v.tier}</span>
+      <div class="play">▶</div>
+      <span class="dur">${v.dur} min</span>
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:flex-start;gap:8px">
+      <b style="flex:1;font-size:14.5px;line-height:1.35">${esc(v.title)}</b>
+      ${done?'<span class="pill ok">✓ Done</span>':v.status==='planned'?'<span class="pill warn">To film</span>':''}
+    </div>
+    <div class="muted" style="font-size:12.5px;margin-top:5px">${esc(v.cat)} · Track ${v.track}</div>
+  </div>`;
+}
+function viewHome(){
+  const v=curVol();
+  const assigned=assignedVideoIds(v.id);
+  const doneA=assigned.filter(x=>isDone(v.id,x));
+  const p=pct(doneA.length,assigned.length);
+  const myAssigns=assignmentsFor(v.id);
+  const nextUp=assigned.find(x=>!isDone(v.id,x));
+  const overdue=myAssigns.filter(a=>{
+    const ids=videoIdsForAssignment(a);return daysTo(a.due)<0 && ids.some(i=>!isDone(v.id,i));});
+  return `
+  <div class="hero">
+    <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <div class="kpi"><div class="ring">${ring(p)}</div></div>
+      <div style="flex:1;min-width:200px">
+        <h2>Welcome, ${esc(v.name.split(' ')[0])}</h2>
+        <p>${tierPill(v.tier)} &nbsp; ${doneA.length}/${assigned.length} assigned lessons complete. ${TIERS[v.tier].desc}</p>
+      </div>
+      ${nextUp?`<button class="btn" onclick="go('#video/${nextUp}')">▶ Continue</button>`:''}
+    </div>
+  </div>
+  ${overdue.length?`<div class="card" style="border-color:#5e2722;margin-bottom:18px">
+     <b style="color:var(--danger)">⚠ ${overdue.length} overdue assignment${overdue.length>1?'s':''}</b>
+     <p class="muted" style="font-size:13px;margin-top:4px">${overdue.map(a=>esc(itemName(a))+' · due '+fmtDate(a.due)).join(' &nbsp;·&nbsp; ')}</p></div>`:''}
+
+  <div class="pagehead"><h1>My Assignments</h1><p>Assigned to you, your group, or the whole team.</p></div>
+  ${myAssigns.length?myAssigns.map(a=>assignmentBlock(a,v)).join(''):'<div class="empty">No assignments yet. Browse the <a class="muted" onclick="go(\'#paths\')" style="text-decoration:underline;cursor:pointer">learning paths</a>.</div>'}
+
+  <div class="pagehead" style="margin-top:30px"><h1>Operational Quick Access</h1><p>At the booth — get to it fast.</p></div>
+  <div class="grid g3">
+    <div class="card tap" onclick="go('#panic')" style="border-color:#5e2722"><b>\u{1F6A8} Panic Card</b><p class="muted" style="font-size:12.5px;margin-top:6px">Live failures, one fix each.</p></div>
+    <div class="card tap" onclick="go('#runbook')"><b>⏱ Sunday Runbook</b><p class="muted" style="font-size:12.5px;margin-top:6px">Minute-by-minute service flow.</p></div>
+    <div class="card tap" onclick="go('#troubleshoot')"><b>\u{1F527} Troubleshooting</b><p class="muted" style="font-size:12.5px;margin-top:6px">Decision trees for common issues.</p></div>
+  </div>`;
+}
+function itemName(a){return a.itemType==='video'?(vById(a.item)||{}).title:(plById(a.item)||{}).name;}
+function assignmentBlock(a,v){
+  const ids=videoIdsForAssignment(a);
+  const done=ids.filter(x=>isDone(v.id,x)).length;
+  const p=pct(done,ids.length);
+  const dd=daysTo(a.due);
+  const due=dd<0?`<span class="pill danger">Overdue ${-dd}d</span>`:dd<=3?`<span class="pill warn">Due in ${dd}d</span>`:`<span class="pill">Due ${fmtDate(a.due)}</span>`;
+  const src=a.tgtType==='all'?'Whole team':a.tgtType==='group'?('Group '+a.tgt):'You';
+  return `<div class="card" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div class="muted" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.08em">${src} · ${a.itemType}</div>
+        <b style="font-size:16px">${esc(itemName(a)||'—')}</b>
+      </div>
+      ${due}
+      <span class="pill">${done}/${ids.length}</span>
+    </div>
+    <div class="progress" style="margin:12px 0"><i style="width:${p}%"></i></div>
+    <div class="grid g3">${ids.map(id=>{const vv=vById(id);if(!vv)return '';return `
+      <div class="listrow" style="border:0;padding:8px 0;cursor:pointer" onclick="go('#video/${id}')">
+        <span class="checkbox ${isDone(v.id,id)?'on':''}" onclick="event.stopPropagation();toggleDone('${v.id}','${id}');route()">✓</span>
+        <div style="min-width:0"><div style="font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(vv.title)}</div>
+        <div class="faint" style="font-size:11.5px">${vv.dur} min · T${vv.tier}</div></div>
+      </div>`;}).join('')}</div>
+  </div>`;
+}
+
+function viewLibrary(){
+  const cats=[...new Set(DB.videos.map(v=>v.cat))];
+  const allTags=[...new Set(DB.videos.flatMap(v=>v.tags))].sort();
+  const f=window._libFilter||(window._libFilter={track:'',cat:'',tier:'',tag:'',q:''});
+  let list=DB.videos.filter(v=>
+    (!f.track||v.track===f.track)&&(!f.cat||v.cat===f.cat)&&
+    (f.tier===''||v.tier==+f.tier)&&(!f.tag||v.tags.includes(f.tag))&&
+    (!f.q||(v.title+v.desc+v.tags.join()).toLowerCase().includes(f.q.toLowerCase())));
+  return `
+  <div class="pagehead"><h1>Video Library</h1><p>${DB.videos.length} lessons across the DiGiCo 338 curriculum. Filter by track, topic, tier or tag.</p></div>
+  <input class="f" placeholder="\u{1F50D} Search lessons…" value="${esc(f.q)}" oninput="_libFilter.q=this.value;rerenderLib()" style="margin-bottom:14px">
+  <div class="switchbar" id="libtracks">
+    <span class="chip ${!f.track?'on':''}" onclick="_libFilter.track='';rerenderLib()">All tracks</span>
+    ${TRACKS.map(t=>`<span class="chip ${f.track===t.id?'on':''}" onclick="_libFilter.track='${t.id}';rerenderLib()">${t.id} · ${t.name}</span>`).join('')}
+  </div>
+  <div class="row" style="margin-bottom:18px">
+    <select class="f" style="max-width:190px" onchange="_libFilter.cat=this.value;rerenderLib()">
+      <option value="">All topics</option>${cats.map(c=>`<option ${f.cat===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
+    <select class="f" style="max-width:160px" onchange="_libFilter.tier=this.value;rerenderLib()">
+      <option value="">All tiers</option>${TIERS.map(t=>`<option value="${t.n}" ${f.tier==t.n?'selected':''}>Tier ${t.n} · ${t.name}</option>`).join('')}</select>
+    <select class="f" style="max-width:160px" onchange="_libFilter.tag=this.value;rerenderLib()">
+      <option value="">All tags</option>${allTags.map(t=>`<option ${f.tag===t?'selected':''}>${esc(t)}</option>`).join('')}</select>
+  </div>
+  <div id="liblist" class="grid g3">${list.length?list.map(v=>videoCard(v,curVol().id)).join(''):'<div class="empty">No lessons match.</div>'}</div>`;
+}
+function rerenderLib(){const el=$('#liblist');if(!el){route();return;}
+  const f=window._libFilter;
+  let list=DB.videos.filter(v=>(!f.track||v.track===f.track)&&(!f.cat||v.cat===f.cat)&&(f.tier===''||v.tier==+f.tier)&&(!f.tag||v.tags.includes(f.tag))&&(!f.q||(v.title+v.desc+v.tags.join()).toLowerCase().includes(f.q.toLowerCase())));
+  el.innerHTML=list.length?list.map(v=>videoCard(v,curVol().id)).join(''):'<div class="empty">No lessons match.</div>';
+  $('#libtracks').innerHTML=`<span class="chip ${!f.track?'on':''}" onclick="_libFilter.track='';rerenderLib()">All tracks</span>`+TRACKS.map(t=>`<span class="chip ${f.track===t.id?'on':''}" onclick="_libFilter.track='${t.id}';rerenderLib()">${t.id} · ${t.name}</span>`).join('');
+}
+
+function viewPaths(){
+  const v=curVol();
+  return `<div class="pagehead"><h1>Learning Paths</h1><p>Structured modules. Follow them in order from Foundations up to Certification.</p></div>
+  <div class="grid g2">${DB.playlists.map(pl=>{
+    const ids=pl.videoIds;const done=ids.filter(x=>isDone(v.id,x)).length;const p=pct(done,ids.length);
+    const tr=TRACKS.find(t=>t.id===pl.track);
+    return `<div class="card tap" onclick="go('#path/${pl.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div><span class="pill">Track ${pl.track} · ${esc(tr?tr.name:'')}</span></div>
+        <div style="width:46px">${ring(p,46)}</div>
+      </div>
+      <b style="display:block;font-size:16px;margin-top:12px">${esc(pl.name)}</b>
+      <p class="muted" style="font-size:13px;margin-top:5px">${esc(pl.desc)}</p>
+      <div class="faint" style="font-size:12px;margin-top:10px">${ids.length} lessons · ${done} done</div>
+    </div>`;}).join('')}</div>`;
+}
+function viewPath(id){
+  const pl=plById(id);if(!pl)return '<div class="empty">Path not found.</div>';
+  const v=curVol();const ids=pl.videoIds;const done=ids.filter(x=>isDone(v.id,x)).length;const p=pct(done,ids.length);
+  return `<div class="crumb" onclick="go('#paths')">← All paths</div>
+  <div class="hero"><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+    <div style="width:54px">${ring(p)}</div>
+    <div style="flex:1;min-width:200px"><h2>${esc(pl.name)}</h2><p>${esc(pl.desc)}</p></div>
+  </div></div>
+  <div class="card">${ids.map((id,i)=>{const vv=vById(id);if(!vv)return '';const dn=isDone(v.id,id);
+    return `<div class="listrow">
+      <span class="num-chip">${i+1}</span>
+      <span class="checkbox ${dn?'on':''}" onclick="toggleDone('${v.id}','${id}');route()">✓</span>
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="go('#video/${id}')">
+        <div style="font-weight:600">${esc(vv.title)}</div>
+        <div class="faint" style="font-size:12px">${vv.dur} min · ${esc(vv.cat)} · T${vv.tier}</div>
+      </div>
+      <button class="btn sm sec" onclick="go('#video/${id}')">Open</button>
+    </div>`;}).join('')}</div>`;
+}
+function viewVideo(id){
+  const v=vById(id);if(!v)return '<div class="empty">Lesson not found.</div>';
+  const vol=curVol();const dn=isDone(vol.id,id);
+  const related=DB.videos.filter(x=>x.id!==id&&(x.track===v.track||x.tags.some(t=>v.tags.includes(t)))).slice(0,4);
+  const player=v.embed?
+    `<div class="ratio"><iframe src="${esc(v.embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div>`:
+    `<div class="ratio" style="display:grid;place-items:center;text-align:center">
+       <div><div style="font-size:34px">\u{1F3A5}</div><b>Not filmed yet</b>
+       <p class="muted" style="font-size:13px;max-width:340px;margin:6px auto 0">This lesson is in the curriculum but the video hasn’t been uploaded. An admin can paste a YouTube/Vimeo embed URL.</p></div></div>`;
+  return `<div class="crumb" onclick="history.back()">← Back</div>
+  ${player}
+  <div style="display:flex;gap:12px;align-items:flex-start;margin-top:18px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px">
+      <h1 style="font-size:23px;font-weight:800">${esc(v.title)}</h1>
+      <div style="margin:8px 0">${tierPill(v.tier)} <span class="pill">Track ${v.track}</span> <span class="pill">${esc(v.cat)}</span> <span class="pill">${v.dur} min</span></div>
+    </div>
+    <button class="btn ${dn?'sec':''}" onclick="toggleDone('${vol.id}','${id}');route()">${dn?'✓ Completed':'Mark complete'}</button>
+  </div>
+  <p class="muted" style="margin:12px 0 14px;max-width:640px">${esc(v.desc)}</p>
+  <div class="tags">${v.tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div>
+  <div class="note" style="margin-top:18px">✅ <b>Competency check:</b> After watching, show a Tier 3 / Lead you can do this on the actual 338 before it counts toward a tier sign-off.</div>
+  ${related.length?`<div class="pagehead" style="margin-top:28px"><h1 style="font-size:18px">Related lessons</h1></div>
+  <div class="grid g4">${related.map(r=>videoCard(r,vol.id)).join('')}</div>`:''}`;
+}
+function viewMe(){
+  const v=curVol();
+  const all=DB.videos.length, done=v.done.length;
+  const byTrack=TRACKS.map(t=>{const vs=DB.videos.filter(x=>x.track===t.id);const d=vs.filter(x=>isDone(v.id,x.id)).length;return {t,total:vs.length,done:d};});
+  return `<div class="pagehead"><h1>My Progress</h1><p>${esc(v.name)} · ${esc(v.email)} · Group ${v.group} · Joined ${fmtDate(v.joined)}</p></div>
+  <div class="grid g3" style="margin-bottom:22px">
+    <div class="card"><div class="kpi"><div style="width:54px">${ring(pct(done,all))}</div><div class="stat"><b>${done}/${all}</b><span>Lessons completed</span></div></div></div>
+    <div class="card"><div class="stat">${tierPill(v.tier)}<span style="margin-top:8px">${TIERS[v.tier].desc}</span></div></div>
+    <div class="card"><div class="stat"><b>${assignedVideoIds(v.id).filter(x=>!isDone(v.id,x)).length}</b><span>Assigned lessons remaining</span></div></div>
+  </div>
+  <div class="pagehead"><h1 style="font-size:18px">The Tier Ladder</h1></div>
+  <div class="grid g4" style="margin-bottom:24px">${TIERS.map(t=>`
+    <div class="card" style="${t.n===v.tier?'border-color:var(--border-2);box-shadow:inset 0 0 0 1px var(--border-2)':''}">
+      <span class="pill ${t.cls}">Tier ${t.n}</span>
+      <b style="display:block;margin-top:8px">${t.name}</b>
+      <p class="faint" style="font-size:12px;margin-top:5px">${t.desc}</p>
+      ${t.n===v.tier?'<div class="pill ok" style="margin-top:10px">You are here</div>':t.n<v.tier?'<div class="pill" style="margin-top:10px">✓ Cleared</div>':'<div class="pill" style="margin-top:10px">Locked</div>'}
+    </div>`).join('')}</div>
+  <div class="pagehead"><h1 style="font-size:18px">Progress by Track</h1></div>
+  <div class="card">${byTrack.map(({t,total,done})=>`
+    <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:7px"><b>Track ${t.id} · ${t.name}</b><span class="muted">${done}/${total}</span></div>
+      <div class="progress"><i style="width:${pct(done,total)}%"></i></div>
+    </div>`).join('')}</div>`;
+}
+
+/* ---------- Operational cards ---------- */
+function viewCards(){
+  const c=DB.cards;
+  const tiles=[['runbook','⏱'],['pre','✅'],['post','\u{1F50C}'],['panic','\u{1F6A8}'],['macros','\u{1F3B9}']];
+  return `<div class="pagehead"><h1>Runbooks &amp; Cards</h1><p>The "works even if the website is down" layer. Print these and keep them at the booth.</p></div>
+  <div class="grid g2">${tiles.map(([k,ic])=>`
+    <div class="card tap" onclick="go('#card/${k}')" ${k==='panic'?'style="border-color:#5e2722"':''}>
+      <div style="font-size:26px">${ic}</div>
+      <b style="display:block;margin-top:8px;font-size:16px">${esc(c[k].title)}</b>
+      <p class="muted" style="font-size:12.5px;margin-top:5px">${(Array.isArray(c[k].body[0])?c[k].body.length+' steps':c[k].body.length+' items')}</p>
+    </div>`).join('')}
+    <div class="card tap" onclick="go('#troubleshoot')"><div style="font-size:26px">\u{1F527}</div><b style="display:block;margin-top:8px;font-size:16px">Troubleshooting Trees</b><p class="muted" style="font-size:12.5px;margin-top:5px">Step-by-step diagnostics</p></div>
+  </div>`;
+}
+function viewCard(k){
+  const c=DB.cards[k];if(!c)return '<div class="empty">Card not found.</div>';
+  const stepped=Array.isArray(c.body[0]);
+  return `<div class="crumb" onclick="go('#runbook')">← Runbooks &amp; Cards</div>
+  <div class="hero" ${k==='panic'?'style="border-color:#5e2722;background:linear-gradient(120% 140% at 0% 0%,#1a0f0e,#0c0c0e)"':''}>
+    <h2>${c.icon} ${esc(c.title)}</h2><p>${k==='panic'?'Stay calm. One problem, one fix. Call the Lead if it persists.':'Follow top to bottom.'}</p></div>
+  <div class="card">${stepped?
+    c.body.map((row,i)=>`<div class="listrow"><span class="num-chip">${row[0]?esc(row[0]):i+1}</span><div><div style="font-weight:600">${k==='panic'||k==='macros'?esc(row[0]):''}</div><div class="muted" style="font-size:13.5px">${esc(row[1])}</div></div></div>`).join('')
+    :c.body.map(t=>`<div class="checkrow"><span class="checkbox" onclick="this.classList.toggle('on')">✓</span><div style="font-size:14px">${esc(t)}</div></div>`).join('')}
+  </div>
+  ${!stepped?'<div class="note" style="margin-top:14px">Tip: check-offs here are just a visual aid and reset on reload — the printed card is the source of truth.</div>':''}`;
+}
+function viewTroubleshoot(which){
+  const trees={
+    audio:{t:'No Audio in the Room',steps:['Are the MAINS up and unmuted? (master fader + master mute group)','Is a mute group / "MUTE ALL" macro latched?','Is the matrix feed to the house up?','Are the amps powered and not in standby/protect?','Work backward from speakers → amp → matrix → master → channel.','Still nothing? Switch to redundant engine / call the Lead.']},
+    feedback:{t:'Feedback / Ringing',steps:['Identify: house or monitors? (listen where it’s loudest)','Pull that fader or aux/KLANG send ~6 dB immediately.','Do NOT chase it with EQ live.','If it was a hot open mic, mute or gate it.','Reset levels gently once stable. Note it for after service.']},
+    dead:{t:'Dead Channel',steps:['Is the mic on / cable seated / not damaged?','Gain up? Phantom on (condensers)?','Correct input patched to that channel?','Channel muted, or wrong snapshot loaded?','Insert/Waves bypassing audio? Bypass to test.','Swap to a known-good spare input/mic.']},
+    waves:{t:'Waves / SoundGrid Dropped',steps:['Confirm: does console audio still pass without Waves?','Bypass / disable Waves inserts on critical channels.','Recall the last known-good snapshot.','Do not reboot the server mid-service unless instructed.','Notify the Lead immediately.']},
+    klang:{t:'KLANG / IEM Failure',steps:['Confirm KLANG is online (network/host).','Tell the band calmly via talkback.','Provide a backup console aux mix to in-ears if available.','Check the specific pack: battery, cable, pairing.','Escalate to the Lead if system-wide.']},
+    freeze:{t:'Console Freeze',steps:['Don’t power-cycle mid-service unless it is fully dead.','Switch to the redundant engine if armed.','Get the Lead now.','If recoverable, reload the last saved session.','Have a backup mixing plan (spare desk / aux) ready.']}
+  };
+  if(which&&trees[which]){const x=trees[which];
+    return `<div class="crumb" onclick="go('#troubleshoot')">← Troubleshooting</div>
+    <div class="hero"><h2>\u{1F527} ${x.t}</h2><p>Work through these in order. Don’t skip.</p></div>
+    <div class="card">${x.steps.map((s,i)=>`<div class="listrow"><span class="num-chip">${i+1}</span><div style="font-size:14px">${esc(s)}</div></div>`).join('')}</div>
+    <div class="note" style="margin-top:14px">If you reach the bottom and it’s not fixed: <b>call the Lead</b>. Don’t freelance during service.</div>`;}
+  return `<div class="pagehead"><h1>Troubleshooting Trees</h1><p>Pick the symptom. These are designed for QR codes you can stick on the console & racks.</p></div>
+  <div class="grid g2">${Object.entries(trees).map(([k,x])=>`
+    <div class="panic-btn" onclick="go('#troubleshoot/${k}')"><b>\u{1F527} ${x.t}</b><span>${x.steps.length} steps</span></div>`).join('')}</div>`;
+}
+
+/* ============================================================
+   ADMIN VIEWS
+   ============================================================ */
+function viewAdminDash(){
+  const vols=DB.volunteers;
+  const totalLessons=DB.videos.length;
+  const avg=Math.round(vols.reduce((s,v)=>s+pct(v.done.length,totalLessons),0)/vols.length);
+  const overdue=[];
+  vols.forEach(v=>assignmentsFor(v.id).forEach(a=>{const ids=videoIdsForAssignment(a);if(daysTo(a.due)<0&&ids.some(i=>!isDone(v.id,i)))overdue.push({v,a});}));
+  return `<div class="pagehead"><h1>Admin Dashboard</h1><p>CLF Worship + Tech — Sound team training overview.</p></div>
+  <div class="grid g4" style="margin-bottom:24px">
+    <div class="card"><div class="stat"><b>${vols.length}</b><span>Volunteers</span></div></div>
+    <div class="card"><div class="stat"><b>${DB.videos.length}</b><span>Lessons</span></div></div>
+    <div class="card"><div class="stat"><b>${DB.playlists.length}</b><span>Learning paths</span></div></div>
+    <div class="card"><div class="stat"><b>${avg}%</b><span>Avg completion</span></div></div>
+  </div>
+  ${overdue.length?`<div class="card" style="border-color:#5e2722;margin-bottom:22px">
+    <b style="color:var(--danger)">⚠ ${overdue.length} overdue</b>
+    <div style="margin-top:10px">${overdue.slice(0,6).map(({v,a})=>`<div class="listrow" style="padding:9px 0"><div style="flex:1"><b>${esc(v.name)}</b> <span class="faint">·</span> ${esc(itemName(a))}</div><span class="pill danger">${-daysTo(a.due)}d late</span><button class="btn sm sec" onclick="go('#admin/volunteer/${v.id}')">Open</button></div>`).join('')}</div></div>`:''}
+  <div class="pagehead"><h1 style="font-size:18px">Progress Grid</h1><p>Who has done what. Click a volunteer to manage.</p></div>
+  <div class="tablewrap"><table><thead><tr><th>Volunteer</th><th>Tier</th><th>Group</th><th>Assigned</th><th>Completion</th><th></th></tr></thead><tbody>
+  ${vols.map(v=>{const a=assignedVideoIds(v.id);const d=a.filter(x=>isDone(v.id,x)).length;const p=pct(d,a.length);return `
+    <tr style="cursor:pointer" onclick="go('#admin/volunteer/${v.id}')">
+      <td><b>${esc(v.name)}</b><div class="faint" style="font-size:11.5px">${esc(v.email)}</div></td>
+      <td><span class="pill ${TIERS[v.tier].cls}">T${v.tier}</span></td>
+      <td>${v.group}</td>
+      <td>${d}/${a.length}</td>
+      <td style="min-width:140px"><div class="progress"><i style="width:${p}%"></i></div></td>
+      <td class="faint">›</td>
+    </tr>`;}).join('')}
+  </tbody></table></div>`;
+}
+function viewAdminVolunteers(){
+  return `<div class="pagehead" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div><h1>Volunteers</h1><p>${DB.volunteers.length} on the team. Add, remove, change tier or group.</p></div>
+    <button class="btn" onclick="modalVolunteer()">+ Add volunteer</button></div>
+  <div class="note" style="margin-bottom:16px">\u{1F4A1} "Add" creates the record now. When sign-in ships tomorrow, this becomes a one-tap <b>email invite / magic link</b> — no passwords for volunteers.</div>
+  <div class="tablewrap"><table><thead><tr><th>Name</th><th>Email</th><th>Tier</th><th>Group</th><th>Joined</th><th>Actions</th></tr></thead><tbody>
+  ${DB.volunteers.map(v=>`<tr>
+    <td style="cursor:pointer" onclick="go('#admin/volunteer/${v.id}')"><b>${esc(v.name)}</b></td>
+    <td class="muted">${esc(v.email)}</td>
+    <td><span class="pill ${TIERS[v.tier].cls}">T${v.tier} ${TIERS[v.tier].name}</span></td>
+    <td>${v.group}</td>
+    <td class="muted">${fmtDate(v.joined)}</td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn sm sec" onclick="go('#admin/volunteer/${v.id}')">Manage</button>
+      <button class="btn sm ghost" onclick="resetVol('${v.id}')">Reset link</button>
+      <button class="btn sm danger" onclick="removeVol('${v.id}')">Remove</button>
+    </div></td></tr>`).join('')}
+  </tbody></table></div>`;
+}
+function resetVol(id){const v=volById(id);toast('Password-reset / new magic link queued for '+v.name.split(' ')[0]+' (stub)');}
+function removeVol(id){const v=volById(id);if(!confirm('Remove '+v.name+'? This deletes their record and progress.'))return;
+  DB.volunteers=DB.volunteers.filter(x=>x.id!==id);
+  DB.assignments=DB.assignments.filter(a=>!(a.tgtType==='volunteer'&&a.tgt===id));
+  if(DB.session.vid===id)DB.session.vid=(DB.volunteers[0]||{}).id;
+  save();toast('Removed '+v.name);route();}
+function viewAdminVolunteer(id){
+  const v=volById(id);if(!v)return '<div class="empty">Not found.</div>';
+  const a=assignedVideoIds(v.id);const d=a.filter(x=>isDone(v.id,x)).length;
+  const myA=assignmentsFor(v.id);
+  return `<div class="crumb" onclick="go('#admin/volunteers')">← Volunteers</div>
+  <div class="hero"><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+    <div style="width:54px">${ring(pct(d,a.length))}</div>
+    <div style="flex:1;min-width:200px"><h2>${esc(v.name)}</h2><p>${esc(v.email)} · Group ${v.group} · Joined ${fmtDate(v.joined)}</p><div style="margin-top:8px">${tierPill(v.tier)}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sec" onclick="modalVolunteer('${v.id}')">Edit</button>
+      <button class="btn sec" onclick="modalAssign('${v.id}')">Assign</button>
+      <button class="btn ghost" onclick="resetVol('${v.id}')">Reset link</button>
+      <button class="btn danger" onclick="removeVol('${v.id}')">Remove</button>
+    </div>
+  </div></div>
+  <div class="pagehead"><h1 style="font-size:18px">Tier control</h1></div>
+  <div class="switchbar">${TIERS.map(t=>`<span class="chip ${v.tier===t.n?'on':''}" onclick="setTier('${v.id}',${t.n})">Tier ${t.n} · ${t.name}</span>`).join('')}</div>
+  <div class="pagehead" style="margin-top:8px"><h1 style="font-size:18px">Assignments</h1></div>
+  ${myA.length?myA.map(x=>{const ids=videoIdsForAssignment(x);const dn=ids.filter(i=>isDone(v.id,i)).length;return `
+    <div class="card" style="margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:160px"><b>${esc(itemName(x))}</b><div class="faint" style="font-size:12px">${x.tgtType==='all'?'Team-wide':x.tgtType==='group'?'Group '+x.tgt:'Individual'} · due ${fmtDate(x.due)}</div></div>
+      <span class="pill">${dn}/${ids.length}</span>
+      ${x.tgtType==='volunteer'?`<button class="btn sm danger" onclick="delAssign('${x.id}')">Unassign</button>`:'<span class="faint" style="font-size:12px">inherited</span>'}
+    </div>`;}).join(''):'<div class="empty">No assignments.</div>'}
+  <div class="pagehead" style="margin-top:18px"><h1 style="font-size:18px">Completed lessons (${v.done.length}/${DB.videos.length})</h1></div>
+  <div class="card">${DB.videos.map(vid=>`<div class="checkrow"><span class="checkbox ${isDone(v.id,vid.id)?'on':''}" onclick="toggleDone('${v.id}','${vid.id}');route()">✓</span><div style="flex:1"><b style="font-size:13.5px">${esc(vid.title)}</b> <span class="faint" style="font-size:12px">· T${vid.tier} · Track ${vid.track}</span></div></div>`).join('')}</div>`;
+}
+function setTier(id,n){volById(id).tier=n;save();toast('Tier updated');route();}
+function delAssign(id){DB.assignments=DB.assignments.filter(a=>a.id!==id);save();toast('Unassigned');route();}
+
+function viewAdminVideos(){
+  return `<div class="pagehead" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div><h1>Videos</h1><p>${DB.videos.length} lessons. Paste a YouTube/Vimeo embed URL when you film one.</p></div>
+    <button class="btn" onclick="modalVideo()">+ Add video</button></div>
+  <div class="tablewrap"><table><thead><tr><th>Title</th><th>Track</th><th>Tier</th><th>Topic</th><th>Status</th><th>Tags</th><th></th></tr></thead><tbody>
+  ${DB.videos.map(v=>`<tr>
+    <td><b>${esc(v.title)}</b><div class="faint" style="font-size:11.5px">${v.dur} min</div></td>
+    <td>${v.track}</td><td><span class="pill ${TIERS[v.tier].cls}">T${v.tier}</span></td>
+    <td class="muted">${esc(v.cat)}</td>
+    <td>${v.embed?'<span class="pill ok">Ready</span>':'<span class="pill warn">To film</span>'}</td>
+    <td class="faint" style="font-size:11.5px">${v.tags.map(esc).join(', ')}</td>
+    <td><div style="display:flex;gap:6px"><button class="btn sm sec" onclick="modalVideo('${v.id}')">Edit</button><button class="btn sm danger" onclick="delVideo('${v.id}')">Del</button></div></td>
+  </tr>`).join('')}
+  </tbody></table></div>`;
+}
+function delVideo(id){if(!confirm('Delete this lesson?'))return;DB.videos=DB.videos.filter(v=>v.id!==id);DB.playlists.forEach(p=>p.videoIds=p.videoIds.filter(x=>x!==id));save();toast('Deleted');route();}
+
+function viewAdminPaths(){
+  return `<div class="pagehead" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div><h1>Learning Paths</h1><p>Ordered playlists you assign to people or groups.</p></div>
+    <button class="btn" onclick="modalPath()">+ New path</button></div>
+  <div class="grid g2">${DB.playlists.map(p=>`<div class="card">
+    <div style="display:flex;justify-content:space-between;gap:10px"><span class="pill">Track ${p.track}</span>
+      <div style="display:flex;gap:6px"><button class="btn sm sec" onclick="modalPath('${p.id}')">Edit</button><button class="btn sm danger" onclick="delPath('${p.id}')">Del</button></div></div>
+    <b style="display:block;margin-top:10px;font-size:16px">${esc(p.name)}</b>
+    <p class="muted" style="font-size:13px;margin-top:5px">${esc(p.desc)}</p>
+    <div class="faint" style="font-size:12px;margin-top:10px">${p.videoIds.length} lessons</div>
+    <div style="margin-top:8px">${p.videoIds.map((id,i)=>{const v=vById(id);return `<div class="faint" style="font-size:12px;padding:3px 0">${i+1}. ${v?esc(v.title):'(missing)'}</div>`;}).join('')}</div>
+    <button class="btn sm block sec" style="margin-top:12px" onclick="modalAssign(null,'${p.id}')">Assign this path</button>
+  </div>`).join('')}</div>`;
+}
+function delPath(id){if(!confirm('Delete this path?'))return;DB.playlists=DB.playlists.filter(p=>p.id!==id);DB.assignments=DB.assignments.filter(a=>!(a.itemType==='playlist'&&a.item===id));save();toast('Deleted');route();}
+
+function viewAdminAssignments(){
+  return `<div class="pagehead" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div><h1>Assignments</h1><p>Assign a path or single video to one volunteer, a group, or the whole team — with a due date.</p></div>
+    <button class="btn" onclick="modalAssign()">+ New assignment</button></div>
+  <div class="tablewrap"><table><thead><tr><th>Item</th><th>Type</th><th>Assigned to</th><th>Due</th><th></th></tr></thead><tbody>
+  ${DB.assignments.map(a=>{const dd=daysTo(a.due);return `<tr>
+    <td><b>${esc(itemName(a)||'—')}</b></td>
+    <td class="muted">${a.itemType}</td>
+    <td>${a.tgtType==='all'?'<span class="pill">Whole team</span>':a.tgtType==='group'?'<span class="pill">Group '+a.tgt+'</span>':'<span class="pill">'+esc((volById(a.tgt)||{}).name||'?')+'</span>'}</td>
+    <td class="${dd<0?'':''}">${dd<0?'<span class="pill danger">Overdue</span>':''} ${fmtDate(a.due)}</td>
+    <td><button class="btn sm danger" onclick="delAssign('${a.id}')">Delete</button></td>
+  </tr>`;}).join('')}
+  </tbody></table></div>`;
+}
+function viewCurriculum(){
+  return `<div class="pagehead"><h1>Curriculum Map</h1><p>The full DiGiCo Quantum 338 training plan for CLF Worship + Tech. Six tracks, tiered.</p></div>
+  ${TRACKS.map(t=>{const vs=DB.videos.filter(v=>v.track===t.id);return `
+  <div class="accordion ${t.id==='A'?'open':''}">
+    <div class="acc-h" onclick="this.parentNode.classList.toggle('open')">
+      <span class="modnum">${t.id}</span>
+      <div><b>${t.name}</b><div class="faint" style="font-size:12px">${t.tag} · ${vs.length} lessons</div></div>
+      <span class="chev">›</span>
+    </div>
+    <div class="acc-b"><div class="card" style="border:0;padding:0">${vs.map(v=>`
+      <div class="listrow"><span class="pill ${TIERS[v.tier].cls}">T${v.tier}</span>
+      <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(v.title)}</b><div class="faint" style="font-size:12px">${esc(v.desc)}</div></div>
+      <span class="faint" style="font-size:12px">${v.dur}m</span></div>`).join('')}</div></div>
+  </div>`;}).join('')}
+  <div class="note" style="margin-top:8px">Tiers gate what a volunteer may do on Sunday: T0 Observer → T1 Assistant → T2 Operator → T3 Lead/Trainer. Each tier ends with a practical sign-off (Track F).</div>`;
+}
+function viewAdminData(){
+  return `<div class="pagehead"><h1>Demo Data</h1><p>This preview stores everything in your browser only. No accounts, no server — yet.</p></div>
+  <div class="card">
+    <b>Reset to defaults</b><p class="muted" style="font-size:13px;margin:6px 0 14px">Wipes all local changes and reloads the seeded CLF curriculum, volunteers and assignments.</p>
+    <button class="btn danger" onclick="resetData()">Reset all demo data</button>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <b>What ships next (sign-in day)</b>
+    <ul style="margin:10px 0 0 18px;color:var(--muted);font-size:13.5px;line-height:1.9">
+      <li>Supabase Auth — passwordless <b>email magic links</b> (no passwords for volunteers)</li>
+      <li>Admin invite / remove / reset becomes real (one tap = email sent)</li>
+      <li>Progress & assignments move to Postgres, synced across devices</li>
+      <li>Video files via YouTube-unlisted / Bunny / Cloudflare Stream embeds</li>
+      <li>Optional: email reminders for overdue training, quiz scoring, certificates</li>
+    </ul>
+  </div>`;
+}
+
+/* ============================================================
+   MODALS
+   ============================================================ */
+function openModal(html){$('#modal').innerHTML=html;$('#modalBg').classList.add('show');}
+function closeModal(){$('#modalBg').classList.remove('show');}
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+
+function modalVolunteer(id){
+  const v=id?volById(id):{name:'',email:'',tier:0,group:'A',joined:new Date().toISOString().slice(0,10)};
+  openModal(`<span class="x" onclick="closeModal()">✕</span><h3>${id?'Edit':'Add'} volunteer</h3>
+  <p class="muted" style="font-size:12.5px;margin:4px 0 14px">${id?'':'They’ll get a magic-link invite once sign-in ships.'}</p>
+  <label class="fl">Name</label><input class="f" id="m_name" value="${esc(v.name)}">
+  <label class="fl">Email</label><input class="f" id="m_email" value="${esc(v.email)}">
+  <label class="fl">Starting tier</label><select class="f" id="m_tier">${TIERS.map(t=>`<option value="${t.n}" ${v.tier===t.n?'selected':''}>Tier ${t.n} · ${t.name}</option>`).join('')}</select>
+  <label class="fl">Group</label><select class="f" id="m_group">${['A','B','C','D'].map(g=>`<option ${v.group===g?'selected':''}>${g}</option>`).join('')}</select>
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn block" onclick="saveVol('${id||''}')">${id?'Save':'Add volunteer'}</button><button class="btn sec" onclick="closeModal()">Cancel</button></div>`);
+}
+function saveVol(id){
+  const o={name:$('#m_name').value.trim(),email:$('#m_email').value.trim(),tier:+$('#m_tier').value,group:$('#m_group').value};
+  if(!o.name){toast('Name required');return;}
+  if(id){Object.assign(volById(id),o);}
+  else{DB.volunteers.push({id:uid('v'),...o,joined:new Date().toISOString().slice(0,10),done:[]});}
+  save();closeModal();toast(id?'Saved':'Volunteer added');route();
+}
+function modalVideo(id){
+  const v=id?vById(id):{title:'',track:'A',tier:0,cat:'Foundations',tags:[],dur:10,desc:'',embed:''};
+  openModal(`<span class="x" onclick="closeModal()">✕</span><h3>${id?'Edit':'Add'} video</h3>
+  <label class="fl">Title</label><input class="f" id="m_t" value="${esc(v.title)}">
+  <label class="fl">Description</label><textarea class="f" id="m_d" rows="2">${esc(v.desc)}</textarea>
+  <div class="row"><div style="flex:1"><label class="fl">Track</label><select class="f" id="m_tr">${TRACKS.map(t=>`<option value="${t.id}" ${v.track===t.id?'selected':''}>${t.id} · ${t.name}</option>`).join('')}</select></div>
+  <div style="flex:1"><label class="fl">Tier</label><select class="f" id="m_ti">${TIERS.map(t=>`<option value="${t.n}" ${v.tier===t.n?'selected':''}>Tier ${t.n}</option>`).join('')}</select></div></div>
+  <div class="row"><div style="flex:1"><label class="fl">Topic / category</label><input class="f" id="m_c" value="${esc(v.cat)}"></div>
+  <div style="flex:1"><label class="fl">Minutes</label><input class="f" id="m_du" type="number" value="${v.dur}"></div></div>
+  <label class="fl">Tags (comma separated)</label><input class="f" id="m_tg" value="${esc(v.tags.join(', '))}">
+  <label class="fl">Embed URL (YouTube/Vimeo embed link — leave blank if not filmed)</label><input class="f" id="m_e" value="${esc(v.embed)}" placeholder="https://www.youtube.com/embed/XXXX">
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn block" onclick="saveVid('${id||''}')">Save</button><button class="btn sec" onclick="closeModal()">Cancel</button></div>`);
+}
+function saveVid(id){
+  const o={title:$('#m_t').value.trim(),desc:$('#m_d').value.trim(),track:$('#m_tr').value,tier:+$('#m_ti').value,
+    cat:$('#m_c').value.trim()||'General',dur:+$('#m_du').value||10,
+    tags:$('#m_tg').value.split(',').map(s=>s.trim()).filter(Boolean),embed:$('#m_e').value.trim()};
+  o.status=o.embed?'ready':'planned';
+  if(!o.title){toast('Title required');return;}
+  if(id)Object.assign(vById(id),o);else DB.videos.push({id:uid('vid'),...o});
+  save();closeModal();toast('Saved');route();
+}
+function modalPath(id){
+  const p=id?plById(id):{name:'',desc:'',track:'A',videoIds:[]};
+  openModal(`<span class="x" onclick="closeModal()">✕</span><h3>${id?'Edit':'New'} learning path</h3>
+  <label class="fl">Name</label><input class="f" id="p_n" value="${esc(p.name)}">
+  <label class="fl">Description</label><textarea class="f" id="p_d" rows="2">${esc(p.desc)}</textarea>
+  <label class="fl">Track</label><select class="f" id="p_t">${TRACKS.map(t=>`<option value="${t.id}" ${p.track===t.id?'selected':''}>${t.id} · ${t.name}</option>`).join('')}</select>
+  <label class="fl">Lessons (check & they’re added in this order)</label>
+  <div style="max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:6px 12px;margin-top:6px">
+  ${DB.videos.map(v=>`<label class="checkrow" style="cursor:pointer"><input type="checkbox" class="pv" value="${v.id}" ${p.videoIds.includes(v.id)?'checked':''} style="width:18px;height:18px"><div style="font-size:13px">${esc(v.title)} <span class="faint">· T${v.tier} · ${v.track}</span></div></label>`).join('')}</div>
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn block" onclick="savePath('${id||''}')">Save path</button><button class="btn sec" onclick="closeModal()">Cancel</button></div>`);
+}
+function savePath(id){
+  const ids=[...document.querySelectorAll('.pv:checked')].map(x=>x.value);
+  const o={name:$('#p_n').value.trim(),desc:$('#p_d').value.trim(),track:$('#p_t').value,videoIds:ids};
+  if(!o.name){toast('Name required');return;}
+  if(id)Object.assign(plById(id),o);else DB.playlists.push({id:uid('p_'),...o});
+  save();closeModal();toast('Saved');route();
+}
+function modalAssign(volId,plId){
+  const dft=new Date();dft.setDate(dft.getDate()+14);
+  openModal(`<span class="x" onclick="closeModal()">✕</span><h3>New assignment</h3>
+  <label class="fl">Assign to</label>
+  <select class="f" id="a_tgt">
+    <option value="all">\u{1F465} Whole team</option>
+    <optgroup label="Group">${['A','B','C','D'].map(g=>`<option value="group:${g}">Group ${g}</option>`).join('')}</optgroup>
+    <optgroup label="Individual">${DB.volunteers.map(v=>`<option value="vol:${v.id}" ${volId===v.id?'selected':''}>${esc(v.name)}</option>`).join('')}</optgroup>
+  </select>
+  <label class="fl">What</label>
+  <select class="f" id="a_item">
+    <optgroup label="Learning paths">${DB.playlists.map(p=>`<option value="pl:${p.id}" ${plId===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</optgroup>
+    <optgroup label="Single videos">${DB.videos.map(v=>`<option value="vid:${v.id}">${esc(v.title)}</option>`).join('')}</optgroup>
+  </select>
+  <label class="fl">Due date</label><input class="f" type="date" id="a_due" value="${dft.toISOString().slice(0,10)}">
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn block" onclick="saveAssign()">Assign</button><button class="btn sec" onclick="closeModal()">Cancel</button></div>`);
+}
+function saveAssign(){
+  const tgt=$('#a_tgt').value, item=$('#a_item').value, due=$('#a_due').value;
+  let tgtType='all',tgtV='*';
+  if(tgt.startsWith('group:')){tgtType='group';tgtV=tgt.split(':')[1];}
+  else if(tgt.startsWith('vol:')){tgtType='volunteer';tgtV=tgt.split(':')[1];}
+  const [it,iv]=item.split(':');
+  DB.assignments.push({id:uid('as'),tgtType,tgt:tgtV,itemType:it==='pl'?'playlist':'video',item:iv,due,at:new Date().toISOString().slice(0,10)});
+  save();closeModal();toast('Assigned');route();
+}
+
+/* ---------- Boot ---------- */
+if(!location.hash)location.hash='#home';
+route();
+</script>
+</body>
+</html>
