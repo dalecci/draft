@@ -1,0 +1,14 @@
+{
+  "name": "CLF Worship + Tech — Sound Training",
+  "short_name": "CLF Sound",
+  "description": "DiGiCo Quantum 338 training, runbooks and certification for the CLF audio team.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0B0C",
+  "theme_color": "#0B0B0C",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
