@@ -422,13 +422,14 @@ function defaultCards(){
 }
 
 /* ---------- State ---------- */
-let DB=load();
+let DB;
 function load(){
   try{const r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}
-  const s=seed();save(s);return s;
+  const s=seed();persist(s);return s;
 }
-function save(s){DB=s||DB;localStorage.setItem(LS_KEY,JSON.stringify(DB));}
-function resetData(){if(confirm('Reset all demo data back to defaults?')){localStorage.removeItem(LS_KEY);DB=load();go('#home');toast('Demo data reset');}}
+function persist(s){try{localStorage.setItem(LS_KEY,JSON.stringify(s));}catch(e){/* storage blocked (preview/iframe) — run in-memory */}}
+function save(s){if(s)DB=s;persist(DB);}
+function resetData(){if(confirm('Reset all demo data back to defaults?')){try{localStorage.removeItem(LS_KEY);}catch(e){}DB=seed();persist(DB);go('#home');toast('Demo data reset');}}
 
 /* ---------- Helpers ---------- */
 const $=(s,r=document)=>r.querySelector(s);
@@ -1064,8 +1065,18 @@ function saveAssign(){
 }
 
 /* ---------- Boot ---------- */
-if(!location.hash)location.hash='#home';
-route();
+(function boot(){
+  try{
+    DB=load();
+    if(!location.hash)location.hash='#home';
+    route();
+  }catch(err){
+    document.getElementById('view').innerHTML=
+      '<div class="empty">App failed to start.<br><span class="faint">'+
+      String(err&&err.message||err)+'</span></div>';
+    console.error('CLF boot error',err);
+  }
+})();
 </script>
 </body>
 </html>
