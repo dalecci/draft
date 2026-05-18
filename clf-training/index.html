@@ -235,6 +235,11 @@
     border-radius:var(--r-sm);padding:11px 14px}
   .footer{max-width:var(--maxw);margin:0 auto;padding:30px 26px 40px;color:var(--faint);font-size:12px;
     border-top:1px solid var(--border)}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:999px;
+    background:#26262B;outline:none;margin:8px 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:#fff;cursor:pointer;border:0}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;cursor:pointer;border:0}
 </style>
 </head>
 <body>
@@ -362,7 +367,40 @@ function seed(){
   return {videos,playlists,volunteers,assignments,
     progress:{}, // computed/extra completions live in vol.done; this holds signoffs
     signoffs:{}, // {volId:{plId:by}} certification sign-offs
+    exercises:seedExercises(), eqScores:{},
     cards:defaultCards(), session:{role:'volunteer',vid:'v6'}};
+}
+
+/* ---------- Ear-training exercise library ----------
+   Each exercise injects a hidden "defect" (one or more peaking bands)
+   into a looped source. The ideal correction is the inverse of that
+   defect. Scoring compares the trainee's EQ curve to that ideal —
+   pure DSP math, no audio analysis, no AI, fully offline. */
+function seedExercises(){
+  const E=(id,name,tier,src,desc,defect,pass)=>({id,name,tier,src,desc,defect,pass});
+  return [
+    E('eq1','Nasal vocal',1,'voice',
+      'A spoken vocal with a honky buildup. Find it and cut it back to natural.',
+      [{f:1100,g:8,q:2.2}],78),
+    E('eq2','Muddy low-mids',1,'mix',
+      'The mix is boxy and thick. Clear the mud without thinning it out.',
+      [{f:300,g:7,q:1.4}],78),
+    E('eq3','Boomy / proximity',1,'voice',
+      'Too much chest/proximity on the voice. Tame the low-end build-up.',
+      [{f:170,g:7.5,q:1.6}],78),
+    E('eq4','Harsh presence',2,'mix',
+      'Bright and abrasive in the upper-mids. Soften the harshness.',
+      [{f:3500,g:7,q:2.8}],82),
+    E('eq5','Dull & lifeless',2,'mix',
+      'Lacks air and clarity — a broad dip is hiding the top end. Restore it.',
+      [{f:7000,g:-7,q:1.0}],82),
+    E('eq6','Two problems',3,'mix',
+      'Nasal AND harsh at the same time. Two corrective moves needed.',
+      [{f:1000,g:7,q:2.4},{f:4200,g:6,q:3.0}],85),
+    E('eq7','Telephone effect',3,'voice',
+      'Severe band-limited tone (everything pushed into a midrange honk).',
+      [{f:1800,g:9,q:1.2},{f:160,g:-6,q:0.9}],85)
+  ];
 }
 
 function defaultCards(){
@@ -424,8 +462,14 @@ function defaultCards(){
 /* ---------- State ---------- */
 let DB;
 function load(){
-  try{const r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}
+  try{const r=localStorage.getItem(LS_KEY);if(r)return migrate(JSON.parse(r));}catch(e){}
   const s=seed();persist(s);return s;
+}
+function migrate(o){ // older saved states predate ear-training
+  if(!o||typeof o!=='object')return seed();
+  if(!Array.isArray(o.exercises)||!o.exercises.length)o.exercises=seedExercises();
+  if(!o.eqScores||typeof o.eqScores!=='object')o.eqScores={};
+  return o;
 }
 function persist(s){try{localStorage.setItem(LS_KEY,JSON.stringify(s));}catch(e){/* storage blocked (preview/iframe) — run in-memory */}}
 function save(s){if(s)DB=s;persist(DB);}
@@ -482,6 +526,7 @@ const VOL_NAV=[
   ['#home','\u{1F3E0}','Home'],
   ['#paths','\u{1F4DA}','Paths'],
   ['#library','\u{1F3AC}','Library'],
+  ['#train','\u{1F3A7}','Ear Train'],
   ['#runbook','⏱','Runbook'],
   ['#me','\u{1F464}','Me']
 ];
@@ -491,6 +536,7 @@ const ADMIN_NAV=[
   ['#admin/videos','\u{1F3AC}','Videos'],
   ['#admin/paths','\u{1F4DA}','Playlists'],
   ['#admin/assignments','\u{1F4CC}','Assignments'],
+  ['#admin/exercises','\u{1F3A7}','Ear Train'],
   ['#admin/curriculum','\u{1F5FA}','Curriculum'],
   ['#admin/data','⚙','Demo Data']
 ];
@@ -521,7 +567,7 @@ function renderChrome(){
     (admin?'':`<h6>Quick Access</h6>
       <div class="navlink" onclick="go('#panic')"><span class="ic">\u{1F6A8}</span>Panic Card</div>
       <div class="navlink" onclick="go('#troubleshoot')"><span class="ic">\u{1F527}</span>Troubleshooting</div>`);
-  $('#botnav').innerHTML=nav.slice(0,5).map(([h,i,l])=>{
+  $('#botnav').innerHTML=nav.slice(0,6).map(([h,i,l])=>{
     const active=('#'+(h.replace(/^#/,'').split('/')[0]))===cur;
     return `<button class="${active?'active':''}" onclick="go('${h}')"><span class="ic">${i}</span>${l}</button>`;
   }).join('');
@@ -536,11 +582,12 @@ function route(){
   const h=location.hash.replace(/^#/,'')||'home';
   const [p,a,b]=h.split('/');
   const el=$('#view');window.scrollTo(0,0);
-  if(isAdmin()&&!p.startsWith('admin')&&!['panic','runbook','card','troubleshoot','video'].includes(p)){
-    // admin lands on dashboard for vol-only routes
-  }
+  if(p!=='train')eqAudioStop();
   try{
     if(p==='home')return el.innerHTML=viewHome();
+    if(p==='train'&&!a)return el.innerHTML=viewTrain();
+    if(p==='train')return mountExercise(el,a);
+    if(p==='admin'&&a==='exercises')return el.innerHTML=viewAdminExercises();
     if(p==='library')return el.innerHTML=viewLibrary();
     if(p==='paths')return el.innerHTML=viewPaths();
     if(p==='path')return el.innerHTML=viewPath(a);
@@ -753,11 +800,18 @@ function viewMe(){
       ${t.n===v.tier?'<div class="pill ok" style="margin-top:10px">You are here</div>':t.n<v.tier?'<div class="pill" style="margin-top:10px">✓ Cleared</div>':'<div class="pill" style="margin-top:10px">Locked</div>'}
     </div>`).join('')}</div>
   <div class="pagehead"><h1 style="font-size:18px">Progress by Track</h1></div>
-  <div class="card">${byTrack.map(({t,total,done})=>`
+  <div class="card" style="margin-bottom:24px">${byTrack.map(({t,total,done})=>`
     <div style="padding:12px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:7px"><b>Track ${t.id} · ${t.name}</b><span class="muted">${done}/${total}</span></div>
       <div class="progress"><i style="width:${pct(done,total)}%"></i></div>
-    </div>`).join('')}</div>`;
+    </div>`).join('')}</div>
+  <div class="pagehead"><h1 style="font-size:18px">Ear Training — EQ</h1></div>
+  <div class="card">${DB.exercises.map(ex=>{const s=eqBest(v.id,ex.id);
+    return `<div class="listrow" style="cursor:pointer" onclick="go('#train/${ex.id}')">
+      <span class="pill ${TIERS[ex.tier].cls}">T${ex.tier}</span>
+      <div style="flex:1;min-width:0"><b style="font-size:13.5px">${esc(ex.name)}</b></div>
+      ${s!=null?`<span class="pill ${s>=ex.pass?'ok':'warn'}">Best ${s}/100</span>`:'<span class="pill faint">Not tried</span>'}
+    </div>`;}).join('')}</div>`;
 }
 
 /* ---------- Operational cards ---------- */
@@ -974,8 +1028,300 @@ function viewAdminData(){
 }
 
 /* ============================================================
+   EAR TRAINING — Tier 1 EQ matching game
+   Deterministic, offline, no AI. The "defect" is a known set of
+   peaking bands baked into a looped source; the ideal correction
+   is its exact inverse. Scoring compares the trainee's analytic
+   EQ curve to that ideal across log-spaced frequencies.
+   ============================================================ */
+const FS_SCORE=48000;
+const SCORE_FREQS=(function(){const a=[],lo=Math.log10(30),hi=Math.log10(16000);
+  for(let i=0;i<56;i++)a.push(Math.pow(10,lo+(hi-lo)*i/55));return a;})();
+
+/* RBJ peaking-EQ magnitude response in dB at frequency f (Hz). */
+function peakDb(f0,gain,Q,f,fs){
+  const A=Math.pow(10,gain/40), w0=2*Math.PI*f0/fs, cw=Math.cos(w0), sw=Math.sin(w0),
+        al=sw/(2*Math.max(.05,Q));
+  const b0=1+al*A,b1=-2*cw,b2=1-al*A,a0=1+al/A,a1=-2*cw,a2=1-al/A;
+  const w=2*Math.PI*f/fs, c1=Math.cos(w),s1=Math.sin(w),c2=Math.cos(2*w),s2=Math.sin(2*w);
+  const nr=b0+b1*c1+b2*c2, ni=-(b1*s1+b2*s2), dr=a0+a1*c1+a2*c2, di=-(a1*s1+a2*s2);
+  const mag=Math.sqrt((nr*nr+ni*ni)/(dr*dr+di*di));
+  return 20*Math.log10(mag);
+}
+function bandsDb(bands,f){let s=0;for(const b of bands)s+=peakDb(b.f,b.g,b.q,f,FS_SCORE);return s;}
+
+/* score: how close the user EQ is to inverting the defect.
+   Error is weighted toward the frequencies the defect actually
+   touches, so "do nothing" scores low and a surgical fix scores
+   high — broadband over-correction is still penalised. */
+function scoreExercise(ex,userBands){
+  let num=0,den=0,worst={e:0,f:1000};
+  const pts=SCORE_FREQS.map(f=>{
+    const dd=bandsDb(ex.defect,f);
+    const r=bandsDb(userBands,f)+dd;          // ideal correction => r == 0
+    const w=Math.abs(dd)+0.4;                 // weight where the problem lives
+    num+=w*Math.abs(r);den+=w;
+    if(Math.abs(r)>Math.abs(worst.e))worst={e:r,f};
+    return {f,r};
+  });
+  const mae=num/den;
+  const score=Math.max(0,Math.min(100,Math.round(100-9*mae)));
+  return {score,mae,worst,pts};
+}
+function regionName(f){
+  if(f<90)return 'sub-bass';if(f<250)return 'low end';if(f<500)return 'low-mids';
+  if(f<1200)return 'midrange';if(f<3000)return 'upper-mids';if(f<6000)return 'presence';
+  return 'air / top end';}
+function coach(ex,userBands){
+  const {score,worst}=scoreExercise(ex,userBands);
+  const tips=[];
+  if(Math.abs(worst.e)>1.2){
+    const where=regionName(worst.f)+' (~'+(worst.f>=1000?(worst.f/1000).toFixed(1)+' kHz':Math.round(worst.f)+' Hz')+')';
+    tips.push(worst.e>0
+      ? 'Still too much energy in the '+where+' — cut a little more there (or widen/centre your cut).'
+      : 'You over-corrected in the '+where+' — it\'s now scooped/thin. Ease that band back toward flat.');
+  }
+  const tot=userBands.reduce((s,b)=>s+Math.abs(b.g),0);
+  if(tot>26)tips.push('You\'re moving a lot of bands hard. Corrective EQ is usually one or two surgical moves — try resetting and being more targeted.');
+  if(score>=ex.pass&&tips.length===0)tips.push('Clean, surgical correction — this is the goal: minimal moves, right frequency, right amount.');
+  const verdict=score>=92?'Excellent — pro-level match.':score>=ex.pass?'Passed — solid corrective move.':
+    score>=ex.pass-12?'Close. The region is right but the amount or width is off.':'Not there yet — you may be cutting the wrong frequency entirely.';
+  return {score,verdict,tips};
+}
+
+/* ---------- Audio engine ---------- */
+const EQ={ctx:null,buf:null,src:null,nodes:[],gain:null,ex:null,bands:[],mode:'problem',playing:false,submitted:false,showCurve:true};
+function eqDefaultBands(){return [
+  {f:120,g:0,q:1.0},{f:500,g:0,q:1.4},{f:2000,g:0,q:1.4},{f:6000,g:0,q:1.0}];}
+function pinkBuffer(ctx){
+  if(EQ.buf)return EQ.buf;
+  const len=ctx.sampleRate*3, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<len;i++){
+    const w=Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;b2=0.96900*b2+w*0.1538520;
+    b3=0.86650*b3+w*0.3104856;b4=0.55000*b4+w*0.5329522;b5=-0.7616*b5-w*0.0168980;
+    d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.06;b6=w*0.115926;
+  }
+  EQ.buf=buf;return buf;
+}
+function mkPeak(ctx,b){const n=ctx.createBiquadFilter();n.type='peaking';
+  n.frequency.value=b.f;n.gain.value=b.g;n.Q.value=Math.max(.1,b.q);return n;}
+function eqBuildGraph(){
+  const ctx=EQ.ctx;
+  EQ.src=ctx.createBufferSource();EQ.src.buffer=pinkBuffer(ctx);EQ.src.loop=true;
+  EQ.gain=ctx.createGain();EQ.gain.gain.value=0.55;
+  const chain=[EQ.src];
+  if(EQ.mode!=='reference')EQ.ex.defect.forEach(b=>chain.push(mkPeak(ctx,b)));
+  EQ.userNodes=[];
+  if(EQ.mode==='fix')EQ.bands.forEach(b=>{const n=mkPeak(ctx,b);EQ.userNodes.push(n);chain.push(n);});
+  chain.push(EQ.gain);
+  for(let i=0;i<chain.length-1;i++)chain[i].connect(chain[i+1]);
+  EQ.gain.connect(ctx.destination);
+  EQ.src.start();EQ.playing=true;
+}
+function eqStopSrc(){try{EQ.src&&EQ.src.stop();}catch(e){}EQ.src=null;EQ.playing=false;}
+function eqAudioStop(){eqStopSrc();if(EQ.ctx){try{EQ.ctx.close();}catch(e){}EQ.ctx=null;}}
+async function eqPlay(mode){
+  if(!window.AudioContext&&!window.webkitAudioContext){toast('Web Audio not supported on this browser');return;}
+  if(!EQ.ctx)EQ.ctx=new (window.AudioContext||window.webkitAudioContext)();
+  if(EQ.ctx.state==='suspended')await EQ.ctx.resume();
+  if(mode)EQ.mode=mode;
+  eqStopSrc();eqBuildGraph();syncEqUI();
+}
+function eqLiveUpdate(){ // slider moved while playing in 'fix' mode
+  if(EQ.playing&&EQ.mode==='fix'&&EQ.userNodes)
+    EQ.userNodes.forEach((n,i)=>{const b=EQ.bands[i];n.frequency.value=b.f;n.gain.value=b.g;n.Q.value=Math.max(.1,b.q);});
+}
+
+/* ---------- Views ---------- */
+function eqBest(volId,exId){return ((DB.eqScores||{})[volId]||{})[exId];}
+function viewTrain(){
+  const v=curVol();
+  return `<div class="pagehead"><h1>Ear Training — EQ</h1><p>Hear a problem sound, fix it with the EQ, get an instant objective score. \u{1F3A7} <b>Use headphones.</b></p></div>
+  <div class="note" style="margin-bottom:18px">Scoring is pure DSP — your EQ curve is compared to the exact correction the problem needs. No internet, no AI, no waiting. Tiers gate difficulty (wider vs. surgical moves).</div>
+  <div class="grid g2">${DB.exercises.map(ex=>{
+    const best=eqBest(v.id,ex.id);
+    return `<div class="card tap" onclick="go('#train/${ex.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <span class="pill ${TIERS[ex.tier].cls}">Tier ${ex.tier}</span>
+        ${best!=null?`<span class="pill ${best>=ex.pass?'ok':'warn'}">Best ${best}</span>`:'<span class="pill">Not tried</span>'}
+      </div>
+      <b style="display:block;margin-top:12px;font-size:16px">${esc(ex.name)}</b>
+      <p class="muted" style="font-size:13px;margin-top:5px">${esc(ex.desc)}</p>
+      <div class="faint" style="font-size:12px;margin-top:10px">Pass ≥ ${ex.pass} · ${ex.defect.length} problem band${ex.defect.length>1?'s':''}</div>
+    </div>`;}).join('')}</div>`;
+}
+function mountExercise(el,id){
+  const ex=DB.exercises.find(x=>x.id===id);
+  if(!ex){el.innerHTML='<div class="empty">Exercise not found.</div>';return;}
+  eqStopSrc();
+  EQ.ex=ex;EQ.bands=eqDefaultBands();EQ.mode='problem';EQ.submitted=false;
+  EQ.showCurve=ex.tier<3;
+  el.innerHTML=`
+  <div class="crumb" onclick="go('#train')">← Ear Training</div>
+  <div class="hero"><div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px"><h2>${esc(ex.name)}</h2><p>${esc(ex.desc)}</p></div>
+    <span class="pill ${TIERS[ex.tier].cls}">Tier ${ex.tier} · pass ≥ ${ex.pass}</span></div></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="switchbar" style="margin-bottom:14px">
+      <span class="chip" id="m_problem" onclick="eqPlay('problem')">▶ Problem</span>
+      <span class="chip" id="m_fix" onclick="eqPlay('fix')">▶ Your EQ</span>
+      <span class="chip" id="m_reference" onclick="eqPlay('reference')">▶ Target (clean)</span>
+      <span class="chip" onclick="eqAudioStop();syncEqUI()">■ Stop</span>
+      <span class="chip" id="m_curve" onclick="EQ.showCurve=!EQ.showCurve;syncEqUI();drawEq()">\u{1F441} Curves</span>
+    </div>
+    <canvas id="eqCanvas" width="860" height="240" style="width:100%;height:auto;background:#000;border:1px solid var(--border);border-radius:10px"></canvas>
+    <div class="faint" style="font-size:11.5px;margin-top:6px">Red = the problem · White = your EQ${ex.tier>=3?' · (curves hidden until you submit — Tier 3 is by ear)':''} · Green = ideal (after submit)</div>
+  </div>
+
+  <div class="grid g4" id="eqBands"></div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+    <button class="btn" onclick="eqSubmit()">Submit &amp; score</button>
+    <button class="btn sec" onclick="eqReset()">Reset EQ</button>
+    <button class="btn ghost" onclick="eqPlay('fix')">Audition my fix</button>
+  </div>
+  <div id="eqResult" style="margin-top:18px"></div>`;
+  renderEqBands();syncEqUI();drawEq();
+}
+function renderEqBands(){
+  const host=document.getElementById('eqBands');if(!host)return;
+  host.innerHTML=EQ.bands.map((b,i)=>`
+    <div class="card">
+      <b style="font-size:13px">Band ${i+1}</b>
+      <label class="fl">Freq <span class="faint" id="lf${i}"></span></label>
+      <input type="range" min="0" max="1000" id="bf${i}" style="width:100%">
+      <label class="fl">Gain <span class="faint" id="lg${i}"></span></label>
+      <input type="range" min="-150" max="150" id="bg${i}" style="width:100%">
+      <label class="fl">Q <span class="faint" id="lq${i}"></span></label>
+      <input type="range" min="30" max="800" id="bq${i}" style="width:100%">
+    </div>`).join('');
+  EQ.bands.forEach((b,i)=>{
+    const ff=document.getElementById('bf'+i),gg=document.getElementById('bg'+i),qq=document.getElementById('bq'+i);
+    const f2s=f=>Math.round((Math.log10(f)-Math.log10(20))/(Math.log10(20000)-Math.log10(20))*1000);
+    const s2f=s=>Math.pow(10,Math.log10(20)+(s/1000)*(Math.log10(20000)-Math.log10(20)));
+    ff.value=f2s(b.f);gg.value=Math.round(b.g*10);qq.value=Math.round(b.q*100);
+    const upd=()=>{b.f=Math.round(s2f(+ff.value));b.g=(+gg.value)/10;b.q=(+qq.value)/100;
+      document.getElementById('lf'+i).textContent=b.f>=1000?(b.f/1000).toFixed(2)+' kHz':b.f+' Hz';
+      document.getElementById('lg'+i).textContent=(b.g>0?'+':'')+b.g.toFixed(1)+' dB';
+      document.getElementById('lq'+i).textContent='Q '+b.q.toFixed(2);
+      eqLiveUpdate();drawEq();};
+    ff.addEventListener('input',upd);gg.addEventListener('input',upd);qq.addEventListener('input',upd);
+    upd();
+  });
+}
+function syncEqUI(){
+  ['problem','fix','reference'].forEach(m=>{const e=document.getElementById('m_'+m);
+    if(e)e.classList.toggle('on',EQ.playing&&EQ.mode===m);});
+  const c=document.getElementById('m_curve');if(c)c.classList.toggle('on',EQ.showCurve);
+}
+function drawEq(){
+  const cv=document.getElementById('eqCanvas');if(!cv)return;
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const x=f=>(Math.log10(f)-Math.log10(20))/(Math.log10(20000)-Math.log10(20))*W;
+  const y=db=>H/2-(db/18)*(H/2-10);
+  ctx.strokeStyle='#1d1d22';ctx.lineWidth=1;
+  [50,100,200,500,1000,2000,5000,10000].forEach(f=>{ctx.beginPath();ctx.moveTo(x(f),0);ctx.lineTo(x(f),H);ctx.stroke();
+    ctx.fillStyle='#5a5a62';ctx.font='10px Inter';ctx.fillText(f>=1000?f/1000+'k':f,x(f)+2,H-4);});
+  ctx.strokeStyle='#2a2a30';ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+  const curve=(fn,col,dash)=>{ctx.strokeStyle=col;ctx.lineWidth=2;ctx.setLineDash(dash||[]);ctx.beginPath();
+    for(let px=0;px<=W;px+=3){const f=Math.pow(10,Math.log10(20)+(px/W)*(Math.log10(20000)-Math.log10(20)));
+      const v=y(Math.max(-18,Math.min(18,fn(f))));px===0?ctx.moveTo(px,v):ctx.lineTo(px,v);}ctx.stroke();ctx.setLineDash([]);};
+  if(EQ.showCurve||EQ.submitted){
+    curve(f=>bandsDb(EQ.ex.defect,f),'#F0584F');           // problem
+    curve(f=>bandsDb(EQ.bands,f),'#F4F4F5');                // user EQ
+    if(EQ.submitted)curve(f=>-bandsDb(EQ.ex.defect,f),'#3FB984',[6,5]); // ideal
+  }else{
+    ctx.fillStyle='#5a5a62';ctx.font='13px Inter';ctx.textAlign='center';
+    ctx.fillText('Tier 3 — by ear. Curves reveal after you submit.',W/2,H/2-6);ctx.textAlign='left';
+  }
+}
+function eqReset(){EQ.bands=eqDefaultBands();EQ.submitted=false;renderEqBands();eqLiveUpdate();drawEq();
+  document.getElementById('eqResult').innerHTML='';}
+function eqSubmit(){
+  const r=coach(EQ.ex,EQ.bands);EQ.submitted=true;drawEq();
+  const v=curVol();
+  DB.eqScores=DB.eqScores||{};DB.eqScores[v.id]=DB.eqScores[v.id]||{};
+  const prev=DB.eqScores[v.id][EQ.ex.id];
+  if(prev==null||r.score>prev){DB.eqScores[v.id][EQ.ex.id]=r.score;save();}
+  const passed=r.score>=EQ.ex.pass;
+  document.getElementById('eqResult').innerHTML=`
+    <div class="card" style="border-color:${passed?'#1f4a39':'#5a4824'}">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <div style="width:64px">${ring(r.score,64)}</div>
+        <div style="flex:1;min-width:200px">
+          <b style="font-size:17px">${passed?'✅ Passed':'\u{1F501} Try again'} — ${r.score}/100</b>
+          <p class="muted" style="font-size:13.5px;margin-top:4px">${esc(r.verdict)} (pass ≥ ${EQ.ex.pass})</p>
+        </div>
+      </div>
+      <ul style="margin:14px 0 0 18px;color:var(--muted);font-size:13.5px;line-height:1.85">
+        ${r.tips.map(t=>`<li>${esc(t)}</li>`).join('')}
+      </ul>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn sm" onclick="eqPlay('reference')">▶ Hear the target</button>
+        <button class="btn sm sec" onclick="eqPlay('fix')">▶ Hear my fix</button>
+        ${passed?`<button class="btn sm sec" onclick="go('#train')">Next exercise →</button>`:`<button class="btn sm sec" onclick="eqReset()">Reset &amp; retry</button>`}
+      </div>
+    </div>`;
+  toast(passed?'Passed — '+r.score+'/100':'Scored '+r.score+'/100');
+}
+
+/* ---------- Admin: exercises ---------- */
+function viewAdminExercises(){
+  const vols=DB.volunteers;
+  const tried=vols.filter(v=>Object.keys((DB.eqScores||{})[v.id]||{}).length).length;
+  return `<div class="pagehead" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+    <div><h1>Ear Training — Exercises</h1><p>${DB.exercises.length} EQ exercises · ${tried}/${vols.length} volunteers have practised.</p></div>
+    <button class="btn" onclick="modalExercise()">+ Add exercise</button></div>
+  <div class="note" style="margin-bottom:16px">An exercise = a hidden "defect" (one or more peaking bands) baked into a looped sound. Trainees must EQ it back to flat; scoring is automatic. Real audio loops can be attached later — pink-noise sources work today and are the standard beginner ear-training signal.</div>
+  <div class="tablewrap"><table><thead><tr><th>Exercise</th><th>Tier</th><th>Pass</th><th>Defect bands</th><th>Avg best</th><th></th></tr></thead><tbody>
+  ${DB.exercises.map(ex=>{
+    const scores=vols.map(v=>eqBest(v.id,ex.id)).filter(s=>s!=null);
+    const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):'—';
+    return `<tr>
+      <td><b>${esc(ex.name)}</b><div class="faint" style="font-size:11.5px">${esc(ex.desc)}</div></td>
+      <td><span class="pill ${TIERS[ex.tier].cls}">T${ex.tier}</span></td>
+      <td>${ex.pass}</td>
+      <td class="faint" style="font-size:11.5px">${ex.defect.map(b=>`${(b.g>0?'+':'')}${b.g}dB @ ${b.f>=1000?(b.f/1000)+'k':b.f} Q${b.q}`).join(' · ')}</td>
+      <td>${avg}${scores.length?' ('+scores.length+')':''}</td>
+      <td><div style="display:flex;gap:6px"><button class="btn sm sec" onclick="modalExercise('${ex.id}')">Edit</button><button class="btn sm danger" onclick="delExercise('${ex.id}')">Del</button></div></td>
+    </tr>`;}).join('')}
+  </tbody></table></div>`;
+}
+function delExercise(id){if(!confirm('Delete this exercise?'))return;DB.exercises=DB.exercises.filter(e=>e.id!==id);save();toast('Deleted');route();}
+
+/* ============================================================
    MODALS
    ============================================================ */
+function modalExercise(id){
+  const ex=id?DB.exercises.find(x=>x.id===id):{name:'',desc:'',tier:1,src:'mix',pass:80,defect:[{f:1000,g:7,q:2}]};
+  const d=ex.defect;
+  openModal(`<span class="x" onclick="closeModal()">✕</span><h3>${id?'Edit':'Add'} exercise</h3>
+  <label class="fl">Name</label><input class="f" id="x_n" value="${esc(ex.name)}">
+  <label class="fl">Description (what the trainee should fix)</label><textarea class="f" id="x_d" rows="2">${esc(ex.desc)}</textarea>
+  <div class="row"><div style="flex:1"><label class="fl">Tier</label><select class="f" id="x_t">${TIERS.map(t=>`<option value="${t.n}" ${ex.tier===t.n?'selected':''}>Tier ${t.n}</option>`).join('')}</select></div>
+  <div style="flex:1"><label class="fl">Pass score</label><input class="f" id="x_p" type="number" value="${ex.pass}"></div>
+  <div style="flex:1"><label class="fl">Source</label><select class="f" id="x_s">${['pink','voice','mix'].map(s=>`<option ${ex.src===s?'selected':''}>${s}</option>`).join('')}</select></div></div>
+  <label class="fl">Defect bands — Freq(Hz) / Gain(dB) / Q, one per line</label>
+  <textarea class="f" id="x_b" rows="3" placeholder="1000, 7, 2">${d.map(b=>`${b.f}, ${b.g}, ${b.q}`).join('\n')}</textarea>
+  <div class="note" style="margin-top:10px">Tip: positive gain = a buildup the trainee must cut; negative = a hole they must restore. 1–2 bands for Tier 1–2, 2+ for Tier 3.</div>
+  <div style="display:flex;gap:10px;margin-top:20px"><button class="btn block" onclick="saveExercise('${id||''}')">Save</button><button class="btn sec" onclick="closeModal()">Cancel</button></div>`);
+}
+function saveExercise(id){
+  const defect=$('#x_b').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const [f,g,q]=l.split(',').map(s=>parseFloat(s.trim()));
+    return {f:f||1000,g:g||0,q:q||1.5};});
+  if(!defect.length){toast('Add at least one defect band');return;}
+  const o={name:$('#x_n').value.trim(),desc:$('#x_d').value.trim(),tier:+$('#x_t').value,
+    pass:+$('#x_p').value||80,src:$('#x_s').value,defect};
+  if(!o.name){toast('Name required');return;}
+  if(id)Object.assign(DB.exercises.find(x=>x.id===id),o);
+  else DB.exercises.push({id:uid('eq'),...o});
+  save();closeModal();toast('Saved');route();
+}
 function openModal(html){$('#modal').innerHTML=html;$('#modalBg').classList.add('show');}
 function closeModal(){$('#modalBg').classList.remove('show');}
 $('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
