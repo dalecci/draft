@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0B0B0C"/>
+  <circle cx="256" cy="256" r="180" fill="#000" stroke="#3a3a40" stroke-width="10"/>
+  <text x="256" y="256" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="150" font-weight="800"
+        fill="#FFFFFF" text-anchor="middle" dominant-baseline="central" letter-spacing="4">CLF</text>
+  <text x="256" y="372" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="40" font-weight="600"
+        fill="#9A9AA2" text-anchor="middle" dominant-baseline="central" letter-spacing="6">SOUND</text>
+</svg>
