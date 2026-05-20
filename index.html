@@ -1944,10 +1944,12 @@
   updateSyncUI();
   pullFromGitHub(true); // auto-pull on every load (silent — shows plays from GitHub automatically)
 
-  // ───────── Supabase cloud sync (added 2026-05-19) ─────────
+  // ───────── Supabase cloud sync (added 2026-05-19; fixed 2026-05-19 v2) ─────────
   // Two-layer storage: localStorage = local cache (sync); Supabase = source of truth (async).
   // setPlays / setCustomFolders are wrapped to push to Supabase when window.__pmCloud is ready.
-  const pmCloud = (() => {
+  // window.__pmSupabase is set by the PIN-gate <script type="module"> which is deferred — this
+  // IIFE runs first (regular <script>), so we poll until the client appears.
+  function pmBuildCloud() {
     const sb = window.__pmSupabase;
     if (!sb) return null;
     let pushPending = null;
@@ -2019,9 +2021,17 @@
           const localNames = Object.keys(localPlays);
           const cloudNames = Object.keys(remotePlays);
           const onlyLocal = localNames.filter(n => !cloudNames.includes(n));
-          // Write cloud to localStorage cache directly (skip setPlays to avoid feedback loop)
-          localStorage.setItem(STORE_KEY, JSON.stringify(remotePlays));
-          localStorage.setItem(FOLDERS_KEY, JSON.stringify(remoteCustomFolders));
+          // CRITICAL: do NOT overwrite local plays when cloud is empty — would erase the user's
+          // work before they can hit the Import button. Only sync down when cloud has plays.
+          if (cloudNames.length > 0) {
+            // Merge: cloud is source-of-truth, but keep any local-only plays so user can choose to import them
+            const merged = { ...localPlays, ...remotePlays };
+            localStorage.setItem(STORE_KEY, JSON.stringify(merged));
+          }
+          // Folders: union with local custom (keep local additions until pushed)
+          const localCustomFolders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
+          const unionFolders = Array.from(new Set([...localCustomFolders, ...remoteCustomFolders]));
+          localStorage.setItem(FOLDERS_KEY, JSON.stringify(unionFolders));
           // Show import banner if any local-only plays exist that aren't in cloud
           if (onlyLocal.length) {
             const row = document.getElementById('pmImportRow');
@@ -2034,8 +2044,29 @@
         } catch (e) { console.warn('pmCloud pull failed', e); }
       },
     };
-  })();
-  window.__pmCloud = pmCloud;
+  }
+  // Poll for window.__pmSupabase (set by the deferred PIN-gate module script).
+  // Up to ~6 seconds of retries; once available, set up __pmCloud + boot.
+  let pmCloud = null;
+  function pmTryInit(retries) {
+    pmCloud = pmBuildCloud();
+    if (pmCloud) {
+      window.__pmCloud = pmCloud;
+      // If user has plays in localStorage that haven't been pushed yet (because earlier saves
+      // happened before this layer was ready), push them now. Best-effort.
+      const localPlays = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+      if (Object.keys(localPlays).length) pmCloud.pushPlays(localPlays);
+      const localFolders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
+      if (localFolders.length) pmCloud.pushFolders(localFolders);
+      // Pull on unlock
+      if (sessionStorage.getItem('playmaker_unlocked') === '1') bootCloud();
+      else window.addEventListener('pm:unlocked', bootCloud, { once: true });
+      return;
+    }
+    if (retries > 0) setTimeout(() => pmTryInit(retries - 1), 100);
+    else console.warn('pmCloud: Supabase client never initialized (offline or import failed)');
+  }
+  pmTryInit(60);
 
   // Hook up the import button
   const importBtn = document.getElementById('pmImportBtn');
@@ -2052,15 +2083,13 @@
     }, 800);
   });
 
-  // Pull from cloud on unlock (or immediately if already unlocked)
+  // Pull from cloud on unlock (or immediately if already unlocked). Wired by pmTryInit above.
   async function bootCloud() {
     if (!window.__pmCloud) return;
     await window.__pmCloud.pullAll();
     refreshFolderDropdown();
     refreshPlaybook();
   }
-  if (sessionStorage.getItem('playmaker_unlocked') === '1') bootCloud();
-  else window.addEventListener('pm:unlocked', bootCloud, { once: true });
 })();
 </script>
 <script>
