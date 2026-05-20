@@ -1,159 +1,2072 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>12U Draft</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Playmaker — Court Designer</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#d4af37" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Playmaker" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<style id="pm-gate-css">
+  .pm-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 80% at 50% 0%, rgba(212,175,55,.12), #07090d 60%);display:grid;place-items:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .pm-gate-box{background:#141a24;border:1px solid rgba(212,175,55,.28);border-radius:18px;padding:30px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 22px 60px -20px rgba(0,0,0,.7)}
+  .pm-gate-pre{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d4af37;font-weight:800;margin-bottom:6px}
+  .pm-gate h1{font-size:24px;margin:0 0 6px;color:#f4f1ea;font-weight:800;letter-spacing:-.01em}
+  .pm-gate p{color:#8a8f99;font-size:13.5px;margin-bottom:20px}
+  .pm-gate input{width:100%;background:#1a2230;border:1px solid rgba(212,175,55,.18);border-radius:12px;padding:14px;font-size:22px;letter-spacing:10px;text-align:center;color:#f4f1ea;font-family:inherit;-webkit-appearance:none}
+  .pm-gate input:focus{outline:none;border-color:#d4af37}
+  .pm-gate button{width:100%;margin-top:12px;background:#d4af37;color:#0a0a0a;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;letter-spacing:.04em;cursor:pointer;transition:.13s}
+  .pm-gate button:hover{background:#f0c75e}
+  .pm-gate button:disabled{opacity:.6;cursor:default}
+  .pm-gate .err{color:#e85a55;font-size:12.5px;margin-top:10px;font-weight:600;min-height:18px}
+  body.pm-locked{overflow:hidden}
+  body.pm-locked > *:not(.pm-gate){visibility:hidden;pointer-events:none}
+</style>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: -apple-system, sans-serif; background: #0d1117; color: #e6edf3; user-select: none; -webkit-user-select: none; }
-header { background: #161b22; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; height: 56px; }
-header h1 { font-size: 17px; font-weight: 600; }
-.actions { display: flex; gap: 8px; }
-.btn { padding: 9px 14px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; }
-.btn-undo { background: #1f3a5f; border-color: #1f6feb; }
-.btn-reset { position: relative; overflow: hidden; background: #5a1d1d; border-color: #8b1f1f; }
-.btn-reset .fill { position: absolute; left: 0; top: 0; height: 100%; background: rgba(255,255,255,0.25); width: 0; transition: width 0.05s linear; }
-.btn-reset span { position: relative; z-index: 1; }
-main { display: grid; grid-template-columns: 1.3fr 1fr 1.1fr; gap: 8px; padding: 8px; height: calc(100vh - 56px); }
-.col { background: #161b22; border: 1px solid #30363d; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
-.col-header { padding: 11px 14px; background: #21262d; border-bottom: 1px solid #30363d; font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-.count-badge { background: #0d1117; color: #8b949e; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
-.col-body { overflow-y: auto; flex: 1; padding: 4px; -webkit-overflow-scrolling: touch; min-height: 0; }
-.player { padding: 11px 12px; margin: 4px; border-radius: 8px; background: #0d1117; border: 1px solid #30363d; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-.player:active { background: #21262d; }
-.jersey { font-weight: 700; font-size: 17px; min-width: 44px; text-align: center; background: #21262d; padding: 7px 6px; border-radius: 6px; color: #58a6ff; }
-.player-name { flex: 1; font-size: 15px; }
-.player.locked { border-color: #b45309; background: #2a1a08; }
-.player.locked .jersey { color: #fbbf24; background: #3a2410; }
-.locked-tag { font-size: 10px; background: #b45309; color: #fff; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
-.your-turn { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; border-radius: 10px; padding: 12px; margin: 6px; text-align: center; font-size: 20px; font-weight: 800; }
-.locked-incoming { background: #b45309; color: #fff; border-radius: 10px; padding: 10px; margin: 6px; text-align: center; font-size: 12px; font-weight: 600; }
-.locked-incoming .player-line { font-size: 16px; font-weight: 800; margin: 4px 0; }
-.locked-incoming .btn { background: #fff; color: #92400e; border: none; font-weight: 700; margin-top: 4px; }
-.clock-display { padding: 14px 12px; text-align: center; }
-.clock-label { font-size: 11px; color: #8b949e; letter-spacing: 1.5px; }
-.clock-pick-num { font-size: 56px; font-weight: 800; line-height: 1; margin: 4px 0; }
-.clock-coach { font-size: 20px; font-weight: 700; margin-top: 6px; }
-.clock-coach.dale { color: #4ade80; }
-.clock-round { font-size: 13px; color: #8b949e; margin-top: 4px; }
-.next-up { margin: 6px; padding: 8px 10px; background: #0d1117; border-radius: 8px; border: 1px solid #30363d; font-size: 12px; color: #8b949e; text-align: center; }
-.next-up strong { color: #e6edf3; }
-.draft-complete { text-align: center; font-size: 22px; padding: 30px 20px; color: #4ade80; font-weight: 800; }
-.roster-divider { margin: 4px 6px 0; padding: 8px 8px 4px; border-top: 1px solid #30363d; font-size: 11px; color: #8b949e; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: space-between; }
-.roster-pick { padding: 7px 10px; margin: 3px 6px; background: #0d1117; border-radius: 7px; display: flex; gap: 8px; align-items: center; border-left: 3px solid #16a34a; }
-.roster-pick .pick-num { font-size: 11px; color: #4ade80; min-width: 30px; font-weight: 700; }
-.roster-pick .jersey { font-size: 13px; min-width: 36px; padding: 4px 5px; }
-.roster-pick .player-name { font-size: 13px; }
-.empty-slot { padding: 7px 10px; margin: 3px 6px; background: #0d1117; border-radius: 7px; border-left: 3px solid #30363d; color: #6e7681; font-size: 12px; display: flex; gap: 8px; }
-.empty-slot .pick-num { min-width: 30px; font-weight: 600; }
-.taken-row { padding: 7px 10px; margin: 3px 4px; background: #0d1117; border-radius: 6px; border: 1px solid #30363d; display: flex; gap: 8px; align-items: center; }
-.taken-row.dale { border-color: #16a34a; background: #0d1f14; }
-.taken-row .pick-num { font-weight: 700; color: #8b949e; min-width: 30px; font-size: 11px; }
-.taken-row.dale .pick-num { color: #4ade80; }
-.taken-row .jersey { font-size: 12px; min-width: 34px; padding: 4px 4px; }
-.taken-row .name { flex: 1; font-size: 13px; }
-.taken-row .coach-tag { font-size: 10px; color: #8b949e; font-weight: 600; }
-.taken-empty { text-align: center; color: #6e7681; padding: 20px; font-size: 13px; font-style: italic; }
-@media (max-width: 720px) { main { grid-template-columns: 1fr; grid-template-rows: auto auto auto; } }
+  :root {
+    /* Luxury dark palette */
+    --bg: #07090d;
+    --bg-2: #0c1018;
+    --panel: rgba(20, 26, 36, 0.72);
+    --panel-solid: #141a24;
+    --panel-2: #1a2230;
+    --border: rgba(212, 175, 55, 0.12);
+    --border-strong: rgba(212, 175, 55, 0.28);
+    --ink: #f4f1ea;
+    --ink-2: #d6d2c6;
+    --muted: #8a8f99;
+    --muted-2: #5d6573;
+
+    /* Gold accent */
+    --gold: #d4af37;
+    --gold-2: #f0c75e;
+    --gold-glow: rgba(212, 175, 55, 0.28);
+
+    /* Team colors */
+    --offense: #2c5cff;
+    --offense-2: #4d7bff;
+    --defense: #c8312c;
+    --defense-2: #e64a45;
+    --ball: #f0a830;
+
+    /* Court */
+    --wood-1: #c2884c;
+    --wood-2: #a06b34;
+    --wood-3: #8c5a28;
+    --court-line: rgba(15, 12, 6, 0.55);
+    --court-line-strong: rgba(15, 12, 6, 0.78);
+
+    --ok: #4ade80;
+    --danger: #ef4444;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+    --shadow-lg: 0 24px 60px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse at top left, rgba(212, 175, 55, 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(44, 92, 255, 0.06), transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    padding: 14px 22px;
+    background:
+      linear-gradient(180deg, rgba(20, 26, 36, 0.9), rgba(20, 26, 36, 0.65)),
+      var(--bg-2);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #0a0a0a;
+    font-size: 16px;
+    box-shadow: 0 4px 12px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+    letter-spacing: -0.5px;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .brand-text h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2.4px;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .brand-text .sub {
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  /* ---------- Layout ---------- */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+    padding: 18px;
+    min-height: 0;
+  }
+  @media (max-width: 980px) {
+    main { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+  }
+
+  /* ---------- Court ---------- */
+  .court-wrap {
+    background:
+      linear-gradient(180deg, rgba(20, 26, 36, 0.85), rgba(12, 16, 24, 0.85));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.04);
+    position: relative;
+  }
+  .court-wrap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: linear-gradient(135deg, transparent 60%, var(--gold-glow) 100%);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+  svg.court {
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    border-radius: 12px;
+    user-select: none;
+    touch-action: none;
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.18),
+      0 20px 50px rgba(0,0,0,0.5),
+      inset 0 0 0 2px rgba(0,0,0,0.3);
+    display: block;
+  }
+
+  /* ---------- Panel ---------- */
+  .panel {
+    background: var(--panel);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .section {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .section:last-child { border-bottom: none; }
+  .section-title {
+    margin: 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-title .muted-tag {
+    color: var(--muted-2);
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  /* ---------- Inputs ---------- */
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row > * { flex-shrink: 0; }
+
+  input[type="text"], select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: var(--border-strong);
+    box-shadow: 0 0 0 3px var(--gold-glow);
+  }
+  input[type="text"]::placeholder { color: var(--muted-2); }
+
+  button {
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  button:hover { background: #232c3d; border-color: var(--border-strong); transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+
+  button.primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%);
+    color: #0a0a0a;
+    border-color: transparent;
+    font-weight: 600;
+    box-shadow: 0 4px 14px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+  }
+  button.primary:hover {
+    background: linear-gradient(135deg, var(--gold-2) 0%, var(--gold) 100%);
+    box-shadow: 0 6px 18px var(--gold-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+
+  button.accent {
+    background: linear-gradient(135deg, var(--offense) 0%, #1d4ad6 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(44,92,255,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  button.accent:hover { background: linear-gradient(135deg, var(--offense-2) 0%, var(--offense) 100%); }
+
+  button.ghost {
+    background: transparent;
+    border-color: var(--border);
+  }
+  button.ghost:hover { background: rgba(255,255,255,0.04); }
+
+  button:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+  /* ---------- Step list ---------- */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .steps::-webkit-scrollbar, .playbook::-webkit-scrollbar { width: 6px; }
+  .steps::-webkit-scrollbar-thumb, .playbook::-webkit-scrollbar-thumb {
+    background: rgba(212,175,55,0.18);
+    border-radius: 3px;
+  }
+  .step-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .step-item:hover { border-color: var(--border-strong); }
+  .step-item.active {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.03));
+    box-shadow: inset 0 0 0 1px rgba(212,175,55,0.25);
+  }
+  .step-item .step-num {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .step-item .step-info {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .step-item .x {
+    color: var(--muted-2);
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .step-item .x:hover { color: var(--danger); }
+  .empty-hint {
+    color: var(--muted-2);
+    font-size: 12px;
+    padding: 10px 12px;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* ---------- Playbook ---------- */
+  .playbook {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .folder { display: flex; flex-direction: column; gap: 4px; }
+  .folder-header {
+    font-size: 10px;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    padding: 4px 4px 4px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+  }
+  .folder-header .folder-actions { display: flex; gap: 2px; }
+  .folder-header .count {
+    color: var(--gold);
+    margin-left: 6px;
+    font-weight: 500;
+  }
+  .folder-empty {
+    font-size: 11px;
+    color: var(--muted-2);
+    padding: 4px 12px 6px;
+    font-style: italic;
+  }
+  .play-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 12px;
+    background: var(--panel-2);
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .play-item:hover { border-color: var(--border-strong); transform: translateX(2px); }
+  .play-item.active {
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.03));
+  }
+  .play-item .meta { color: var(--muted); font-size: 11px; }
+  .play-item .controls { display: flex; gap: 2px; }
+  .small-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted-2);
+    font-size: 14px;
+    cursor: pointer;
+    padding: 4px 7px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .small-btn:hover { color: var(--ink); background: rgba(255,255,255,0.06); }
+  .small-btn.danger:hover { color: var(--danger); background: rgba(239,68,68,0.08); }
+
+  /* ---------- Toggles ---------- */
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink-2);
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { display: none; }
+  .toggle .switch {
+    width: 36px; height: 20px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 14px; height: 14px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .toggle input:checked + .switch {
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%);
+    border-color: transparent;
+  }
+  .toggle input:checked + .switch::after {
+    left: 18px;
+    background: #0a0a0a;
+  }
+
+  /* ---------- Speed slider ---------- */
+  .speed { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; width: 100%; }
+  .speed-label-wrap {
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 12px;
+    min-width: 36px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--panel-2);
+    border-radius: 2px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--gold-glow);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  /* ---------- Hint ---------- */
+  .hint {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.55;
+    background: rgba(212,175,55,0.04);
+    border: 1px solid var(--border);
+    padding: 11px 13px;
+    border-radius: 10px;
+  }
+  .hint b { color: var(--ink-2); font-weight: 600; }
+  .hint .step-num {
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* ---------- SVG entity styles ---------- */
+  .player { cursor: grab; transition: filter 0.15s; }
+  .player:hover { filter: drop-shadow(0 0 6px var(--gold-glow)); }
+  .player:active { cursor: grabbing; }
+  .player.dragging { filter: drop-shadow(0 0 10px var(--gold-glow)); }
+  .player.has-ball .player-circle { stroke: var(--gold); stroke-width: 2.4; }
+  .player.has-ball { filter: drop-shadow(0 0 5px var(--gold-glow)); }
+  .player-circle.offense { fill: url(#offenseGrad); stroke: rgba(255,255,255,0.85); stroke-width: 1.5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .player-circle.defense { fill: url(#defenseGrad); stroke: rgba(255,255,255,0.85); stroke-width: 1.5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .player-label { fill: #fff; font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; letter-spacing: 0.5px; }
+  .ball { fill: url(#ballGrad); stroke: #5a3a10; stroke-width: 1.2; cursor: grab; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  .ball:active { cursor: grabbing; }
+
+  /* Path overlays */
+  .path-line { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; pointer-events: none; }
+  .path-line.offense { stroke: var(--offense-2); }
+  .path-line.defense { stroke: var(--defense-2); }
+  .path-line.ball { stroke: var(--ball); stroke-dasharray: 5 4; }
+  .path-pending { stroke-dasharray: 4 4; opacity: 0.7; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel-solid);
+    color: var(--ink);
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(20px);
+    letter-spacing: 0.02em;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-color: rgba(239,68,68,0.5); color: #fca5a5; }
+  .toast.success { border-color: rgba(74,222,128,0.5); color: #86efac; }
+
+  /* ---------- GitHub Sync ---------- */
+  .sync-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted-2); display: inline-block;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .sync-dot.ok  { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+  .sync-dot.err { background: var(--danger); }
+  .sync-status {
+    font-size: 11px; color: var(--muted);
+    text-align: center; min-height: 16px;
+  }
+  .token-link {
+    font-size: 11px; color: var(--gold);
+    text-decoration: none; display: block;
+    text-align: center; margin-top: 6px;
+    letter-spacing: 0.02em;
+  }
+  .token-link:hover { text-decoration: underline; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 10px 22px;
+    text-align: center;
+    color: var(--muted-2);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Small-screen tweaks */
+  @media (max-width: 980px) {
+    .panel { max-height: none; }
+    svg.court { max-height: 60vh; }
+  }
 </style>
 </head>
-<body>
+<body class="pm-locked">
+
+<!-- ───────── Playmaker PIN gate (added 2026-05-19) ───────── -->
+<div class="pm-gate" id="pmGate" role="dialog" aria-modal="true">
+  <div class="pm-gate-box">
+    <div class="pm-gate-pre">Warriors</div>
+    <h1>Playmaker</h1>
+    <p>Coach's tools — enter PIN to unlock.</p>
+    <input id="pmPin" type="tel" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="••••" />
+    <div class="err" id="pmErr"></div>
+    <button id="pmGo" type="button">Unlock</button>
+  </div>
+</div>
+
+<script type="module">
+  // Lightweight Supabase client + PIN gate. Runs before main app.
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+  const SUPABASE_URL = 'https://vlcpgwxeybpzwidjackz.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+  window.__pmSupabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const gate = document.getElementById('pmGate');
+  const pin  = document.getElementById('pmPin');
+  const err  = document.getElementById('pmErr');
+  const go   = document.getElementById('pmGo');
+
+  function unlock() {
+    document.body.classList.remove('pm-locked');
+    gate.style.display = 'none';
+    sessionStorage.setItem('playmaker_unlocked', '1');
+    window.dispatchEvent(new CustomEvent('pm:unlocked'));
+  }
+
+  if (sessionStorage.getItem('playmaker_unlocked') === '1') {
+    unlock();
+  } else {
+    setTimeout(() => pin.focus(), 60);
+    const tryUnlock = async () => {
+      const val = pin.value.trim();
+      if (!val) return;
+      err.textContent = '';
+      go.disabled = true; const orig = go.textContent; go.textContent = 'Checking…';
+      try {
+        const { data } = await window.__pmSupabase.from('training_settings').select('value').eq('key','admin_pin').single();
+        const correct = String((data && data.value) || '4545');
+        if (val === correct) { unlock(); }
+        else {
+          err.textContent = 'Wrong PIN — try again.';
+          pin.value = ''; pin.focus();
+          go.disabled = false; go.textContent = orig;
+        }
+      } catch (e) {
+        // Offline / Supabase unreachable — fall back to default PIN so coach is never locked out
+        if (val === '4545') { unlock(); }
+        else {
+          err.textContent = 'Connection issue — using default PIN if you set one.';
+          go.disabled = false; go.textContent = orig;
+        }
+      }
+    };
+    go.addEventListener('click', tryUnlock);
+    pin.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+  }
+</script>
+
 <header>
-<h1>12U Draft &middot; Coach Dale</h1>
-<div class="actions">
-<button class="btn btn-undo" onclick="undo()">Undo</button>
-<button class="btn btn-reset" id="resetBtn"><span>Hold to Reset</span></button>
-</div>
+  <div class="brand">
+    <div class="brand-mark">P</div>
+    <div class="brand-text">
+      <h1>Playmaker</h1>
+      <div class="sub">Court Designer · v1.0</div>
+    </div>
+  </div>
 </header>
+
 <main>
-<section class="col">
-<div class="col-header"><span>Best Available</span><span class="count-badge" id="availCount">60</span></div>
-<div class="col-body" id="availList"></div>
-</section>
-<section class="col">
-<div class="col-header">On the Clock</div>
-<div class="col-body">
-<div id="clockDisplay"></div>
-<div class="roster-divider"><span>Coach Dale's Roster</span><span id="rosterCount">0/10</span></div>
-<div id="rosterList"></div>
-</div>
-</section>
-<section class="col">
-<div class="col-header"><span>Players Taken</span><span class="count-badge" id="takenCount">0</span></div>
-<div class="col-body" id="takenList"></div>
-</section>
+  <div class="court-wrap">
+    <svg class="court" id="court" viewBox="0 0 500 470" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Hardwood gradient -->
+        <linearGradient id="woodGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#c2884c"/>
+          <stop offset="0.5" stop-color="#a06b34"/>
+          <stop offset="1" stop-color="#8c5a28"/>
+        </linearGradient>
+        <!-- Subtle wood grain pattern -->
+        <pattern id="woodGrain" x="0" y="0" width="500" height="40" patternUnits="userSpaceOnUse">
+          <rect width="500" height="40" fill="url(#woodGrad)"/>
+          <line x1="0" y1="8" x2="500" y2="8" stroke="rgba(70,40,15,0.07)" stroke-width="1"/>
+          <line x1="0" y1="22" x2="500" y2="22" stroke="rgba(70,40,15,0.05)" stroke-width="0.6"/>
+          <line x1="0" y1="33" x2="500" y2="33" stroke="rgba(70,40,15,0.06)" stroke-width="0.8"/>
+        </pattern>
+        <!-- Court vignette -->
+        <radialGradient id="courtVignette" cx="0.5" cy="0.5" r="0.7">
+          <stop offset="0.65" stop-color="rgba(0,0,0,0)"/>
+          <stop offset="1" stop-color="rgba(0,0,0,0.32)"/>
+        </radialGradient>
+        <!-- Player gradients -->
+        <radialGradient id="offenseGrad" cx="0.35" cy="0.35" r="0.7">
+          <stop offset="0" stop-color="#5a82ff"/>
+          <stop offset="1" stop-color="#1d3fb8"/>
+        </radialGradient>
+        <radialGradient id="defenseGrad" cx="0.35" cy="0.35" r="0.7">
+          <stop offset="0" stop-color="#e85a55"/>
+          <stop offset="1" stop-color="#9a2520"/>
+        </radialGradient>
+        <radialGradient id="ballGrad" cx="0.35" cy="0.35" r="0.7">
+          <stop offset="0" stop-color="#ffd680"/>
+          <stop offset="1" stop-color="#c08020"/>
+        </radialGradient>
+        <!-- Arrowhead markers -->
+        <marker id="arrowOffense" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#4d7bff"/>
+        </marker>
+        <marker id="arrowDefense" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#e64a45"/>
+        </marker>
+        <marker id="arrowBall" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f0a830"/>
+        </marker>
+      </defs>
+
+      <!-- Hardwood floor -->
+      <rect x="0" y="0" width="500" height="470" fill="url(#woodGrain)"/>
+      <rect x="0" y="0" width="500" height="470" fill="url(#courtVignette)"/>
+
+      <!-- Court markings -->
+      <rect x="2" y="2" width="496" height="466" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+      <!-- Lane / key -->
+      <rect x="170" y="2" width="160" height="188" fill="rgba(0,0,0,0.06)" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+      <!-- Free-throw circle -->
+      <path d="M 190 190 A 60 60 0 0 1 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+      <path d="M 190 190 A 60 60 0 0 0 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-dasharray="6 6"/>
+      <!-- 3-point line -->
+      <path d="M 30 2 L 30 140 A 237.5 237.5 0 0 0 470 140 L 470 2" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+      <!-- Backboard -->
+      <line x1="220" y1="40" x2="280" y2="40" stroke="rgba(255,255,255,0.95)" stroke-width="3" stroke-linecap="round"/>
+      <!-- Hoop -->
+      <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>
+      <!-- Restricted arc -->
+      <path d="M 210 55 A 40 40 0 0 0 290 55" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+      <!-- Half-court line (near bottom edge of half-court view) -->
+      <line x1="0" y1="468" x2="500" y2="468" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+
+      <!-- Path overlay group (behind entities) -->
+      <g id="paths"></g>
+      <!-- Entities (players + ball) rendered by JS -->
+      <g id="entities"></g>
+    </svg>
+  </div>
+
+  <aside class="panel">
+    <div class="section">
+      <div class="section-title">Play Details</div>
+      <input type="text" id="title" placeholder="Play name (e.g. Horns Flare)" autocomplete="off" />
+      <div class="row">
+        <select id="folderSelect" title="Save to folder"></select>
+        <button class="primary" id="saveBtn">Save</button>
+        <button class="ghost" id="newPlayBtn" title="Start a fresh play">＋ New</button>
+      </div>
+      <!-- Warriors team-share toggle (added 2026-05-19) -->
+      <div class="row" style="margin-top:10px;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);cursor:pointer;user-select:none">
+          <input type="checkbox" id="teamShare" style="width:16px;height:16px;cursor:pointer;accent-color:var(--gold)" />
+          Share with Warriors
+        </label>
+        <select id="teamCategory" title="Team category" style="flex:1;min-width:140px">
+          <option value="">— Category —</option>
+          <option value="offense">Offense</option>
+          <option value="defense">Defense</option>
+          <option value="oob">Out of Bounds</option>
+        </select>
+      </div>
+      <div id="pmImportRow" style="display:none;margin-top:10px;padding:9px 11px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.28);border-radius:10px;font-size:12.5px;color:var(--ink-2);display:none;align-items:center;gap:8px;flex-wrap:wrap">
+        <span id="pmImportText">You have local plays not yet in the cloud.</span>
+        <button class="ghost" id="pmImportBtn" style="margin-left:auto">Import to cloud</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>Steps</span>
+        <span class="muted-tag" id="stepsCount">0</span>
+      </div>
+      <div class="steps" id="stepsList"></div>
+      <div class="row">
+        <button class="primary" id="captureBtn" style="flex:1;">＋ Capture Step</button>
+        <button class="ghost" id="undoBtn" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>Playback</span>
+      </div>
+      <div class="row">
+        <button class="accent" id="playBtn" style="flex:1; justify-content:center;">▶ Play</button>
+        <button class="ghost" id="resetBtn" title="Reset positions to start">↺</button>
+      </div>
+      <div class="speed">
+        <span>Speed</span>
+        <input type="range" id="speedRange" min="0.5" max="2.5" step="0.1" value="1.0"/>
+        <span class="speed-label-wrap" id="speedLabel">1.0×</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="defenseToggle"/>
+        <span class="switch"></span>
+        Show defenders (X1–X5)
+      </label>
+      <button class="ghost" id="exportBtn" style="width:100%; justify-content:center;">⬇ Export Video</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>Playbook</span>
+        <button class="small-btn" id="newFolderBtn" title="New folder">＋</button>
+      </div>
+      <div class="playbook" id="playbook"></div>
+    </div>
+
+    <div class="section" id="syncSection">
+      <div class="section-title">
+        <span>GitHub Sync</span>
+        <span id="syncDot" class="sync-dot"></span>
+      </div>
+
+      <!-- Shown when no token is saved -->
+      <div id="tokenSetup">
+        <div class="hint">
+          <b>One-time setup.</b> Create a fine-grained GitHub token with <b>Contents: Read &amp; Write</b> for the <b>playmaker</b> repo, paste it below. Stays on this device only.
+        </div>
+        <div class="row" style="margin-top:8px">
+          <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" style="font-family:monospace;font-size:12px;" />
+          <button class="primary" id="saveTokenBtn">Save</button>
+        </div>
+        <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="token-link">Create token on GitHub →</a>
+      </div>
+
+      <!-- Shown when token is saved -->
+      <div id="syncControls" style="display:none">
+        <div class="row">
+          <button class="primary" id="syncPushBtn" style="flex:1;justify-content:center;">↑ Push to GitHub</button>
+          <button class="ghost" id="syncPullBtn">↓ Pull</button>
+          <button class="ghost" id="clearTokenBtn" title="Remove stored token" style="padding:9px 10px;">🔑</button>
+        </div>
+        <div id="syncStatus" class="sync-status" style="margin-top:6px"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="hint">
+        <b>How it works.</b> Drag players into a starting set, then click <b>Capture Step</b>. Drag a player along the path you want — the curve is recorded. Capture each step and press <b>Play</b> to animate. Name and save when ready.
+      </div>
+    </div>
+  </aside>
 </main>
+
+<footer>Playmaker · Works offline · No accounts</footer>
+<div class="toast" id="toast"></div>
+
 <script>
-var COACHES_R1=['Shawn Morton','Dale','Crissy','Shaun Powell','David','John'];
-var draftOrder=[];
-for(var r=1;r<=10;r++){var ord=(r%2===1)?COACHES_R1:COACHES_R1.slice().reverse();for(var p=0;p<6;p++)draftOrder.push({pick:(r-1)*6+p+1,round:r,pickInRound:p+1,coach:ord[p]});}
-var players=[
-{jersey:50,name:'Scarsellato, Nathan'},{jersey:47,name:'Rosenak, Lane'},{jersey:25,name:'Leitner, Herbert'},{jersey:13,name:'Foley, Drew'},
-{jersey:2,name:'Blevins, Kameron'},{jersey:42,name:'Protsman, Brady'},{jersey:38,name:'Palmer, Axton',lockedPick:7},{jersey:24,name:'Kautzmann, Bernardo'},
-{jersey:11,name:'Erickson, Max'},{jersey:46,name:'Rios Cairo'},{jersey:15,name:'Franzke, Kruz'},{jersey:12,name:'Facenda, Jason'},
-{jersey:10,name:'Duran, Michael'},{jersey:44,name:'Rau, Stephanie'},{jersey:39,name:'Pemberton, Derrick'},{jersey:9,name:'Difalco, Luka'},
-{jersey:4,name:'Carver, Alexander'},{jersey:57,name:'Wilkerson, Jaks'},{jersey:29,name:'Martinez, Ronan'},{jersey:59,name:'Willoughby, Carter'},
-{jersey:52,name:'Serio, Jamison'},{jersey:28,name:'Maldonado, Dominic'},{jersey:36,name:'Newman, Noah'},{jersey:60,name:'Wozney, Brantley'},
-{jersey:22,name:'Huffman, Joshua'},{jersey:8,name:'Cooper, Madison'},{jersey:30,name:'McCain, Cayden',lockedPick:27},{jersey:41,name:'Powell, Brogan',lockedPick:28},
-{jersey:5,name:'Clark, Easton'},{jersey:19,name:'Herring II, John',lockedPick:30},{jersey:54,name:'Sobul, Jacob'},{jersey:53,name:'Skocik, Jacob'},
-{jersey:26,name:'Lewis, Dominick'},{jersey:16,name:'Garcia, Axel'},{jersey:58,name:'Williams, Gavin'},{jersey:56,name:'Weaver, Elliot'},
-{jersey:43,name:'Ramirez, Enrique'},{jersey:14,name:'Francis, Jayden'},{jersey:33,name:'Morton, Michael',lockedPick:39},{jersey:6,name:'Clark, Jamarich',lockedPick:40},
-{jersey:1,name:'Abbate, Daniel',lockedPick:41},{jersey:7,name:'Cooper, Ethan'},{jersey:18,name:'Goossens, Joseph'},{jersey:31,name:'Merced, Izaiah'},
-{jersey:40,name:'Piscopo, Aj'},{jersey:21,name:'Howe, Gavin'},{jersey:35,name:'Neff, Phoenix'},{jersey:45,name:'Rice, Malakhi',lockedPick:48},
-{jersey:48,name:'Rosloniec, Owen'},{jersey:55,name:'Warnecke, Derek'},{jersey:3,name:'Brooks, Dean'},{jersey:37,name:'Page, Harrison'},
-{jersey:23,name:'Jasilewicz, Cole'},{jersey:27,name:'Long, Lucas'},{jersey:17,name:'Geier, Luke'},{jersey:20,name:'Heuglin, Reed'},
-{jersey:32,name:'Moore, Hudson'},{jersey:34,name:'Murphy, Rowan'},{jersey:49,name:'Santo, Dominick'},{jersey:51,name:'Sebastian, Eli'}];
-var lockedCoachByPick={};players.forEach(function(p){if(p.lockedPick)lockedCoachByPick[p.lockedPick]=draftOrder[p.lockedPick-1].coach;});
-var KEY='draft12u_v1';
-function loadState(){try{return JSON.parse(localStorage.getItem(KEY));}catch(e){return null;}}
-function saveState(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
-var state=loadState()||{drafted:[],history:[]};
-function curPick(){return state.drafted.length+1;}
-function isDrafted(j){return state.drafted.some(function(d){return d.jersey===j;});}
-function getPlayer(j){for(var i=0;i<players.length;i++)if(players[i].jersey===j)return players[i];return null;}
-function draftPlayer(j){if(isDrafted(j))return;var pn=curPick();if(pn>60)return;var pl=getPlayer(j);
-if(pl.lockedPick&&pl.lockedPick!==pn){if(!confirm(pl.name+' (#'+pl.jersey+') is locked for pick '+pl.lockedPick+'. Take now anyway?'))return;}
-var o=draftOrder[pn-1];state.history.push(JSON.parse(JSON.stringify(state.drafted)));if(state.history.length>80)state.history.shift();
-state.drafted.push({jersey:j,pickNum:pn,coach:o.coach});saveState();render();}
-function undo(){if(!state.history.length)return;state.drafted=state.history.pop();saveState();render();}
-function reset(){state={drafted:[],history:[]};saveState();render();}
-function render(){renderAvail();renderClock();renderRoster();renderTaken();}
-function renderAvail(){var list=document.getElementById('availList');var avail=players.filter(function(p){return !isDrafted(p.jersey);});
-document.getElementById('availCount').textContent=avail.length;var h='';for(var i=0;i<avail.length;i++){var p=avail[i];
-var lt=p.lockedPick?'<span class="locked-tag">LOCK P'+p.lockedPick+' &middot; '+lockedCoachByPick[p.lockedPick]+'</span>':'';
-h+='<div class="player '+(p.lockedPick?'locked':'')+'" onclick="draftPlayer('+p.jersey+')"><div class="jersey">#'+p.jersey+'</div><div class="player-name">'+p.name+'</div>'+lt+'</div>';}
-list.innerHTML=h;}
-function renderClock(){var d=document.getElementById('clockDisplay');var pn=curPick();
-if(pn>60){d.innerHTML='<div class="draft-complete">DRAFT COMPLETE</div>';return;}
-var o=draftOrder[pn-1];var lp=null;for(var i=0;i<players.length;i++)if(players[i].lockedPick===pn&&!isDrafted(players[i].jersey)){lp=players[i];break;}
-var isYou=o.coach==='Dale';var nx=pn<60?draftOrder[pn]:null;var h='';
-if(isYou)h+='<div class="your-turn">YOU\'RE UP</div>';
-if(lp)h+='<div class="locked-incoming">LOCKED PICK<div class="player-line">#'+lp.jersey+' &middot; '+lp.name+'</div><button class="btn" onclick="draftPlayer('+lp.jersey+')">Take Locked Pick</button></div>';
-h+='<div class="clock-display"><div class="clock-label">PICK</div><div class="clock-pick-num">'+pn+'</div><div class="clock-round">Round '+o.round+' &middot; '+o.pickInRound+' of 6</div><div class="clock-coach '+(isYou?'dale':'')+'">Coach '+o.coach+'</div></div>';
-if(nx)h+='<div class="next-up">Next: <strong>Coach '+nx.coach+'</strong> (Pick '+nx.pick+')</div>';
-d.innerHTML=h;}
-function renderRoster(){var list=document.getElementById('rosterList');var dp=[2,11,14,23,26,35,38,47,50,59];var c=0,h='';
-for(var i=0;i<dp.length;i++){var pn=dp[i];var dr=null;for(var j=0;j<state.drafted.length;j++)if(state.drafted[j].pickNum===pn){dr=state.drafted[j];break;}
-if(dr){c++;var p=getPlayer(dr.jersey);h+='<div class="roster-pick"><div class="pick-num">P'+pn+'</div><div class="jersey">#'+p.jersey+'</div><div class="player-name">'+p.name+'</div></div>';}
-else h+='<div class="empty-slot"><span class="pick-num">P'+pn+'</span><span>open</span></div>';}
-list.innerHTML=h;document.getElementById('rosterCount').textContent=c+'/10';}
-function renderTaken(){var list=document.getElementById('takenList');var t=state.drafted.slice().reverse();
-document.getElementById('takenCount').textContent=state.drafted.length;
-if(!t.length){list.innerHTML='<div class="taken-empty">No picks yet</div>';return;}
-var h='';for(var i=0;i<t.length;i++){var d=t[i];var p=getPlayer(d.jersey);var iD=d.coach==='Dale';
-h+='<div class="taken-row '+(iD?'dale':'')+'"><div class="pick-num">P'+d.pickNum+'</div><div class="jersey">#'+p.jersey+'</div><div class="name">'+p.name+'</div><div class="coach-tag">'+d.coach+'</div></div>';}
-list.innerHTML=h;}
-var rb=document.getElementById('resetBtn');var fl=document.createElement('div');fl.className='fill';rb.insertBefore(fl,rb.firstChild);
-var ht=null,hs=0;var HM=2500;
-function sH(e){if(e)e.preventDefault();hs=Date.now();fl.style.width='0%';
-ht=setInterval(function(){var p=Math.min(100,(Date.now()-hs)/HM*100);fl.style.width=p+'%';if(p>=100){clearInterval(ht);ht=null;reset();fl.style.width='0%';}},40);}
-function eH(){if(ht){clearInterval(ht);ht=null;}fl.style.width='0%';}
-rb.addEventListener('mousedown',sH);rb.addEventListener('mouseup',eH);rb.addEventListener('mouseleave',eH);
-rb.addEventListener('touchstart',sH,{passive:false});rb.addEventListener('touchend',eH);rb.addEventListener('touchcancel',eH);
-render();
+(function () {
+  // ---------- Constants ----------
+  const STARTING = {
+    '1':  { x: 250, y: 360, label: '1', type: 'offense' },
+    '2':  { x: 430, y: 230, label: '2', type: 'offense' },
+    '3':  { x: 70,  y: 230, label: '3', type: 'offense' },
+    '4':  { x: 175, y: 175, label: '4', type: 'offense' },
+    '5':  { x: 325, y: 175, label: '5', type: 'offense' },
+    'X1': { x: 250, y: 300, label: 'X1', type: 'defense' },
+    'X2': { x: 380, y: 200, label: 'X2', type: 'defense' },
+    'X3': { x: 120, y: 200, label: 'X3', type: 'defense' },
+    'X4': { x: 200, y: 130, label: 'X4', type: 'defense' },
+    'X5': { x: 300, y: 130, label: 'X5', type: 'defense' },
+    'ball': { x: 250, y: 360, type: 'ball' }
+  };
+  const ENT_RADIUS = 17;
+  const BALL_RADIUS = 8;
+  const NS = 'http://www.w3.org/2000/svg';
+  const STORE_KEY = 'playmaker_plays_v1';
+  const FOLDERS_KEY = 'playmaker_folders_v1';
+  const DEFAULT_FOLDERS = ['Offense', 'Defense'];
+  const MAX_HISTORY = 40;
+
+  function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2) / 2; }
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  // ---------- Undo history ----------
+  const history = [];
+
+  function pushHistory() {
+    history.push({
+      entities: clone(state.entities),
+      pendingPaths: clone(state.pendingPaths),
+      steps: clone(state.steps),
+      activeStep: state.activeStep,
+      ballHolder: state.ballHolder
+    });
+    if (history.length > MAX_HISTORY) history.shift();
+    updateUndoBtn();
+  }
+
+  function undo() {
+    if (history.length === 0) return;
+    const prev = history.pop();
+    state.entities = prev.entities;
+    state.pendingPaths = prev.pendingPaths;
+    state.steps = prev.steps;
+    state.activeStep = prev.activeStep;
+    state.ballHolder = prev.ballHolder;
+    renderAll();
+    updateUndoBtn();
+    toast('Undone');
+  }
+
+  function updateUndoBtn() {
+    const btn = document.getElementById('undoBtn');
+    if (btn) btn.disabled = history.length === 0;
+  }
+
+  // ---------- State ----------
+  const state = {
+    entities: clone(STARTING),
+    steps: [],            // [{ positions: {id:{x,y}}, paths: {id:[{x,y},...]} | null }]
+    activeStep: -1,
+    pendingPaths: {},     // recorded since last capture
+    showDefense: false,
+    isPlaying: false,
+    speed: 1.0,
+    ballHolder: null      // id of the player currently holding the ball, or null
+  };
+
+  // ---------- DOM refs ----------
+  const svg = document.getElementById('court');
+  const entitiesGroup = document.getElementById('entities');
+  const pathsGroup = document.getElementById('paths');
+
+  // ---------- Visibility ----------
+  function visibleIds() {
+    const ids = ['1','2','3','4','5','ball'];
+    if (state.showDefense) return ['X1','X2','X3','X4','X5'].concat(ids);
+    return ids;
+  }
+
+  // Ball "attaches" to a player when its center sits within the player's circle.
+  // Returns the closest such player id, or null if the ball is loose.
+  function detectBallHolder() {
+    const ball = state.entities.ball;
+    if (!ball) return null;
+    const threshold = ENT_RADIUS;
+    let bestId = null, bestDist = threshold;
+    visibleIds().forEach(id => {
+      if (id === 'ball') return;
+      const e = state.entities[id];
+      if (!e || e.type === 'ball') return;
+      const d = Math.hypot(ball.x - e.x, ball.y - e.y);
+      if (d < bestDist) { bestDist = d; bestId = id; }
+    });
+    return bestId;
+  }
+
+  // ---------- Render entities (sprite cache) ----------
+  const renderedEls = {};
+
+  function renderEntities() {
+    const vis = visibleIds();
+    const visSet = new Set(vis);
+
+    Object.keys(renderedEls).forEach(id => {
+      if (!visSet.has(id)) {
+        renderedEls[id].remove();
+        delete renderedEls[id];
+      }
+    });
+
+    vis.forEach(id => {
+      const e = state.entities[id];
+      if (!e) return;
+      let el = renderedEls[id];
+      if (!el) {
+        if (e.type === 'ball') {
+          el = document.createElementNS(NS, 'circle');
+          el.setAttribute('class', 'ball');
+          el.setAttribute('r', BALL_RADIUS);
+          el.dataset.id = id;
+        } else {
+          el = document.createElementNS(NS, 'g');
+          el.setAttribute('class', 'player');
+          el.dataset.id = id;
+          const c = document.createElementNS(NS, 'circle');
+          c.setAttribute('class', 'player-circle ' + e.type);
+          c.setAttribute('r', ENT_RADIUS);
+          el.appendChild(c);
+          const t = document.createElementNS(NS, 'text');
+          t.setAttribute('class', 'player-label');
+          t.textContent = e.label;
+          el.appendChild(t);
+        }
+        entitiesGroup.appendChild(el);
+        renderedEls[id] = el;
+      }
+      if (e.type === 'ball') {
+        el.setAttribute('cx', e.x);
+        el.setAttribute('cy', e.y);
+      } else {
+        const c = el.firstChild;
+        const t = el.lastChild;
+        c.setAttribute('cx', e.x);
+        c.setAttribute('cy', e.y);
+        t.setAttribute('x', e.x);
+        t.setAttribute('y', e.y);
+        el.classList.toggle('has-ball', state.ballHolder === id);
+      }
+    });
+  }
+
+  // ---------- Render motion paths ----------
+  function pathToD(points) {
+    if (!points || points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x} ${points[i].y}`;
+    }
+    return d;
+  }
+
+  function renderPaths() {
+    pathsGroup.innerHTML = '';
+    if (state.isPlaying) return;
+
+    const vis = new Set(visibleIds());
+
+    // Show paths for the active step (motion FROM previous step TO active step).
+    if (state.activeStep > 0 && state.steps[state.activeStep]) {
+      const paths = state.steps[state.activeStep].paths || {};
+      Object.keys(paths).forEach(id => {
+        if (!vis.has(id)) return;
+        addPathArrow(paths[id], id, false);
+      });
+    }
+
+    // Show pending (live) paths recorded since last capture.
+    Object.keys(state.pendingPaths).forEach(id => {
+      if (!vis.has(id)) return;
+      addPathArrow(state.pendingPaths[id], id, true);
+    });
+  }
+
+  function addPathArrow(points, id, pending) {
+    if (!points || points.length < 2) return;
+    const ent = state.entities[id];
+    const type = ent ? ent.type : 'offense';
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', pathToD(points));
+    p.setAttribute('class', 'path-line ' + type + (pending ? ' path-pending' : ''));
+    p.setAttribute('marker-end',
+      type === 'defense' ? 'url(#arrowDefense)' :
+      type === 'ball' ? 'url(#arrowBall)' : 'url(#arrowOffense)');
+    pathsGroup.appendChild(p);
+  }
+
+  // ---------- Steps UI ----------
+  function renderSteps() {
+    const list = document.getElementById('stepsList');
+    const counter = document.getElementById('stepsCount');
+    list.innerHTML = '';
+    counter.textContent = String(state.steps.length);
+
+    if (state.steps.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-hint';
+      empty.textContent = 'Position your players, then capture step 1';
+      list.appendChild(empty);
+      return;
+    }
+    state.steps.forEach((st, i) => {
+      const item = document.createElement('div');
+      item.className = 'step-item' + (i === state.activeStep ? ' active' : '');
+      const left = document.createElement('div');
+      left.style.display = 'flex';
+      left.style.flexDirection = 'column';
+      left.style.gap = '2px';
+      const numEl = document.createElement('span');
+      numEl.className = 'step-num';
+      numEl.textContent = `Step ${i + 1}`;
+      const infoEl = document.createElement('span');
+      infoEl.className = 'step-info';
+      const pathCount = st.paths ? Object.keys(st.paths).length : 0;
+      infoEl.textContent = i === 0 ? 'Starting positions' :
+        pathCount > 0 ? `${pathCount} motion path${pathCount === 1 ? '' : 's'}` : 'No paths';
+      left.appendChild(numEl);
+      left.appendChild(infoEl);
+      item.appendChild(left);
+
+      const del = document.createElement('button');
+      del.className = 'x';
+      del.textContent = '×';
+      del.title = 'Delete step';
+      del.addEventListener('click', (e) => { e.stopPropagation(); deleteStep(i); });
+      item.appendChild(del);
+
+      item.addEventListener('click', () => loadStep(i));
+      list.appendChild(item);
+    });
+  }
+
+  function renderAll() { renderEntities(); renderPaths(); renderSteps(); }
+
+  // ---------- Steps ----------
+  function snapshot() {
+    const snap = {};
+    Object.keys(state.entities).forEach(id => {
+      snap[id] = { x: state.entities[id].x, y: state.entities[id].y };
+    });
+    return snap;
+  }
+
+  function pathLength(points) {
+    let d = 0;
+    for (let i = 1; i < points.length; i++) {
+      d += Math.hypot(points[i].x - points[i-1].x, points[i].y - points[i-1].y);
+    }
+    return d;
+  }
+
+  function captureStep() {
+    pushHistory();
+    const step = { positions: snapshot(), paths: null };
+    if (state.steps.length > 0) {
+      const paths = {};
+      Object.keys(state.pendingPaths).forEach(id => {
+        const p = state.pendingPaths[id];
+        if (p && p.length >= 2 && pathLength(p) > 4) paths[id] = p;
+      });
+      step.paths = paths;
+    }
+    state.steps.push(step);
+    state.pendingPaths = {};
+    state.activeStep = state.steps.length - 1;
+    renderAll();
+    const recCount = step.paths ? Object.keys(step.paths).length : 0;
+    toast(`Step ${state.steps.length} captured` + (recCount ? ` · ${recCount} path${recCount > 1 ? 's' : ''}` : ''));
+  }
+
+  function loadStep(i) {
+    const s = state.steps[i];
+    if (!s) return;
+    const positions = s.positions || s;
+    Object.keys(positions).forEach(id => {
+      if (state.entities[id]) {
+        state.entities[id].x = positions[id].x;
+        state.entities[id].y = positions[id].y;
+      }
+    });
+    state.activeStep = i;
+    state.pendingPaths = {};
+    state.ballHolder = detectBallHolder();
+    renderAll();
+  }
+
+  function deleteStep(i) {
+    pushHistory();
+    state.steps.splice(i, 1);
+    if (state.activeStep >= state.steps.length) state.activeStep = state.steps.length - 1;
+    if (state.activeStep >= 0) loadStep(state.activeStep);
+    else renderAll();
+  }
+
+  // ---------- Drag (with motion recording) ----------
+  let dragId = null;
+  let dragOffset = null;
+  let dragStartPos = null;
+  let recordingPath = null;
+  // Ball-follow: when a holder is dragged, the ball moves with them and we
+  // record a parallel path so playback animates the ball alongside.
+  let ballFollowOffset = null;
+  let ballFollowStartPos = null;
+  let ballFollowPath = null;
+  const MOVE_THRESHOLD = 2;
+
+  function svgPoint(evt) {
+    const pt = svg.createSVGPoint();
+    pt.x = evt.clientX;
+    pt.y = evt.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+
+  svg.addEventListener('pointerdown', (e) => {
+    if (state.isPlaying) return;
+    const target = e.target.closest('[data-id]');
+    if (!target) return;
+    dragId = target.dataset.id;
+    const ent = state.entities[dragId];
+    if (!ent) return;
+    const p = svgPoint(e);
+    dragOffset = { dx: p.x - ent.x, dy: p.y - ent.y };
+    dragStartPos = { x: ent.x, y: ent.y };
+    recordingPath = null;
+
+    // Ball-follow setup: if the dragged entity currently holds the ball,
+    // capture the offset so the ball travels with them. (The ball detaches
+    // only when the user actually drags the BALL itself — see pointermove.)
+    pushHistory();  // snapshot before the drag changes anything
+
+    ballFollowOffset = null;
+    ballFollowStartPos = null;
+    ballFollowPath = null;
+    if (dragId !== 'ball' && state.ballHolder === dragId) {
+      const ball = state.entities.ball;
+      ballFollowOffset = { dx: ball.x - ent.x, dy: ball.y - ent.y };
+      ballFollowStartPos = { x: ball.x, y: ball.y };
+    }
+
+    target.classList.add('dragging');
+    if (svg.setPointerCapture) {
+      try { svg.setPointerCapture(e.pointerId); } catch {}
+    }
+    e.preventDefault();
+  });
+
+  svg.addEventListener('pointermove', (e) => {
+    if (!dragId) return;
+    const p = svgPoint(e);
+    const ent = state.entities[dragId];
+    const r = ent.type === 'ball' ? BALL_RADIUS : ENT_RADIUS;
+    const newX = clamp(p.x - dragOffset.dx, r, 500 - r);
+    const newY = clamp(p.y - dragOffset.dy, r, 470 - r);
+
+    if (!recordingPath) {
+      const moved = Math.hypot(newX - dragStartPos.x, newY - dragStartPos.y);
+      if (moved >= MOVE_THRESHOLD) {
+        recordingPath = [{ x: dragStartPos.x, y: dragStartPos.y }];
+        // Dragging the ball off its holder = a pass: detach now so the
+        // gold ring on the holder clears as the ball leaves.
+        if (dragId === 'ball' && state.ballHolder !== null) {
+          state.ballHolder = null;
+        }
+      }
+    }
+
+    ent.x = newX;
+    ent.y = newY;
+
+    // If the dragged entity holds the ball, drag the ball at the same offset.
+    if (ballFollowOffset) {
+      const ball = state.entities.ball;
+      ball.x = clamp(ent.x + ballFollowOffset.dx, BALL_RADIUS, 500 - BALL_RADIUS);
+      ball.y = clamp(ent.y + ballFollowOffset.dy, BALL_RADIUS, 470 - BALL_RADIUS);
+      if (recordingPath) {
+        if (!ballFollowPath) ballFollowPath = [{ x: ballFollowStartPos.x, y: ballFollowStartPos.y }];
+        const last = ballFollowPath[ballFollowPath.length - 1];
+        if (Math.hypot(ball.x - last.x, ball.y - last.y) > 1.5) {
+          ballFollowPath.push({ x: ball.x, y: ball.y });
+        }
+        state.pendingPaths.ball = ballFollowPath;
+      }
+    }
+
+    if (recordingPath) {
+      const last = recordingPath[recordingPath.length - 1];
+      if (Math.hypot(newX - last.x, newY - last.y) > 1.5) {
+        recordingPath.push({ x: newX, y: newY });
+      }
+      state.pendingPaths[dragId] = recordingPath;
+      renderPaths();
+    }
+    renderEntities();
+  });
+
+  function endDrag() {
+    if (!dragId) return;
+    const el = renderedEls[dragId];
+    if (el) el.classList.remove('dragging');
+    if (recordingPath && recordingPath.length >= 2) {
+      const ent = state.entities[dragId];
+      const last = recordingPath[recordingPath.length - 1];
+      if (last.x !== ent.x || last.y !== ent.y) {
+        recordingPath.push({ x: ent.x, y: ent.y });
+      }
+      state.pendingPaths[dragId] = smoothPath(recordingPath);
+    }
+
+    // Finalize the ball's parallel path when a holder was dragged.
+    if (ballFollowPath && ballFollowPath.length >= 2) {
+      const ball = state.entities.ball;
+      const last = ballFollowPath[ballFollowPath.length - 1];
+      if (last.x !== ball.x || last.y !== ball.y) {
+        ballFollowPath.push({ x: ball.x, y: ball.y });
+      }
+      state.pendingPaths.ball = smoothPath(ballFollowPath);
+    }
+
+    // If the ball itself was just dragged, see who it landed on. Snap it to
+    // that player's center so the pass "lands" cleanly, and update the path.
+    if (dragId === 'ball') {
+      const newHolder = detectBallHolder();
+      if (newHolder) {
+        const p = state.entities[newHolder];
+        const ball = state.entities.ball;
+        ball.x = p.x;
+        ball.y = p.y;
+        const path = state.pendingPaths.ball;
+        if (path && path.length > 0) {
+          path[path.length - 1] = { x: p.x, y: p.y };
+        }
+      }
+      state.ballHolder = newHolder;
+    }
+
+    renderAll();
+
+    dragId = null;
+    dragOffset = null;
+    dragStartPos = null;
+    recordingPath = null;
+    ballFollowOffset = null;
+    ballFollowStartPos = null;
+    ballFollowPath = null;
+  }
+
+  // Note: we DON'T listen on pointerleave (it caused premature drag termination).
+  svg.addEventListener('pointerup', endDrag);
+  svg.addEventListener('pointercancel', endDrag);
+
+  function smoothPath(path) {
+    if (path.length < 4) return path.slice();
+    const out = [path[0]];
+    for (let i = 1; i < path.length - 1; i++) {
+      out.push({
+        x: (path[i-1].x + path[i].x + path[i+1].x) / 3,
+        y: (path[i-1].y + path[i].y + path[i+1].y) / 3
+      });
+    }
+    out.push(path[path.length - 1]);
+    return out;
+  }
+
+  // ---------- Video Export ----------
+  // CSS injected into the serialized SVG so class-based styles resolve when
+  // rendered as a standalone image (page stylesheet doesn't follow the blob URL).
+  const EXPORT_CSS = `
+    .player-circle.offense{fill:url(#offenseGrad);stroke:rgba(255,255,255,.85);stroke-width:1.5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+    .player-circle.defense{fill:url(#defenseGrad);stroke:rgba(255,255,255,.85);stroke-width:1.5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+    .player-label{fill:#fff;font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+    .ball{fill:url(#ballGrad);stroke:#5a3a10;stroke-width:1.2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+    .player.has-ball .player-circle{stroke:#d4af37;stroke-width:2.4}
+  `;
+
+  function paintSvgToCanvas(ctx, cw, ch) {
+    const el = document.getElementById('court');
+    const cloned = el.cloneNode(true);
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    s.textContent = EXPORT_CSS;
+    cloned.insertBefore(s, cloned.firstChild);
+    const xml = new XMLSerializer().serializeToString(cloned);
+    const blob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image(cw, ch);
+    img.onload = () => { ctx.clearRect(0, 0, cw, ch); ctx.drawImage(img, 0, 0, cw, ch); URL.revokeObjectURL(url); };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }
+
+  async function exportVideo() {
+    if (state.steps.length < 2) { toast('Need at least 2 steps to export', 'error'); return; }
+    if (state.isPlaying) stopPlay();
+
+    const btn = document.getElementById('exportBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Recording…';
+
+    const playName = (document.getElementById('title').value || 'play')
+      .replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'play';
+
+    // Canvas: maintain viewBox 500×470 ratio at 1280px wide
+    const CW = 1280, CH = Math.round(1280 * 470 / 500);
+    const canvas = document.createElement('canvas');
+    canvas.width = CW; canvas.height = CH;
+    const ctx = canvas.getContext('2d');
+
+    const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+      .find(t => { try { return MediaRecorder.isTypeSupported(t); } catch { return false; } }) || 'video/webm';
+
+    const stream = canvas.captureStream(30);
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: mimeType.split(';')[0] });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = playName + '.webm';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      btn.disabled = false; btn.textContent = '⬇ Export Video';
+      toast('Video saved!', 'success');
+      loadStep(0);
+    };
+
+    const segDuration = 1200 / state.speed;
+    const totalDuration = (state.steps.length - 1) * segDuration;
+    const HOLD_MS = 1200; // pause on first/last frame so it reads clearly
+
+    // Initial frame: step 0, paths hidden (clean animation look)
+    loadStep(0);
+    renderEntities();
+    pathsGroup.innerHTML = '';
+    paintSvgToCanvas(ctx, CW, CH);
+    recorder.start();
+
+    // Hold first frame
+    await new Promise(r => setTimeout(r, HOLD_MS));
+
+    // Animate in real time via RAF (same logic as play())
+    await new Promise(resolve => {
+      const start = performance.now();
+      function frame() {
+        const elapsed = Math.min(performance.now() - start, totalDuration);
+        const segIdx = Math.min(Math.floor(elapsed / segDuration), state.steps.length - 2);
+        const segT = Math.min(1, (elapsed - segIdx * segDuration) / segDuration);
+        const tEased = easeInOut(segT);
+        const fromStep = state.steps[segIdx];
+        const toStep   = state.steps[segIdx + 1];
+        const fromPos  = fromStep.positions || fromStep;
+        const toPos    = toStep.positions   || toStep;
+        const paths    = toStep.paths || {};
+        Object.keys(toPos).forEach(id => {
+          if (!state.entities[id]) return;
+          const path = paths[id];
+          const p = (path && path.length >= 2) ? pathPosition(path, tEased) : null;
+          state.entities[id].x = p ? p.x : lerp(fromPos[id].x, toPos[id].x, tEased);
+          state.entities[id].y = p ? p.y : lerp(fromPos[id].y, toPos[id].y, tEased);
+        });
+        renderEntities();
+        paintSvgToCanvas(ctx, CW, CH);
+        if (elapsed < totalDuration) { rafId = requestAnimationFrame(frame); }
+        else { rafId = null; resolve(); }
+      }
+      rafId = requestAnimationFrame(frame);
+    });
+
+    // Hold last frame, then stop
+    await new Promise(r => setTimeout(r, HOLD_MS));
+    recorder.stop();
+  }
+
+  // ---------- Playback ----------
+  let rafId = null;
+  function setPlayBtn(playing) {
+    document.getElementById('playBtn').textContent = playing ? '■ Stop' : '▶ Play';
+  }
+
+  function stopPlay() {
+    state.isPlaying = false;
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    setPlayBtn(false);
+    renderPaths();
+  }
+
+  function play() {
+    if (state.steps.length < 2) {
+      toast('Capture at least 2 steps first', 'error');
+      return;
+    }
+    loadStep(0);
+    state.isPlaying = true;
+    setPlayBtn(true);
+    pathsGroup.innerHTML = ''; // clear paths during playback
+    const start = performance.now();
+    const segDuration = 1200 / state.speed;
+    const total = (state.steps.length - 1) * segDuration;
+
+    function frame(now) {
+      if (!state.isPlaying) { rafId = null; setPlayBtn(false); return; }
+      const elapsed = now - start;
+      if (elapsed >= total) {
+        loadStep(state.steps.length - 1);
+        state.isPlaying = false;
+        setPlayBtn(false);
+        rafId = null;
+        return;
+      }
+      const segIdx = Math.floor(elapsed / segDuration);
+      const segT = (elapsed - segIdx * segDuration) / segDuration;
+      const tEased = easeInOut(segT);
+      const fromStep = state.steps[segIdx];
+      const toStep = state.steps[segIdx + 1];
+      const fromPos = fromStep.positions || fromStep;
+      const toPos = toStep.positions || toStep;
+      const paths = (toStep.paths) || {};
+
+      Object.keys(toPos).forEach(id => {
+        if (!state.entities[id]) return;
+        const path = paths[id];
+        let x, y;
+        if (path && path.length >= 2) {
+          const p = pathPosition(path, tEased);
+          x = p.x; y = p.y;
+        } else {
+          x = lerp(fromPos[id].x, toPos[id].x, tEased);
+          y = lerp(fromPos[id].y, toPos[id].y, tEased);
+        }
+        state.entities[id].x = x;
+        state.entities[id].y = y;
+      });
+      renderEntities();
+      rafId = requestAnimationFrame(frame);
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function pathPosition(path, t) {
+    const n = path.length - 1;
+    const idx = Math.max(0, Math.min(n, t * n));
+    const i = Math.min(Math.floor(idx), n - 1);
+    const frac = idx - i;
+    return {
+      x: lerp(path[i].x, path[i+1].x, frac),
+      y: lerp(path[i].y, path[i+1].y, frac)
+    };
+  }
+
+  // ---------- Playbook (folders + plays) ----------
+  // Storage = local (cache) + Supabase (source of truth). See cloud-sync section at end of script.
+  function getPlays() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); }
+    catch { return {}; }
+  }
+  function setPlays(p) {
+    localStorage.setItem(STORE_KEY, JSON.stringify(p));
+    if (window.__pmCloud) window.__pmCloud.pushPlays(p);
+  }
+  function getCustomFolders() {
+    try { return JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]'); }
+    catch { return []; }
+  }
+  function setCustomFolders(arr) {
+    localStorage.setItem(FOLDERS_KEY, JSON.stringify(arr));
+    if (window.__pmCloud) window.__pmCloud.pushFolders(arr);
+  }
+
+  function getFolders() {
+    const set = new Set(DEFAULT_FOLDERS);
+    getCustomFolders().forEach(f => set.add(f));
+    Object.values(getPlays()).forEach(p => { if (p.folder) set.add(p.folder); });
+    return Array.from(set);
+  }
+
+  function addFolder(name) {
+    name = (name || '').trim();
+    if (!name) return null;
+    if (DEFAULT_FOLDERS.includes(name)) return name;
+    const custom = getCustomFolders();
+    if (!custom.includes(name)) {
+      custom.push(name);
+      setCustomFolders(custom);
+    }
+    return name;
+  }
+
+  function removeFolder(name) {
+    if (DEFAULT_FOLDERS.includes(name)) {
+      toast(`"${name}" is a default folder`, 'error'); return false;
+    }
+    const plays = getPlays();
+    const inFolder = Object.values(plays).filter(p => p.folder === name);
+    if (inFolder.length > 0 && !confirm(`Delete folder "${name}" and its ${inFolder.length} play(s)?`)) return false;
+    inFolder.forEach(p => delete plays[p.title]);
+    setPlays(plays);
+    setCustomFolders(getCustomFolders().filter(f => f !== name));
+    return true;
+  }
+
+  function refreshFolderDropdown() {
+    const sel = document.getElementById('folderSelect');
+    const current = sel.value;
+    sel.innerHTML = '';
+    getFolders().forEach(f => {
+      const o = document.createElement('option');
+      o.value = f;
+      o.textContent = f;
+      sel.appendChild(o);
+    });
+    if (current && Array.from(sel.options).some(o => o.value === current)) {
+      sel.value = current;
+    }
+  }
+
+  function refreshPlaybook() {
+    const wrap = document.getElementById('playbook');
+    wrap.innerHTML = '';
+    const plays = getPlays();
+    const folders = getFolders();
+    if (folders.length === 0 || (Object.keys(plays).length === 0 && getCustomFolders().length === 0)) {
+      // still show default folders even when empty
+    }
+    folders.forEach(folder => {
+      const playsInFolder = Object.values(plays)
+        .filter(p => (p.folder || 'Offense') === folder)
+        .sort((a, b) => a.title.localeCompare(b.title));
+
+      const fdiv = document.createElement('div');
+      fdiv.className = 'folder';
+
+      const header = document.createElement('div');
+      header.className = 'folder-header';
+      const headerLabel = document.createElement('span');
+      headerLabel.innerHTML = `${folder} <span class="count">· ${playsInFolder.length}</span>`;
+      header.appendChild(headerLabel);
+      const actions = document.createElement('div');
+      actions.className = 'folder-actions';
+      if (!DEFAULT_FOLDERS.includes(folder)) {
+        const del = document.createElement('button');
+        del.className = 'small-btn danger';
+        del.textContent = '×';
+        del.title = 'Delete folder';
+        del.addEventListener('click', () => {
+          if (removeFolder(folder)) {
+            refreshFolderDropdown();
+            refreshPlaybook();
+            toast(`Deleted folder "${folder}"`);
+          }
+        });
+        actions.appendChild(del);
+      }
+      header.appendChild(actions);
+      fdiv.appendChild(header);
+
+      if (playsInFolder.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'folder-empty';
+        empty.textContent = 'No plays yet';
+        fdiv.appendChild(empty);
+      } else {
+        playsInFolder.forEach(play => {
+          const item = document.createElement('div');
+          item.className = 'play-item';
+          const labelWrap = document.createElement('div');
+          const label = document.createElement('div');
+          label.textContent = play.title;
+          if (play.team_visible) {
+            const badge = document.createElement('span');
+            badge.textContent = play.team_category ? `★ ${play.team_category}` : '★ Warriors';
+            badge.style.cssText = 'margin-left:8px;background:rgba(212,175,55,.15);color:#d4af37;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;vertical-align:middle';
+            label.appendChild(badge);
+          }
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.textContent = `${play.steps.length} step${play.steps.length === 1 ? '' : 's'}`;
+          labelWrap.appendChild(label);
+          labelWrap.appendChild(meta);
+          item.appendChild(labelWrap);
+
+          const controls = document.createElement('div');
+          controls.className = 'controls';
+          const del = document.createElement('button');
+          del.className = 'small-btn danger';
+          del.textContent = '×';
+          del.title = 'Delete play';
+          del.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!confirm(`Delete "${play.title}"?`)) return;
+            const all = getPlays();
+            delete all[play.title];
+            setPlays(all);
+            refreshPlaybook();
+            toast(`Deleted "${play.title}"`);
+          });
+          controls.appendChild(del);
+          item.appendChild(controls);
+
+          item.addEventListener('click', () => loadPlay(play.title));
+          fdiv.appendChild(item);
+        });
+      }
+      wrap.appendChild(fdiv);
+    });
+  }
+
+  function savePlay() {
+    const name = (document.getElementById('title').value || '').trim();
+    if (!name) { toast('Name your play first', 'error'); return; }
+    if (state.steps.length === 0) { toast('Capture at least 1 step', 'error'); return; }
+    const folder = document.getElementById('folderSelect').value || 'Offense';
+    const teamVisible = document.getElementById('teamShare').checked;
+    const teamCategoryRaw = document.getElementById('teamCategory').value;
+    const teamCategory = (['offense','defense','oob'].includes(teamCategoryRaw)) ? teamCategoryRaw : null;
+    if (teamVisible && !teamCategory) { toast('Pick a team category before sharing', 'error'); return; }
+    const plays = getPlays();
+    plays[name] = {
+      title: name,
+      folder,
+      steps: state.steps,
+      savedAt: Date.now(),
+      team_visible: teamVisible,
+      team_category: teamVisible ? teamCategory : null,
+    };
+    setPlays(plays);
+    refreshPlaybook();
+    const sharedTag = teamVisible ? ` · shared to Warriors (${teamCategory})` : '';
+    toast(`Saved "${name}" to ${folder}${sharedTag}`, 'success');
+  }
+
+  function loadPlay(name) {
+    const plays = getPlays();
+    if (!plays[name]) return;
+    if (state.isPlaying) stopPlay();
+    const p = plays[name];
+    state.steps = clone(p.steps);
+    state.activeStep = 0;
+    state.pendingPaths = {};
+    document.getElementById('title').value = name;
+    if (p.folder) {
+      const sel = document.getElementById('folderSelect');
+      if (Array.from(sel.options).some(o => o.value === p.folder)) {
+        sel.value = p.folder;
+      }
+    }
+    document.getElementById('teamShare').checked = !!p.team_visible;
+    document.getElementById('teamCategory').value = p.team_category || '';
+    if (state.steps.length) loadStep(0);
+    else renderAll();
+    toast(`Loaded "${name}"`, 'success');
+  }
+
+  function startNewPlay() {
+    if (state.isPlaying) stopPlay();
+    document.getElementById('title').value = '';
+    const ts = document.getElementById('teamShare'); if (ts) ts.checked = false;
+    const tc = document.getElementById('teamCategory'); if (tc) tc.value = '';
+    state.steps = [];
+    state.activeStep = -1;
+    state.pendingPaths = {};
+    state.entities = clone(STARTING);
+    state.ballHolder = detectBallHolder();
+    renderAll();
+    toast('New play');
+  }
+
+  function resetPositions() {
+    pushHistory();
+    if (state.isPlaying) stopPlay();
+    state.entities = clone(STARTING);
+    state.activeStep = -1;
+    state.pendingPaths = {};
+    state.ballHolder = detectBallHolder();
+    renderAll();
+    toast('Positions reset');
+  }
+
+  // ---------- Toast ----------
+  function toast(msg, kind) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + (kind || '');
+    clearTimeout(toast._tid);
+    toast._tid = setTimeout(() => { t.className = 'toast ' + (kind || ''); }, 1800);
+  }
+
+  // ---------- Wire up ----------
+  document.getElementById('captureBtn').addEventListener('click', captureStep);
+  document.getElementById('undoBtn').addEventListener('click', undo);
+  document.getElementById('exportBtn').addEventListener('click', exportVideo);
+  document.getElementById('playBtn').addEventListener('click', () => {
+    if (state.isPlaying) stopPlay(); else play();
+  });
+  document.getElementById('resetBtn').addEventListener('click', resetPositions);
+  document.getElementById('saveBtn').addEventListener('click', savePlay);
+  document.getElementById('newPlayBtn').addEventListener('click', startNewPlay);
+  document.getElementById('newFolderBtn').addEventListener('click', () => {
+    const name = (prompt('New folder name:') || '').trim();
+    if (!name) return;
+    addFolder(name);
+    refreshFolderDropdown();
+    refreshPlaybook();
+    document.getElementById('folderSelect').value = name;
+    toast(`Folder "${name}" created`, 'success');
+  });
+  document.getElementById('defenseToggle').addEventListener('change', (e) => {
+    state.showDefense = e.target.checked;
+    renderAll();
+  });
+  document.getElementById('speedRange').addEventListener('input', (e) => {
+    state.speed = parseFloat(e.target.value);
+    document.getElementById('speedLabel').textContent = state.speed.toFixed(1) + '×';
+  });
+
+  // Keyboard: space to play/pause, N for new step
+  window.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, select, textarea')) return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (state.isPlaying) stopPlay(); else play();
+    } else if (e.key === 'n' || e.key === 'N') {
+      captureStep();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+      e.preventDefault();
+      undo();
+    }
+  });
+
+  // ---------- GitHub Sync ----------
+  const GH_OWNER     = 'dalecci';
+  const GH_REPO      = 'playmaker';
+  const GH_FILE      = 'plays.json';
+  const GH_TOKEN_KEY = 'playmaker_gh_token';
+  const GH_SYNC_KEY  = 'playmaker_last_sync';
+  const RAW_URL = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${GH_FILE}`;
+  const API_URL = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
+
+  function ghToken() { return localStorage.getItem(GH_TOKEN_KEY) || ''; }
+
+  // UTF-8 safe base64 (btoa alone breaks on non-ASCII play names)
+  function toB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+
+  function setSyncDot(state) {
+    const d = document.getElementById('syncDot');
+    if (d) d.className = 'sync-dot' + (state ? ' ' + state : '');
+  }
+
+  function updateSyncStatus(msg) {
+    const el = document.getElementById('syncStatus');
+    if (!el) return;
+    if (msg) { el.textContent = msg; return; }
+    const t = localStorage.getItem(GH_SYNC_KEY);
+    el.textContent = t
+      ? 'Last sync: ' + new Date(+t).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+      : 'Not synced yet';
+  }
+
+  function updateSyncUI() {
+    const hasToken = !!ghToken();
+    document.getElementById('tokenSetup').style.display    = hasToken ? 'none' : '';
+    document.getElementById('syncControls').style.display  = hasToken ? ''     : 'none';
+    updateSyncStatus();
+  }
+
+  async function getFileSHA() {
+    const headers = {
+      'Accept': 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28'
+    };
+    const tok = ghToken();
+    if (tok) headers['Authorization'] = 'Bearer ' + tok;
+    const res = await fetch(API_URL, { headers });
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error('GitHub API ' + res.status);
+    return (await res.json()).sha;
+  }
+
+  async function pushToGitHub() {
+    const tok = ghToken();
+    if (!tok) { updateSyncUI(); return; }
+    const btn = document.getElementById('syncPushBtn');
+    btn.disabled = true; btn.textContent = '↑ Pushing…';
+    setSyncDot('');
+    try {
+      const content = toB64(JSON.stringify(getPlays(), null, 2));
+      const sha     = await getFileSHA();
+      const body    = { message: 'Sync playbook', content };
+      if (sha) body.sha = sha;
+      const res = await fetch(API_URL, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + tok,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'HTTP ' + res.status); }
+      localStorage.setItem(GH_SYNC_KEY, Date.now());
+      setSyncDot('ok');
+      updateSyncStatus();
+      toast('Pushed to GitHub ✓', 'success');
+    } catch (err) {
+      setSyncDot('err');
+      updateSyncStatus('Push failed: ' + err.message);
+      toast('Push failed — check your token', 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = '↑ Push to GitHub';
+    }
+  }
+
+  async function pullFromGitHub(silent) {
+    const btn = document.getElementById('syncPullBtn');
+    if (btn && !silent) { btn.disabled = true; btn.textContent = '↓ Pulling…'; }
+    try {
+      const res = await fetch(RAW_URL + '?t=' + Date.now()); // cache-bust
+      if (res.status === 404) {
+        if (!silent) toast('Nothing on GitHub yet — push first', 'error');
+        return;
+      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const remote = await res.json();
+      setPlays(remote);
+      refreshFolderDropdown();
+      refreshPlaybook();
+      localStorage.setItem(GH_SYNC_KEY, Date.now());
+      setSyncDot('ok');
+      updateSyncStatus();
+      if (!silent) toast('Pulled from GitHub ✓', 'success');
+    } catch (err) {
+      if (!silent) {
+        setSyncDot('err');
+        updateSyncStatus('Pull failed: ' + err.message);
+        toast('Pull failed', 'error');
+      }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '↓ Pull'; }
+    }
+  }
+
+  // Wire up sync buttons
+  document.getElementById('saveTokenBtn').addEventListener('click', () => {
+    const tok = document.getElementById('tokenInput').value.trim();
+    if (!tok) return;
+    localStorage.setItem(GH_TOKEN_KEY, tok);
+    document.getElementById('tokenInput').value = '';
+    updateSyncUI();
+    toast('Token saved — you can now push', 'success');
+  });
+  document.getElementById('syncPushBtn').addEventListener('click', pushToGitHub);
+  document.getElementById('syncPullBtn').addEventListener('click', () => pullFromGitHub(false));
+  document.getElementById('clearTokenBtn').addEventListener('click', () => {
+    if (!confirm('Remove the stored GitHub token from this device?')) return;
+    localStorage.removeItem(GH_TOKEN_KEY);
+    updateSyncUI();
+    toast('Token removed');
+  });
+
+  refreshFolderDropdown();
+  refreshPlaybook();
+  state.ballHolder = detectBallHolder();
+  renderAll();
+  updateUndoBtn();
+  updateSyncUI();
+  pullFromGitHub(true); // auto-pull on every load (silent — shows plays from GitHub automatically)
+
+  // ───────── Supabase cloud sync (added 2026-05-19) ─────────
+  // Two-layer storage: localStorage = local cache (sync); Supabase = source of truth (async).
+  // setPlays / setCustomFolders are wrapped to push to Supabase when window.__pmCloud is ready.
+  const pmCloud = (() => {
+    const sb = window.__pmSupabase;
+    if (!sb) return null;
+    let pushPending = null;
+    function debouncePush(fn, ms = 400) {
+      return (...args) => {
+        if (pushPending) clearTimeout(pushPending);
+        pushPending = setTimeout(() => { pushPending = null; fn(...args); }, ms);
+      };
+    }
+    async function pushPlaysNow(playsObj) {
+      try {
+        const rows = Object.values(playsObj).map(p => ({
+          title: p.title,
+          folder: p.folder || 'Offense',
+          steps: p.steps || [],
+          team_visible: !!p.team_visible,
+          team_category: p.team_category || null,
+          updated_at: new Date().toISOString(),
+        }));
+        if (rows.length) {
+          const { error } = await sb.from('playmaker_plays').upsert(rows, { onConflict: 'title' });
+          if (error) console.warn('pmCloud upsert error', error);
+        }
+        // Delete plays no longer in local set
+        const keep = rows.map(r => r.title);
+        if (keep.length) {
+          await sb.from('playmaker_plays').delete().not('title', 'in', `(${keep.map(t => `"${t.replace(/"/g,'')}"`).join(',')})`);
+        } else {
+          await sb.from('playmaker_plays').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        }
+      } catch (e) { console.warn('pmCloud pushPlays failed', e); }
+    }
+    async function pushFoldersNow(arr) {
+      try {
+        const cloudFolders = await sb.from('playmaker_folders').select('name');
+        const cloudNames = new Set((cloudFolders.data || []).map(f => f.name));
+        const inserts = arr.filter(n => !cloudNames.has(n)).map((n, i) => ({ name: n, order_idx: 500 + i }));
+        if (inserts.length) await sb.from('playmaker_folders').insert(inserts);
+        // Delete custom folders (not defaults) that are no longer in arr
+        const defaults = new Set(['Offense','Defense','Out of Bounds','BLOB','SLOB']);
+        const remoteCustom = [...cloudNames].filter(n => !defaults.has(n));
+        const toDelete = remoteCustom.filter(n => !arr.includes(n));
+        if (toDelete.length) await sb.from('playmaker_folders').delete().in('name', toDelete);
+      } catch (e) { console.warn('pmCloud pushFolders failed', e); }
+    }
+    return {
+      pushPlays: debouncePush(pushPlaysNow),
+      pushFolders: debouncePush(pushFoldersNow),
+      pullAll: async () => {
+        try {
+          const [pl, fol] = await Promise.all([
+            sb.from('playmaker_plays').select('*'),
+            sb.from('playmaker_folders').select('*').order('order_idx'),
+          ]);
+          const remotePlays = (pl.data || []).reduce((acc, r) => {
+            acc[r.title] = {
+              title: r.title,
+              folder: r.folder,
+              steps: r.steps || [],
+              savedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
+              team_visible: !!r.team_visible,
+              team_category: r.team_category || null,
+            };
+            return acc;
+          }, {});
+          const defaults = new Set(['Offense','Defense']);
+          const remoteCustomFolders = (fol.data || []).map(f => f.name).filter(n => !defaults.has(n));
+          const localPlays = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+          const localNames = Object.keys(localPlays);
+          const cloudNames = Object.keys(remotePlays);
+          const onlyLocal = localNames.filter(n => !cloudNames.includes(n));
+          // Write cloud to localStorage cache directly (skip setPlays to avoid feedback loop)
+          localStorage.setItem(STORE_KEY, JSON.stringify(remotePlays));
+          localStorage.setItem(FOLDERS_KEY, JSON.stringify(remoteCustomFolders));
+          // Show import banner if any local-only plays exist that aren't in cloud
+          if (onlyLocal.length) {
+            const row = document.getElementById('pmImportRow');
+            const txt = document.getElementById('pmImportText');
+            if (row && txt) {
+              row.style.display = 'flex';
+              txt.textContent = `${onlyLocal.length} local play${onlyLocal.length===1?'':'s'} not in the cloud yet.`;
+            }
+          }
+        } catch (e) { console.warn('pmCloud pull failed', e); }
+      },
+    };
+  })();
+  window.__pmCloud = pmCloud;
+
+  // Hook up the import button
+  const importBtn = document.getElementById('pmImportBtn');
+  const importRow = document.getElementById('pmImportRow');
+  if (importBtn) importBtn.addEventListener('click', async () => {
+    importBtn.disabled = true; importBtn.textContent = 'Importing…';
+    const local = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+    const localCustomFolders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
+    setPlays(local);
+    setCustomFolders(localCustomFolders);
+    setTimeout(() => {
+      if (importRow) importRow.style.display = 'none';
+      toast('Imported local plays to cloud ✓', 'success');
+    }, 800);
+  });
+
+  // Pull from cloud on unlock (or immediately if already unlocked)
+  async function bootCloud() {
+    if (!window.__pmCloud) return;
+    await window.__pmCloud.pullAll();
+    refreshFolderDropdown();
+    refreshPlaybook();
+  }
+  if (sessionStorage.getItem('playmaker_unlocked') === '1') bootCloud();
+  else window.addEventListener('pm:unlocked', bootCloud, { once: true });
+})();
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>

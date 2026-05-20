@@ -313,6 +313,53 @@
     .upnext .un-actions{flex:1 0 100%;justify-content:flex-end}
     .upnext .un-btn{padding:8px 14px;font-size:12px}
   }
+
+  /* ---------- Warriors Playbook (plays from Playmaker) ---------- */
+  .play-folder{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:24px;
+  }
+  .play-folder-card{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;
+    cursor:pointer;transition:.15s;display:flex;flex-direction:column;gap:10px;min-height:130px;
+    background:linear-gradient(135deg,var(--card) 0%,var(--card-hi) 100%);
+  }
+  .play-folder-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .play-folder-card .pf-ic{font-size:28px}
+  .play-folder-card .pf-t{font-size:16px;font-weight:800}
+  .play-folder-card .pf-s{font-size:12.5px;color:var(--muted)}
+  .play-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .pcard{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
+    cursor:pointer;transition:.15s;display:flex;flex-direction:column;
+  }
+  .pcard:hover{border-color:var(--border-2);transform:translateY(-2px)}
+  .pcard .preview{aspect-ratio:500/470;background:#a06b34;position:relative;overflow:hidden}
+  .pcard .meta{padding:11px 12px;display:flex;flex-direction:column;gap:4px}
+  .pcard .t{font-size:14px;font-weight:700}
+  .pcard .s{font-size:11.5px;color:var(--muted)}
+
+  /* Play viewer modal */
+  .play-modal{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  .play-modal.on{display:flex}
+  .play-modal .frame{background:var(--surface);width:100%;max-width:760px;max-height:96vh;display:flex;flex-direction:column;border-radius:0;overflow:hidden}
+  @media(min-width:720px){.play-modal .frame{border-radius:var(--r-lg);margin:20px;max-height:calc(100vh - 40px)}}
+  .play-modal .head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex:none}
+  .play-modal .head h3{flex:1;font-size:15px;font-weight:800;line-height:1.3}
+  .play-modal .head .cat{font-size:10.5px;color:var(--accent-2);font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-right:8px}
+  .play-modal .close{background:var(--surface-2);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--muted);flex:none}
+  .play-modal .court-wrap{background:#000;padding:8px;flex:1;min-height:0;display:grid;place-items:center;overflow:auto}
+  .play-modal svg.court{width:100%;max-width:680px;height:auto;display:block;border-radius:8px}
+  .play-modal svg.court .pl-circle{stroke:rgba(255,255,255,.85);stroke-width:1.5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+  .play-modal svg.court .pl-circle.offense{fill:url(#offenseGradB)}
+  .play-modal svg.court .pl-circle.defense{fill:url(#defenseGradB)}
+  .play-modal svg.court .pl-label{font:700 13px Inter,sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+  .play-modal svg.court .pl-ball{fill:url(#ballGradB);stroke:#5a3a10;stroke-width:1.2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+  .play-modal .ctrl{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0a0a0c;border-top:1px solid var(--border);flex:none;flex-wrap:wrap}
+  .play-modal .ctrl button{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .play-modal .ctrl button:hover{border-color:var(--border-2)}
+  .play-modal .ctrl button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .play-modal .ctrl .step-bar{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600;flex:1;min-width:0;justify-content:flex-end}
+  .play-modal .ctrl select{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-size:12.5px;color:var(--text);cursor:pointer}
   .modal .body{padding:16px;overflow:auto;flex:1;min-height:0}
   .modal .body .meta-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .modal .body .summary{color:var(--muted);line-height:1.6;white-space:pre-wrap}
@@ -501,6 +548,7 @@
     <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
     <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
     <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Videos with me</div>
+    <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Warriors Playbook</div>
     <h6>Library</h6>
     <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice Breakdown</div>
     <div class="subnav" id="sub-practice">
@@ -522,9 +570,9 @@
 <nav class="botnav">
   <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
   <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
+  <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Playbook</div>
   <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
   <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Mine</div>
-  <div class="navlink" data-route="#notes"><span class="ic">📝</span> Notes</div>
 </nav>
 
 <!-- Player picker overlay -->
@@ -585,6 +633,73 @@
   </div>
 </div>
 
+<!-- Play viewer modal (Warriors Playbook) -->
+<div class="play-modal" id="play-modal" role="dialog" aria-modal="true">
+  <div class="frame">
+    <div class="head">
+      <span class="cat" id="pv-cat">—</span>
+      <h3 id="pv-title">Play</h3>
+      <button class="close" id="pv-close" aria-label="Close">×</button>
+    </div>
+    <div class="court-wrap">
+      <svg class="court" id="pv-court" viewBox="0 0 500 470" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="woodGradB" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#c2884c"/>
+            <stop offset="0.5" stop-color="#a06b34"/>
+            <stop offset="1" stop-color="#8c5a28"/>
+          </linearGradient>
+          <pattern id="woodGrainB" x="0" y="0" width="500" height="40" patternUnits="userSpaceOnUse">
+            <rect width="500" height="40" fill="url(#woodGradB)"/>
+            <line x1="0" y1="8" x2="500" y2="8" stroke="rgba(70,40,15,0.07)" stroke-width="1"/>
+            <line x1="0" y1="22" x2="500" y2="22" stroke="rgba(70,40,15,0.05)" stroke-width="0.6"/>
+            <line x1="0" y1="33" x2="500" y2="33" stroke="rgba(70,40,15,0.06)" stroke-width="0.8"/>
+          </pattern>
+          <radialGradient id="courtVignetteB" cx="0.5" cy="0.5" r="0.7">
+            <stop offset="0.65" stop-color="rgba(0,0,0,0)"/>
+            <stop offset="1" stop-color="rgba(0,0,0,0.32)"/>
+          </radialGradient>
+          <radialGradient id="offenseGradB" cx="0.35" cy="0.35" r="0.7">
+            <stop offset="0" stop-color="#5a82ff"/><stop offset="1" stop-color="#1d3fb8"/>
+          </radialGradient>
+          <radialGradient id="defenseGradB" cx="0.35" cy="0.35" r="0.7">
+            <stop offset="0" stop-color="#e85a55"/><stop offset="1" stop-color="#9a2520"/>
+          </radialGradient>
+          <radialGradient id="ballGradB" cx="0.35" cy="0.35" r="0.7">
+            <stop offset="0" stop-color="#ffd680"/><stop offset="1" stop-color="#c08020"/>
+          </radialGradient>
+        </defs>
+        <rect x="0" y="0" width="500" height="470" fill="url(#woodGrainB)"/>
+        <rect x="0" y="0" width="500" height="470" fill="url(#courtVignetteB)"/>
+        <rect x="2" y="2" width="496" height="466" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <rect x="170" y="2" width="160" height="188" fill="rgba(0,0,0,0.06)" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <path d="M 190 190 A 60 60 0 0 1 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <path d="M 190 190 A 60 60 0 0 0 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-dasharray="6 6"/>
+        <path d="M 30 2 L 30 140 A 237.5 237.5 0 0 0 470 140 L 470 2" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <line x1="220" y1="40" x2="280" y2="40" stroke="rgba(255,255,255,0.95)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>
+        <path d="M 210 55 A 40 40 0 0 0 290 55" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+        <line x1="0" y1="468" x2="500" y2="468" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <g id="pv-entities"></g>
+      </svg>
+    </div>
+    <div class="ctrl">
+      <button id="pv-play" class="primary"><span id="pv-play-ic">▶</span> <span id="pv-play-txt">Play</span></button>
+      <button id="pv-restart">⏮ Restart</button>
+      <select id="pv-speed" title="Speed">
+        <option value="0.5">0.5×</option>
+        <option value="0.75">0.75×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
+      <div class="step-bar">
+        Step <span id="pv-step">0</span> / <span id="pv-steps-total">0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Supabase + YouTube IFrame API -->
@@ -631,16 +746,18 @@ const state = {
 
 // ---------- Data loaders ----------
 async function loadGlobals() {
-  const [s, p, v, d] = await Promise.all([
+  const [s, p, v, d, plays] = await Promise.all([
     sb.from('training_settings').select('*'),
     sb.from('players').select('id,name,active').eq('active', true).order('name'),
     sb.from('training_videos').select('*').order('category').order('order_idx'),
     sb.from('training_documents').select('*').order('order_idx').order('updated_at', { ascending: false }),
+    sb.from('playmaker_plays').select('*').eq('team_visible', true).order('title'),
   ]);
   state.settings = Object.fromEntries((s.data || []).map(r => [r.key, r.value]));
   state.players = p.data || [];
   state.videos = v.data || [];
   state.documents = d.data || [];
+  state.plays = plays.data || [];
 }
 async function loadPlayerData() {
   if (!state.player) return;
@@ -791,6 +908,7 @@ function render() {
   if (parts[0] === 'home' || parts[0] === '') return renderHome(v);
   if (parts[0] === 'lessons') return renderLessons(v, parts[1]);
   if (parts[0] === 'mine') return renderMine(v);
+  if (parts[0] === 'playbook') return renderPlaybook(v, parts[1]);
   if (parts[0] === 'practice') return renderPractice(v, parts[1]);
   if (parts[0] === 'bball101') return renderCategory(v, '101', sectionLabel('101'));
   if (parts[0] === 'nba') return renderCategory(v, 'nba', sectionLabel('nba'));
@@ -935,6 +1053,222 @@ function renderLessons(v, levelKey) {
     wrap.append(card);
   }
   v.append(wrap);
+}
+
+// ---------- Warriors Playbook (plays from Playmaker) ----------
+const PLAYBOOK_CATS = [
+  { key: 'offense', label: 'Offense', icon: '⚔️',  desc: 'Sets, motions, and quick-hitters.' },
+  { key: 'defense', label: 'Defense', icon: '🛡️', desc: 'Zones, man, traps, and pressure looks.' },
+  { key: 'oob',     label: 'Out of Bounds', icon: '🎯', desc: 'BLOBs, SLOBs, end-of-clock looks.' },
+];
+function playsByCat(cat) {
+  return (state.plays || []).filter(p => p.team_category === cat);
+}
+function renderPlaybook(v, catKey) {
+  if (catKey) {
+    const cat = PLAYBOOK_CATS.find(c => c.key === catKey);
+    if (!cat) { v.append(emptyState('Unknown category.')); return; }
+    const back = el('button', { class: 'btn ghost', style: 'margin-bottom:14px' });
+    back.innerHTML = '← Back to Playbook';
+    back.addEventListener('click', () => go('#playbook'));
+    v.append(back);
+    v.append(buildSectionHeader(cat.icon, `${cat.label} Plays`, playsByCat(cat.key).length));
+    const list = playsByCat(cat.key);
+    if (!list.length) { v.append(emptyState(`No ${cat.label.toLowerCase()} plays shared yet — Coach Dale will tag them from Playmaker.`)); return; }
+    const grid = el('div', { class: 'play-grid' });
+    for (const pl of list) {
+      const card = el('div', { class: 'pcard' });
+      const prev = el('div', { class: 'preview' });
+      // Static preview = first step rendered
+      prev.append(buildCourtPreviewSVG(pl));
+      card.append(prev);
+      const meta = el('div', { class: 'meta' });
+      const steps = (pl.steps || []).length;
+      meta.innerHTML = `<div class="t">${esc(pl.title)}</div><div class="s">${steps} step${steps===1?'':'s'} · ${esc(pl.folder || 'Plays')}</div>`;
+      card.append(meta);
+      card.addEventListener('click', () => openWarriorsPlay(pl));
+      grid.append(card);
+    }
+    v.append(grid);
+    return;
+  }
+  v.append(buildSectionHeader('📋', 'Warriors Playbook', (state.plays || []).length));
+  const sub = el('div', { style: 'color:var(--muted);font-size:13.5px;margin-bottom:18px;max-width:60ch' });
+  sub.textContent = "Plays Coach Dale designed in Playmaker and shared with the team. Tap a folder to see what's inside.";
+  v.append(sub);
+  const folder = el('div', { class: 'play-folder' });
+  for (const cat of PLAYBOOK_CATS) {
+    const n = playsByCat(cat.key).length;
+    const card = el('div', { class: 'play-folder-card' });
+    card.innerHTML = `<div class="pf-ic">${cat.icon}</div><div class="pf-t">${esc(cat.label)}</div><div class="pf-s">${n} play${n===1?'':'s'} · ${esc(cat.desc)}</div>`;
+    card.addEventListener('click', () => go('#playbook/' + cat.key));
+    folder.append(card);
+  }
+  v.append(folder);
+  if (!(state.plays || []).length) {
+    const e = el('div', { class: 'empty', style: 'margin-top:24px' });
+    e.innerHTML = `<div class="ic">📋</div><h3>No shared plays yet</h3><p>Coach Dale will design plays in Playmaker and flip the "Share with Warriors" toggle to make them show up here.</p>`;
+    v.append(e);
+  }
+}
+
+// Build a small static preview of the first step of a play (SVG snapshot)
+function buildCourtPreviewSVG(play) {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 500 470');
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+  svg.style.width = '100%'; svg.style.height = '100%'; svg.style.display = 'block';
+  svg.innerHTML = `<rect width="500" height="470" fill="#a06b34"/>
+    <rect x="170" y="2" width="160" height="188" fill="rgba(0,0,0,0.06)" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
+    <path d="M 30 2 L 30 140 A 237.5 237.5 0 0 0 470 140 L 470 2" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
+    <path d="M 190 190 A 60 60 0 0 1 310 190" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
+    <line x1="220" y1="40" x2="280" y2="40" stroke="#fff" stroke-width="3"/>
+    <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>`;
+  const step0 = (play.steps || [])[0];
+  const positions = step0?.positions || step0 || {};
+  for (const id in positions) {
+    const p = positions[id];
+    if (id === 'ball') {
+      const c = document.createElementNS(svgNS, 'circle');
+      c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', 8);
+      c.setAttribute('fill', '#ffd680'); c.setAttribute('stroke', '#5a3a10'); c.setAttribute('stroke-width', '1');
+      svg.append(c);
+    } else {
+      const type = id.startsWith('X') ? 'defense' : 'offense';
+      const c = document.createElementNS(svgNS, 'circle');
+      c.setAttribute('cx', p.x); c.setAttribute('cy', p.y); c.setAttribute('r', 14);
+      c.setAttribute('fill', type === 'offense' ? '#3656d8' : '#c2403c');
+      c.setAttribute('stroke', 'rgba(255,255,255,.85)'); c.setAttribute('stroke-width', '1.4');
+      svg.append(c);
+      const t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', p.x); t.setAttribute('y', p.y); t.setAttribute('text-anchor', 'middle'); t.setAttribute('dominant-baseline', 'central');
+      t.setAttribute('font-size', '11'); t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#fff');
+      t.textContent = id;
+      svg.append(t);
+    }
+  }
+  return svg;
+}
+
+// ---------- Play viewer modal: open + render + animate ----------
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const PLAY_ENT_R = 17, PLAY_BALL_R = 8;
+function pmLerp(a,b,t){return a+(b-a)*t;}
+function pmEase(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function pmPathPos(path,t){const n=path.length-1;const i=Math.max(0,Math.min(n,t*n));const idx=Math.min(Math.floor(i),n-1);const f=i-idx;return{x:pmLerp(path[idx].x,path[idx+1].x,f),y:pmLerp(path[idx].y,path[idx+1].y,f)};}
+const playView = { play:null, rafId:null, isPlaying:false, speed:1, entitiesEl:null, refs:{} };
+function pvSetPlayBtn(playing) {
+  $('#pv-play-ic').textContent = playing ? '⏸' : '▶';
+  $('#pv-play-txt').textContent = playing ? 'Pause' : 'Play';
+}
+function pvClearEntities() {
+  if (!playView.entitiesEl) return;
+  playView.entitiesEl.innerHTML = '';
+  playView.refs = {};
+}
+function pvRenderPositions(positions) {
+  if (!playView.entitiesEl) return;
+  const ids = Object.keys(positions);
+  for (const id of ids) {
+    const p = positions[id]; if (!p) continue;
+    let g = playView.refs[id];
+    if (!g) {
+      if (id === 'ball') {
+        g = document.createElementNS(SVG_NS, 'circle');
+        g.setAttribute('class', 'pl-ball');
+        g.setAttribute('r', PLAY_BALL_R);
+      } else {
+        g = document.createElementNS(SVG_NS, 'g');
+        const c = document.createElementNS(SVG_NS, 'circle');
+        const type = id.startsWith('X') ? 'defense' : 'offense';
+        c.setAttribute('class', 'pl-circle ' + type);
+        c.setAttribute('r', PLAY_ENT_R);
+        g.append(c);
+        const t = document.createElementNS(SVG_NS, 'text');
+        t.setAttribute('class', 'pl-label');
+        t.textContent = id;
+        g.append(t);
+      }
+      playView.entitiesEl.append(g);
+      playView.refs[id] = g;
+    }
+    if (id === 'ball') { g.setAttribute('cx', p.x); g.setAttribute('cy', p.y); }
+    else {
+      g.setAttribute('transform', `translate(${p.x}, ${p.y})`);
+    }
+  }
+  // Remove tokens no longer present
+  for (const id in playView.refs) {
+    if (!(id in positions)) { playView.refs[id].remove(); delete playView.refs[id]; }
+  }
+}
+function pvStop() {
+  playView.isPlaying = false;
+  if (playView.rafId !== null) { cancelAnimationFrame(playView.rafId); playView.rafId = null; }
+  pvSetPlayBtn(false);
+}
+function pvRunAnimation() {
+  const steps = playView.play?.steps || [];
+  if (steps.length < 2) { toast('This play only has 1 step', 'err'); return; }
+  playView.isPlaying = true;
+  pvSetPlayBtn(true);
+  const start = performance.now();
+  const segDuration = 1200 / playView.speed;
+  const total = (steps.length - 1) * segDuration;
+  function frame(now) {
+    if (!playView.isPlaying) { playView.rafId = null; pvSetPlayBtn(false); return; }
+    const elapsed = now - start;
+    if (elapsed >= total) {
+      const last = steps[steps.length - 1];
+      pvRenderPositions(last.positions || last);
+      $('#pv-step').textContent = steps.length;
+      playView.isPlaying = false; pvSetPlayBtn(false); playView.rafId = null; return;
+    }
+    const segIdx = Math.floor(elapsed / segDuration);
+    const segT = (elapsed - segIdx * segDuration) / segDuration;
+    const tEased = pmEase(segT);
+    const fromStep = steps[segIdx];
+    const toStep = steps[segIdx + 1];
+    const fromPos = fromStep.positions || fromStep;
+    const toPos = toStep.positions || toStep;
+    const paths = (toStep.paths) || {};
+    const positions = {};
+    for (const id in toPos) {
+      const path = paths[id];
+      if (path && path.length >= 2) positions[id] = pmPathPos(path, tEased);
+      else if (fromPos[id]) positions[id] = { x: pmLerp(fromPos[id].x, toPos[id].x, tEased), y: pmLerp(fromPos[id].y, toPos[id].y, tEased) };
+      else positions[id] = toPos[id];
+    }
+    pvRenderPositions(positions);
+    $('#pv-step').textContent = (segIdx + 1);
+    playView.rafId = requestAnimationFrame(frame);
+  }
+  playView.rafId = requestAnimationFrame(frame);
+}
+function openWarriorsPlay(play) {
+  playView.play = play;
+  playView.entitiesEl = document.getElementById('pv-entities');
+  pvStop();
+  pvClearEntities();
+  const steps = play.steps || [];
+  const step0 = steps[0]?.positions || steps[0] || {};
+  pvRenderPositions(step0);
+  $('#pv-title').textContent = play.title || 'Play';
+  $('#pv-cat').textContent = (PLAYBOOK_CATS.find(c => c.key === play.team_category) || {}).label || play.folder || '';
+  $('#pv-step').textContent = steps.length ? 1 : 0;
+  $('#pv-steps-total').textContent = steps.length;
+  $('#pv-speed').value = '1';
+  playView.speed = 1;
+  $('#play-modal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+function closeWarriorsPlay() {
+  pvStop();
+  pvClearEntities();
+  $('#play-modal').classList.remove('on');
+  document.body.style.overflow = '';
+  playView.play = null;
 }
 
 function renderMine(v) {
@@ -1655,10 +1989,15 @@ async function boot() {
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
-    if (!$('#vmodal').classList.contains('on')) return;
-    if (e.key === 'Escape') closeVideo();
-    else if (e.key === ' ' || e.key === 'k') { e.preventDefault(); togglePlay(); }
-    else if (e.key === 'f') { e.preventDefault(); toggleFullscreen(); }
+    if ($('#vmodal').classList.contains('on')) {
+      if (e.key === 'Escape') closeVideo();
+      else if (e.key === ' ' || e.key === 'k') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'f') { e.preventDefault(); toggleFullscreen(); }
+    } else if ($('#play-modal').classList.contains('on')) {
+      if (e.key === 'Escape') closeWarriorsPlay();
+      else if (e.key === ' ') { e.preventDefault(); $('#pv-play').click(); }
+      else if (e.key === 'r') { e.preventDefault(); $('#pv-restart').click(); }
+    }
   });
   $('#vm-play').addEventListener('click', togglePlay);
   $('#vm-tap').addEventListener('click', togglePlay);
@@ -1670,6 +2009,34 @@ async function boot() {
   });
   $('#vm-un-play').addEventListener('click', () => {
     if (state.upnext && state.upnext.video) openVideo(state.upnext.video, { lesson: true });
+  });
+  // Play viewer controls
+  $('#pv-close').addEventListener('click', closeWarriorsPlay);
+  $('#play-modal').addEventListener('click', (e) => { if (e.target === $('#play-modal')) closeWarriorsPlay(); });
+  $('#pv-play').addEventListener('click', () => {
+    if (playView.isPlaying) { pvStop(); }
+    else {
+      // If at end (last step shown), restart first
+      const total = (playView.play?.steps || []).length;
+      const curStep = parseInt($('#pv-step').textContent, 10) || 0;
+      if (curStep >= total && total) {
+        const step0 = playView.play.steps[0].positions || playView.play.steps[0];
+        pvRenderPositions(step0);
+        $('#pv-step').textContent = 1;
+      }
+      pvRunAnimation();
+    }
+  });
+  $('#pv-restart').addEventListener('click', () => {
+    pvStop();
+    if (!playView.play) return;
+    const step0 = playView.play.steps[0]?.positions || playView.play.steps[0] || {};
+    pvRenderPositions(step0);
+    $('#pv-step').textContent = playView.play.steps.length ? 1 : 0;
+  });
+  $('#pv-speed').addEventListener('change', (e) => {
+    playView.speed = parseFloat(e.target.value) || 1;
+    if (playView.isPlaying) { pvStop(); pvRunAnimation(); }
   });
   const scrub = $('#vm-scrub');
   const onScrubStart = () => { state.scrubbing = true; };
