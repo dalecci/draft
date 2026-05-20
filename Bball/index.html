@@ -1205,7 +1205,12 @@ function pvRenderPositions(positions) {
 }
 function pvStop() {
   playView.isPlaying = false;
-  if (playView.rafId !== null) { cancelAnimationFrame(playView.rafId); playView.rafId = null; }
+  if (playView.rafId !== null) {
+    // rafId can be either a RAF handle or a setTimeout handle — clear both ways to be safe.
+    try { cancelAnimationFrame(playView.rafId); } catch{}
+    try { clearTimeout(playView.rafId); } catch{}
+    playView.rafId = null;
+  }
   pvSetPlayBtn(false);
 }
 function pvRunAnimation() {
@@ -1216,8 +1221,11 @@ function pvRunAnimation() {
   const start = performance.now();
   const segDuration = 1200 / playView.speed;
   const total = (steps.length - 1) * segDuration;
-  function frame(now) {
+  // Use setTimeout instead of requestAnimationFrame so animation runs reliably even when the tab
+  // isn't fully focused (Chrome Energy Saver / background-tab RAF throttling would otherwise freeze it).
+  function frame() {
     if (!playView.isPlaying) { playView.rafId = null; pvSetPlayBtn(false); return; }
+    const now = performance.now();
     const elapsed = now - start;
     if (elapsed >= total) {
       const last = steps[steps.length - 1];
@@ -1242,9 +1250,9 @@ function pvRunAnimation() {
     }
     pvRenderPositions(positions);
     $('#pv-step').textContent = (segIdx + 1);
-    playView.rafId = requestAnimationFrame(frame);
+    playView.rafId = setTimeout(frame, 16);
   }
-  playView.rafId = requestAnimationFrame(frame);
+  playView.rafId = setTimeout(frame, 16);
 }
 function openWarriorsPlay(play) {
   playView.play = play;
