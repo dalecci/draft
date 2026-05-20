@@ -995,6 +995,16 @@ function renderCategory(v, cat, label) {
   else v.append(buildVidGrid(list));
 }
 
+const NOTE_SUBCATS = [
+  { key: '',                 label: 'All' },
+  { key: 'standards',        label: 'Team Standards' },
+  { key: 'terminology',      label: 'Terminology' },
+  { key: 'defensive_calls',  label: 'Defensive Calls' },
+  { key: 'defensive_sets',   label: 'Defensive Sets' },
+  { key: 'offensive_sets',   label: 'Offensive Sets' },
+];
+const subcatLabelForNote = (k) => (NOTE_SUBCATS.find(x => x.key === k) || {}).label || (k || 'General');
+
 function renderNotes(v, docId) {
   if (docId) {
     const d = state.documents.find(x => x.id === docId);
@@ -1002,17 +1012,51 @@ function renderNotes(v, docId) {
     const back = el('button', { class: 'btn ghost', style:'margin-bottom:14px' }); back.innerHTML = '← Back to Notes';
     back.addEventListener('click', () => go('#notes')); v.append(back);
     const doc = el('div', { class: 'doc' });
-    doc.innerHTML = `<h1>${esc(d.title)}</h1>${d.summary ? `<div class="summary">${esc(d.summary)}</div>` : ''}<div class="body">${esc(d.body || '')}</div>`;
+    const subLabel = d.sub_cat ? `<div style="font-size:11px;color:var(--accent-2);font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">${esc(subcatLabelForNote(d.sub_cat))}</div>` : '';
+    doc.innerHTML = `${subLabel}<h1>${esc(d.title)}</h1>${d.summary ? `<div class="summary">${esc(d.summary)}</div>` : ''}<div class="body">${esc(d.body || '')}</div>`;
     v.append(doc);
+    if (d.pdf_page) {
+      const pdfWrap = el('div', { style: 'margin-top:18px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden' });
+      const head = el('div', { style: 'display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--muted);font-weight:600' });
+      head.innerHTML = `<span>📄 Court diagram · Pack page ${d.pdf_page}</span>`;
+      const openBtn = el('a', { class: 'btn sm', href: `playbook/warriors_complete_pack.pdf#page=${d.pdf_page}`, target: '_blank', style: 'margin-left:auto;text-decoration:none' });
+      openBtn.textContent = 'Open full PDF ↗';
+      head.append(openBtn);
+      pdfWrap.append(head);
+      const ifr = el('iframe', { src: `playbook/warriors_complete_pack.pdf#page=${d.pdf_page}&toolbar=0&navpanes=0&scrollbar=0&view=FitH`, style: 'width:100%;height:560px;border:0;background:#fff;display:block' });
+      pdfWrap.append(ifr);
+      v.append(pdfWrap);
+    }
     return;
   }
   v.append(buildSectionHeader('📝', sectionLabel('documents'), state.documents.length));
   if (!state.documents.length) { v.append(emptyState("No notes yet — Coach Dale is writing them up.")); return; }
+
+  // Sub-category chips
+  const presentSubcats = new Set(state.documents.map(d => d.sub_cat || ''));
+  const activeSub = state.query.sub || '';
+  const chips = el('div', { class: 'chips' });
+  for (const sc of NOTE_SUBCATS) {
+    if (sc.key !== '' && !presentSubcats.has(sc.key)) continue;
+    const c = el('button', { class: 'chip' + (activeSub === sc.key ? ' on' : '') });
+    c.textContent = sc.label;
+    c.addEventListener('click', () => go(sc.key ? `#notes?sub=${sc.key}` : '#notes'));
+    chips.append(c);
+  }
+  v.append(chips);
+
+  // Group by sub_cat, ordered as in NOTE_SUBCATS
+  let filtered = state.documents;
+  if (activeSub) filtered = filtered.filter(d => d.sub_cat === activeSub);
+  if (!filtered.length) { v.append(emptyState('No notes in this category yet.')); return; }
+
   const list = el('div'); list.style.display = 'flex'; list.style.flexDirection = 'column'; list.style.gap = '10px';
-  for (const d of state.documents) {
+  for (const d of filtered) {
     const row = el('div', { class: 'admin-row' });
     row.style.cursor = 'pointer';
-    row.innerHTML = `<div class="t"><b>${esc(d.title)}</b><small>${esc(d.summary || '')}</small></div><div class="actions"><span class="btn sm ghost">Read →</span></div>`;
+    const subLabel = d.sub_cat ? `<span style="background:var(--surface-2);color:var(--muted);padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-right:6px">${esc(subcatLabelForNote(d.sub_cat))}</span>` : '';
+    const pdfBadge = d.pdf_page ? `<span style="background:rgba(255,106,31,.15);color:var(--accent-2);padding:2px 8px;border-radius:5px;font-size:10.5px;font-weight:700;margin-left:6px">📄 Diagram</span>` : '';
+    row.innerHTML = `<div class="t"><b>${esc(d.title)}${pdfBadge}</b><small>${subLabel}${esc(d.summary || '')}</small></div><div class="actions"><span class="btn sm ghost">Read →</span></div>`;
     row.addEventListener('click', () => go(`#notes/${d.id}`));
     list.append(row);
   }
@@ -1483,7 +1527,11 @@ function renderAdminNotes(v, docId) {
   if (!state.documents.length) { v.append(emptyState('No notes yet.')); return; }
   for (const d of state.documents) {
     const row = el('div', { class: 'admin-row' });
-    row.innerHTML = `<div class="t"><b>${esc(d.title)}</b><small>${esc(d.summary||'')}</small></div><div class="actions"></div>`;
+    const bits = [
+      d.sub_cat ? subcatLabelForNote(d.sub_cat) : 'General',
+      d.pdf_page ? `📄 PDF page ${d.pdf_page}` : null,
+    ].filter(Boolean).join(' · ');
+    row.innerHTML = `<div class="t"><b>${esc(d.title)}</b><small>${esc(bits)}${d.summary ? ' — ' + esc(d.summary) : ''}</small></div><div class="actions"></div>`;
     const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
     editBtn.addEventListener('click', () => go(`#admin/notes/${d.id}`));
     const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
@@ -1505,14 +1553,29 @@ function renderNoteForm(v, d) {
   const box = el('div', { class: 'doc' });
   box.innerHTML = `<h1>${isNew ? 'New Note' : 'Edit Note'}</h1>`;
   v.append(box);
-  const mk = (label, inputHtml) => { const f = el('div', { class: 'field' }); f.innerHTML = `<label>${label}</label>${inputHtml}`; return f; };
+  const mk = (label, inputHtml, hint) => { const f = el('div', { class: 'field' }); f.innerHTML = `<label>${label}</label>${inputHtml}${hint?`<div class="hint">${hint}</div>`:''}`; return f; };
   v.append(mk('Title', `<input id="nf_title" value="${esc(d?.title||'')}">`));
   v.append(mk('Summary (one line)', `<input id="nf_summary" value="${esc(d?.summary||'')}">`));
+  const subOptions = NOTE_SUBCATS.slice(1).map(sc => `<option value="${sc.key}">${esc(sc.label)}</option>`).join('');
+  const subRow = el('div', { class: 'grid2' });
+  subRow.append(mk('Sub-category', `<select id="nf_subcat"><option value="">— General —</option>${subOptions}</select>`));
+  subRow.append(mk('PDF page number (optional)', `<input id="nf_pdf" type="number" min="1" max="200" value="${esc(d?.pdf_page||'')}" placeholder="e.g. 4">`, 'If set, embeds that page of <code>playbook/warriors_complete_pack.pdf</code> below the body text.'));
+  v.append(subRow);
   v.append(mk('Body', `<textarea id="nf_body" style="min-height:260px">${esc(d?.body||'')}</textarea>`));
   v.append(mk('Order', `<input id="nf_order" type="number" value="${esc(d?.order_idx||0)}">`));
+  $('#nf_subcat').value = d?.sub_cat || '';
   const submit = el('button', { class: 'btn primary' }); submit.textContent = isNew ? 'Add Note' : 'Save';
   submit.addEventListener('click', async () => {
-    const row = { title: $('#nf_title').value.trim(), summary: $('#nf_summary').value, body: $('#nf_body').value, order_idx: parseInt($('#nf_order').value)||0, updated_at: new Date().toISOString() };
+    const pdfRaw = $('#nf_pdf').value.trim();
+    const row = {
+      title: $('#nf_title').value.trim(),
+      summary: $('#nf_summary').value,
+      body: $('#nf_body').value,
+      sub_cat: $('#nf_subcat').value || null,
+      pdf_page: pdfRaw === '' ? null : (parseInt(pdfRaw) || null),
+      order_idx: parseInt($('#nf_order').value)||0,
+      updated_at: new Date().toISOString(),
+    };
     if (!row.title) return toast('Title required', 'err');
     let res;
     if (isNew) res = await sb.from('training_documents').insert(row).select().single();
