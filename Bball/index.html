@@ -271,6 +271,48 @@
     position:absolute;top:50%;left:90%;width:2px;height:8px;background:var(--ok);border-radius:1px;
     transform:translate(-50%,-50%);opacity:.65;pointer-events:none;
   }
+
+  /* ---------- Up-next pill ---------- */
+  .upnext{
+    position:absolute;left:12px;right:12px;bottom:14px;z-index:10;
+    background:rgba(15,15,18,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid var(--border-2);border-radius:14px;
+    display:flex;align-items:center;gap:12px;padding:10px 12px;
+    transform:translateY(140%);opacity:0;transition:transform .25s ease, opacity .25s ease;
+    pointer-events:none;
+  }
+  .upnext.on{transform:translateY(0);opacity:1;pointer-events:auto}
+  .upnext .un-thumb{
+    flex:none;width:64px;height:36px;border-radius:6px;background:#000;overflow:hidden;position:relative;
+  }
+  .upnext .un-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .upnext .un-thumb .un-spin{
+    position:absolute;inset:0;display:grid;place-items:center;
+    background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.4));
+  }
+  .upnext .un-thumb .un-spin .ring{
+    width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.2);
+    border-top-color:var(--accent);animation:spin .8s linear infinite;
+  }
+  .upnext .un-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .upnext .un-txt .l{font-size:10.5px;color:var(--accent-2);font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+  .upnext .un-txt .l.celebrate{color:#FFD24D}
+  .upnext .un-txt .t{font-size:13.5px;font-weight:700;line-height:1.25;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .upnext .un-actions{display:flex;gap:6px;flex:none}
+  .upnext .un-btn{
+    background:var(--surface-2);color:var(--text);border:1px solid var(--border-2);
+    padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+  }
+  .upnext .un-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .upnext .un-btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+  .upnext .un-btn:hover{border-color:#4a4a52}
+  @media(max-width:560px){
+    .upnext{flex-wrap:wrap;padding:9px}
+    .upnext .un-thumb{width:48px;height:30px}
+    .upnext .un-txt{flex:1 1 60%}
+    .upnext .un-actions{flex:1 0 100%;justify-content:flex-end}
+    .upnext .un-btn{padding:8px 14px;font-size:12px}
+  }
   .modal .body{padding:16px;overflow:auto;flex:1;min-height:0}
   .modal .body .meta-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .modal .body .summary{color:var(--muted);line-height:1.6;white-space:pre-wrap}
@@ -502,7 +544,21 @@
       <h3 id="vm-title">Video</h3>
       <button class="close" id="vm-close" aria-label="Close">×</button>
     </div>
-    <div class="yt-wrap" id="vm-ytwrap"><div id="ytplayer"></div><div class="yt-tap" id="vm-tap" title="Tap to play/pause"></div></div>
+    <div class="yt-wrap" id="vm-ytwrap">
+      <div id="ytplayer"></div>
+      <div class="yt-tap" id="vm-tap" title="Tap to play/pause"></div>
+      <div class="upnext" id="vm-upnext">
+        <div class="un-thumb" id="vm-un-thumb"></div>
+        <div class="un-txt">
+          <div class="l" id="vm-un-label">Up next · in <span id="vm-un-count">5</span>s</div>
+          <div class="t" id="vm-un-title">Next title</div>
+        </div>
+        <div class="un-actions">
+          <button class="un-btn" id="vm-un-cancel" type="button">Cancel</button>
+          <button class="un-btn primary" id="vm-un-play" type="button">Play now</button>
+        </div>
+      </div>
+    </div>
     <div class="vctrl">
       <button id="vm-play" class="vc-btn" aria-label="Play/Pause" title="Play/Pause">
         <svg id="vm-play-svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
@@ -638,6 +694,26 @@ function groupByLevel() {
   for (const [, list] of sorted) list.sort((a,b) => (a.order_idx||0)-(b.order_idx||0) || String(a.title).localeCompare(String(b.title)));
   return sorted;
 }
+// Given the currently-playing video, find what comes next in the lesson path.
+// Returns { video, level, levelComplete (last in current level), levelJustFinished, allDone } or null
+function nextLessonAfter(currentVideo) {
+  const groups = groupByLevel();
+  for (let i = 0; i < groups.length; i++) {
+    const [lvl, vids] = groups[i];
+    const idx = vids.findIndex(v => v.id === currentVideo.id);
+    if (idx === -1) continue;
+    if (idx + 1 < vids.length) {
+      return { video: vids[idx+1], level: lvl, levelComplete: false };
+    }
+    // Last video of this level — look for next non-empty level
+    for (let j = i + 1; j < groups.length; j++) {
+      const [nextLvl, nextVids] = groups[j];
+      if (nextVids.length) return { video: nextVids[0], level: nextLvl, levelComplete: true, levelJustFinished: lvl };
+    }
+    return { allDone: true, levelJustFinished: lvl };
+  }
+  return null;
+}
 // Find the player's "next up" — first unfinished video in lowest incomplete level
 function nextUpLesson() {
   const fin = finishedSetForPlayer();
@@ -755,7 +831,7 @@ function renderHome(v) {
         <div class="b">${esc(nu.video.title)}</div>
       </div>
       <div class="cc-arr">→</div>`;
-    card.addEventListener('click', () => openVideo(nu.video));
+    card.addEventListener('click', () => openVideo(nu.video, { lesson: true }));
     v.append(card);
   }
   // Videos I'm tagged in (small teaser)
@@ -852,7 +928,7 @@ function renderLessons(v, levelKey) {
         <div class="lvn">${isDone ? '✓' : (isNext ? '▶' : i+1)}</div>
         <div class="lvt">${esc(vd.title)}${isNext ? ' <span style="color:var(--accent);font-size:11px;font-weight:700;margin-left:6px">NEXT UP</span>' : ''}<small>${esc(subc)}${dur ? ' · ' + dur : ''}${viewsCountForVideo(vd.id) ? ' · watched '+viewsCountForVideo(vd.id)+'×' : ''}</small></div>
         <div class="lvc">▶</div>`;
-      row.addEventListener('click', () => openVideo(vd));
+      row.addEventListener('click', () => openVideo(vd, { lesson: true }));
       body.append(row);
     });
     card.append(body);
@@ -1005,10 +1081,15 @@ function loadYouTubeAPI() {
   return ytApiPromise;
 }
 
-async function openVideo(v) {
+async function openVideo(v, opts = {}) {
   if (!v.youtube_id) { toast('No YouTube ID set for this video', 'err'); return; }
   state.currentVideo = v;
   state.recordedThisPlay = false;
+  state.isLessonMode = !!opts.lesson;
+  state.upnext = state.isLessonMode ? nextLessonAfter(v) : null;
+  state.upnextShown = false;
+  state.autoAdvanceCanceled = false;
+  hideUpnext();
   $('#vm-title').textContent = v.title;
   $('#vm-summary').textContent = v.summary || '';
   const tagsBox = $('#vm-tags'); tagsBox.innerHTML = '';
@@ -1037,7 +1118,12 @@ async function openVideo(v) {
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.PLAYING) { startVideoPolling(); setPlayIcon(true); }
         else if (e.data === YT.PlayerState.PAUSED) { stopVideoPolling(); setPlayIcon(false); updateVideoProgress(); }
-        else if (e.data === YT.PlayerState.ENDED) { stopVideoPolling(); setPlayIcon(false); }
+        else if (e.data === YT.PlayerState.ENDED) {
+          stopVideoPolling(); setPlayIcon(false);
+          if (state.isLessonMode && state.upnext && state.upnext.video && !state.autoAdvanceCanceled) {
+            setTimeout(() => openVideo(state.upnext.video, { lesson: true }), 400);
+          }
+        }
         else { stopVideoPolling(); }
       },
     }
@@ -1046,6 +1132,45 @@ async function openVideo(v) {
 function setScrub(pct) {
   const s = $('#vm-scrub'); s.value = Math.round(pct * 10);
   s.style.setProperty('--p', pct + '%');
+}
+function hideUpnext() {
+  $('#vm-upnext').classList.remove('on');
+  if (state.upnextCountdownTimer) { clearInterval(state.upnextCountdownTimer); state.upnextCountdownTimer = null; }
+}
+function showUpnext(remainingSec) {
+  if (!state.upnext) return;
+  const un = state.upnext;
+  const pill = $('#vm-upnext');
+  const labelEl = $('#vm-un-label');
+  const titleEl = $('#vm-un-title');
+  const thumbEl = $('#vm-un-thumb');
+  if (un.allDone) {
+    labelEl.classList.add('celebrate');
+    labelEl.innerHTML = `🏆 Level ${un.levelJustFinished} complete — you've reached the top!`;
+    titleEl.textContent = 'No more lessons in the path yet.';
+    thumbEl.innerHTML = `<div class="un-spin"><div style="font-size:22px">🏆</div></div>`;
+    $('#vm-un-play').style.display = 'none';
+    $('#vm-un-cancel').textContent = 'Done';
+  } else {
+    labelEl.classList.remove('celebrate');
+    if (un.levelComplete) {
+      labelEl.innerHTML = `🎉 Level ${un.levelJustFinished} complete · Up next: Level ${un.level} · in <span id="vm-un-count">${Math.max(1, Math.ceil(remainingSec))}</span>s`;
+    } else {
+      labelEl.innerHTML = `Up next · in <span id="vm-un-count">${Math.max(1, Math.ceil(remainingSec))}</span>s`;
+    }
+    titleEl.textContent = un.video.title;
+    thumbEl.innerHTML = un.video.youtube_id ? `<img src="${esc(ytThumb(un.video))}" alt="">` : `<div class="un-spin"><div style="color:#fff;font-size:14px">▶</div></div>`;
+    $('#vm-un-play').style.display = '';
+    $('#vm-un-cancel').textContent = 'Cancel';
+  }
+  pill.classList.add('on');
+  state.upnextShown = true;
+}
+function tickUpnextCountdown() {
+  const p = state.videoPlayer; if (!p || typeof p.getDuration !== 'function') return;
+  const remaining = Math.max(0, p.getDuration() - p.getCurrentTime());
+  const countEl = document.getElementById('vm-un-count');
+  if (countEl) countEl.textContent = Math.max(0, Math.ceil(remaining));
 }
 function setPlayIcon(playing) {
   const svg = $('#vm-play-svg');
@@ -1066,6 +1191,12 @@ async function updateVideoProgress() {
   if (!state.scrubbing) setScrub(pct);
   $('#vm-time').textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
   $('#vm-pct').textContent = `Watched ${Math.round(pct)}%`;
+  // Up-next pill: show when ≤5s remain in a lesson video
+  const remaining = dur - cur;
+  if (state.isLessonMode && state.upnext && !state.autoAdvanceCanceled && !state.upnextShown && remaining <= 5 && remaining > 0) {
+    showUpnext(remaining);
+    state.upnextCountdownTimer = setInterval(tickUpnextCountdown, 250);
+  }
   if (pct >= 90 && !state.recordedThisPlay) {
     state.recordedThisPlay = true;
     $('#vm-pct').classList.add('ok');
@@ -1096,11 +1227,14 @@ function closeVideo() {
   if (document.fullscreenElement || document.webkitFullscreenElement) {
     (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
   }
+  hideUpnext();
   $('#vmodal').classList.remove('on');
   document.body.style.overflow = '';
   stopVideoPolling();
   if (state.videoPlayer) { try { state.videoPlayer.destroy(); } catch{} state.videoPlayer = null; }
   state.currentVideo = null;
+  state.isLessonMode = false;
+  state.upnext = null;
   // Re-render to update watched/star state on cards
   render();
 }
@@ -1466,6 +1600,14 @@ async function boot() {
   $('#vm-play').addEventListener('click', togglePlay);
   $('#vm-tap').addEventListener('click', togglePlay);
   $('#vm-fs').addEventListener('click', toggleFullscreen);
+  $('#vm-un-cancel').addEventListener('click', () => {
+    state.autoAdvanceCanceled = true;
+    hideUpnext();
+    if (state.upnext && state.upnext.allDone) closeVideo();
+  });
+  $('#vm-un-play').addEventListener('click', () => {
+    if (state.upnext && state.upnext.video) openVideo(state.upnext.video, { lesson: true });
+  });
   const scrub = $('#vm-scrub');
   const onScrubStart = () => { state.scrubbing = true; };
   const onScrubInput = () => {
