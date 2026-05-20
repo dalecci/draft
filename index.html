@@ -1881,6 +1881,10 @@
     if (inFolder.length > 0 && !confirm(`Delete folder "${name}" and its ${inFolder.length} play(s)?`)) return false;
     inFolder.forEach(p => delete plays[p.title]);
     setPlays(plays);
+    // Explicit cloud delete for each play (no destructive delete-not-in-keep anymore)
+    if (window.__pmCloud && window.__pmCloud.deletePlay) {
+      inFolder.forEach(p => window.__pmCloud.deletePlay(p.title));
+    }
     setCustomFolders(getCustomFolders().filter(f => f !== name));
     return true;
   }
@@ -1976,7 +1980,9 @@
             if (!confirm(`Delete "${play.title}"?`)) return;
             const all = getPlays();
             delete all[play.title];
-            setPlays(all);
+            setPlays(all); // updates localStorage and upserts what remains (no destructive delete-not-in-keep)
+            // Explicit cloud delete for this title
+            if (window.__pmCloud && window.__pmCloud.deletePlay) window.__pmCloud.deletePlay(play.title);
             refreshPlaybook();
             toast(`Deleted "${play.title}"`);
           });
@@ -2337,14 +2343,18 @@
           const { error } = await sb.from('playmaker_plays').upsert(rows, { onConflict: 'title' });
           if (error) console.warn('pmCloud upsert error', error);
         }
-        // Delete plays no longer in local set
-        const keep = rows.map(r => r.title);
-        if (keep.length) {
-          await sb.from('playmaker_plays').delete().not('title', 'in', `(${keep.map(t => `"${t.replace(/"/g,'')}"`).join(',')})`);
-        } else {
-          await sb.from('playmaker_plays').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        }
+        // DO NOT delete-not-in-keep. Earlier versions did this to mirror local → cloud, but it
+        // caused real data loss when local got out of sync (e.g. stale localStorage across devices,
+        // or first-load before a pull). Deletions now go through deletePlayFromCloud() which is
+        // called by the explicit delete-play UI only. Cloud rows that aren't in local just stay
+        // — pullAll will merge them back in on next load.
       } catch (e) { console.warn('pmCloud pushPlays failed', e); }
+    }
+    async function deletePlayFromCloud(title) {
+      try {
+        const { error } = await sb.from('playmaker_plays').delete().eq('title', title);
+        if (error) console.warn('pmCloud delete error', error);
+      } catch (e) { console.warn('pmCloud deletePlayFromCloud failed', e); }
     }
     async function pushFoldersNow(arr) {
       try {
@@ -2362,6 +2372,7 @@
     return {
       pushPlays: debouncePush(pushPlaysNow),
       pushFolders: debouncePush(pushFoldersNow),
+      deletePlay: deletePlayFromCloud,
       pullAll: async () => {
         try {
           const [pl, fol] = await Promise.all([
@@ -2417,13 +2428,11 @@
     pmCloud = pmBuildCloud();
     if (pmCloud) {
       window.__pmCloud = pmCloud;
-      // If user has plays in localStorage that haven't been pushed yet (because earlier saves
-      // happened before this layer was ready), push them now. Best-effort.
-      const localPlays = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
-      if (Object.keys(localPlays).length) pmCloud.pushPlays(localPlays);
-      const localFolders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || '[]');
-      if (localFolders.length) pmCloud.pushFolders(localFolders);
-      // Pull on unlock
+      // IMPORTANT: do NOT auto-push localStorage on init. An earlier version did this as a
+      // "best-effort recovery" but it caused real data loss — if localStorage was stale
+      // (e.g. 3 old plays from before cloud sync), the push would delete every newer play
+      // out of Supabase. Pull-only on init; user-triggered Import button is the only push
+      // of bulk localStorage.
       if (sessionStorage.getItem('playmaker_unlocked') === '1') bootCloud();
       else window.addEventListener('pm:unlocked', bootCloud, { once: true });
       return;
