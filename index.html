@@ -538,6 +538,44 @@
   .path-line.ball { stroke: var(--ball); stroke-dasharray: 5 4; }
   .path-pending { stroke-dasharray: 4 4; opacity: 0.7; }
 
+  /* ---------- Zones (defensive areas / annotations) ---------- */
+  .zone { cursor: grab; transition: opacity .15s; }
+  .zone:active { cursor: grabbing; }
+  .zone.selected { stroke-dasharray: 6 4; }
+  .zone-fill { fill-opacity: 0.18; stroke-width: 2; }
+  .zone-fill.selected { fill-opacity: 0.28; }
+  .zone-freehand { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; cursor: grab; }
+  .zone-freehand.selected { stroke-width: 4; }
+  .zone-handle {
+    fill: #fff; stroke: var(--gold); stroke-width: 1.6;
+    cursor: nwse-resize;
+  }
+  .zone-handle.h-ne, .zone-handle.h-sw { cursor: nesw-resize; }
+  body.pm-drawing svg.court { cursor: crosshair !important; }
+  body.pm-drawing .player, body.pm-drawing .ball, body.pm-drawing .zone { pointer-events: none !important; }
+
+  /* Color palette swatches in the right panel */
+  .swatch {
+    width: 22px; height: 22px; border-radius: 6px; border: 2px solid transparent;
+    cursor: pointer; display: inline-block; transition: .12s; padding: 0;
+  }
+  .swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--gold); }
+  .swatch:hover { transform: scale(1.08); }
+
+  /* Floating zone edit popup */
+  .zone-popup {
+    position: absolute; z-index: 50;
+    background: var(--panel-solid); border: 1px solid var(--border-strong);
+    border-radius: 10px; padding: 8px 10px; display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
+  }
+  .zone-popup .swatch { width: 18px; height: 18px; }
+  .zone-popup button {
+    background: rgba(232,90,85,0.15); color: #ff8a80; border: 1px solid rgba(232,90,85,0.4);
+    border-radius: 8px; padding: 4px 9px; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  .zone-popup button:hover { background: rgba(232,90,85,0.25); }
+
   /* ---------- Toast ---------- */
   .toast {
     position: fixed;
@@ -746,6 +784,10 @@
       <!-- Half-court line (near bottom edge of half-court view) -->
       <line x1="0" y1="468" x2="500" y2="468" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
 
+      <!-- Zones group (behind everything else, rendered by JS from state.zones) -->
+      <g id="zones"></g>
+      <!-- Free-draw preview path (live during drag) -->
+      <path id="freeDrawPreview" fill="none" stroke="#FFD24D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" pointer-events="none" />
       <!-- Path overlay group (behind entities) -->
       <g id="paths"></g>
       <!-- Entities (players + ball) rendered by JS -->
@@ -778,6 +820,22 @@
       <div id="pmImportRow" style="display:none;margin-top:10px;padding:9px 11px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.28);border-radius:10px;font-size:12.5px;color:var(--ink-2);display:none;align-items:center;gap:8px;flex-wrap:wrap">
         <span id="pmImportText">You have local plays not yet in the cloud.</span>
         <button class="ghost" id="pmImportBtn" style="margin-left:auto">Import to cloud</button>
+      </div>
+    </div>
+
+    <!-- Zones (defensive areas, lanes, freehand annotations) — added 2026-05-19 -->
+    <div class="section">
+      <div class="section-title">Zones &amp; Annotations</div>
+      <div class="row" style="gap:6px;flex-wrap:wrap">
+        <button class="ghost" id="addOvalBtn" type="button" title="Add an oval zone">⬭ Oval</button>
+        <button class="ghost" id="addRectBtn" type="button" title="Add a rectangle zone">▭ Rect</button>
+        <button class="ghost" id="addFreeBtn" type="button" title="Free-draw a path">✏️ Draw</button>
+      </div>
+      <div class="row" id="zoneColorPalette" style="gap:5px;margin-top:8px;flex-wrap:wrap">
+        <!-- color swatches injected by JS -->
+      </div>
+      <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
+        Static shapes on the court — defensive zones, lanes, areas. Tap to select &amp; drag to move; corner handles to resize. They save with the play.
       </div>
     </div>
 
@@ -933,13 +991,19 @@
     showDefense: false,
     isPlaying: false,
     speed: 1.0,
-    ballHolder: null      // id of the player currently holding the ball, or null
+    ballHolder: null,     // id of the player currently holding the ball, or null
+    zones: [],            // [{id, shape:'oval'|'rect'|'freehand', x,y,w,h | d, color}]
+    selectedZoneId: null,
+    drawMode: false,      // when true, pointer events on court draw a freehand path
+    zoneColor: '#FFD24D'  // current paint color for new shapes
   };
 
   // ---------- DOM refs ----------
   const svg = document.getElementById('court');
   const entitiesGroup = document.getElementById('entities');
   const pathsGroup = document.getElementById('paths');
+  const zonesGroup = document.getElementById('zones');
+  const ZONE_COLORS = ['#FFD24D','#5BA8F0','#E85A55','#3FB984','#B47BFF','#F0A830','#FFFFFF','#000000'];
 
   // ---------- Visibility ----------
   function visibleIds() {
@@ -1110,7 +1174,251 @@
     });
   }
 
-  function renderAll() { renderEntities(); renderPaths(); renderSteps(); }
+  function renderAll() { renderEntities(); renderPaths(); renderSteps(); renderZones(); }
+
+  // ──────────────────────── Zones (defensive areas, lanes, freehand) ────────────────────────
+  function renderZones() {
+    zonesGroup.innerHTML = '';
+    const popupHost = document.getElementById('zonePopup');
+    if (popupHost) popupHost.remove();
+    for (const z of state.zones) {
+      const isSelected = state.selectedZoneId === z.id;
+      if (z.shape === 'freehand') {
+        const p = document.createElementNS(NS, 'path');
+        p.setAttribute('class', 'zone zone-freehand' + (isSelected ? ' selected' : ''));
+        p.setAttribute('d', z.d || '');
+        p.setAttribute('stroke', z.color);
+        p.dataset.zoneId = z.id;
+        zonesGroup.appendChild(p);
+      } else if (z.shape === 'oval') {
+        const e = document.createElementNS(NS, 'ellipse');
+        e.setAttribute('class', 'zone zone-fill' + (isSelected ? ' selected' : ''));
+        e.setAttribute('cx', z.x + z.w / 2);
+        e.setAttribute('cy', z.y + z.h / 2);
+        e.setAttribute('rx', Math.max(2, z.w / 2));
+        e.setAttribute('ry', Math.max(2, z.h / 2));
+        e.setAttribute('fill', z.color);
+        e.setAttribute('stroke', z.color);
+        e.dataset.zoneId = z.id;
+        zonesGroup.appendChild(e);
+      } else { // 'rect'
+        const r = document.createElementNS(NS, 'rect');
+        r.setAttribute('class', 'zone zone-fill' + (isSelected ? ' selected' : ''));
+        r.setAttribute('x', z.x); r.setAttribute('y', z.y);
+        r.setAttribute('width', Math.max(2, z.w));
+        r.setAttribute('height', Math.max(2, z.h));
+        r.setAttribute('rx', 4);
+        r.setAttribute('fill', z.color);
+        r.setAttribute('stroke', z.color);
+        r.dataset.zoneId = z.id;
+        zonesGroup.appendChild(r);
+      }
+      if (isSelected && z.shape !== 'freehand') {
+        // Render 4 corner handles for resize
+        const corners = [
+          { cx: z.x,         cy: z.y,         cls: 'h-nw' },
+          { cx: z.x + z.w,   cy: z.y,         cls: 'h-ne' },
+          { cx: z.x,         cy: z.y + z.h,   cls: 'h-sw' },
+          { cx: z.x + z.w,   cy: z.y + z.h,   cls: 'h-se' },
+        ];
+        for (const c of corners) {
+          const h = document.createElementNS(NS, 'circle');
+          h.setAttribute('class', 'zone-handle ' + c.cls);
+          h.setAttribute('cx', c.cx); h.setAttribute('cy', c.cy);
+          h.setAttribute('r', 7);
+          h.dataset.zoneId = z.id;
+          h.dataset.handle = c.cls;
+          zonesGroup.appendChild(h);
+        }
+      }
+    }
+    renderZonePopup();
+  }
+
+  function renderZonePopup() {
+    const existing = document.getElementById('zonePopup');
+    if (existing) existing.remove();
+    if (!state.selectedZoneId) return;
+    const z = state.zones.find(x => x.id === state.selectedZoneId);
+    if (!z) return;
+    // Compute popup position above the shape (in SVG client coords)
+    let anchorEl;
+    if (z.shape === 'freehand') {
+      anchorEl = zonesGroup.querySelector(`[data-zone-id="${z.id}"]`);
+    } else {
+      anchorEl = zonesGroup.querySelector(`[data-zone-id="${z.id}"]`);
+    }
+    if (!anchorEl) return;
+    const bb = anchorEl.getBoundingClientRect();
+    const popup = document.createElement('div');
+    popup.id = 'zonePopup';
+    popup.className = 'zone-popup';
+    popup.style.left = (bb.left + bb.width / 2) + 'px';
+    popup.style.top = (bb.top - 44) + 'px';
+    popup.style.transform = 'translateX(-50%)';
+    for (const c of ZONE_COLORS) {
+      const sw = document.createElement('button');
+      sw.className = 'swatch' + (z.color === c ? ' active' : '');
+      sw.style.background = c;
+      sw.title = c;
+      sw.addEventListener('click', (e) => { e.stopPropagation(); z.color = c; renderZones(); zonesChanged(); });
+      popup.appendChild(sw);
+    }
+    const del = document.createElement('button');
+    del.textContent = '× Delete';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation();
+      state.zones = state.zones.filter(x => x.id !== z.id);
+      state.selectedZoneId = null;
+      renderZones();
+      zonesChanged();
+    });
+    popup.appendChild(del);
+    document.body.appendChild(popup);
+  }
+
+  function zonesChanged() {
+    // Persist on the current play if there's a title set. Otherwise just update local cache.
+    const name = (document.getElementById('title').value || '').trim();
+    if (!name) return; // nothing to save under
+    const plays = getPlays();
+    if (plays[name]) {
+      plays[name].zones = clone(state.zones);
+      setPlays(plays);
+    }
+  }
+
+  function newZoneId() { return 'z_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7); }
+
+  function addZone(shape) {
+    pushHistory();
+    state.selectedZoneId = null;
+    if (shape === 'freehand') {
+      // Free-draw mode: next pointerdown on court starts a path
+      state.drawMode = true;
+      document.body.classList.add('pm-drawing');
+      toast('Draw mode — click & drag on the court');
+      return;
+    }
+    const z = {
+      id: newZoneId(),
+      shape, // 'oval' or 'rect'
+      x: 170, y: 180,
+      w: shape === 'oval' ? 160 : 140,
+      h: shape === 'oval' ? 100 : 110,
+      color: state.zoneColor
+    };
+    state.zones.push(z);
+    state.selectedZoneId = z.id;
+    renderZones();
+    zonesChanged();
+  }
+
+  // SVG client coords → user (viewBox) coords
+  function svgPoint(evt) {
+    const rect = svg.getBoundingClientRect();
+    const x = (evt.clientX - rect.left) / rect.width * 500;
+    const y = (evt.clientY - rect.top) / rect.height * 470;
+    return { x: Math.max(0, Math.min(500, x)), y: Math.max(0, Math.min(470, y)) };
+  }
+
+  // Zone interactions on the SVG: click to select; drag body to move; drag handle to resize
+  let zoneDrag = null; // { id, mode:'move'|'resize', handle, startPt, startBox }
+  svg.addEventListener('pointerdown', (evt) => {
+    if (state.drawMode) { startFreeDraw(evt); return; }
+    const target = evt.target.closest('[data-zone-id]');
+    if (!target) return; // not a zone interaction — let other handlers run
+    const id = target.dataset.zoneId;
+    const z = state.zones.find(x => x.id === id);
+    if (!z) return;
+    evt.stopPropagation(); // prevent player drag etc
+    state.selectedZoneId = id;
+    const pt = svgPoint(evt);
+    if (target.dataset.handle) {
+      zoneDrag = { id, mode: 'resize', handle: target.dataset.handle, startPt: pt, startBox: { x: z.x, y: z.y, w: z.w, h: z.h } };
+    } else {
+      zoneDrag = { id, mode: 'move', startPt: pt, startBox: { x: z.x, y: z.y, w: z.w, h: z.h } };
+    }
+    try { svg.setPointerCapture(evt.pointerId); } catch {}
+    renderZones();
+  });
+  svg.addEventListener('pointermove', (evt) => {
+    if (state.drawMode && freeDraw.active) { continueFreeDraw(evt); return; }
+    if (!zoneDrag) return;
+    const z = state.zones.find(x => x.id === zoneDrag.id);
+    if (!z) return;
+    const pt = svgPoint(evt);
+    const dx = pt.x - zoneDrag.startPt.x;
+    const dy = pt.y - zoneDrag.startPt.y;
+    const b = zoneDrag.startBox;
+    if (zoneDrag.mode === 'move') {
+      z.x = b.x + dx;
+      z.y = b.y + dy;
+    } else { // resize
+      const h = zoneDrag.handle;
+      if (h === 'h-se') { z.w = Math.max(10, b.w + dx); z.h = Math.max(10, b.h + dy); }
+      else if (h === 'h-sw') { z.x = b.x + dx; z.w = Math.max(10, b.w - dx); z.h = Math.max(10, b.h + dy); }
+      else if (h === 'h-ne') { z.w = Math.max(10, b.w + dx); z.y = b.y + dy; z.h = Math.max(10, b.h - dy); }
+      else if (h === 'h-nw') { z.x = b.x + dx; z.y = b.y + dy; z.w = Math.max(10, b.w - dx); z.h = Math.max(10, b.h - dy); }
+    }
+    renderZones();
+  });
+  function endZoneDrag(evt) {
+    if (state.drawMode && freeDraw.active) { finishFreeDraw(evt); return; }
+    if (!zoneDrag) return;
+    zoneDrag = null;
+    zonesChanged();
+  }
+  svg.addEventListener('pointerup', endZoneDrag);
+  svg.addEventListener('pointercancel', endZoneDrag);
+  // Click on empty court area → deselect (without disturbing player interactions)
+  svg.addEventListener('click', (evt) => {
+    if (state.drawMode) return;
+    if (evt.target.closest('[data-zone-id]')) return; // clicks on zone handled above
+    if (evt.target.closest('.player') || evt.target.closest('.ball')) return; // players handle their own
+    if (state.selectedZoneId) { state.selectedZoneId = null; renderZones(); }
+  });
+
+  // Free-draw mode (✏️)
+  const freeDraw = { active: false, pts: [], lastPt: null };
+  function startFreeDraw(evt) {
+    const pt = svgPoint(evt);
+    freeDraw.active = true;
+    freeDraw.pts = [pt];
+    freeDraw.lastPt = pt;
+    try { svg.setPointerCapture(evt.pointerId); } catch {}
+    const preview = document.getElementById('freeDrawPreview');
+    preview.setAttribute('stroke', state.zoneColor);
+    preview.setAttribute('d', `M ${pt.x} ${pt.y}`);
+    evt.preventDefault();
+  }
+  function continueFreeDraw(evt) {
+    const pt = svgPoint(evt);
+    if (!freeDraw.lastPt) return;
+    if (Math.hypot(pt.x - freeDraw.lastPt.x, pt.y - freeDraw.lastPt.y) < 4) return; // smoothing: skip tiny moves
+    freeDraw.pts.push(pt);
+    freeDraw.lastPt = pt;
+    const d = 'M ' + freeDraw.pts.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ');
+    document.getElementById('freeDrawPreview').setAttribute('d', d);
+  }
+  function finishFreeDraw(evt) {
+    if (!freeDraw.active) return;
+    freeDraw.active = false;
+    document.body.classList.remove('pm-drawing');
+    state.drawMode = false;
+    const preview = document.getElementById('freeDrawPreview');
+    const d = preview.getAttribute('d');
+    preview.setAttribute('d', '');
+    if (!d || freeDraw.pts.length < 2) { return; } // too short, ignore
+    const z = { id: newZoneId(), shape: 'freehand', d, color: state.zoneColor };
+    pushHistory();
+    state.zones.push(z);
+    state.selectedZoneId = z.id;
+    renderZones();
+    zonesChanged();
+  }
+
+  // ──────────────────────── End zones module ────────────────────────
 
   // ---------- Steps ----------
   function snapshot() {
@@ -1697,6 +2005,7 @@
       title: name,
       folder,
       steps: state.steps,
+      zones: clone(state.zones),
       savedAt: Date.now(),
       team_visible: teamVisible,
       team_category: teamVisible ? teamCategory : null,
@@ -1724,6 +2033,8 @@
     }
     document.getElementById('teamShare').checked = !!p.team_visible;
     document.getElementById('teamCategory').value = p.team_category || '';
+    state.zones = Array.isArray(p.zones) ? clone(p.zones) : [];
+    state.selectedZoneId = null;
     if (state.steps.length) loadStep(0);
     else renderAll();
     toast(`Loaded "${name}"`, 'success');
@@ -1737,6 +2048,8 @@
     state.steps = [];
     state.activeStep = -1;
     state.pendingPaths = {};
+    state.zones = [];
+    state.selectedZoneId = null;
     state.entities = clone(STARTING);
     state.ballHolder = detectBallHolder();
     renderAll();
@@ -1773,6 +2086,56 @@
   document.getElementById('resetBtn').addEventListener('click', resetPositions);
   document.getElementById('saveBtn').addEventListener('click', savePlay);
   document.getElementById('newPlayBtn').addEventListener('click', startNewPlay);
+
+  // Zone toolbar buttons
+  document.getElementById('addOvalBtn').addEventListener('click', () => addZone('oval'));
+  document.getElementById('addRectBtn').addEventListener('click', () => addZone('rect'));
+  document.getElementById('addFreeBtn').addEventListener('click', () => addZone('freehand'));
+  // Color palette swatches
+  const palette = document.getElementById('zoneColorPalette');
+  for (const c of ZONE_COLORS) {
+    const sw = document.createElement('button');
+    sw.className = 'swatch' + (c === state.zoneColor ? ' active' : '');
+    sw.style.background = c;
+    sw.title = c;
+    sw.type = 'button';
+    sw.addEventListener('click', () => {
+      state.zoneColor = c;
+      [...palette.children].forEach(el => el.classList.toggle('active', el === sw));
+      // If a shape is selected, recolor it
+      if (state.selectedZoneId) {
+        const z = state.zones.find(x => x.id === state.selectedZoneId);
+        if (z) { z.color = c; renderZones(); zonesChanged(); }
+      }
+    });
+    palette.appendChild(sw);
+  }
+  // Deselect on Escape; reposition popup on window scroll/resize
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (state.drawMode) {
+        state.drawMode = false;
+        document.body.classList.remove('pm-drawing');
+        document.getElementById('freeDrawPreview').setAttribute('d', '');
+        toast('Draw mode canceled');
+      } else if (state.selectedZoneId) {
+        state.selectedZoneId = null; renderZones();
+      }
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      // Don't intercept when typing in an input/textarea
+      const a = document.activeElement;
+      if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) return;
+      if (state.selectedZoneId) {
+        state.zones = state.zones.filter(z => z.id !== state.selectedZoneId);
+        state.selectedZoneId = null;
+        renderZones();
+        zonesChanged();
+        e.preventDefault();
+      }
+    }
+  });
+  window.addEventListener('scroll', () => { if (state.selectedZoneId) renderZonePopup(); }, { passive: true });
+  window.addEventListener('resize', () => { if (state.selectedZoneId) renderZonePopup(); });
   document.getElementById('newFolderBtn').addEventListener('click', () => {
     const name = (prompt('New folder name:') || '').trim();
     if (!name) return;
@@ -1965,6 +2328,7 @@
           title: p.title,
           folder: p.folder || 'Offense',
           steps: p.steps || [],
+          zones: Array.isArray(p.zones) ? p.zones : [],
           team_visible: !!p.team_visible,
           team_category: p.team_category || null,
           updated_at: new Date().toISOString(),
@@ -2009,6 +2373,7 @@
               title: r.title,
               folder: r.folder,
               steps: r.steps || [],
+              zones: Array.isArray(r.zones) ? r.zones : [],
               savedAt: r.updated_at ? new Date(r.updated_at).getTime() : Date.now(),
               team_visible: !!r.team_visible,
               team_category: r.team_category || null,

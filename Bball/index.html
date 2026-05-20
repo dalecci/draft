@@ -354,6 +354,8 @@
   .play-modal svg.court .pl-circle.defense{fill:url(#defenseGradB)}
   .play-modal svg.court .pl-label{font:700 13px Inter,sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
   .play-modal svg.court .pl-ball{fill:url(#ballGradB);stroke:#5a3a10;stroke-width:1.2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+  .play-modal svg.court .pl-zone-fill{fill-opacity:.18;stroke-width:2;pointer-events:none}
+  .play-modal svg.court .pl-zone-freehand{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
   .play-modal .ctrl{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0a0a0c;border-top:1px solid var(--border);flex:none;flex-wrap:wrap}
   .play-modal .ctrl button{background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
   .play-modal .ctrl button:hover{border-color:var(--border-2)}
@@ -680,6 +682,7 @@
         <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>
         <path d="M 210 55 A 40 40 0 0 0 290 55" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
         <line x1="0" y1="468" x2="500" y2="468" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+        <g id="pv-zones"></g>
         <g id="pv-entities"></g>
       </svg>
     </div>
@@ -1125,6 +1128,32 @@ function buildCourtPreviewSVG(play) {
     <path d="M 190 190 A 60 60 0 0 1 310 190" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2"/>
     <line x1="220" y1="40" x2="280" y2="40" stroke="#fff" stroke-width="3"/>
     <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>`;
+  // Render zones underneath the entities in the preview too
+  for (const z of (play.zones || [])) {
+    let el;
+    if (z.shape === 'freehand') {
+      el = document.createElementNS(svgNS, 'path');
+      el.setAttribute('d', z.d || ''); el.setAttribute('fill', 'none');
+      el.setAttribute('stroke', z.color || '#FFD24D'); el.setAttribute('stroke-width', '3');
+      el.setAttribute('stroke-linecap', 'round'); el.setAttribute('stroke-linejoin', 'round');
+    } else if (z.shape === 'oval') {
+      el = document.createElementNS(svgNS, 'ellipse');
+      el.setAttribute('cx', (z.x||0) + (z.w||0)/2);
+      el.setAttribute('cy', (z.y||0) + (z.h||0)/2);
+      el.setAttribute('rx', Math.max(2, (z.w||0)/2));
+      el.setAttribute('ry', Math.max(2, (z.h||0)/2));
+      el.setAttribute('fill', z.color || '#FFD24D'); el.setAttribute('fill-opacity', '0.18');
+      el.setAttribute('stroke', z.color || '#FFD24D'); el.setAttribute('stroke-width', '2');
+    } else {
+      el = document.createElementNS(svgNS, 'rect');
+      el.setAttribute('x', z.x||0); el.setAttribute('y', z.y||0);
+      el.setAttribute('width', Math.max(2, z.w||0)); el.setAttribute('height', Math.max(2, z.h||0));
+      el.setAttribute('rx', 4);
+      el.setAttribute('fill', z.color || '#FFD24D'); el.setAttribute('fill-opacity', '0.18');
+      el.setAttribute('stroke', z.color || '#FFD24D'); el.setAttribute('stroke-width', '2');
+    }
+    if (el) svg.append(el);
+  }
   const step0 = (play.steps || [])[0];
   const positions = step0?.positions || step0 || {};
   for (const id in positions) {
@@ -1254,11 +1283,48 @@ function pvRunAnimation() {
   }
   playView.rafId = setTimeout(frame, 16);
 }
+function pvRenderZones(zones) {
+  const host = document.getElementById('pv-zones');
+  if (!host) return;
+  host.innerHTML = '';
+  if (!Array.isArray(zones)) return;
+  for (const z of zones) {
+    if (z.shape === 'freehand') {
+      const p = document.createElementNS(SVG_NS, 'path');
+      p.setAttribute('class', 'pl-zone-freehand');
+      p.setAttribute('d', z.d || '');
+      p.setAttribute('stroke', z.color || '#FFD24D');
+      host.appendChild(p);
+    } else if (z.shape === 'oval') {
+      const e = document.createElementNS(SVG_NS, 'ellipse');
+      e.setAttribute('class', 'pl-zone-fill');
+      e.setAttribute('cx', (z.x || 0) + (z.w || 0) / 2);
+      e.setAttribute('cy', (z.y || 0) + (z.h || 0) / 2);
+      e.setAttribute('rx', Math.max(2, (z.w || 0) / 2));
+      e.setAttribute('ry', Math.max(2, (z.h || 0) / 2));
+      e.setAttribute('fill', z.color || '#FFD24D');
+      e.setAttribute('stroke', z.color || '#FFD24D');
+      host.appendChild(e);
+    } else { // rect
+      const r = document.createElementNS(SVG_NS, 'rect');
+      r.setAttribute('class', 'pl-zone-fill');
+      r.setAttribute('x', z.x || 0); r.setAttribute('y', z.y || 0);
+      r.setAttribute('width', Math.max(2, z.w || 0));
+      r.setAttribute('height', Math.max(2, z.h || 0));
+      r.setAttribute('rx', 4);
+      r.setAttribute('fill', z.color || '#FFD24D');
+      r.setAttribute('stroke', z.color || '#FFD24D');
+      host.appendChild(r);
+    }
+  }
+}
+
 function openWarriorsPlay(play) {
   playView.play = play;
   playView.entitiesEl = document.getElementById('pv-entities');
   pvStop();
   pvClearEntities();
+  pvRenderZones(play.zones || []);
   const steps = play.steps || [];
   const step0 = steps[0]?.positions || steps[0] || {};
   pvRenderPositions(step0);
