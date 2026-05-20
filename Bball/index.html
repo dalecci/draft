@@ -227,10 +227,50 @@
   .modal .close{background:var(--surface-2);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--muted);flex:none}
   .modal .close:hover{color:var(--text)}
   .yt-wrap{position:relative;background:#000;aspect-ratio:16/9;flex:none}
-  .yt-wrap iframe,.yt-wrap > div{position:absolute;inset:0;width:100%;height:100%;border:0}
-  .progress-bar{height:3px;background:var(--surface-2);position:relative;flex:none}
-  .progress-bar .fill{height:100%;background:var(--accent);transition:width .3s}
-  .progress-bar .done-mark{position:absolute;top:0;bottom:0;left:90%;width:1px;background:var(--ok);opacity:.5}
+  .yt-wrap iframe,.yt-wrap > #ytplayer,.yt-wrap > #ytplayer iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .yt-tap{position:absolute;inset:0;z-index:5;cursor:pointer;background:transparent}
+  /* When in fullscreen, the frame fills the screen and yt-wrap takes the available height */
+  .modal .frame:fullscreen,.modal .frame:-webkit-full-screen{display:flex;flex-direction:column;background:#000}
+  .modal .frame:fullscreen .yt-wrap{flex:1;aspect-ratio:auto;height:auto}
+  .modal .frame:fullscreen .head,.modal .frame:fullscreen .body{display:none}
+
+  /* ---------- Custom video controls ---------- */
+  .vctrl{
+    display:flex;align-items:center;gap:8px;flex:none;
+    padding:8px 12px;background:#0a0a0c;border-top:1px solid var(--border);
+  }
+  .vc-btn{
+    background:transparent;color:var(--text);width:36px;height:36px;border-radius:8px;
+    display:grid;place-items:center;cursor:pointer;transition:.12s;flex:none;
+  }
+  .vc-btn:hover{background:var(--surface-2)}
+  .vc-btn:active{transform:scale(.94)}
+  .vc-time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:84px;font-weight:600;letter-spacing:.02em}
+  .vc-scrub-wrap{position:relative;flex:1;display:flex;align-items:center;height:36px}
+  .vc-scrub{
+    flex:1;height:18px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;margin:0;padding:0;width:100%;
+  }
+  .vc-scrub:focus{outline:none}
+  .vc-scrub::-webkit-slider-runnable-track{
+    height:5px;border-radius:3px;
+    background:linear-gradient(to right, var(--accent) 0%, var(--accent) var(--p,0%), #2a2a30 var(--p,0%), #2a2a30 100%);
+  }
+  .vc-scrub::-moz-range-track{height:5px;background:#2a2a30;border-radius:3px}
+  .vc-scrub::-moz-range-progress{height:5px;background:var(--accent);border-radius:3px}
+  .vc-scrub::-webkit-slider-thumb{
+    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--accent);margin-top:-4.5px;border:2px solid #fff;cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.4);transition:transform .1s;
+  }
+  .vc-scrub::-webkit-slider-thumb:hover,.vc-scrub:active::-webkit-slider-thumb{transform:scale(1.15)}
+  .vc-scrub::-moz-range-thumb{
+    width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #fff;cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  .vc-done-mark{
+    position:absolute;top:50%;left:90%;width:2px;height:8px;background:var(--ok);border-radius:1px;
+    transform:translate(-50%,-50%);opacity:.65;pointer-events:none;
+  }
   .modal .body{padding:16px;overflow:auto;flex:1;min-height:0}
   .modal .body .meta-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
   .modal .body .summary{color:var(--muted);line-height:1.6;white-space:pre-wrap}
@@ -282,6 +322,83 @@
   table.lb th{background:var(--surface-2);font-weight:700;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
   table.lb tr:last-child td{border-bottom:0}
   table.lb td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+  /* ---------- Lessons ---------- */
+  .lesson{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+    margin-bottom:14px;overflow:hidden;transition:.15s;
+  }
+  .lesson:hover{border-color:var(--border-2)}
+  .lesson.complete{border-color:rgba(63,185,132,.4)}
+  .lesson .lhead{
+    display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;user-select:none;
+  }
+  .lesson .lnum{
+    flex:none;width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#C24700);
+    display:grid;place-items:center;color:#fff;font-weight:900;font-size:18px;
+    box-shadow:0 4px 12px -6px var(--accent);
+  }
+  .lesson.complete .lnum{background:linear-gradient(135deg,#3FB984,#2A8160)}
+  .lesson .ltxt{flex:1;min-width:0}
+  .lesson .ltxt .t{font-size:16px;font-weight:800;letter-spacing:-.005em;margin-bottom:6px}
+  .lesson .ltxt .t small{font-weight:600;color:var(--muted);font-size:12px;margin-left:6px}
+  .lprog{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;position:relative}
+  .lprog .fill{height:100%;background:var(--accent);transition:width .35s;border-radius:3px}
+  .lesson.complete .lprog .fill{background:var(--ok)}
+  .lesson .larr{flex:none;color:var(--muted);font-size:18px;transition:transform .2s}
+  .lesson.open .larr{transform:rotate(90deg)}
+  .lesson .lbody{display:none;padding:0 18px 18px;border-top:1px solid var(--border);padding-top:14px}
+  .lesson.open .lbody{display:block}
+  .lesson-vid{
+    display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;
+    transition:.12s;margin-bottom:4px;
+  }
+  .lesson-vid:hover{background:var(--surface-2)}
+  .lesson-vid.next{background:var(--accent-soft);border:1px solid rgba(255,106,31,.3)}
+  .lesson-vid.next:hover{background:rgba(255,106,31,.18)}
+  .lesson-vid .lvn{
+    flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);
+    border:1px solid var(--border);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);
+  }
+  .lesson-vid.done .lvn{background:var(--ok);border-color:var(--ok);color:#fff}
+  .lesson-vid.next .lvn{background:var(--accent);border-color:var(--accent);color:#fff}
+  .lesson-vid .lvt{flex:1;font-size:14px;font-weight:600}
+  .lesson-vid .lvt small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;margin-top:1px}
+  .lesson-vid .lvc{flex:none;color:var(--muted);font-size:18px}
+
+  .continue-card{
+    background:linear-gradient(135deg,rgba(255,106,31,.18),rgba(255,106,31,.05));
+    border:1px solid rgba(255,106,31,.3);border-radius:var(--r-lg);padding:16px 18px;
+    margin-bottom:22px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.15s;
+  }
+  .continue-card:hover{transform:translateY(-1px);border-color:var(--accent)}
+  .continue-card .cc-ic{
+    flex:none;width:48px;height:48px;border-radius:12px;background:var(--accent);
+    display:grid;place-items:center;color:#fff;font-size:22px;
+  }
+  .continue-card .cc-t{flex:1;min-width:0}
+  .continue-card .cc-t .l{font-size:11px;color:var(--accent-2);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+  .continue-card .cc-t .b{font-size:15px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .continue-card .cc-arr{flex:none;color:var(--accent);font-size:22px}
+
+  .vcard .me-badge{
+    position:absolute;top:8px;left:8px;background:rgba(0,0,0,.7);color:#fff;
+    font-size:10px;font-weight:800;padding:3px 7px;border-radius:999px;letter-spacing:.04em;
+    text-transform:uppercase;backdrop-filter:blur(4px);display:flex;align-items:center;gap:4px;z-index:2;
+  }
+  .vcard .feat + .me-badge{top:36px}
+
+  /* Multi-select chip list (admin) */
+  .ms{
+    display:flex;flex-wrap:wrap;gap:6px;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:10px;padding:8px;min-height:48px;
+  }
+  .ms .pchip{
+    background:var(--card-hi);border:1px solid var(--border-2);padding:5px 11px;border-radius:999px;
+    font-size:12.5px;font-weight:600;cursor:pointer;transition:.12s;user-select:none;
+  }
+  .ms .pchip:hover{border-color:var(--accent-2)}
+  .ms .pchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 
   /* ---------- Doc reader ---------- */
   .doc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;line-height:1.7}
@@ -338,8 +455,11 @@
 
 <div class="shell">
   <aside class="side">
-    <h6>Training</h6>
+    <h6>Training Path</h6>
     <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
+    <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
+    <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Videos with me</div>
+    <h6>Library</h6>
     <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice Breakdown</div>
     <div class="subnav" id="sub-practice">
       <div class="navlink" data-route="#practice/offense">Offense</div>
@@ -359,9 +479,9 @@
 
 <nav class="botnav">
   <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
+  <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
   <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
-  <div class="navlink" data-route="#bball101"><span class="ic">📘</span> 101</div>
-  <div class="navlink" data-route="#nba"><span class="ic">🏆</span> NBA</div>
+  <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Mine</div>
   <div class="navlink" data-route="#notes"><span class="ic">📝</span> Notes</div>
 </nav>
 
@@ -377,13 +497,25 @@
 
 <!-- Video modal -->
 <div class="modal" id="vmodal" role="dialog" aria-modal="true">
-  <div class="frame">
+  <div class="frame" id="vm-frame">
     <div class="head">
       <h3 id="vm-title">Video</h3>
       <button class="close" id="vm-close" aria-label="Close">×</button>
     </div>
-    <div class="yt-wrap"><div id="ytplayer"></div></div>
-    <div class="progress-bar"><div class="fill" id="vm-fill"></div><div class="done-mark"></div></div>
+    <div class="yt-wrap" id="vm-ytwrap"><div id="ytplayer"></div><div class="yt-tap" id="vm-tap" title="Tap to play/pause"></div></div>
+    <div class="vctrl">
+      <button id="vm-play" class="vc-btn" aria-label="Play/Pause" title="Play/Pause">
+        <svg id="vm-play-svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <span id="vm-time" class="vc-time">0:00 / 0:00</span>
+      <div class="vc-scrub-wrap">
+        <input type="range" id="vm-scrub" class="vc-scrub" min="0" max="1000" value="0" step="1" aria-label="Seek" />
+        <div class="vc-done-mark" aria-hidden="true"></div>
+      </div>
+      <button id="vm-fs" class="vc-btn" aria-label="Fullscreen" title="Fullscreen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
     <div class="body">
       <div class="meta-row">
         <button class="star-btn" id="vm-star" aria-label="Star">★</button>
@@ -490,6 +622,31 @@ const vidsBySub = (sub) => state.videos.filter(v => v.category === 'practice' &&
 const sectionLabel = (k) => (state.settings.section_labels || {})[k] || k;
 const subcatLabel = (k) => (state.settings.subcat_labels || {})[k] || k;
 const ytThumb = (v) => v.custom_thumb || (v.youtube_id ? `https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg` : '');
+const levelTitleFor = (n) => (state.settings.level_titles || {})[String(n)] || '';
+const isTaggedMe = (v) => state.player && (v.tagged_player_ids || []).includes(state.player.id);
+const myTaggedVids = () => state.videos.filter(isTaggedMe);
+// Group leveled videos: { 1: [v,v,v], 2: [...], ... }
+function groupByLevel() {
+  const groups = new Map();
+  for (const v of state.videos) {
+    if (!v.level || v.category === 'welcome') continue;
+    if (!groups.has(v.level)) groups.set(v.level, []);
+    groups.get(v.level).push(v);
+  }
+  // Sort levels ascending; videos within a level by order_idx then title
+  const sorted = [...groups.entries()].sort((a,b) => a[0]-b[0]);
+  for (const [, list] of sorted) list.sort((a,b) => (a.order_idx||0)-(b.order_idx||0) || String(a.title).localeCompare(String(b.title)));
+  return sorted;
+}
+// Find the player's "next up" — first unfinished video in lowest incomplete level
+function nextUpLesson() {
+  const fin = finishedSetForPlayer();
+  for (const [lvl, vids] of groupByLevel()) {
+    const next = vids.find(v => !fin.has(v.id));
+    if (next) return { level: lvl, video: next, totalInLevel: vids.length, doneInLevel: vids.filter(v => fin.has(v.id)).length };
+  }
+  return null;
+}
 
 // ---------- Player picker ----------
 function renderPicker() {
@@ -538,11 +695,12 @@ function parseHash() {
 function route() {
   const { path, query } = parseHash();
   state.route = path; state.query = query;
-  // highlight active nav
+  const top = path.split('/')[0];
   $$('.navlink').forEach(n => {
     const r = n.getAttribute('data-route');
     if (!r) return;
-    const active = (r === '#' + path) || (path.startsWith('practice') && r === '#practice') || (path.startsWith('practice/') && r === '#' + path);
+    // exact match, OR parent of a deep route (e.g. #notes highlights when on notes/<id>)
+    const active = (r === '#' + path) || (r === '#' + top);
     n.classList.toggle('active', active);
   });
   render();
@@ -555,6 +713,8 @@ function render() {
   const v = $('#view'); v.innerHTML = '';
   const parts = state.route.split('/');
   if (parts[0] === 'home' || parts[0] === '') return renderHome(v);
+  if (parts[0] === 'lessons') return renderLessons(v, parts[1]);
+  if (parts[0] === 'mine') return renderMine(v);
   if (parts[0] === 'practice') return renderPractice(v, parts[1]);
   if (parts[0] === 'bball101') return renderCategory(v, '101', sectionLabel('101'));
   if (parts[0] === 'nba') return renderCategory(v, 'nba', sectionLabel('nba'));
@@ -583,6 +743,30 @@ function welcomeHero() {
 
 function renderHome(v) {
   v.append(welcomeHero());
+  // Continue training (Lessons CTA)
+  const nu = nextUpLesson();
+  if (nu) {
+    const lt = levelTitleFor(nu.level);
+    const card = el('div', { class: 'continue-card' });
+    card.innerHTML = `
+      <div class="cc-ic">🎯</div>
+      <div class="cc-t">
+        <div class="l">Continue your training · Level ${nu.level}${lt ? ' · ' + esc(lt) : ''} · ${nu.doneInLevel}/${nu.totalInLevel} done</div>
+        <div class="b">${esc(nu.video.title)}</div>
+      </div>
+      <div class="cc-arr">→</div>`;
+    card.addEventListener('click', () => openVideo(nu.video));
+    v.append(card);
+  }
+  // Videos I'm tagged in (small teaser)
+  const mine = myTaggedVids().slice(0, 4);
+  if (mine.length) {
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>⭐ You're in these <span class="count">${myTaggedVids().length}</span><span class="more" data-go="#mine">See all →</span></h2>`;
+    sec.append(buildVidGrid(mine));
+    sec.querySelector('.more')?.addEventListener('click', () => go('#mine'));
+    v.append(sec);
+  }
   // Dale's Top Picks
   const featured = featuredVids();
   if (featured.length) {
@@ -617,6 +801,74 @@ function renderHome(v) {
     e.innerHTML = `<div class="ic">📼</div><h3>No videos yet</h3><p>Coach Dale is loading up the playlist. Check back soon.</p>`;
     v.append(e);
   }
+}
+
+function renderLessons(v, levelKey) {
+  const groups = groupByLevel();
+  const fin = finishedSetForPlayer();
+  v.append(buildSectionHeader('🎯', 'Lessons — your training path', groups.length));
+  if (!groups.length) { v.append(emptyState('Coach Dale is building the lesson path. Check back soon.')); return; }
+  // overall progress
+  const totalLeveled = groups.reduce((a, [,list]) => a + list.length, 0);
+  const totalDone = groups.reduce((a, [,list]) => a + list.filter(x => fin.has(x.id)).length, 0);
+  const summary = el('div', { class: 'continue-card', style: 'cursor:default' });
+  summary.innerHTML = `
+    <div class="cc-ic">📈</div>
+    <div class="cc-t">
+      <div class="l">Overall progress</div>
+      <div class="b">${totalDone} of ${totalLeveled} lessons finished</div>
+      <div class="lprog" style="margin-top:8px"><div class="fill" style="width:${totalLeveled ? Math.round(totalDone/totalLeveled*100) : 0}%"></div></div>
+    </div>`;
+  v.append(summary);
+
+  const openLevel = levelKey ? parseInt(levelKey, 10) : null;
+  const nu = nextUpLesson();
+  const wrap = el('div');
+  for (const [lvl, vids] of groups) {
+    const done = vids.filter(x => fin.has(x.id)).length;
+    const total = vids.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const complete = total > 0 && done === total;
+    const lt = levelTitleFor(lvl);
+    const card = el('div', { class: 'lesson' + (complete ? ' complete' : '') + ((openLevel === lvl || (!openLevel && nu && nu.level === lvl)) ? ' open' : '') });
+    const head = el('div', { class: 'lhead' });
+    head.innerHTML = `
+      <div class="lnum">${complete ? '✓' : lvl}</div>
+      <div class="ltxt">
+        <div class="t">Level ${lvl}${lt ? ` <small>· ${esc(lt)}</small>` : ''} <small>· ${done}/${total} done</small></div>
+        <div class="lprog"><div class="fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="larr">›</div>`;
+    head.addEventListener('click', () => card.classList.toggle('open'));
+    card.append(head);
+    const body = el('div', { class: 'lbody' });
+    vids.forEach((vd, i) => {
+      const isDone = fin.has(vd.id);
+      const isNext = !isDone && (nu && nu.video.id === vd.id);
+      const row = el('div', { class: 'lesson-vid' + (isDone ? ' done' : '') + (isNext ? ' next' : '') });
+      const dur = vd.duration_min ? `${vd.duration_min} min` : '';
+      const subc = vd.sub_cat ? subcatLabel(vd.sub_cat) : sectionLabel(vd.category);
+      row.innerHTML = `
+        <div class="lvn">${isDone ? '✓' : (isNext ? '▶' : i+1)}</div>
+        <div class="lvt">${esc(vd.title)}${isNext ? ' <span style="color:var(--accent);font-size:11px;font-weight:700;margin-left:6px">NEXT UP</span>' : ''}<small>${esc(subc)}${dur ? ' · ' + dur : ''}${viewsCountForVideo(vd.id) ? ' · watched '+viewsCountForVideo(vd.id)+'×' : ''}</small></div>
+        <div class="lvc">▶</div>`;
+      row.addEventListener('click', () => openVideo(vd));
+      body.append(row);
+    });
+    card.append(body);
+    wrap.append(card);
+  }
+  v.append(wrap);
+}
+
+function renderMine(v) {
+  v.append(buildSectionHeader('⭐', 'Videos with me', myTaggedVids().length));
+  const sub = el('div', { class: 'empty', style: 'padding:14px 4px;text-align:left;color:var(--muted);font-size:13.5px' });
+  sub.innerHTML = `Clips Coach Dale tagged you in — your reps, your moments, your matchups.`;
+  v.append(sub);
+  const list = myTaggedVids();
+  if (!list.length) { v.append(emptyState("Coach hasn't tagged you in any clips yet — check back after the next practice.")); return; }
+  v.append(buildVidGrid(list));
 }
 
 function renderPractice(v, sub) {
@@ -711,6 +963,7 @@ function buildVidGrid(videos) {
     if (v.youtube_id || v.custom_thumb) thumb.innerHTML = `<img src="${esc(ytThumb(v))}" alt="" loading="lazy" />`;
     else thumb.innerHTML = `<div style="display:grid;place-items:center;width:100%;height:100%;color:var(--faint);font-size:30px">📼</div>`;
     if (v.featured) thumb.append(el('div', { class: 'feat' }, 'Top Pick'));
+    if (isTaggedMe(v)) thumb.append(el('div', { class: 'me-badge' }, "🎯 You're in this"));
     if (finished.has(v.id)) thumb.append(el('div', { class: 'ok', 'aria-label':'Finished' }, '✓'));
     thumb.append(el('div', { class: 'play' }, `<svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>`));
     if (v.duration_min) thumb.append(el('div', { class: 'dur' }, `${v.duration_min}m`));
@@ -766,9 +1019,10 @@ async function openVideo(v) {
   setStar();
   starBtn.onclick = async () => { await toggleStar(v.id); setStar(); };
   $('#vm-views').textContent = viewsCountForVideo(v.id) ? `You've finished this ${viewsCountForVideo(v.id)}×` : '';
-  $('#vm-fill').style.width = '0%';
+  setScrub(0); $('#vm-time').textContent = '0:00 / 0:00';
   $('#vm-pct').textContent = 'Watched 0%';
   $('#vm-pct').classList.remove('ok');
+  setPlayIcon(false);
   $('#vmodal').classList.add('on');
   document.body.style.overflow = 'hidden';
   await loadYouTubeAPI();
@@ -777,13 +1031,28 @@ async function openVideo(v) {
   const wrap = document.createElement('div'); wrap.id = 'ytplayer-inner'; $('#ytplayer').append(wrap);
   state.videoPlayer = new YT.Player('ytplayer-inner', {
     videoId: v.youtube_id,
-    playerVars: { autoplay: 1, modestbranding: 1, rel: 0, playsinline: 1 },
+    playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0, playsinline: 1, iv_load_policy: 3 },
     events: {
-      onReady: () => startVideoPolling(),
-      onStateChange: (e) => { if (e.data === YT.PlayerState.PLAYING) startVideoPolling(); else stopVideoPolling(); },
+      onReady: () => { startVideoPolling(); setPlayIcon(true); },
+      onStateChange: (e) => {
+        if (e.data === YT.PlayerState.PLAYING) { startVideoPolling(); setPlayIcon(true); }
+        else if (e.data === YT.PlayerState.PAUSED) { stopVideoPolling(); setPlayIcon(false); updateVideoProgress(); }
+        else if (e.data === YT.PlayerState.ENDED) { stopVideoPolling(); setPlayIcon(false); }
+        else { stopVideoPolling(); }
+      },
     }
   });
 }
+function setScrub(pct) {
+  const s = $('#vm-scrub'); s.value = Math.round(pct * 10);
+  s.style.setProperty('--p', pct + '%');
+}
+function setPlayIcon(playing) {
+  const svg = $('#vm-play-svg');
+  if (playing) svg.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  else svg.innerHTML = '<path d="M8 5v14l11-7z"/>';
+}
+const fmtTime = (s) => { if (!isFinite(s)) return '0:00'; const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; };
 function startVideoPolling() {
   stopVideoPolling();
   state.videoPollTimer = setInterval(updateVideoProgress, 1000);
@@ -794,7 +1063,8 @@ async function updateVideoProgress() {
   const dur = p.getDuration(); const cur = p.getCurrentTime();
   if (!dur) return;
   const pct = Math.min(100, (cur / dur) * 100);
-  $('#vm-fill').style.width = pct + '%';
+  if (!state.scrubbing) setScrub(pct);
+  $('#vm-time').textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
   $('#vm-pct').textContent = `Watched ${Math.round(pct)}%`;
   if (pct >= 90 && !state.recordedThisPlay) {
     state.recordedThisPlay = true;
@@ -808,7 +1078,24 @@ async function updateVideoProgress() {
     }
   }
 }
+function togglePlay() {
+  const p = state.videoPlayer; if (!p || typeof p.getPlayerState !== 'function') return;
+  const s = p.getPlayerState();
+  if (s === YT.PlayerState.PLAYING) p.pauseVideo();
+  else p.playVideo();
+}
+function toggleFullscreen() {
+  const f = $('#vm-frame');
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    (f.requestFullscreen || f.webkitRequestFullscreen)?.call(f).catch(()=>{});
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
+  }
+}
 function closeVideo() {
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
+  }
   $('#vmodal').classList.remove('on');
   document.body.style.overflow = '';
   stopVideoPolling();
@@ -938,7 +1225,15 @@ function renderAdminVideos(v, vidId) {
     sec.innerHTML = `<h2>${esc(sectionLabel(c))} <span class="count">${list.length}</span></h2>`;
     for (const vd of list) {
       const row = el('div', { class: 'admin-row' });
-      row.innerHTML = `<div class="t"><b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${esc(vd.youtube_id || 'no video')}${vd.sub_cat ? ' · '+esc(subcatLabel(vd.sub_cat)) : ''}${(vd.tags||[]).length ? ' · '+esc((vd.tags||[]).join(', ')) : ''}</small></div><div class="actions"></div>`;
+      const taggedN = (vd.tagged_player_ids||[]).length;
+      const bits = [
+        esc(vd.youtube_id || 'no video'),
+        vd.sub_cat ? esc(subcatLabel(vd.sub_cat)) : null,
+        vd.level ? `L${vd.level}` : null,
+        taggedN ? `🎯 ${taggedN}` : null,
+        (vd.tags||[]).length ? esc((vd.tags||[]).join(', ')) : null,
+      ].filter(Boolean).join(' · ');
+      row.innerHTML = `<div class="t"><b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${bits}</small></div><div class="actions"></div>`;
       const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
       editBtn.addEventListener('click', () => go(`#admin/videos/${vd.id}`));
       const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
@@ -983,8 +1278,21 @@ function renderVideoForm(v, vd) {
   opts.append(mk('Order (lower = first)', `<input id="f_order" type="number" value="${esc(data.order_idx||0)}">`));
   opts.append(mk('Featured (Top Picks)', `<select id="f_feat"><option value="false">No</option><option value="true">Yes</option></select>`));
   form.append(opts);
+  form.append(mk('Lesson level', `<input id="f_level" type="number" min="1" max="50" placeholder="e.g. 1" value="${esc(vd?.level ?? '')}">`, 'Leave blank if this video is not part of the Lessons path. Set a number (1, 2, 3...) to place it in that level. Order within a level uses the "Order" field above.'));
+  // Tagged players multi-select
+  const taggedNow = new Set((vd?.tagged_player_ids) || []);
+  const taggedBox = el('div', { class: 'field' });
+  taggedBox.innerHTML = `<label>Tagged players (who appears in this clip)</label><div class="ms" id="f_tagged"></div><div class="hint">Tap names to toggle. They'll see this in "Videos with me."</div>`;
+  form.append(taggedBox);
   v.append(form);
   $('#f_cat').value = data.category; $('#f_sub').value = data.sub_cat||''; $('#f_feat').value = String(!!data.featured);
+  const msHost = $('#f_tagged');
+  for (const p of state.players) {
+    const chip = el('button', { type: 'button', class: 'pchip' + (taggedNow.has(p.id) ? ' on' : '') });
+    chip.textContent = p.name; chip.dataset.pid = p.id;
+    chip.addEventListener('click', () => { chip.classList.toggle('on'); });
+    msHost.append(chip);
+  }
 
   const submit = el('button', { class: 'btn primary', style: 'margin-right:8px' }); submit.textContent = isNew ? 'Add Video' : 'Save';
   submit.addEventListener('click', e => { e.preventDefault(); save(); });
@@ -1002,6 +1310,8 @@ function renderVideoForm(v, vd) {
   }
   async function save() {
     const yid = parseYouTubeId($('#f_url').value);
+    const lvlRaw = $('#f_level').value.trim();
+    const tagged = [...$('#f_tagged').querySelectorAll('.pchip.on')].map(c => c.dataset.pid);
     const row = {
       title: $('#f_title').value.trim(),
       youtube_id: yid,
@@ -1013,6 +1323,8 @@ function renderVideoForm(v, vd) {
       duration_min: parseInt($('#f_dur').value) || null,
       order_idx: parseInt($('#f_order').value) || 0,
       featured: $('#f_feat').value === 'true',
+      level: lvlRaw === '' ? null : (parseInt(lvlRaw) || null),
+      tagged_player_ids: tagged,
       updated_at: new Date().toISOString(),
     };
     if (!row.title) return toast('Title required', 'err');
@@ -1088,8 +1400,26 @@ function renderAdminSettings(v) {
   v.append(mk('team_color', 'Team accent color', `<input id="s_color" type="color" value="${esc(s.team_color||'#FF6A1F')}">`));
   v.append(mk('top_picks_count', "How many Top Picks to show", `<input id="s_top" type="number" min="1" max="20" value="${esc(s.top_picks_count||6)}">`));
   v.append(mk('section_labels.documents', `"Coach's Notes" tab label`, `<input id="s_notes_label" value="${esc((s.section_labels||{}).documents||"Coach's Notes")}">`));
+
+  // Level titles editor
+  const usedLevels = [...new Set(state.videos.map(x => x.level).filter(n => n != null))].sort((a,b)=>a-b);
+  const titlesField = el('div', { class: 'field' });
+  titlesField.innerHTML = `<label>Lesson level names</label><div class="hint" style="margin-bottom:8px">Optional friendly names that appear next to "Level 1", "Level 2"... Levels with at least one video are listed below. Leave blank to just show the number.</div><div id="s_levels"></div>`;
+  v.append(titlesField);
+  const levelsHost = $('#s_levels');
+  if (!usedLevels.length) levelsHost.innerHTML = `<div class="empty" style="padding:14px 0;text-align:left;color:var(--faint);font-size:12.5px">No videos have a level assigned yet. Add levels from each video's edit page.</div>`;
+  for (const n of usedLevels) {
+    const wrap = el('div', { style: 'display:flex;gap:8px;align-items:center;margin-bottom:6px' });
+    wrap.innerHTML = `<div style="flex:none;width:60px;font-size:12.5px;font-weight:700;color:var(--muted)">Level ${n}</div><input type="text" data-lvl="${n}" class="lvl-title" value="${esc((s.level_titles||{})[String(n)]||'')}" placeholder="e.g. Fundamentals" style="flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:14px;color:var(--text)">`;
+    levelsHost.append(wrap);
+  }
   const submit = el('button', { class: 'btn primary' }); submit.textContent = 'Save Settings';
   submit.addEventListener('click', async () => {
+    const newLevelTitles = { ...(s.level_titles || {}) };
+    $$('.lvl-title').forEach(inp => {
+      const n = inp.dataset.lvl; const v = inp.value.trim();
+      if (v) newLevelTitles[n] = v; else delete newLevelTitles[n];
+    });
     const upserts = [
       { key: 'admin_pin', value: $('#s_pin').value },
       { key: 'welcome_copy', value: $('#s_copy').value },
@@ -1097,6 +1427,7 @@ function renderAdminSettings(v) {
       { key: 'team_color', value: $('#s_color').value },
       { key: 'top_picks_count', value: parseInt($('#s_top').value)||6 },
       { key: 'section_labels', value: { ...(s.section_labels||{}), documents: $('#s_notes_label').value } },
+      { key: 'level_titles', value: newLevelTitles },
     ];
     for (const u of upserts) {
       await sb.from('training_settings').upsert({ ...u, updated_at: new Date().toISOString() });
@@ -1126,7 +1457,34 @@ async function boot() {
   $('#admin-entry').addEventListener('click', () => go('#admin'));
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#vmodal').classList.contains('on')) closeVideo(); });
+  document.addEventListener('keydown', e => {
+    if (!$('#vmodal').classList.contains('on')) return;
+    if (e.key === 'Escape') closeVideo();
+    else if (e.key === ' ' || e.key === 'k') { e.preventDefault(); togglePlay(); }
+    else if (e.key === 'f') { e.preventDefault(); toggleFullscreen(); }
+  });
+  $('#vm-play').addEventListener('click', togglePlay);
+  $('#vm-tap').addEventListener('click', togglePlay);
+  $('#vm-fs').addEventListener('click', toggleFullscreen);
+  const scrub = $('#vm-scrub');
+  const onScrubStart = () => { state.scrubbing = true; };
+  const onScrubInput = () => {
+    const p = state.videoPlayer; if (!p || typeof p.getDuration !== 'function') return;
+    const pct = scrub.value / 10;
+    scrub.style.setProperty('--p', pct + '%');
+    const dur = p.getDuration();
+    if (dur) $('#vm-time').textContent = `${fmtTime((pct/100)*dur)} / ${fmtTime(dur)}`;
+  };
+  const onScrubEnd = () => {
+    const p = state.videoPlayer; if (!p || typeof p.getDuration !== 'function') { state.scrubbing = false; return; }
+    const pct = scrub.value / 10; const dur = p.getDuration();
+    if (dur) p.seekTo((pct/100) * dur, true);
+    state.scrubbing = false;
+  };
+  scrub.addEventListener('pointerdown', onScrubStart);
+  scrub.addEventListener('input', onScrubInput);
+  scrub.addEventListener('change', onScrubEnd);
+  scrub.addEventListener('pointerup', onScrubEnd);
   window.addEventListener('hashchange', route);
   // Nav clicks
   document.body.addEventListener('click', e => {
