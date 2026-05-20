@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#0B0B0C" />
+<meta name="description" content="Warriors Basketball Training — film, drills, NBA breakdown, and the playbook. Built by Coach Dale." />
+<meta name="robots" content="noindex,nofollow" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Warriors Training" />
+<title>Warriors Training</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0A0A0B; --surface:#101012; --surface-2:#16161A; --card:#16161A; --card-hi:#1D1D22;
+    --border:#26262C; --border-2:#34343C;
+    --text:#F4F4F5; --muted:#9A9AA2; --faint:#6B6B73;
+    --accent:#FF6A1F; --accent-2:#FF8A4D; --accent-soft:rgba(255,106,31,.15);
+    --ok:#3FB984; --warn:#E0A93C; --danger:#F0584F;
+    --r:14px; --r-sm:10px; --r-lg:18px;
+    --maxw:1200px;
+    --safe-t:env(safe-area-inset-top,0px);
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  a{color:inherit;text-decoration:none}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer;border:0;background:transparent}
+  ::selection{background:var(--accent-soft)}
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-thumb{background:#2c2c33;border-radius:9px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+    padding:calc(10px + var(--safe-t)) 18px 10px;
+    background:rgba(10,10,11,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:11px;cursor:pointer;min-width:0}
+  .logo{
+    width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#C24700);
+    display:grid;place-items:center;flex:none;color:#fff;font-weight:900;letter-spacing:.5px;font-size:14px;
+    box-shadow:0 6px 16px -8px var(--accent);
+  }
+  .brand-txt{display:flex;flex-direction:column;min-width:0}
+  .brand-txt b{font-size:14px;font-weight:800;letter-spacing:.2px;white-space:nowrap}
+  .brand-txt span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.04em;text-transform:uppercase}
+  .top-spacer{flex:1}
+  .whoami{
+    display:flex;align-items:center;gap:8px;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:999px;padding:5px 6px 5px 12px;
+    font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .whoami:hover{border-color:var(--border-2)}
+  .whoami .av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;flex:none}
+  .whoami small{color:var(--muted);font-size:11px;font-weight:600}
+
+  /* ---------- Layout ---------- */
+  .shell{display:flex;max-width:var(--maxw);margin:0 auto;width:100%}
+  .side{
+    width:240px;flex:none;padding:20px 14px;border-right:1px solid var(--border);
+    position:sticky;top:64px;height:calc(100vh - 64px);overflow:auto;
+  }
+  .side h6{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);margin:18px 8px 8px;font-weight:700}
+  .side h6:first-child{margin-top:0}
+  .navlink{
+    display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--r-sm);
+    color:var(--muted);cursor:pointer;font-weight:600;transition:.13s;font-size:14.5px;user-select:none;
+  }
+  .navlink:hover{background:var(--surface-2);color:var(--text)}
+  .navlink.active{background:var(--surface-2);color:var(--text);box-shadow:inset 3px 0 0 var(--accent)}
+  .navlink .ic{width:20px;text-align:center;flex:none;font-size:17px}
+  .navlink .badge{margin-left:auto;background:var(--accent-soft);color:var(--accent-2);
+    font-size:11px;padding:2px 8px;border-radius:999px;font-weight:700}
+  .subnav{margin:2px 0 4px 32px;display:flex;flex-direction:column;gap:2px}
+  .subnav .navlink{padding:7px 10px;font-size:13px;font-weight:500}
+  .subnav .navlink.active{box-shadow:inset 2px 0 0 var(--accent)}
+  .side .admin-btn{
+    margin-top:24px;padding:8px 12px;font-size:12px;color:var(--faint);
+    border-top:1px dashed var(--border);padding-top:14px;cursor:pointer;text-align:center;
+  }
+  .side .admin-btn:hover{color:var(--accent-2)}
+
+  .main{flex:1;min-width:0;padding:26px 26px 120px;width:100%}
+  .wrap{max-width:980px;margin:0 auto}
+
+  /* ---------- Mobile bottom nav ---------- */
+  .botnav{display:none}
+  @media(max-width:880px){
+    .side{display:none}
+    .main{padding:16px 14px calc(86px + var(--safe-b))}
+    .topbar{padding:calc(10px + var(--safe-t)) 14px 10px;gap:10px}
+    .brand-txt span{display:none}
+    .botnav{
+      display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
+      background:rgba(10,10,11,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      border-top:1px solid var(--border);
+      padding:8px 6px calc(8px + var(--safe-b));
+    }
+    .botnav .navlink{
+      flex:1;flex-direction:column;gap:3px;padding:6px 4px;border-radius:10px;
+      font-size:10.5px;font-weight:600;text-align:center;color:var(--faint);
+    }
+    .botnav .navlink .ic{font-size:18px;width:auto;margin:0 auto}
+    .botnav .navlink.active{background:transparent;color:var(--accent);box-shadow:none}
+    .botnav .navlink.active .ic{transform:scale(1.1)}
+  }
+
+  /* ---------- Cards & video tiles ---------- */
+  .h-hero{
+    background:linear-gradient(140deg,rgba(255,106,31,.10),rgba(255,106,31,.02) 60%),var(--card);
+    border:1px solid var(--border);border-radius:var(--r-lg);padding:22px 22px 24px;margin-bottom:22px;
+    position:relative;overflow:hidden;
+  }
+  .h-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 100% 0%,rgba(255,106,31,.18),transparent 50%);pointer-events:none}
+  .h-hero h1{font-size:clamp(22px,5vw,30px);font-weight:900;letter-spacing:-.01em;margin-bottom:10px;position:relative}
+  .h-hero p{color:var(--muted);font-size:15px;line-height:1.65;white-space:pre-wrap;position:relative;max-width:64ch}
+  .h-hero .signature{margin-top:14px;font-style:italic;color:var(--accent-2);font-weight:600}
+
+  .section{margin-bottom:32px}
+  .section h2{font-size:18px;font-weight:800;letter-spacing:-.005em;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .section h2 .count{font-size:12px;color:var(--muted);font-weight:600;background:var(--surface-2);padding:2px 8px;border-radius:999px;border:1px solid var(--border)}
+  .section h2 .more{margin-left:auto;font-size:13px;color:var(--muted);font-weight:600;cursor:pointer}
+  .section h2 .more:hover{color:var(--accent-2)}
+
+  .vidgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  @media(min-width:1100px){.vidgrid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}}
+  @media(max-width:480px){.vidgrid{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+  .vcard{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+    overflow:hidden;cursor:pointer;transition:.15s;display:flex;flex-direction:column;
+    position:relative;
+  }
+  .vcard:hover{border-color:var(--border-2);transform:translateY(-2px);box-shadow:0 8px 24px -12px rgba(0,0,0,.6)}
+  .vcard.watched{opacity:.7}
+  .vcard .thumb{aspect-ratio:16/9;background:#000;position:relative;overflow:hidden}
+  .vcard .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .vcard .thumb .play{
+    position:absolute;inset:0;display:grid;place-items:center;
+    background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.5));opacity:0;transition:.2s;
+  }
+  .vcard:hover .thumb .play{opacity:1}
+  .vcard .thumb .play svg{width:46px;height:46px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+  .vcard .thumb .dur{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;font-weight:600;padding:2px 6px;border-radius:4px}
+  .vcard .thumb .feat{position:absolute;top:8px;left:8px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase}
+  .vcard .thumb .ok{position:absolute;top:8px;right:8px;background:var(--ok);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .vcard .meta{padding:11px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .vcard .t{font-size:14px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .vcard .sub{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-top:auto;flex-wrap:wrap}
+  .vcard .sub .tag{background:var(--surface-2);padding:2px 7px;border-radius:5px;font-size:10.5px;letter-spacing:.02em}
+  .vcard .star{
+    position:absolute;top:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;
+    width:30px;height:30px;display:grid;place-items:center;font-size:15px;cursor:pointer;
+    transition:.15s;opacity:0;backdrop-filter:blur(4px);
+  }
+  .vcard:hover .star{opacity:1}
+  .vcard .star.on{opacity:1;color:#FFD24D}
+  .vcard.watched .ok + .star{top:38px}
+  @media(hover:none){.vcard .star{opacity:1}}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    background:var(--surface-2);border:1px solid var(--border);color:var(--muted);
+    padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;
+    transition:.13s;white-space:nowrap;
+  }
+  .chip:hover{border-color:var(--border-2);color:var(--text)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  /* ---------- Player picker overlay ---------- */
+  .picker{
+    position:fixed;inset:0;z-index:200;background:radial-gradient(120% 80% at 50% 0%,rgba(255,106,31,.12),var(--bg) 60%);
+    display:grid;place-items:center;padding:24px;overflow:auto;
+  }
+  .picker .box{
+    max-width:720px;width:100%;text-align:center;padding:30px 20px;
+  }
+  .picker .pre{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-2);font-weight:700;margin-bottom:6px}
+  .picker h1{font-size:clamp(26px,6vw,36px);font-weight:900;margin-bottom:8px;letter-spacing:-.01em}
+  .picker .sub{color:var(--muted);margin-bottom:28px;font-size:15px}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px;max-width:560px;margin:0 auto}
+  @media(max-width:480px){.pgrid{grid-template-columns:repeat(2,1fr)}}
+  .ptile{
+    background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);
+    padding:18px 10px 14px;cursor:pointer;transition:.15s;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .ptile:hover,.ptile:active{border-color:var(--accent);background:var(--card-hi);transform:translateY(-2px)}
+  .ptile .av{
+    width:54px;height:54px;border-radius:50%;display:grid;place-items:center;
+    font-weight:900;font-size:20px;color:#fff;
+  }
+  .ptile .nm{font-size:13px;font-weight:700;line-height:1.2;text-align:center}
+
+  /* ---------- Video player modal ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.85);
+    display:none;align-items:center;justify-content:center;padding:0;
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  }
+  .modal.on{display:flex}
+  .modal .frame{
+    background:var(--surface);width:100%;max-width:980px;max-height:96vh;
+    display:flex;flex-direction:column;border-radius:0;overflow:hidden;
+  }
+  @media(min-width:720px){.modal .frame{border-radius:var(--r-lg);margin:20px;max-height:calc(100vh - 40px)}}
+  .modal .head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex:none}
+  .modal .head h3{flex:1;font-size:15px;font-weight:700;line-height:1.3}
+  .modal .close{background:var(--surface-2);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;color:var(--muted);flex:none}
+  .modal .close:hover{color:var(--text)}
+  .yt-wrap{position:relative;background:#000;aspect-ratio:16/9;flex:none}
+  .yt-wrap iframe,.yt-wrap > div{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .progress-bar{height:3px;background:var(--surface-2);position:relative;flex:none}
+  .progress-bar .fill{height:100%;background:var(--accent);transition:width .3s}
+  .progress-bar .done-mark{position:absolute;top:0;bottom:0;left:90%;width:1px;background:var(--ok);opacity:.5}
+  .modal .body{padding:16px;overflow:auto;flex:1;min-height:0}
+  .modal .body .meta-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .modal .body .summary{color:var(--muted);line-height:1.6;white-space:pre-wrap}
+  .modal .body .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .modal .body .tags .tag{background:var(--surface-2);border:1px solid var(--border);padding:3px 9px;border-radius:5px;font-size:11.5px;color:var(--muted)}
+  .modal .body .pct{font-size:12px;color:var(--muted);font-weight:600}
+  .modal .body .pct.ok{color:var(--ok)}
+
+  /* ---------- Forms / buttons ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);
+    padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:700;color:var(--text);transition:.13s;white-space:nowrap}
+  .btn:hover{border-color:var(--border-2);background:var(--card-hi)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+  .btn.danger{color:var(--danger);border-color:rgba(240,88,79,.3)}
+  .btn.danger:hover{background:rgba(240,88,79,.1)}
+  .btn.ghost{background:transparent}
+  .btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+  .btn .ic{font-size:15px}
+  .star-btn{font-size:18px;cursor:pointer;color:var(--faint);transition:.15s;background:transparent;padding:6px 10px;border-radius:8px}
+  .star-btn:hover{background:var(--surface-2)}
+  .star-btn.on{color:#FFD24D}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+  .field input,.field select,.field textarea{
+    background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--text);width:100%;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+  .field textarea{min-height:100px;resize:vertical;font-family:inherit;line-height:1.5}
+  .field .hint{font-size:11.5px;color:var(--faint)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+
+  /* ---------- Admin ---------- */
+  .admin-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px}
+  .admin-row .t{flex:1;min-width:0}
+  .admin-row .t b{display:block;font-size:14px;font-weight:700;margin-bottom:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+  .admin-row .t small{color:var(--muted);font-size:12px}
+  .admin-row .actions{display:flex;gap:6px;flex:none}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+  .stat .lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  .stat .v{font-size:24px;font-weight:900;letter-spacing:-.01em}
+  .stat .v small{font-size:13px;color:var(--muted);font-weight:600}
+
+  table.lb{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  table.lb th,table.lb td{text-align:left;padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+  table.lb th{background:var(--surface-2);font-weight:700;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+  table.lb tr:last-child td{border-bottom:0}
+  table.lb td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+  /* ---------- Doc reader ---------- */
+  .doc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;line-height:1.7}
+  .doc h1{font-size:22px;font-weight:900;margin-bottom:6px;letter-spacing:-.01em}
+  .doc .summary{color:var(--muted);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+  .doc .body{white-space:pre-wrap;color:var(--text);font-size:15px}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:calc(100px + var(--safe-b));transform:translateX(-50%) translateY(20px);
+    background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;
+    font-size:13.5px;font-weight:600;z-index:300;opacity:0;transition:.25s;pointer-events:none;
+    box-shadow:0 12px 32px -12px rgba(0,0,0,.7);
+  }
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{border-color:var(--danger);color:var(--danger)}
+
+  /* ---------- Empty / loading ---------- */
+  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+  .empty .ic{font-size:34px;margin-bottom:10px;opacity:.6}
+  .empty h3{font-size:17px;font-weight:700;margin-bottom:4px;color:var(--text)}
+  .empty p{font-size:13.5px;max-width:34ch;margin:0 auto}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- iPad refinements ---------- */
+  @media(min-width:881px) and (max-width:1180px){
+    .side{width:220px}
+    .main{padding:24px 22px 100px}
+  }
+  /* Larger touch targets everywhere on touch devices */
+  @media(hover:none){
+    .btn{padding:11px 18px}
+    .navlink{padding:13px 12px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand" id="brand-btn">
+    <div class="logo">W</div>
+    <div class="brand-txt">
+      <b>Warriors Training</b>
+      <span>Coach Dale · Film, Drills, Plays</span>
+    </div>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="whoami" id="whoami" style="display:none">
+    <span id="whoami-name">—</span>
+    <small id="whoami-swap">switch</small>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="side">
+    <h6>Training</h6>
+    <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
+    <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice Breakdown</div>
+    <div class="subnav" id="sub-practice">
+      <div class="navlink" data-route="#practice/offense">Offense</div>
+      <div class="navlink" data-route="#practice/defense">Defense</div>
+      <div class="navlink" data-route="#practice/individual">Individual Drills</div>
+    </div>
+    <div class="navlink" data-route="#bball101"><span class="ic">📘</span> Basketball 101</div>
+    <div class="navlink" data-route="#nba"><span class="ic">🏆</span> NBA Breakdown</div>
+    <div class="navlink" data-route="#notes"><span class="ic">📝</span> Coach's Notes</div>
+    <div class="admin-btn" id="admin-entry">⚙️ Admin</div>
+  </aside>
+
+  <main class="main">
+    <div class="wrap" id="view"></div>
+  </main>
+</div>
+
+<nav class="botnav">
+  <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
+  <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
+  <div class="navlink" data-route="#bball101"><span class="ic">📘</span> 101</div>
+  <div class="navlink" data-route="#nba"><span class="ic">🏆</span> NBA</div>
+  <div class="navlink" data-route="#notes"><span class="ic">📝</span> Notes</div>
+</nav>
+
+<!-- Player picker overlay -->
+<div class="picker" id="picker">
+  <div class="box">
+    <div class="pre">Warriors</div>
+    <h1>Who's training today?</h1>
+    <div class="sub">Tap your tile to get started.</div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+</div>
+
+<!-- Video modal -->
+<div class="modal" id="vmodal" role="dialog" aria-modal="true">
+  <div class="frame">
+    <div class="head">
+      <h3 id="vm-title">Video</h3>
+      <button class="close" id="vm-close" aria-label="Close">×</button>
+    </div>
+    <div class="yt-wrap"><div id="ytplayer"></div></div>
+    <div class="progress-bar"><div class="fill" id="vm-fill"></div><div class="done-mark"></div></div>
+    <div class="body">
+      <div class="meta-row">
+        <button class="star-btn" id="vm-star" aria-label="Star">★</button>
+        <span class="pct" id="vm-pct">Watched 0%</span>
+        <span class="top-spacer" style="flex:1"></span>
+        <span class="pct" id="vm-views"></span>
+      </div>
+      <div class="summary" id="vm-summary"></div>
+      <div class="tags" id="vm-tags"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Supabase + YouTube IFrame API -->
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+const SUPABASE_URL = 'https://vlcpgwxeybpzwidjackz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ---------- Utilities ----------
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const el = (tag, attrs = {}, html) => { const e = document.createElement(tag); for (const k in attrs) { if (k === 'class') e.className = attrs[k]; else if (k === 'on') for (const ev in attrs[k]) e.addEventListener(ev, attrs[k][ev]); else e.setAttribute(k, attrs[k]); } if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const fmtDate = ts => { const d = new Date(ts); return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }); };
+const colorFor = (s) => { let h = 0; for (const c of String(s||'')) h = (h*31 + c.charCodeAt(0)) >>> 0; const hues = [12, 24, 200, 280, 340, 160, 100]; return `hsl(${hues[h % hues.length]} 70% 45%)`; };
+const initials = name => String(name||'?').split(/\s+/).map(p => p[0]).slice(0,2).join('').toUpperCase();
+const toast = (msg, kind = '') => { const t = $('#toast'); t.textContent = msg; t.className = 'toast on ' + kind; clearTimeout(toast._t); toast._t = setTimeout(() => t.className = 'toast', 2400); };
+const parseYouTubeId = (url) => {
+  if (!url) return '';
+  const m = String(url).match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/) || String(url).match(/^([A-Za-z0-9_-]{11})$/);
+  return m ? m[1] : '';
+};
+
+// ---------- State ----------
+const state = {
+  player: null,            // {id, name}
+  isAdmin: false,
+  settings: {},
+  players: [],
+  videos: [],
+  documents: [],
+  watches: [],             // current player's watches
+  stars: new Set(),        // current player's starred video IDs
+  allWatches: null,        // admin-only: all watches across players
+  videoPlayer: null,
+  videoPollTimer: null,
+  currentVideo: null,
+  recordedThisPlay: false,
+  route: '',
+  query: {},
+};
+
+// ---------- Data loaders ----------
+async function loadGlobals() {
+  const [s, p, v, d] = await Promise.all([
+    sb.from('training_settings').select('*'),
+    sb.from('players').select('id,name,active').eq('active', true).order('name'),
+    sb.from('training_videos').select('*').order('category').order('order_idx'),
+    sb.from('training_documents').select('*').order('order_idx').order('updated_at', { ascending: false }),
+  ]);
+  state.settings = Object.fromEntries((s.data || []).map(r => [r.key, r.value]));
+  state.players = p.data || [];
+  state.videos = v.data || [];
+  state.documents = d.data || [];
+}
+async function loadPlayerData() {
+  if (!state.player) return;
+  const [w, st] = await Promise.all([
+    sb.from('training_watches').select('*').eq('player_id', state.player.id).order('watched_at', { ascending: false }),
+    sb.from('training_stars').select('video_id').eq('player_id', state.player.id),
+  ]);
+  state.watches = w.data || [];
+  state.stars = new Set((st.data || []).map(r => r.video_id));
+}
+async function recordWatch(videoId, pct, finished) {
+  const row = { player_id: state.player.id, video_id: videoId, pct, finished };
+  const { data, error } = await sb.from('training_watches').insert(row).select().single();
+  if (error) { console.error(error); return null; }
+  state.watches.unshift(data);
+  return data;
+}
+async function toggleStar(videoId) {
+  if (state.stars.has(videoId)) {
+    state.stars.delete(videoId);
+    await sb.from('training_stars').delete().eq('player_id', state.player.id).eq('video_id', videoId);
+  } else {
+    state.stars.add(videoId);
+    await sb.from('training_stars').insert({ player_id: state.player.id, video_id: videoId });
+  }
+}
+
+// ---------- Helpers on state ----------
+const finishedSetForPlayer = () => new Set(state.watches.filter(w => w.finished).map(w => w.video_id));
+const viewsCountForVideo = (videoId) => state.watches.filter(w => w.video_id === videoId && w.finished).length;
+const watchedVids = () => state.videos.filter(v => state.watches.some(w => w.video_id === v.id && w.finished));
+const featuredVids = () => state.videos.filter(v => v.featured).slice(0, state.settings.top_picks_count || 6);
+const vidsByCat = (cat) => state.videos.filter(v => v.category === cat);
+const vidsBySub = (sub) => state.videos.filter(v => v.category === 'practice' && v.sub_cat === sub);
+const sectionLabel = (k) => (state.settings.section_labels || {})[k] || k;
+const subcatLabel = (k) => (state.settings.subcat_labels || {})[k] || k;
+const ytThumb = (v) => v.custom_thumb || (v.youtube_id ? `https://i.ytimg.com/vi/${v.youtube_id}/hqdefault.jpg` : '');
+
+// ---------- Player picker ----------
+function renderPicker() {
+  const grid = $('#pgrid'); grid.innerHTML = '';
+  if (!state.players.length) {
+    grid.innerHTML = '<div class="empty"><h3>Roster not loaded</h3><p>Ask Coach Dale to add players.</p></div>';
+    return;
+  }
+  for (const p of state.players) {
+    const tile = el('div', { class: 'ptile' });
+    const av = el('div', { class: 'av' }); av.style.background = colorFor(p.name); av.textContent = initials(p.name);
+    const nm = el('div', { class: 'nm' }); nm.textContent = p.name;
+    tile.append(av, nm);
+    tile.addEventListener('click', () => selectPlayer(p));
+    grid.append(tile);
+  }
+  $('#picker').style.display = 'grid';
+}
+async function selectPlayer(p) {
+  state.player = { id: p.id, name: p.name };
+  $('#picker').style.display = 'none';
+  $('#whoami').style.display = 'flex';
+  $('#whoami-name').textContent = p.name.split(/\s+/)[0];
+  $('#whoami').style.setProperty('--ac', colorFor(p.name));
+  // Build avatar inline
+  let av = $('#whoami .av'); if (!av) { av = el('div', { class: 'av' }); $('#whoami').prepend(av); }
+  av.style.background = colorFor(p.name); av.textContent = initials(p.name);
+  await loadPlayerData();
+  render();
+}
+function switchPlayer() {
+  state.player = null;
+  state.isAdmin = false;
+  state.watches = []; state.stars = new Set();
+  $('#whoami').style.display = 'none';
+  renderPicker();
+}
+
+// ---------- Router ----------
+function parseHash() {
+  const h = (location.hash || '#home').slice(1);
+  const [path, qs] = h.split('?');
+  const query = Object.fromEntries(new URLSearchParams(qs || ''));
+  return { path, query };
+}
+function route() {
+  const { path, query } = parseHash();
+  state.route = path; state.query = query;
+  // highlight active nav
+  $$('.navlink').forEach(n => {
+    const r = n.getAttribute('data-route');
+    if (!r) return;
+    const active = (r === '#' + path) || (path.startsWith('practice') && r === '#practice') || (path.startsWith('practice/') && r === '#' + path);
+    n.classList.toggle('active', active);
+  });
+  render();
+}
+function go(h) { location.hash = h; }
+
+// ---------- Renderers ----------
+function render() {
+  if (!state.player) return; // picker is showing
+  const v = $('#view'); v.innerHTML = '';
+  const parts = state.route.split('/');
+  if (parts[0] === 'home' || parts[0] === '') return renderHome(v);
+  if (parts[0] === 'practice') return renderPractice(v, parts[1]);
+  if (parts[0] === 'bball101') return renderCategory(v, '101', sectionLabel('101'));
+  if (parts[0] === 'nba') return renderCategory(v, 'nba', sectionLabel('nba'));
+  if (parts[0] === 'notes') return renderNotes(v, parts[1]);
+  if (parts[0] === 'video') return renderHome(v); // fallback; video opens via modal
+  if (parts[0] === 'admin') return renderAdmin(v, parts.slice(1));
+  return renderHome(v);
+}
+
+function welcomeHero() {
+  const copy = state.settings.welcome_copy || 'Welcome to your training portal.';
+  const wid = state.settings.welcome_video_youtube_id;
+  const hero = el('div', { class: 'h-hero' });
+  hero.innerHTML = `<h1>Welcome, ${esc(state.player.name.split(/\s+/)[0])}.</h1><p>${esc(copy)}</p>`;
+  if (wid) {
+    const w = el('div', { class: 'yt-wrap', style: 'aspect-ratio:16/9;margin-top:18px;border-radius:12px;overflow:hidden;background:#000;position:relative' });
+    w.innerHTML = `<iframe src="https://www.youtube.com/embed/${esc(wid)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`;
+    hero.append(w);
+  } else {
+    const ph = el('div', { class: 'empty', style: 'margin-top:16px;border:1px dashed var(--border);border-radius:12px;padding:24px' });
+    ph.innerHTML = '<div class="ic">📹</div><h3>Welcome video coming soon</h3><p>Coach Dale is filming the kickoff message. Check back shortly.</p>';
+    hero.append(ph);
+  }
+  return hero;
+}
+
+function renderHome(v) {
+  v.append(welcomeHero());
+  // Dale's Top Picks
+  const featured = featuredVids();
+  if (featured.length) {
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>⭐ Dale's Top ${featured.length} Picks <span class="count">Featured</span></h2>`;
+    sec.append(buildVidGrid(featured));
+    v.append(sec);
+  }
+  // Quick stats for the player
+  const finished = finishedSetForPlayer();
+  const watchedCount = finished.size;
+  const total = state.videos.filter(x => x.category !== 'welcome').length;
+  if (total > 0) {
+    const sg = el('div', { class: 'stat-grid' });
+    sg.innerHTML = `
+      <div class="stat"><div class="lbl">Videos Watched</div><div class="v">${watchedCount} <small>/ ${total}</small></div></div>
+      <div class="stat"><div class="lbl">Starred</div><div class="v">${state.stars.size}</div></div>
+      <div class="stat"><div class="lbl">Total Plays</div><div class="v">${state.watches.length}</div></div>
+    `;
+    v.append(sg);
+  }
+  // Recently added (most recent created_at across all categories)
+  const recent = [...state.videos].filter(v=>v.category!=='welcome').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8);
+  if (recent.length) {
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>🆕 Recently Added <span class="more" data-go="#practice">Browse all →</span></h2>`;
+    sec.append(buildVidGrid(recent));
+    sec.querySelector('.more')?.addEventListener('click', () => go('#practice'));
+    v.append(sec);
+  } else if (!featured.length) {
+    const e = el('div', { class: 'empty' });
+    e.innerHTML = `<div class="ic">📼</div><h3>No videos yet</h3><p>Coach Dale is loading up the playlist. Check back soon.</p>`;
+    v.append(e);
+  }
+}
+
+function renderPractice(v, sub) {
+  const all = vidsByCat('practice');
+  v.append(buildSectionHeader('🏀', sectionLabel('practice'), all.length));
+  // Sub-cat chips
+  const chips = el('div', { class: 'chips' });
+  const mkChip = (key, label) => {
+    const c = el('button', { class: 'chip' + ((sub === key) ? ' on' : (!sub && !key ? ' on' : '')) });
+    c.textContent = label;
+    c.addEventListener('click', () => go(key ? `#practice/${key}` : '#practice'));
+    return c;
+  };
+  chips.append(mkChip('', 'All'));
+  for (const sk of ['offense','defense','individual']) chips.append(mkChip(sk, subcatLabel(sk)));
+  v.append(chips);
+
+  let list = sub ? vidsBySub(sub) : all;
+  // Tag sub-chips if there's a sub-cat selected
+  if (sub) {
+    const tagSet = new Set();
+    list.forEach(v => (v.tags||[]).forEach(t => tagSet.add(t)));
+    const activeTag = state.query.tag;
+    if (tagSet.size) {
+      const tagChips = el('div', { class: 'chips', style: 'margin-top:-8px;margin-bottom:14px;' });
+      const allBtn = el('button', { class: 'chip' + (activeTag ? '' : ' on') });
+      allBtn.textContent = 'All tags';
+      allBtn.addEventListener('click', () => go(`#practice/${sub}`));
+      tagChips.append(allBtn);
+      [...tagSet].sort().forEach(t => {
+        const c = el('button', { class: 'chip' + (activeTag === t ? ' on' : '') });
+        c.textContent = t;
+        c.addEventListener('click', () => go(`#practice/${sub}?tag=${encodeURIComponent(t)}`));
+        tagChips.append(c);
+      });
+      v.append(tagChips);
+    }
+    if (activeTag) list = list.filter(v => (v.tags||[]).includes(activeTag));
+  }
+  if (!list.length) v.append(emptyState('No videos in this category yet.'));
+  else v.append(buildVidGrid(list));
+}
+
+function renderCategory(v, cat, label) {
+  const list = vidsByCat(cat);
+  v.append(buildSectionHeader(cat === 'nba' ? '🏆' : '📘', label, list.length));
+  if (!list.length) v.append(emptyState('No videos in this category yet.'));
+  else v.append(buildVidGrid(list));
+}
+
+function renderNotes(v, docId) {
+  if (docId) {
+    const d = state.documents.find(x => x.id === docId);
+    if (!d) { v.append(emptyState("Note not found.")); return; }
+    const back = el('button', { class: 'btn ghost', style:'margin-bottom:14px' }); back.innerHTML = '← Back to Notes';
+    back.addEventListener('click', () => go('#notes')); v.append(back);
+    const doc = el('div', { class: 'doc' });
+    doc.innerHTML = `<h1>${esc(d.title)}</h1>${d.summary ? `<div class="summary">${esc(d.summary)}</div>` : ''}<div class="body">${esc(d.body || '')}</div>`;
+    v.append(doc);
+    return;
+  }
+  v.append(buildSectionHeader('📝', sectionLabel('documents'), state.documents.length));
+  if (!state.documents.length) { v.append(emptyState("No notes yet — Coach Dale is writing them up.")); return; }
+  const list = el('div'); list.style.display = 'flex'; list.style.flexDirection = 'column'; list.style.gap = '10px';
+  for (const d of state.documents) {
+    const row = el('div', { class: 'admin-row' });
+    row.style.cursor = 'pointer';
+    row.innerHTML = `<div class="t"><b>${esc(d.title)}</b><small>${esc(d.summary || '')}</small></div><div class="actions"><span class="btn sm ghost">Read →</span></div>`;
+    row.addEventListener('click', () => go(`#notes/${d.id}`));
+    list.append(row);
+  }
+  v.append(list);
+}
+
+function buildSectionHeader(icon, title, count) {
+  const h = el('div', { class: 'section' });
+  h.innerHTML = `<h2>${icon} ${esc(title)} <span class="count">${count}</span></h2>`;
+  return h;
+}
+function emptyState(msg) {
+  const e = el('div', { class: 'empty' });
+  e.innerHTML = `<div class="ic">📼</div><h3>Nothing here yet</h3><p>${esc(msg)}</p>`;
+  return e;
+}
+
+function buildVidGrid(videos) {
+  const grid = el('div', { class: 'vidgrid' });
+  const finished = finishedSetForPlayer();
+  for (const v of videos) {
+    const card = el('div', { class: 'vcard' + (finished.has(v.id) ? ' watched' : '') });
+    const thumb = el('div', { class: 'thumb' });
+    if (v.youtube_id || v.custom_thumb) thumb.innerHTML = `<img src="${esc(ytThumb(v))}" alt="" loading="lazy" />`;
+    else thumb.innerHTML = `<div style="display:grid;place-items:center;width:100%;height:100%;color:var(--faint);font-size:30px">📼</div>`;
+    if (v.featured) thumb.append(el('div', { class: 'feat' }, 'Top Pick'));
+    if (finished.has(v.id)) thumb.append(el('div', { class: 'ok', 'aria-label':'Finished' }, '✓'));
+    thumb.append(el('div', { class: 'play' }, `<svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>`));
+    if (v.duration_min) thumb.append(el('div', { class: 'dur' }, `${v.duration_min}m`));
+    const star = el('button', { class: 'star' + (state.stars.has(v.id) ? ' on' : ''), 'aria-label':'Star' });
+    star.textContent = state.stars.has(v.id) ? '★' : '☆';
+    star.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await toggleStar(v.id);
+      star.textContent = state.stars.has(v.id) ? '★' : '☆';
+      star.classList.toggle('on', state.stars.has(v.id));
+    });
+    thumb.append(star);
+    card.append(thumb);
+    const meta = el('div', { class: 'meta' });
+    meta.innerHTML = `<div class="t">${esc(v.title)}</div>`;
+    const sub = el('div', { class: 'sub' });
+    if (v.sub_cat) sub.append(el('span', { class: 'tag' }, subcatLabel(v.sub_cat)));
+    (v.tags||[]).slice(0,2).forEach(t => sub.append(el('span', { class: 'tag' }, esc(t))));
+    const vc = viewsCountForVideo(v.id);
+    if (vc) sub.append(el('span', { style: 'margin-left:auto' }, `${vc}× watched`));
+    meta.append(sub);
+    card.append(meta);
+    card.addEventListener('click', (e) => { if (e.target.closest('.star')) return; openVideo(v); });
+    grid.append(card);
+  }
+  return grid;
+}
+
+// ---------- Video modal + YouTube IFrame API ----------
+let ytApiReady = false;
+let ytApiPromise = null;
+function loadYouTubeAPI() {
+  if (ytApiReady) return Promise.resolve();
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    window.onYouTubeIframeAPIReady = () => { ytApiReady = true; resolve(); };
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; document.head.append(s);
+  });
+  return ytApiPromise;
+}
+
+async function openVideo(v) {
+  if (!v.youtube_id) { toast('No YouTube ID set for this video', 'err'); return; }
+  state.currentVideo = v;
+  state.recordedThisPlay = false;
+  $('#vm-title').textContent = v.title;
+  $('#vm-summary').textContent = v.summary || '';
+  const tagsBox = $('#vm-tags'); tagsBox.innerHTML = '';
+  if (v.sub_cat) tagsBox.append(el('span', { class: 'tag' }, subcatLabel(v.sub_cat)));
+  (v.tags||[]).forEach(t => tagsBox.append(el('span', { class: 'tag' }, esc(t))));
+  const starBtn = $('#vm-star');
+  const setStar = () => { starBtn.classList.toggle('on', state.stars.has(v.id)); starBtn.textContent = state.stars.has(v.id) ? '★' : '☆'; };
+  setStar();
+  starBtn.onclick = async () => { await toggleStar(v.id); setStar(); };
+  $('#vm-views').textContent = viewsCountForVideo(v.id) ? `You've finished this ${viewsCountForVideo(v.id)}×` : '';
+  $('#vm-fill').style.width = '0%';
+  $('#vm-pct').textContent = 'Watched 0%';
+  $('#vm-pct').classList.remove('ok');
+  $('#vmodal').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  await loadYouTubeAPI();
+  if (state.videoPlayer) { try { state.videoPlayer.destroy(); } catch{} state.videoPlayer = null; }
+  $('#ytplayer').innerHTML = '';
+  const wrap = document.createElement('div'); wrap.id = 'ytplayer-inner'; $('#ytplayer').append(wrap);
+  state.videoPlayer = new YT.Player('ytplayer-inner', {
+    videoId: v.youtube_id,
+    playerVars: { autoplay: 1, modestbranding: 1, rel: 0, playsinline: 1 },
+    events: {
+      onReady: () => startVideoPolling(),
+      onStateChange: (e) => { if (e.data === YT.PlayerState.PLAYING) startVideoPolling(); else stopVideoPolling(); },
+    }
+  });
+}
+function startVideoPolling() {
+  stopVideoPolling();
+  state.videoPollTimer = setInterval(updateVideoProgress, 1000);
+}
+function stopVideoPolling() { if (state.videoPollTimer) { clearInterval(state.videoPollTimer); state.videoPollTimer = null; } }
+async function updateVideoProgress() {
+  const p = state.videoPlayer; if (!p || typeof p.getDuration !== 'function') return;
+  const dur = p.getDuration(); const cur = p.getCurrentTime();
+  if (!dur) return;
+  const pct = Math.min(100, (cur / dur) * 100);
+  $('#vm-fill').style.width = pct + '%';
+  $('#vm-pct').textContent = `Watched ${Math.round(pct)}%`;
+  if (pct >= 90 && !state.recordedThisPlay) {
+    state.recordedThisPlay = true;
+    $('#vm-pct').classList.add('ok');
+    $('#vm-pct').textContent = `Finished ✓ (${Math.round(pct)}%)`;
+    const v = state.currentVideo;
+    const w = await recordWatch(v.id, Math.round(pct * 100)/100, true);
+    if (w) {
+      toast('Nice work — finished ✓');
+      $('#vm-views').textContent = `You've finished this ${viewsCountForVideo(v.id)}×`;
+    }
+  }
+}
+function closeVideo() {
+  $('#vmodal').classList.remove('on');
+  document.body.style.overflow = '';
+  stopVideoPolling();
+  if (state.videoPlayer) { try { state.videoPlayer.destroy(); } catch{} state.videoPlayer = null; }
+  state.currentVideo = null;
+  // Re-render to update watched/star state on cards
+  render();
+}
+
+// ---------- Admin ----------
+function renderAdmin(v, parts) {
+  if (!state.isAdmin) { renderAdminPin(v); return; }
+  const tabs = el('div', { class: 'chips' });
+  const tab = (key, label) => {
+    const b = el('button', { class: 'chip' + ((parts[0]||'dash') === key ? ' on' : '') });
+    b.textContent = label;
+    b.addEventListener('click', () => go('#admin/' + key));
+    return b;
+  };
+  tabs.append(tab('dash','Dashboard'), tab('videos','Videos'), tab('notes',"Coach's Notes"), tab('settings','Settings'));
+  v.append(buildSectionHeader('⚙️', 'Admin', ''));
+  v.append(tabs);
+  const t = parts[0] || 'dash';
+  if (t === 'dash') return renderAdminDashboard(v);
+  if (t === 'videos') return renderAdminVideos(v, parts[1]);
+  if (t === 'notes') return renderAdminNotes(v, parts[1]);
+  if (t === 'settings') return renderAdminSettings(v);
+}
+function renderAdminPin(v) {
+  const box = el('div', { class: 'doc', style: 'max-width:420px;margin:30px auto;text-align:center' });
+  box.innerHTML = `<h1>🔒 Admin</h1><div class="summary">Enter PIN to manage videos, notes, and view team stats.</div>`;
+  const f = el('div', { class: 'field' });
+  f.innerHTML = `<input type="tel" inputmode="numeric" maxlength="8" id="pinInput" placeholder="••••" style="text-align:center;font-size:22px;letter-spacing:8px" autocomplete="off">`;
+  box.append(f);
+  const btn = el('button', { class: 'btn primary', style: 'width:100%' }); btn.textContent = 'Unlock';
+  btn.addEventListener('click', tryPin);
+  box.append(btn);
+  v.append(box);
+  setTimeout(() => $('#pinInput')?.focus(), 100);
+  $('#pinInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') tryPin(); });
+  function tryPin() {
+    const val = $('#pinInput').value.trim();
+    if (val === String(state.settings.admin_pin || '4545')) {
+      state.isAdmin = true; toast('Welcome, Coach.'); go('#admin/dash');
+    } else { toast('Wrong PIN', 'err'); }
+  }
+}
+async function renderAdminDashboard(v) {
+  // Load all watches across players if not cached
+  if (!state.allWatches) {
+    const { data } = await sb.from('training_watches').select('*').order('watched_at', { ascending: false }).limit(2000);
+    state.allWatches = data || [];
+  }
+  const all = state.allWatches;
+  const finishedAll = all.filter(w => w.finished);
+  const since = (days) => { const d = new Date(Date.now() - days*86400e3); return finishedAll.filter(w => new Date(w.watched_at) >= d); };
+  const week = since(7); const today = since(1);
+  // Top videos
+  const byVid = new Map();
+  for (const w of finishedAll) byVid.set(w.video_id, (byVid.get(w.video_id)||0)+1);
+  const topVideos = [...byVid.entries()].map(([id, n]) => ({ v: state.videos.find(x => x.id === id), n })).filter(x => x.v).sort((a,b)=>b.n-a.n).slice(0,10);
+  // Per-player counts
+  const byPlayer = new Map();
+  for (const w of finishedAll) {
+    if (!byPlayer.has(w.player_id)) byPlayer.set(w.player_id, { count: 0, last: null });
+    const o = byPlayer.get(w.player_id); o.count++;
+    const t = new Date(w.watched_at).getTime(); if (!o.last || t > o.last) o.last = t;
+  }
+  const playerRows = state.players.map(p => ({ p, ...(byPlayer.get(p.id) || { count: 0, last: null }) })).sort((a,b) => b.count - a.count);
+  const totalVideos = state.videos.filter(x => x.category !== 'welcome').length;
+
+  const stats = el('div', { class: 'stat-grid' });
+  stats.innerHTML = `
+    <div class="stat"><div class="lbl">Finishes (All-time)</div><div class="v">${finishedAll.length}</div></div>
+    <div class="stat"><div class="lbl">Last 7 Days</div><div class="v">${week.length}</div></div>
+    <div class="stat"><div class="lbl">Today</div><div class="v">${today.length}</div></div>
+    <div class="stat"><div class="lbl">Videos Total</div><div class="v">${totalVideos}</div></div>
+  `;
+  v.append(stats);
+
+  const lb = el('div', { class: 'section' });
+  lb.innerHTML = '<h2>🏆 Team Leaderboard</h2>';
+  const tbl = el('table', { class: 'lb' });
+  tbl.innerHTML = '<thead><tr><th>Player</th><th class="num">Finished</th><th class="num">Unique</th><th>Last Active</th></tr></thead>';
+  const tbody = el('tbody');
+  for (const r of playerRows) {
+    const uniques = new Set(finishedAll.filter(w => w.player_id === r.p.id).map(w => w.video_id)).size;
+    const tr = el('tr');
+    tr.innerHTML = `<td>${esc(r.p.name)}</td><td class="num">${r.count}</td><td class="num">${uniques} <small style="color:var(--muted)">/ ${totalVideos}</small></td><td>${r.last ? new Date(r.last).toLocaleDateString() : '—'}</td>`;
+    tbody.append(tr);
+  }
+  tbl.append(tbody);
+  lb.append(tbl);
+  v.append(lb);
+
+  const tv = el('div', { class: 'section' });
+  tv.innerHTML = '<h2>📊 Most-Watched Videos</h2>';
+  if (!topVideos.length) { tv.append(emptyState('No completed views yet.')); }
+  else {
+    const tbl2 = el('table', { class: 'lb' });
+    tbl2.innerHTML = '<thead><tr><th>Video</th><th>Category</th><th class="num">Finishes</th></tr></thead>';
+    const tbody2 = el('tbody');
+    for (const { v, n } of topVideos) {
+      const tr = el('tr');
+      tr.innerHTML = `<td>${esc(v.title)}</td><td><small style="color:var(--muted)">${esc(sectionLabel(v.category))}${v.sub_cat ? ' · '+esc(subcatLabel(v.sub_cat)) : ''}</small></td><td class="num">${n}</td>`;
+      tbody2.append(tr);
+    }
+    tbl2.append(tbody2);
+    tv.append(tbl2);
+  }
+  v.append(tv);
+}
+
+function renderAdminVideos(v, vidId) {
+  if (vidId === 'new') return renderVideoForm(v, null);
+  if (vidId) { const vd = state.videos.find(x => x.id === vidId); if (vd) return renderVideoForm(v, vd); }
+  const addBtn = el('button', { class: 'btn primary', style: 'margin-bottom:14px' });
+  addBtn.innerHTML = '+ Add Video';
+  addBtn.addEventListener('click', () => go('#admin/videos/new'));
+  v.append(addBtn);
+  if (!state.videos.length) { v.append(emptyState('No videos yet. Tap "Add Video" to paste your first YouTube URL.')); return; }
+  const cats = ['practice','101','nba','welcome'];
+  for (const c of cats) {
+    const list = state.videos.filter(x => x.category === c);
+    if (!list.length) continue;
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>${esc(sectionLabel(c))} <span class="count">${list.length}</span></h2>`;
+    for (const vd of list) {
+      const row = el('div', { class: 'admin-row' });
+      row.innerHTML = `<div class="t"><b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${esc(vd.youtube_id || 'no video')}${vd.sub_cat ? ' · '+esc(subcatLabel(vd.sub_cat)) : ''}${(vd.tags||[]).length ? ' · '+esc((vd.tags||[]).join(', ')) : ''}</small></div><div class="actions"></div>`;
+      const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', () => go(`#admin/videos/${vd.id}`));
+      const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
+      delBtn.addEventListener('click', async () => {
+        if (!confirm(`Delete "${vd.title}"? This also clears watches/stars for it.`)) return;
+        const { error } = await sb.from('training_videos').delete().eq('id', vd.id);
+        if (error) return toast('Delete failed', 'err');
+        state.videos = state.videos.filter(x => x.id !== vd.id);
+        state.allWatches = null;
+        toast('Deleted'); render();
+      });
+      row.querySelector('.actions').append(editBtn, delBtn);
+      sec.append(row);
+    }
+    v.append(sec);
+  }
+}
+function renderVideoForm(v, vd) {
+  const isNew = !vd;
+  const data = vd ? { ...vd, tags: (vd.tags||[]).join(', ') } : { title:'', youtube_id:'', category:'practice', sub_cat:'', tags:'', summary:'', featured:false, order_idx:0, custom_thumb:'', duration_min:'' };
+  const back = el('button', { class: 'btn ghost', style: 'margin-bottom:14px' }); back.innerHTML = '← Back';
+  back.addEventListener('click', () => go('#admin/videos')); v.append(back);
+  const box = el('div', { class: 'doc' });
+  box.innerHTML = `<h1>${isNew ? 'Add Video' : 'Edit Video'}</h1>`;
+  v.append(box);
+  const form = el('form'); form.addEventListener('submit', async (e) => { e.preventDefault(); await save(); });
+  const mk = (label, inputHtml, hint) => { const f = el('div', { class: 'field' }); f.innerHTML = `<label>${label}</label>${inputHtml}${hint?`<div class="hint">${hint}</div>`:''}`; return f; };
+
+  form.append(mk('YouTube URL or video ID', `<input id="f_url" value="${esc(vd?.youtube_id||'')}" placeholder="https://youtu.be/... or VIDEOID">`, 'Paste any YouTube URL — we extract the ID.'));
+  form.append(mk('Title', `<input id="f_title" value="${esc(data.title)}" required>`));
+  const catRow = el('div', { class: 'grid2' });
+  catRow.append(mk('Category', `<select id="f_cat"><option value="welcome">Welcome</option><option value="practice">Practice Breakdown</option><option value="101">Basketball 101</option><option value="nba">NBA Breakdown</option></select>`));
+  catRow.append(mk('Sub-category (Practice only)', `<select id="f_sub"><option value="">— None —</option><option value="offense">Offense</option><option value="defense">Defense</option><option value="individual">Individual Drills</option></select>`));
+  form.append(catRow);
+  form.append(mk('Tags', `<input id="f_tags" value="${esc(data.tags)}" placeholder="e.g. 1-3-1, transition, screens">`, 'Comma-separated. Used as sub-chips under sub-categories.'));
+  form.append(mk('Summary', `<textarea id="f_summary">${esc(data.summary||'')}</textarea>`));
+  const meta = el('div', { class: 'grid2' });
+  meta.append(mk('Custom thumbnail URL (optional)', `<input id="f_thumb" value="${esc(data.custom_thumb||'')}" placeholder="https://...">`));
+  meta.append(mk('Duration (minutes, optional)', `<input id="f_dur" type="number" min="0" value="${esc(data.duration_min||'')}">`));
+  form.append(meta);
+  const opts = el('div', { class: 'grid2' });
+  opts.append(mk('Order (lower = first)', `<input id="f_order" type="number" value="${esc(data.order_idx||0)}">`));
+  opts.append(mk('Featured (Top Picks)', `<select id="f_feat"><option value="false">No</option><option value="true">Yes</option></select>`));
+  form.append(opts);
+  v.append(form);
+  $('#f_cat').value = data.category; $('#f_sub').value = data.sub_cat||''; $('#f_feat').value = String(!!data.featured);
+
+  const submit = el('button', { class: 'btn primary', style: 'margin-right:8px' }); submit.textContent = isNew ? 'Add Video' : 'Save';
+  submit.addEventListener('click', e => { e.preventDefault(); save(); });
+  v.append(submit);
+  if (!isNew) {
+    const del = el('button', { class: 'btn danger' }); del.textContent = 'Delete';
+    del.addEventListener('click', async () => {
+      if (!confirm(`Delete "${vd.title}"?`)) return;
+      const { error } = await sb.from('training_videos').delete().eq('id', vd.id);
+      if (error) return toast('Delete failed', 'err');
+      state.videos = state.videos.filter(x => x.id !== vd.id); state.allWatches = null;
+      toast('Deleted'); go('#admin/videos');
+    });
+    v.append(del);
+  }
+  async function save() {
+    const yid = parseYouTubeId($('#f_url').value);
+    const row = {
+      title: $('#f_title').value.trim(),
+      youtube_id: yid,
+      category: $('#f_cat').value,
+      sub_cat: ($('#f_cat').value === 'practice' ? ($('#f_sub').value || null) : null),
+      tags: $('#f_tags').value.split(',').map(s => s.trim()).filter(Boolean),
+      summary: $('#f_summary').value,
+      custom_thumb: $('#f_thumb').value.trim() || null,
+      duration_min: parseInt($('#f_dur').value) || null,
+      order_idx: parseInt($('#f_order').value) || 0,
+      featured: $('#f_feat').value === 'true',
+      updated_at: new Date().toISOString(),
+    };
+    if (!row.title) return toast('Title required', 'err');
+    if (!row.youtube_id) return toast('YouTube ID could not be parsed', 'err');
+    let res;
+    if (isNew) res = await sb.from('training_videos').insert(row).select().single();
+    else res = await sb.from('training_videos').update(row).eq('id', vd.id).select().single();
+    if (res.error) { console.error(res.error); return toast(res.error.message || 'Save failed', 'err'); }
+    if (isNew) state.videos.push(res.data); else { const i = state.videos.findIndex(x => x.id === vd.id); if (i>=0) state.videos[i] = res.data; }
+    state.videos.sort((a,b) => (a.order_idx||0) - (b.order_idx||0));
+    toast(isNew ? 'Added' : 'Saved');
+    go('#admin/videos');
+  }
+}
+function renderAdminNotes(v, docId) {
+  if (docId === 'new') return renderNoteForm(v, null);
+  if (docId) { const d = state.documents.find(x => x.id === docId); if (d) return renderNoteForm(v, d); }
+  const addBtn = el('button', { class: 'btn primary', style: 'margin-bottom:14px' });
+  addBtn.innerHTML = '+ Add Note';
+  addBtn.addEventListener('click', () => go('#admin/notes/new'));
+  v.append(addBtn);
+  if (!state.documents.length) { v.append(emptyState('No notes yet.')); return; }
+  for (const d of state.documents) {
+    const row = el('div', { class: 'admin-row' });
+    row.innerHTML = `<div class="t"><b>${esc(d.title)}</b><small>${esc(d.summary||'')}</small></div><div class="actions"></div>`;
+    const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => go(`#admin/notes/${d.id}`));
+    const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
+    delBtn.addEventListener('click', async () => {
+      if (!confirm(`Delete "${d.title}"?`)) return;
+      const { error } = await sb.from('training_documents').delete().eq('id', d.id);
+      if (error) return toast('Delete failed', 'err');
+      state.documents = state.documents.filter(x => x.id !== d.id);
+      toast('Deleted'); render();
+    });
+    row.querySelector('.actions').append(editBtn, delBtn);
+    v.append(row);
+  }
+}
+function renderNoteForm(v, d) {
+  const isNew = !d;
+  const back = el('button', { class: 'btn ghost', style: 'margin-bottom:14px' }); back.innerHTML = '← Back';
+  back.addEventListener('click', () => go('#admin/notes')); v.append(back);
+  const box = el('div', { class: 'doc' });
+  box.innerHTML = `<h1>${isNew ? 'New Note' : 'Edit Note'}</h1>`;
+  v.append(box);
+  const mk = (label, inputHtml) => { const f = el('div', { class: 'field' }); f.innerHTML = `<label>${label}</label>${inputHtml}`; return f; };
+  v.append(mk('Title', `<input id="nf_title" value="${esc(d?.title||'')}">`));
+  v.append(mk('Summary (one line)', `<input id="nf_summary" value="${esc(d?.summary||'')}">`));
+  v.append(mk('Body', `<textarea id="nf_body" style="min-height:260px">${esc(d?.body||'')}</textarea>`));
+  v.append(mk('Order', `<input id="nf_order" type="number" value="${esc(d?.order_idx||0)}">`));
+  const submit = el('button', { class: 'btn primary' }); submit.textContent = isNew ? 'Add Note' : 'Save';
+  submit.addEventListener('click', async () => {
+    const row = { title: $('#nf_title').value.trim(), summary: $('#nf_summary').value, body: $('#nf_body').value, order_idx: parseInt($('#nf_order').value)||0, updated_at: new Date().toISOString() };
+    if (!row.title) return toast('Title required', 'err');
+    let res;
+    if (isNew) res = await sb.from('training_documents').insert(row).select().single();
+    else res = await sb.from('training_documents').update(row).eq('id', d.id).select().single();
+    if (res.error) return toast('Save failed', 'err');
+    if (isNew) state.documents.push(res.data); else { const i = state.documents.findIndex(x => x.id === d.id); if (i>=0) state.documents[i] = res.data; }
+    state.documents.sort((a,b) => (a.order_idx||0)-(b.order_idx||0));
+    toast(isNew ? 'Added' : 'Saved');
+    go('#admin/notes');
+  });
+  v.append(submit);
+}
+function renderAdminSettings(v) {
+  const s = state.settings;
+  const mk = (key, label, inputHtml, hint) => { const f = el('div', { class: 'field' }); f.innerHTML = `<label>${label}</label>${inputHtml}${hint?`<div class="hint">${hint}</div>`:''}`; f.dataset.key = key; return f; };
+  v.append(mk('admin_pin', 'Admin PIN', `<input id="s_pin" type="text" value="${esc(s.admin_pin||'')}" maxlength="12">`));
+  v.append(mk('welcome_copy', 'Home welcome copy', `<textarea id="s_copy" style="min-height:180px">${esc(s.welcome_copy||'')}</textarea>`, 'Shows at the top of Home. Plain text; line breaks are preserved.'));
+  v.append(mk('welcome_video_youtube_id', 'Welcome video YouTube URL or ID', `<input id="s_welcome_vid" value="${esc(s.welcome_video_youtube_id||'')}" placeholder="https://youtu.be/... or paste ID">`));
+  v.append(mk('team_color', 'Team accent color', `<input id="s_color" type="color" value="${esc(s.team_color||'#FF6A1F')}">`));
+  v.append(mk('top_picks_count', "How many Top Picks to show", `<input id="s_top" type="number" min="1" max="20" value="${esc(s.top_picks_count||6)}">`));
+  v.append(mk('section_labels.documents', `"Coach's Notes" tab label`, `<input id="s_notes_label" value="${esc((s.section_labels||{}).documents||"Coach's Notes")}">`));
+  const submit = el('button', { class: 'btn primary' }); submit.textContent = 'Save Settings';
+  submit.addEventListener('click', async () => {
+    const upserts = [
+      { key: 'admin_pin', value: $('#s_pin').value },
+      { key: 'welcome_copy', value: $('#s_copy').value },
+      { key: 'welcome_video_youtube_id', value: parseYouTubeId($('#s_welcome_vid').value) || null },
+      { key: 'team_color', value: $('#s_color').value },
+      { key: 'top_picks_count', value: parseInt($('#s_top').value)||6 },
+      { key: 'section_labels', value: { ...(s.section_labels||{}), documents: $('#s_notes_label').value } },
+    ];
+    for (const u of upserts) {
+      await sb.from('training_settings').upsert({ ...u, updated_at: new Date().toISOString() });
+    }
+    Object.assign(state.settings, Object.fromEntries(upserts.map(u => [u.key, u.value])));
+    toast('Settings saved'); render();
+  });
+  v.append(submit);
+  // Switch player & sign out admin
+  const danger = el('div', { style: 'margin-top:40px;padding-top:20px;border-top:1px dashed var(--border)' });
+  const out = el('button', { class: 'btn' }); out.textContent = 'Lock Admin';
+  out.addEventListener('click', () => { state.isAdmin = false; toast('Locked'); go('#home'); });
+  danger.append(out);
+  v.append(danger);
+}
+
+// ---------- Boot ----------
+async function boot() {
+  try {
+    await loadGlobals();
+  } catch (e) {
+    console.error(e); toast('Could not load data — check internet', 'err');
+  }
+  // brand click → home; whoami → switch
+  $('#brand-btn').addEventListener('click', () => { if (state.player) go('#home'); });
+  $('#whoami').addEventListener('click', switchPlayer);
+  $('#admin-entry').addEventListener('click', () => go('#admin'));
+  $('#vm-close').addEventListener('click', closeVideo);
+  $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#vmodal').classList.contains('on')) closeVideo(); });
+  window.addEventListener('hashchange', route);
+  // Nav clicks
+  document.body.addEventListener('click', e => {
+    const link = e.target.closest('.navlink[data-route]'); if (!link) return;
+    const r = link.getAttribute('data-route'); if (r) location.hash = r;
+  });
+  // Default route
+  if (!location.hash) location.hash = '#home';
+  // Sync state.route from URL (render bails until player is selected)
+  route();
+  // Always show picker — no auto-resume
+  renderPicker();
+}
+
+boot();
+</script>
+</body>
+</html>
