@@ -776,6 +776,7 @@ async function recordWatch(videoId, pct, finished) {
   const { data, error } = await sb.from('training_watches').insert(row).select().single();
   if (error) { console.error(error); return null; }
   state.watches.unshift(data);
+  state.allWatches = null; // invalidate admin cache so dashboard reflects this finish on next open
   return data;
 }
 async function toggleStar(videoId) {
@@ -786,6 +787,7 @@ async function toggleStar(videoId) {
     state.stars.add(videoId);
     await sb.from('training_stars').insert({ player_id: state.player.id, video_id: videoId });
   }
+  state.allStars = null; // invalidate admin cache
 }
 
 // ---------- Helpers on state ----------
@@ -940,6 +942,36 @@ function welcomeHero() {
 
 function renderHome(v) {
   v.append(welcomeHero());
+  // Your progress strip — small motivational stat-row showing finished + current level + active streak
+  const fin = finishedSetForPlayer();
+  const groups = groupByLevel();
+  let curLevel = null, curDone = 0, curTotal = 0;
+  for (const [lvl, vids] of groups) {
+    const done = vids.filter(vd => fin.has(vd.id)).length;
+    if (done < vids.length) { curLevel = lvl; curDone = done; curTotal = vids.length; break; }
+  }
+  // If every leveled video is done, show the final level as "complete"
+  if (!curLevel && groups.length) {
+    const [lastLvl, lastVids] = groups[groups.length - 1];
+    curLevel = lastLvl; curDone = lastVids.length; curTotal = lastVids.length;
+  }
+  const lastWatch = state.watches[0] ? new Date(state.watches[0].watched_at) : null;
+  const daysSince = lastWatch ? Math.floor((Date.now() - lastWatch.getTime()) / 86400e3) : null;
+  const lastBit = lastWatch ? (daysSince === 0 ? 'today 🔥' : daysSince === 1 ? 'yesterday' : `${daysSince}d ago`) : '—';
+  if (groups.length || state.watches.length) {
+    const lvlPct = curTotal ? Math.round(curDone / curTotal * 100) : 0;
+    const ps = el('div', { class: 'stat-grid', style: 'margin-bottom:18px' });
+    ps.innerHTML = `
+      <div class="stat" style="position:relative;overflow:hidden">
+        <div class="lbl">Current Level</div>
+        <div class="v">${curLevel ? 'L' + curLevel : '—'} <small>${curDone}/${curTotal}</small></div>
+        ${curLevel ? `<div class="lprog" style="margin-top:8px"><div class="fill" style="width:${lvlPct}%"></div></div>` : ''}
+      </div>
+      <div class="stat"><div class="lbl">Finished</div><div class="v">${fin.size}</div></div>
+      <div class="stat"><div class="lbl">Last Watched</div><div class="v" style="font-size:18px">${lastBit}</div></div>
+    `;
+    v.append(ps);
+  }
   // Continue training (Lessons CTA)
   const nu = nextUpLesson();
   if (nu) {
@@ -972,19 +1004,10 @@ function renderHome(v) {
     sec.append(buildVidGrid(featured));
     v.append(sec);
   }
-  // Quick stats for the player
-  const finished = finishedSetForPlayer();
-  const watchedCount = finished.size;
-  const total = state.videos.filter(x => x.category !== 'welcome').length;
-  if (total > 0) {
-    const sg = el('div', { class: 'stat-grid' });
-    sg.innerHTML = `
-      <div class="stat"><div class="lbl">Videos Watched</div><div class="v">${watchedCount} <small>/ ${total}</small></div></div>
-      <div class="stat"><div class="lbl">Starred</div><div class="v">${state.stars.size}</div></div>
-      <div class="stat"><div class="lbl">Total Plays</div><div class="v">${state.watches.length}</div></div>
-    `;
-    v.append(sg);
-  }
+  // (Old "Videos Watched / Starred / Total Plays" stat-grid removed — the "Your progress" strip
+  //  at the top now covers the headline numbers; Stars + total plays are accessible via Mine
+  //  and Lessons.)
+
   // Recently added (most recent created_at across all categories)
   const recent = [...state.videos].filter(v=>v.category!=='welcome').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8);
   if (recent.length) {
@@ -1706,6 +1729,7 @@ function renderAdmin(v, parts) {
   v.append(tabs);
   const t = parts[0] || 'dash';
   if (t === 'dash') return renderAdminDashboard(v);
+  if (t === 'player') return renderAdminPlayer(v, parts[1]);
   if (t === 'videos') return renderAdminVideos(v, parts[1]);
   if (t === 'notes') return renderAdminNotes(v, parts[1]);
   if (t === 'settings') return renderAdminSettings(v);
@@ -1729,12 +1753,18 @@ function renderAdminPin(v) {
     } else { toast('Wrong PIN', 'err'); }
   }
 }
-async function renderAdminDashboard(v) {
-  // Load all watches across players if not cached
+async function loadAdminGlobals() {
   if (!state.allWatches) {
     const { data } = await sb.from('training_watches').select('*').order('watched_at', { ascending: false }).limit(2000);
     state.allWatches = data || [];
   }
+  if (!state.allStars) {
+    const { data } = await sb.from('training_stars').select('*');
+    state.allStars = data || [];
+  }
+}
+async function renderAdminDashboard(v) {
+  await loadAdminGlobals();
   const all = state.allWatches;
   const finishedAll = all.filter(w => w.finished);
   const since = (days) => { const d = new Date(Date.now() - days*86400e3); return finishedAll.filter(w => new Date(w.watched_at) >= d); };
@@ -1770,7 +1800,10 @@ async function renderAdminDashboard(v) {
   for (const r of playerRows) {
     const uniques = new Set(finishedAll.filter(w => w.player_id === r.p.id).map(w => w.video_id)).size;
     const tr = el('tr');
-    tr.innerHTML = `<td>${esc(r.p.name)}</td><td class="num">${r.count}</td><td class="num">${uniques} <small style="color:var(--muted)">/ ${totalVideos}</small></td><td>${r.last ? new Date(r.last).toLocaleDateString() : '—'}</td>`;
+    tr.style.cursor = 'pointer';
+    tr.title = 'View this player\'s progress';
+    tr.innerHTML = `<td><b style="color:var(--accent-2)">${esc(r.p.name)} →</b></td><td class="num">${r.count}</td><td class="num">${uniques} <small style="color:var(--muted)">/ ${totalVideos}</small></td><td>${r.last ? new Date(r.last).toLocaleDateString() : '—'}</td>`;
+    tr.addEventListener('click', () => go('#admin/player/' + r.p.id));
     tbody.append(tr);
   }
   tbl.append(tbody);
@@ -1793,6 +1826,136 @@ async function renderAdminDashboard(v) {
     tv.append(tbl2);
   }
   v.append(tv);
+}
+
+async function renderAdminPlayer(v, playerId) {
+  await loadAdminGlobals();
+  const p = state.players.find(x => x.id === playerId);
+  if (!p) { v.append(emptyState('Player not found.')); return; }
+
+  const back = el('button', { class: 'btn ghost', style: 'margin-bottom:14px' });
+  back.innerHTML = '← Back to Dashboard';
+  back.addEventListener('click', () => go('#admin/dash'));
+  v.append(back);
+
+  // Header: avatar + name + headline stats
+  const myWatches = state.allWatches.filter(w => w.player_id === playerId);
+  const myFinished = myWatches.filter(w => w.finished);
+  const myStars = (state.allStars || []).filter(s => s.player_id === playerId);
+  const uniqueFinished = new Set(myFinished.map(w => w.video_id)).size;
+  const lastActive = myWatches.length ? new Date(Math.max(...myWatches.map(w => new Date(w.watched_at).getTime()))) : null;
+  const daysSince = lastActive ? Math.floor((Date.now() - lastActive.getTime()) / 86400e3) : null;
+
+  const hdr = el('div', { class: 'h-hero', style: 'margin-bottom:18px' });
+  hdr.innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;position:relative">
+      <div style="width:62px;height:62px;border-radius:50%;background:${colorFor(p.name)};display:grid;place-items:center;color:#fff;font-weight:900;font-size:22px;flex:none">${initials(p.name)}</div>
+      <div style="flex:1;min-width:0">
+        <h1 style="margin-bottom:2px;font-size:24px">${esc(p.name)}</h1>
+        <div style="color:var(--muted);font-size:13px">${myFinished.length} finishes · ${uniqueFinished} unique videos · ${myStars.length} starred · ${lastActive ? (daysSince === 0 ? 'active today' : `last active ${daysSince}d ago`) : 'no activity yet'}</div>
+      </div>
+    </div>
+  `;
+  v.append(hdr);
+
+  // Per-level progress
+  const finishedSet = new Set(myFinished.map(w => w.video_id));
+  const groups = groupByLevel();
+  const progSec = el('div', { class: 'section' });
+  progSec.innerHTML = `<h2>🎯 Lesson Progress</h2>`;
+  v.append(progSec);
+  if (!groups.length) {
+    v.append(emptyState('No leveled videos yet — set levels on videos in Admin → Videos.'));
+  } else {
+    // Find first incomplete level to highlight as "current"
+    let currentLvl = null;
+    for (const [lvl, vids] of groups) {
+      const done = vids.filter(vd => finishedSet.has(vd.id)).length;
+      if (done < vids.length) { currentLvl = lvl; break; }
+    }
+    for (const [lvl, vids] of groups) {
+      const done = vids.filter(vd => finishedSet.has(vd.id)).length;
+      const pct = vids.length ? Math.round(done / vids.length * 100) : 0;
+      const complete = done === vids.length && vids.length > 0;
+      const isCurrent = lvl === currentLvl;
+      const lt = levelTitleFor(lvl);
+      const row = el('div', { class: 'lesson' + (complete ? ' complete' : '') + (isCurrent ? ' open' : ''), style: 'margin-bottom:8px' });
+      row.innerHTML = `
+        <div class="lhead">
+          <div class="lnum">${complete ? '✓' : lvl}</div>
+          <div class="ltxt">
+            <div class="t">Level ${lvl}${lt ? ` <small>· ${esc(lt)}</small>` : ''} <small>· ${done}/${vids.length}${isCurrent ? ' · current' : ''}</small></div>
+            <div class="lprog"><div class="fill" style="width:${pct}%"></div></div>
+          </div>
+          <div class="larr">›</div>
+        </div>
+      `;
+      // Expandable: list the videos under each level with done/not-done state
+      const body = el('div', { class: 'lbody' });
+      vids.forEach((vd, i) => {
+        const isDone = finishedSet.has(vd.id);
+        const myViewsOfThis = myFinished.filter(w => w.video_id === vd.id).length;
+        const r = el('div', { class: 'lesson-vid' + (isDone ? ' done' : '') });
+        r.innerHTML = `
+          <div class="lvn">${isDone ? '✓' : i + 1}</div>
+          <div class="lvt">${esc(vd.title)}<small>${esc(sectionLabel(vd.category))}${myViewsOfThis ? ' · watched ' + myViewsOfThis + '×' : ''}</small></div>
+        `;
+        body.append(r);
+      });
+      row.append(body);
+      row.querySelector('.lhead').addEventListener('click', () => row.classList.toggle('open'));
+      v.append(row);
+    }
+  }
+
+  // Watch history (last 20 with Show More)
+  const histSec = el('div', { class: 'section' });
+  histSec.innerHTML = `<h2>📺 Watch History <span class="count">${myFinished.length}</span></h2>`;
+  v.append(histSec);
+  if (!myFinished.length) {
+    v.append(emptyState('No finished videos yet.'));
+  } else {
+    const sorted = [...myFinished].sort((a, b) => new Date(b.watched_at) - new Date(a.watched_at));
+    const histWrap = el('div');
+    function renderHistory(limit) {
+      histWrap.innerHTML = '';
+      const slice = sorted.slice(0, limit);
+      for (const w of slice) {
+        const vd = state.videos.find(x => x.id === w.video_id);
+        if (!vd) continue;
+        const row = el('div', { class: 'admin-row' });
+        const when = new Date(w.watched_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+        row.innerHTML = `<div class="t"><b>${esc(vd.title)}</b><small>${esc(sectionLabel(vd.category))}${vd.level ? ' · Level ' + vd.level : ''} · ${when}</small></div>`;
+        histWrap.append(row);
+      }
+      if (sorted.length > limit) {
+        const more = el('button', { class: 'btn ghost', style: 'margin-top:8px' });
+        more.textContent = `Show ${Math.min(20, sorted.length - limit)} more (${sorted.length - limit} remaining)`;
+        more.addEventListener('click', () => renderHistory(limit + 20));
+        histWrap.append(more);
+      }
+    }
+    renderHistory(20);
+    v.append(histWrap);
+  }
+
+  // Starred videos
+  const starSec = el('div', { class: 'section' });
+  starSec.innerHTML = `<h2>⭐ Starred <span class="count">${myStars.length}</span></h2>`;
+  v.append(starSec);
+  if (!myStars.length) {
+    v.append(emptyState(`${p.name.split(/\s+/)[0]} hasn't starred anything yet.`));
+  } else {
+    const starWrap = el('div');
+    for (const s of myStars) {
+      const vd = state.videos.find(x => x.id === s.video_id);
+      if (!vd) continue;
+      const row = el('div', { class: 'admin-row' });
+      row.innerHTML = `<div class="t"><b>${esc(vd.title)}</b><small>${esc(sectionLabel(vd.category))}${vd.level ? ' · Level ' + vd.level : ''}</small></div>`;
+      starWrap.append(row);
+    }
+    v.append(starWrap);
+  }
 }
 
 function renderAdminVideos(v, vidId) {
