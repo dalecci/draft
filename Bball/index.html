@@ -1059,7 +1059,7 @@ function renderLessons(v, levelKey) {
     head.innerHTML = `
       <div class="lnum">${complete ? '✓' : lvl}</div>
       <div class="ltxt">
-        <div class="t">Level ${lvl}${lt ? ` <small>· ${esc(lt)}</small>` : ''} <small>· ${done}/${total} done</small></div>
+        <div class="t">Level ${lvl}${lt ? ` · ${esc(lt)}` : ''} <small>· ${done}/${total} done</small></div>
         <div class="lprog"><div class="fill" style="width:${pct}%"></div></div>
       </div>
       <div class="larr">›</div>`;
@@ -1890,7 +1890,7 @@ async function renderAdminPlayer(v, playerId) {
         <div class="lhead">
           <div class="lnum">${complete ? '✓' : lvl}</div>
           <div class="ltxt">
-            <div class="t">Level ${lvl}${lt ? ` <small>· ${esc(lt)}</small>` : ''} <small>· ${done}/${vids.length}${isCurrent ? ' · current' : ''}</small></div>
+            <div class="t">Level ${lvl}${lt ? ` · ${esc(lt)}` : ''} <small>· ${done}/${vids.length}${isCurrent ? ' · current' : ''}</small></div>
             <div class="lprog"><div class="fill" style="width:${pct}%"></div></div>
           </div>
           <div class="larr">›</div>
