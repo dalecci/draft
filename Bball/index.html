@@ -553,13 +553,8 @@
     <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Warriors Playbook</div>
     <h6>Library</h6>
     <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice Breakdown</div>
-    <div class="subnav" id="sub-practice">
-      <div class="navlink" data-route="#practice/offense">Offense</div>
-      <div class="navlink" data-route="#practice/defense">Defense</div>
-      <div class="navlink" data-route="#practice/individual">Individual Drills</div>
-    </div>
-    <div class="navlink" data-route="#bball101"><span class="ic">📘</span> Basketball 101</div>
-    <div class="navlink" data-route="#nba"><span class="ic">🏆</span> NBA Breakdown</div>
+    <div class="navlink cat-toggle" data-route="#bball101" data-cat="101"><span class="ic">📘</span> Basketball 101</div>
+    <div class="navlink cat-toggle" data-route="#nba" data-cat="nba"><span class="ic">🏆</span> NBA Breakdown</div>
     <div class="navlink" data-route="#notes"><span class="ic">📝</span> Coach's Notes</div>
     <div class="admin-btn" id="admin-entry">⚙️ Admin</div>
   </aside>
@@ -761,6 +756,15 @@ async function loadGlobals() {
   state.videos = v.data || [];
   state.documents = d.data || [];
   state.plays = plays.data || [];
+  applyCategoryVisibility();
+}
+function applyCategoryVisibility() {
+  // Hide left-sidebar category links per training_settings.category_visibility (e.g. {"101": false, "nba": false})
+  const vis = state.settings.category_visibility || {};
+  document.querySelectorAll('.navlink.cat-toggle').forEach(el => {
+    const key = el.getAttribute('data-cat');
+    el.style.display = (vis[key] === false) ? 'none' : '';
+  });
 }
 async function loadPlayerData() {
   if (!state.player) return;
@@ -1381,6 +1385,28 @@ function renderMine(v) {
 function renderPractice(v, sub) {
   const all = vidsByCat('practice');
   v.append(buildSectionHeader('🏀', sectionLabel('practice'), all.length));
+
+  // Tag chips at the top — pulled from ALL practice videos, regardless of sub-cat. Lets coach
+  // create new groupings on-the-fly just by tagging videos (no admin work needed).
+  const activeTag = state.query.tag || '';
+  const tagPool = sub ? vidsBySub(sub) : all;
+  const tagSet = new Set();
+  tagPool.forEach(vd => (vd.tags||[]).forEach(t => tagSet.add(t)));
+  if (tagSet.size) {
+    const tagChips = el('div', { class: 'chips' });
+    const allBtn = el('button', { class: 'chip' + (activeTag ? '' : ' on') });
+    allBtn.textContent = 'All tags';
+    allBtn.addEventListener('click', () => go(sub ? `#practice/${sub}` : '#practice'));
+    tagChips.append(allBtn);
+    [...tagSet].sort().forEach(t => {
+      const c = el('button', { class: 'chip' + (activeTag === t ? ' on' : '') });
+      c.textContent = t;
+      c.addEventListener('click', () => go(`#practice${sub ? '/' + sub : ''}?tag=${encodeURIComponent(t)}`));
+      tagChips.append(c);
+    });
+    v.append(tagChips);
+  }
+
   // Sub-cat chips
   const chips = el('div', { class: 'chips' });
   const mkChip = (key, label) => {
@@ -1390,31 +1416,11 @@ function renderPractice(v, sub) {
     return c;
   };
   chips.append(mkChip('', 'All'));
-  for (const sk of ['offense','defense','individual']) chips.append(mkChip(sk, subcatLabel(sk)));
+  for (const sk of ['offense','defense','individual','pickroll']) chips.append(mkChip(sk, subcatLabel(sk)));
   v.append(chips);
 
   let list = sub ? vidsBySub(sub) : all;
-  // Tag sub-chips if there's a sub-cat selected
-  if (sub) {
-    const tagSet = new Set();
-    list.forEach(v => (v.tags||[]).forEach(t => tagSet.add(t)));
-    const activeTag = state.query.tag;
-    if (tagSet.size) {
-      const tagChips = el('div', { class: 'chips', style: 'margin-top:-8px;margin-bottom:14px;' });
-      const allBtn = el('button', { class: 'chip' + (activeTag ? '' : ' on') });
-      allBtn.textContent = 'All tags';
-      allBtn.addEventListener('click', () => go(`#practice/${sub}`));
-      tagChips.append(allBtn);
-      [...tagSet].sort().forEach(t => {
-        const c = el('button', { class: 'chip' + (activeTag === t ? ' on' : '') });
-        c.textContent = t;
-        c.addEventListener('click', () => go(`#practice/${sub}?tag=${encodeURIComponent(t)}`));
-        tagChips.append(c);
-      });
-      v.append(tagChips);
-    }
-    if (activeTag) list = list.filter(v => (v.tags||[]).includes(activeTag));
-  }
+  if (activeTag) list = list.filter(vd => (vd.tags||[]).includes(activeTag));
   if (!list.length) v.append(emptyState('No videos in this category yet.'));
   else v.append(buildVidGrid(list));
 }
@@ -2015,7 +2021,7 @@ function renderVideoForm(v, vd) {
   form.append(mk('Title', `<input id="f_title" value="${esc(data.title)}" required>`));
   const catRow = el('div', { class: 'grid2' });
   catRow.append(mk('Category', `<select id="f_cat"><option value="welcome">Welcome</option><option value="practice">Practice Breakdown</option><option value="101">Basketball 101</option><option value="nba">NBA Breakdown</option></select>`));
-  catRow.append(mk('Sub-category (Practice only)', `<select id="f_sub"><option value="">— None —</option><option value="offense">Offense</option><option value="defense">Defense</option><option value="individual">Individual Drills</option></select>`));
+  catRow.append(mk('Sub-category (Practice only)', `<select id="f_sub"><option value="">— None —</option><option value="offense">Offense</option><option value="defense">Defense</option><option value="individual">Individual Drills</option><option value="pickroll">Pick N Roll</option></select>`));
   form.append(catRow);
   form.append(mk('Tags', `<input id="f_tags" value="${esc(data.tags)}" placeholder="e.g. 1-3-1, transition, screens">`, 'Comma-separated. Used as sub-chips under sub-categories.'));
   form.append(mk('Summary', `<textarea id="f_summary">${esc(data.summary||'')}</textarea>`));
@@ -2169,6 +2175,23 @@ function renderAdminSettings(v) {
   v.append(mk('top_picks_count', "How many Top Picks to show", `<input id="s_top" type="number" min="1" max="20" value="${esc(s.top_picks_count||6)}">`));
   v.append(mk('section_labels.documents', `"Coach's Notes" tab label`, `<input id="s_notes_label" value="${esc((s.section_labels||{}).documents||"Coach's Notes")}">`));
 
+  // Category visibility toggles
+  const cv = s.category_visibility || {};
+  const catVisField = el('div', { class: 'field' });
+  catVisField.innerHTML = `<label>Show categories in left menu</label>
+    <div class="hint" style="margin-bottom:8px">Uncheck to hide a category from the sidebar / bottom nav.</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="cv_101" ${cv['101'] === false ? '' : 'checked'} style="width:18px;height:18px;accent-color:var(--accent)"/>
+        📘 Basketball 101
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer">
+        <input type="checkbox" id="cv_nba" ${cv['nba'] === false ? '' : 'checked'} style="width:18px;height:18px;accent-color:var(--accent)"/>
+        🏆 NBA Breakdown
+      </label>
+    </div>`;
+  v.append(catVisField);
+
   // Level titles editor
   const usedLevels = [...new Set(state.videos.map(x => x.level).filter(n => n != null))].sort((a,b)=>a-b);
   const titlesField = el('div', { class: 'field' });
@@ -2196,11 +2219,13 @@ function renderAdminSettings(v) {
       { key: 'top_picks_count', value: parseInt($('#s_top').value)||6 },
       { key: 'section_labels', value: { ...(s.section_labels||{}), documents: $('#s_notes_label').value } },
       { key: 'level_titles', value: newLevelTitles },
+      { key: 'category_visibility', value: { '101': $('#cv_101').checked, 'nba': $('#cv_nba').checked } },
     ];
     for (const u of upserts) {
       await sb.from('training_settings').upsert({ ...u, updated_at: new Date().toISOString() });
     }
     Object.assign(state.settings, Object.fromEntries(upserts.map(u => [u.key, u.value])));
+    applyCategoryVisibility(); // refresh sidebar visibility immediately
     toast('Settings saved'); render();
   });
   v.append(submit);
