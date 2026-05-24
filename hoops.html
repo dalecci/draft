@@ -1094,6 +1094,12 @@ const RATING_ATTRS = [
   { key: 'rb',  label: 'Rebounding', short: 'Re' },
   { key: 'sp',  label: 'Speed',      short: 'Sp' },
 ];
+const RATINGS_PIN = '4545';
+let ratingsUnlocked = false; // session-only; resets on reload
+
+const LINEUP_HIDE_RATINGS_KEY = 'hoops-lineup-hide-ratings';
+function isLineupRatingsHidden() { return lsGet(LINEUP_HIDE_RATINGS_KEY) === '1'; }
+function setLineupRatingsHidden(v) { lsSet(LINEUP_HIDE_RATINGS_KEY, v ? '1' : '0'); }
 function loadRatings() {
   try { return JSON.parse(lsGet(RATINGS_LS_KEY) || '{}') || {}; } catch(e) { return {}; }
 }
@@ -2439,9 +2445,15 @@ function renderLineup(root) {
     `Tap any position slot to pick a player. Badge on the chip shows how many quarters that player is in.`
   ));
 
+  const hideRatings = isLineupRatingsHidden();
+
   wrap.append(el('div', { class: 'lu-actions' },
     el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
     el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
+    el('button', { class: 'nav-btn', onclick: () => {
+      setLineupRatingsHidden(!hideRatings);
+      render();
+    }}, hideRatings ? '👁 Show ratings' : '🙈 Hide ratings'),
     el('button', { class: 'nav-btn', onclick: () => {
       if (!confirm('Clear all quarters?')) return;
       luSave(luDefault());
@@ -2451,7 +2463,7 @@ function renderLineup(root) {
 
   // ----- Game-wide total -----
   const allIds = LU_QUARTERS.flatMap(q => luQuarterIds(lu, q));
-  if (allIds.length > 0) {
+  if (!hideRatings && allIds.length > 0) {
     const totalAgg = aggregateRatings(allIds);
     const totalCard = el('div', { class: 'lu-total-card' });
     totalCard.append(el('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' },
@@ -2508,7 +2520,7 @@ function renderLineup(root) {
     qCard.append(slotsWrap);
 
     const qIds = luQuarterIds(lu, q);
-    if (qIds.length > 0) {
+    if (!hideRatings && qIds.length > 0) {
       qCard.append(buildStatsPanel(aggregateRatings(qIds), `${q} score`));
     }
 
@@ -2520,6 +2532,7 @@ function renderLineup(root) {
 }
 
 function buildChip(p, usage, opts) {
+  const hideRating = isLineupRatingsHidden();
   const classes = ['lu-chip'];
   if (usage >= 1) classes.push(`use-${Math.min(usage, 4)}`);
 
@@ -2535,7 +2548,7 @@ function buildChip(p, usage, opts) {
     numNode,
     el('span', { class: 'lu-name' }, p.name),
     posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
-    el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
+    hideRating ? null : el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
     el('span', { class: 'lu-badge', title: 'Quarters used' }, `${usage}/${LU_QUARTERS.length}`),
     el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
       e.stopPropagation();
@@ -2558,12 +2571,57 @@ function statClass(v) {
   return 'mid';
 }
 
+function renderRatingsLock(wrap) {
+  const card = el('div', { class: 'card', style: 'max-width:380px;margin:60px auto;padding:28px 24px;text-align:center' },
+    el('div', { style: 'font-size:30px;margin-bottom:6px' }, '🔒'),
+    el('h3', { style: 'color:var(--gold-2);letter-spacing:0.18em;margin:0 0 6px' }, 'Ratings locked'),
+    el('p', { style: 'color:var(--muted);font-size:13px;margin:0 0 18px' }, 'Enter PIN to unlock'),
+    el('input', {
+      type: 'password', id: 'ratings-pin', inputmode: 'numeric', maxlength: '8',
+      autocomplete: 'off', placeholder: '••••',
+      style: 'width:100%;padding:14px;border-radius:10px;border:1px solid var(--border-strong);background:rgba(0,0,0,0.3);color:var(--text);font-size:22px;text-align:center;letter-spacing:10px;font-family:inherit',
+    }),
+    el('div', { id: 'ratings-pin-err', style: 'color:#f0746c;font-size:12px;min-height:18px;margin-top:8px;letter-spacing:0.06em;font-weight:600' }, ''),
+    el('button', { class: 'btn btn-primary', style: 'margin-top:10px;width:100%', onclick: tryUnlockRatings }, 'Unlock'),
+  );
+  wrap.append(card);
+  setTimeout(() => {
+    const input = $('#ratings-pin');
+    if (!input) return;
+    input.focus();
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlockRatings(); });
+  }, 30);
+}
+
+function tryUnlockRatings() {
+  const v = ($('#ratings-pin')?.value || '').trim();
+  if (v === RATINGS_PIN) {
+    ratingsUnlocked = true;
+    render();
+  } else {
+    const err = $('#ratings-pin-err');
+    if (err) err.textContent = 'Incorrect PIN';
+    const input = $('#ratings-pin');
+    if (input) { input.value = ''; input.focus(); }
+  }
+}
+
 function renderRatings(root) {
   const wrap = el('div');
   wrap.append(el('div', { class: 'game-header' },
     el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
     el('h2', { style: 'margin:0' }, 'Ratings'),
+    el('div', { class: 'header-spacer' }),
+    ratingsUnlocked ? el('button', { class: 'nav-btn', onclick: () => {
+      ratingsUnlocked = false; render();
+    }}, '🔒 Lock') : null,
   ));
+
+  if (!ratingsUnlocked) {
+    renderRatingsLock(wrap);
+    root.append(wrap);
+    return;
+  }
 
   if (!state.players.length) {
     wrap.append(el('div', { class: 'wo-empty' }, 'No players yet — add some on the Roster page'));
@@ -2797,6 +2855,7 @@ function openPickerModal(q, slot) {
         : sameQ ? `Move from ${existingSlot}`
         : `${usage}/${LU_QUARTERS.length}`;
 
+      const hideRating = isLineupRatingsHidden();
       const row = el('div', { class: `picker-row${isCurrent ? ' current' : ''}` },
         numNode,
         el('div', {},
@@ -2806,7 +2865,7 @@ function openPickerModal(q, slot) {
         el('div', { class: 'picker-meta' },
           posLabel(p.position) ? el('span', { class: 'picker-pos' }, posLabel(p.position)) : null,
         ),
-        el('div', { class: `picker-ovr ${ovrClass}` }, ovrText),
+        hideRating ? null : el('div', { class: `picker-ovr ${ovrClass}` }, ovrText),
       );
       row.addEventListener('click', () => {
         const cur = luLoad();
