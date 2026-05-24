@@ -652,6 +652,15 @@
     background: rgba(212,175,55,0.18); color: var(--gold-2);
     border: 1px solid rgba(212,175,55,0.35);
   }
+  .lu-chip .lu-ovr {
+    font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums;
+    padding: 2px 7px; border-radius: 6px; line-height: 1;
+    background: rgba(212,175,55,0.16); color: var(--gold-2);
+    border: 1px solid rgba(212,175,55,0.35);
+  }
+  .lu-chip .lu-ovr.low  { background: rgba(240,87,79,0.16);  color: #f0746c; border-color: rgba(240,87,79,0.4); }
+  .lu-chip .lu-ovr.high { background: rgba(63,185,132,0.16); color: #6bd49a; border-color: rgba(63,185,132,0.45); }
+  .lu-chip .lu-ovr.none { background: transparent; color: var(--muted-2); border-color: var(--border); font-weight: 600; }
   .lu-chip .lu-badge {
     font-size: 10px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 999px;
     background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700;
@@ -2479,10 +2488,14 @@ function buildChip(p, usage, opts) {
     : el('span', { class: 'lu-num no-num' }, '·');
 
   const posTag = posLabel(p.position);
+  const overall = playerOverallRating(p.id);
+  const ovrClass = statClass(overall);
+  const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
   const children = [
     numNode,
     el('span', { class: 'lu-name' }, p.name),
     posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
+    el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
     el('span', { class: 'lu-badge' }, `${usage}/${LU_MAX_Q_PER_PLAYER}`),
   ].filter(Boolean);
 
