@@ -392,15 +392,21 @@
   /* Roster view */
   .roster-list { display: grid; gap: 8px; }
   .roster-row {
-    display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center;
+    display: grid; grid-template-columns: 50px 70px 1fr auto; gap: 10px; align-items: center;
     background: var(--panel-solid); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 12px;
   }
-  .roster-row input[type=text], .roster-row input[type=number] {
+  .roster-row input[type=text], .roster-row input[type=number], .roster-row select {
     background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--ink);
     padding: 6px 10px; border-radius: 7px; font-size: 13px;
+    font-family: inherit;
   }
   .roster-row input[type=number] { width: 60px; }
+  .roster-row select { width: 70px; -webkit-appearance: none; appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 22px;
+  }
 
   /* Player detail */
   .pd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
@@ -788,6 +794,7 @@ async function loadInitial() {
     if (gm.error) throw gm.error;
     state.players = pl.data || [];
     state.games = gm.data || [];
+    mergePositionsIntoPlayers();
     state.error = null;
     saveCache();
   } catch (e) {
@@ -821,6 +828,27 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return nu
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
 
+/* Player position 1-5 (PG/SG/SF/PF/C). Stored on the player row and mirrored
+   to localStorage so it survives even if the Supabase 'players' table has no
+   'position' column yet. */
+const POSITIONS_LS_KEY = 'hoops-positions';
+function loadPositionsMap() {
+  try { return JSON.parse(lsGet(POSITIONS_LS_KEY) || '{}') || {}; } catch(e) { return {}; }
+}
+function savePositionsMap(m) { lsSet(POSITIONS_LS_KEY, JSON.stringify(m)); }
+function mergePositionsIntoPlayers() {
+  const m = loadPositionsMap();
+  for (const p of state.players) {
+    if (p.position == null && m[p.id] != null) p.position = m[p.id];
+  }
+}
+function setPlayerPosition(id, position) {
+  const m = loadPositionsMap();
+  if (position == null) delete m[id]; else m[id] = position;
+  savePositionsMap(m);
+  updatePlayer(id, { position });
+}
+
 function saveCache() {
   lsSet('hoops-cache', JSON.stringify({ games: state.games, players: state.players }));
 }
@@ -829,6 +857,7 @@ function loadCache() {
     const c = JSON.parse(lsGet('hoops-cache') || '{}');
     if (c.games) state.games = c.games;
     if (c.players) state.players = c.players;
+    mergePositionsIntoPlayers();
   } catch (e) {}
 }
 
@@ -1999,9 +2028,23 @@ function renderRoster(root) {
   const list = el('div', { class: 'roster-list card' });
   const sorted = [...state.players].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
   for (const p of sorted) {
+    const posSelect = el('select', {
+      title: 'Position (1=PG, 2=SG, 3=SF, 4=PF, 5=C)',
+      onchange: (e) => setPlayerPosition(p.id, e.target.value ? parseInt(e.target.value) : null),
+    },
+      el('option', { value: '' }, 'Pos'),
+      el('option', { value: '1' }, '1'),
+      el('option', { value: '2' }, '2'),
+      el('option', { value: '3' }, '3'),
+      el('option', { value: '4' }, '4'),
+      el('option', { value: '5' }, '5'),
+    );
+    posSelect.value = p.position != null ? String(p.position) : '';
+
     list.append(el('div', { class: 'roster-row' },
       el('input', { type: 'number', value: p.jersey_number || '', placeholder: '#',
         onchange: (e) => updatePlayer(p.id, { jersey_number: parseInt(e.target.value) || null }) }),
+      posSelect,
       el('input', { type: 'text', value: p.name,
         onchange: (e) => updatePlayer(p.id, { name: e.target.value }) }),
       el('button', { class: 'iconbtn', title: 'Remove', onclick: () => {
