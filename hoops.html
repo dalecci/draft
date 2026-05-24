@@ -612,6 +612,80 @@
     text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px;
     letter-spacing: 0.14em; text-transform: uppercase;
   }
+
+  /* ---------- Lineup tool ---------- */
+  .lu-hint { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin: 4px 0 14px; }
+  .lu-bench-card { padding: 14px 14px 10px; margin-bottom: 16px; }
+  .lu-bench-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .lu-bench-head h3 { margin: 0; }
+  .lu-bench-head .lu-count { font-size: 11px; color: var(--muted); letter-spacing: 0.16em; }
+  .lu-bench { display: flex; flex-wrap: wrap; gap: 8px; min-height: 56px; }
+
+  .lu-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px 8px 8px;
+    background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: 999px;
+    color: var(--text); font-size: 14px; font-weight: 600;
+    cursor: grab; user-select: none; transition: transform .12s, border-color .12s, background .12s, opacity .12s;
+    touch-action: manipulation;
+  }
+  .lu-chip:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .lu-chip.dragging { opacity: 0.4; cursor: grabbing; }
+  .lu-chip.armed { border-color: var(--gold); background: rgba(212,175,55,0.16); box-shadow: 0 0 0 2px var(--gold-glow); }
+  .lu-chip .lu-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 12px; letter-spacing: 0;
+  }
+  .lu-chip .lu-num.no-num { background: var(--bg); color: var(--muted); border: 1px dashed var(--border-strong); }
+  .lu-chip .lu-name { white-space: nowrap; }
+  .lu-chip .lu-badge {
+    font-size: 10px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 999px;
+    background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700;
+  }
+  .lu-chip.use-1 .lu-badge { background: rgba(212,175,55,0.18); color: var(--gold-2); }
+  .lu-chip.use-2 { opacity: 0.42; cursor: not-allowed; border-style: dashed; }
+  .lu-chip.use-2 .lu-badge { background: rgba(240,87,79,0.18); color: #f0746c; }
+  .lu-chip.use-2:hover { transform: none; border-color: var(--border-strong); }
+
+  .lu-quarters {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 720px) {
+    .lu-quarters { grid-template-columns: 1fr; }
+  }
+
+  .lu-q {
+    background: var(--panel-solid, var(--bg-2));
+    border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+    transition: border-color .15s, background .15s;
+  }
+  .lu-q.drag-over { border-color: var(--gold); background: rgba(212,175,55,0.06); }
+  .lu-q.full { border-color: rgba(63,185,132,0.45); }
+  .lu-q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .lu-q-title { font-size: 16px; font-weight: 800; letter-spacing: 0.14em; color: var(--gold-2); }
+  .lu-q-count { font-size: 11px; letter-spacing: 0.16em; color: var(--muted); font-weight: 700; }
+  .lu-q-count.full { color: #3fb984; }
+  .lu-slots { display: grid; gap: 6px; }
+  .lu-slot {
+    min-height: 44px;
+    display: flex; align-items: center;
+    padding: 4px 6px;
+    border: 1px dashed var(--border); border-radius: 10px;
+    background: rgba(0,0,0,0.18);
+  }
+  .lu-slot.empty { color: var(--muted-2); font-size: 11px; letter-spacing: 0.18em; justify-content: center; }
+  .lu-slot .lu-chip { flex: 1; cursor: default; }
+  .lu-slot .lu-chip:hover { transform: none; }
+  .lu-chip .lu-x {
+    margin-left: auto; padding: 2px 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); color: var(--muted); cursor: pointer;
+    font-size: 14px; line-height: 1; border: none;
+  }
+  .lu-chip .lu-x:hover { background: rgba(240,87,79,0.2); color: #f0746c; }
+  .lu-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 </style>
 </head>
 <body>
@@ -627,6 +701,7 @@
     <button class="nav-btn" id="nav-workout">Workout</button>
     <button class="nav-btn" id="nav-roster">Roster</button>
     <a class="nav-btn" href="/">Plays</a>
+    <button class="nav-btn" id="nav-lineup">Lineup Tool</button>
   </header>
 
   <div id="toast-root"></div>
@@ -1049,6 +1124,7 @@ function render() {
   else if (state.view === 'player') renderPlayerDetail(root);
   else if (state.view === 'roster') renderRoster(root);
   else if (state.view === 'workout') renderWorkout(root);
+  else if (state.view === 'lineup') renderLineup(root);
 }
 
 /* ----- HOME ----- */
@@ -1937,6 +2013,200 @@ function renderRoster(root) {
   root.append(wrap);
 }
 
+/* ============ LINEUP TOOL ============ */
+const LU_LS_KEY = 'hoops-lineup-v1';
+const LU_QUARTERS = ['Q1','Q2','Q3','Q4'];
+const LU_MAX_PER_Q = 5;
+const LU_MAX_Q_PER_PLAYER = 2;
+let luArmedId = null; // tap-to-place selection
+
+function luLoad() {
+  try {
+    const raw = lsGet(LU_LS_KEY);
+    if (raw) {
+      const v = JSON.parse(raw);
+      const out = {};
+      for (const q of LU_QUARTERS) out[q] = Array.isArray(v[q]) ? v[q] : [];
+      return out;
+    }
+  } catch(e) {}
+  return { Q1: [], Q2: [], Q3: [], Q4: [] };
+}
+function luSave(lu) { lsSet(LU_LS_KEY, JSON.stringify(lu)); }
+function luUsage(lu, playerId) {
+  return LU_QUARTERS.reduce((n, q) => n + (lu[q].includes(playerId) ? 1 : 0), 0);
+}
+function luPlayerById(id) { return state.players.find(p => p.id === id); }
+
+function luAdd(lu, q, playerId) {
+  if (lu[q].includes(playerId)) return { ok: false, msg: 'Already in this quarter' };
+  if (lu[q].length >= LU_MAX_PER_Q) return { ok: false, msg: `${q} already has ${LU_MAX_PER_Q}` };
+  if (luUsage(lu, playerId) >= LU_MAX_Q_PER_PLAYER) return { ok: false, msg: 'Player capped at 2 quarters' };
+  lu[q].push(playerId);
+  return { ok: true };
+}
+function luRemove(lu, q, playerId) {
+  lu[q] = lu[q].filter(id => id !== playerId);
+}
+
+function renderLineup(root) {
+  const lu = luLoad();
+
+  const wrap = el('div');
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
+    el('h2', { style: 'margin:0' }, 'Lineup Tool'),
+  ));
+
+  if (!state.players.length) {
+    wrap.append(el('div', { class: 'wo-empty' }, 'No players yet — add some on the Roster page'));
+    root.append(wrap);
+    return;
+  }
+
+  wrap.append(el('div', { class: 'lu-hint' },
+    `Drag a player into a quarter, or tap to pick then tap a quarter. Max ${LU_MAX_PER_Q} per quarter · each player max ${LU_MAX_Q_PER_PLAYER} quarters.`
+  ));
+
+  wrap.append(el('div', { class: 'lu-actions' },
+    el('button', { class: 'nav-btn', onclick: () => {
+      if (!confirm('Clear all quarters?')) return;
+      luSave({ Q1: [], Q2: [], Q3: [], Q4: [] });
+      luArmedId = null;
+      render();
+    }}, 'Reset'),
+  ));
+
+  // ----- Bench -----
+  const assignedIds = new Set(LU_QUARTERS.flatMap(q => lu[q]));
+  const benchPlayers = [...state.players]
+    .filter(p => p.active !== false)
+    .sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999) || a.name.localeCompare(b.name));
+
+  const benchCard = el('div', { class: 'card lu-bench-card' },
+    el('div', { class: 'lu-bench-head' },
+      el('h3', {}, 'Bench'),
+      el('span', { class: 'lu-count' }, `${benchPlayers.length} player${benchPlayers.length === 1 ? '' : 's'}`),
+    ),
+  );
+  const benchEl = el('div', { class: 'lu-bench' });
+  for (const p of benchPlayers) {
+    benchEl.append(buildChip(p, luUsage(lu, p.id), { source: 'bench' }));
+  }
+  benchCard.append(benchEl);
+  wrap.append(benchCard);
+
+  // ----- Quarters -----
+  const grid = el('div', { class: 'lu-quarters' });
+  for (const q of LU_QUARTERS) {
+    const ids = lu[q];
+    const isFull = ids.length >= LU_MAX_PER_Q;
+    const qCard = el('div', { class: `lu-q${isFull ? ' full' : ''}`, 'data-q': q });
+
+    qCard.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      qCard.classList.add('drag-over');
+    });
+    qCard.addEventListener('dragleave', () => qCard.classList.remove('drag-over'));
+    qCard.addEventListener('drop', (e) => {
+      e.preventDefault();
+      qCard.classList.remove('drag-over');
+      const playerId = e.dataTransfer.getData('text/plain');
+      if (!playerId) return;
+      const cur = luLoad();
+      const r = luAdd(cur, q, playerId);
+      if (!r.ok) return toast(r.msg);
+      luSave(cur);
+      luArmedId = null;
+      render();
+    });
+
+    qCard.addEventListener('click', () => {
+      if (!luArmedId) return;
+      const cur = luLoad();
+      const r = luAdd(cur, q, luArmedId);
+      if (!r.ok) return toast(r.msg);
+      luSave(cur);
+      luArmedId = null;
+      render();
+    });
+
+    qCard.append(el('div', { class: 'lu-q-head' },
+      el('div', { class: 'lu-q-title' }, q),
+      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${ids.length} / ${LU_MAX_PER_Q}`),
+    ));
+
+    const slots = el('div', { class: 'lu-slots' });
+    for (let i = 0; i < LU_MAX_PER_Q; i++) {
+      const pid = ids[i];
+      if (pid) {
+        const p = luPlayerById(pid);
+        if (!p) { luRemove(lu, q, pid); luSave(lu); continue; }
+        const chip = buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q });
+        slots.append(el('div', { class: 'lu-slot' }, chip));
+      } else {
+        slots.append(el('div', { class: 'lu-slot empty' }, 'Empty'));
+      }
+    }
+    qCard.append(slots);
+    grid.append(qCard);
+  }
+  wrap.append(grid);
+
+  root.append(wrap);
+}
+
+function buildChip(p, usage, opts) {
+  const capped = usage >= LU_MAX_Q_PER_PLAYER;
+  const isBench = opts.source === 'bench';
+  const isArmed = isBench && luArmedId === p.id;
+  const classes = ['lu-chip'];
+  if (usage === 1) classes.push('use-1');
+  if (usage >= 2) classes.push('use-2');
+  if (isArmed) classes.push('armed');
+
+  const numNode = (p.jersey_number != null && p.jersey_number !== '')
+    ? el('span', { class: 'lu-num' }, String(p.jersey_number))
+    : el('span', { class: 'lu-num no-num' }, '·');
+
+  const children = [
+    numNode,
+    el('span', { class: 'lu-name' }, p.name),
+    el('span', { class: 'lu-badge' }, `${usage}/${LU_MAX_Q_PER_PLAYER}`),
+  ];
+
+  if (opts.source === 'quarter') {
+    children.push(el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
+      e.stopPropagation();
+      const cur = luLoad();
+      luRemove(cur, opts.quarter, p.id);
+      luSave(cur);
+      render();
+    }}, '×'));
+  }
+
+  const chip = el('div', { class: classes.join(' ') }, ...children);
+
+  if (isBench && !capped) {
+    chip.setAttribute('draggable', 'true');
+    chip.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', p.id);
+      e.dataTransfer.effectAllowed = 'move';
+      chip.classList.add('dragging');
+    });
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+    chip.addEventListener('click', (e) => {
+      e.stopPropagation();
+      luArmedId = luArmedId === p.id ? null : p.id;
+      render();
+    });
+  } else if (isBench && capped) {
+    chip.title = 'Capped at 2 quarters — remove from a quarter first';
+  }
+
+  return chip;
+}
+
 function openAddPlayerModal() {
   openModal(
     el('div', { class: 'modal' },
@@ -2255,6 +2525,7 @@ function toast(msg) {
 $('#brand-home').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
 $('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
+$('#nav-lineup').onclick = () => { state.view = 'lineup'; render(); };
 
 /* ============ INIT ============ */
 loadWorkout();
