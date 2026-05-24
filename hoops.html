@@ -1068,6 +1068,10 @@ async function loadInitial() {
     state.players = pl.data || [];
     state.games = gm.data || [];
     mergePositionsIntoPlayers();
+    mergeRatingsFromPlayers();
+    migrateLocalPositionsToSupabase();
+    migrateLocalRatingsToSupabase();
+    syncSavedLineupsWithSupabase();
     state.error = null;
     saveCache();
   } catch (e) {
@@ -1123,6 +1127,16 @@ function setPlayerPosition(id, position) {
   savePositionsMap(m);
   updatePlayer(id, { position });
 }
+/* If a player's position lives only in localStorage (Supabase is null), push
+   it up. After this runs, Supabase position column becomes source of truth. */
+function migrateLocalPositionsToSupabase() {
+  const m = loadPositionsMap();
+  for (const p of state.players) {
+    if (p.position == null && m[p.id] != null) {
+      sb.from('players').update({ position: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
+    }
+  }
+}
 
 /* Player ability ratings 1-10 across 5 attributes. localStorage only for now;
    if needed later we can sync to a separate Supabase table. */
@@ -1158,6 +1172,38 @@ function setPlayerRating(playerId, attrKey, value) {
   }
   if (Object.keys(m[playerId]).length === 0) delete m[playerId];
   saveRatings(m);
+  syncPlayerRatingsToSupabase(playerId);
+}
+function syncPlayerRatingsToSupabase(playerId) {
+  const m = loadRatings();
+  const r = m[playerId];
+  const payload = r && Object.keys(r).length ? r : null;
+  sb.from('players').update({ ratings: payload }).eq('id', playerId).then(() => {}, () => {});
+}
+/* Called after loadInitial pulls players from Supabase. Overrides localStorage
+   with anything coming from Supabase so cross-device sync works. */
+function mergeRatingsFromPlayers() {
+  const m = loadRatings();
+  let changed = false;
+  for (const p of state.players) {
+    if (p.ratings && typeof p.ratings === 'object' && Object.keys(p.ratings).length) {
+      m[p.id] = { ...p.ratings };
+      changed = true;
+    }
+  }
+  if (changed) saveRatings(m);
+}
+/* One-time push: if a player has localStorage ratings but Supabase is empty,
+   migrate up. After this runs once, Supabase becomes source of truth. */
+function migrateLocalRatingsToSupabase() {
+  const m = loadRatings();
+  for (const p of state.players) {
+    const supaEmpty = !p.ratings || Object.keys(p.ratings).length === 0;
+    const localHas = m[p.id] && Object.keys(m[p.id]).length;
+    if (supaEmpty && localHas) {
+      sb.from('players').update({ ratings: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
+    }
+  }
 }
 function playerOverallRating(playerId) {
   const r = getPlayerRatings(playerId);
@@ -2770,11 +2816,37 @@ function loadSavedLineups() {
 function saveSavedLineups(arr) { lsSet(SAVED_LU_LS_KEY, JSON.stringify(arr)); }
 function addSavedLineup(name) {
   const arr = loadSavedLineups();
-  arr.unshift({ id: uuid(), name, savedAt: new Date().toISOString(), lu: luLoad() });
+  const row = { id: uuid(), name, savedAt: new Date().toISOString(), lu: luLoad() };
+  arr.unshift(row);
   saveSavedLineups(arr);
+  sb.from('saved_lineups').insert({
+    id: row.id, name: row.name, saved_at: row.savedAt, lineup: row.lu,
+  }).then(() => {}, () => {});
 }
 function deleteSavedLineup(id) {
   saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
+  sb.from('saved_lineups').delete().eq('id', id).then(() => {}, () => {});
+}
+/* Pull saved lineups from Supabase. Pushes any local-only entries up first,
+   then overwrites localStorage with the merged source-of-truth list. If the
+   saved_lineups table doesn't exist yet, falls back to localStorage. */
+async function syncSavedLineupsWithSupabase() {
+  const local = loadSavedLineups();
+  const { data, error } = await sb.from('saved_lineups').select('*').order('saved_at', { ascending: false });
+  if (error) return; // table not created yet → keep localStorage as-is
+  const remoteIds = new Set((data || []).map(r => r.id));
+  // Push local-only entries up so they aren't lost
+  for (const s of local) {
+    if (!remoteIds.has(s.id)) {
+      sb.from('saved_lineups').insert({
+        id: s.id, name: s.name, saved_at: s.savedAt, lineup: s.lu,
+      }).then(() => {}, () => {});
+    }
+  }
+  const remote = (data || []).map(r => ({ id: r.id, name: r.name, savedAt: r.saved_at, lu: r.lineup }));
+  const localOnly = local.filter(s => !remoteIds.has(s.id));
+  // Local-only entries appear at the top since they're being newly synced
+  saveSavedLineups([...localOnly, ...remote]);
 }
 function applySavedLineup(id) {
   const s = loadSavedLineups().find(s => s.id === id);
