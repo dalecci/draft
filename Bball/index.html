@@ -71,6 +71,14 @@
   .whoami .av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;flex:none}
   .whoami small{color:var(--muted);font-size:11px;font-weight:600}
 
+  .topbar-admin{
+    display:none;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:10px;flex:none;padding:0;
+    background:var(--surface-2);border:1px solid var(--border);color:var(--muted);
+    cursor:pointer;font-size:16px;line-height:1;transition:.15s;
+  }
+  .topbar-admin:hover,.topbar-admin:active{border-color:var(--border-2);color:var(--text);background:var(--card-hi)}
+
   /* ---------- Layout ---------- */
   .shell{display:flex;max-width:var(--maxw);margin:0 auto;width:100%}
   .side{
@@ -107,6 +115,7 @@
     .main{padding:16px 14px calc(86px + var(--safe-b))}
     .topbar{padding:calc(10px + var(--safe-t)) 14px 10px;gap:10px}
     .brand-txt span{display:none}
+    .topbar-admin{display:inline-flex}
     .botnav{
       display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
       background:rgba(10,10,11,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -548,6 +557,7 @@
     <span id="whoami-name">—</span>
     <small id="whoami-swap">switch</small>
   </div>
+  <button class="topbar-admin" id="topbar-admin" title="Admin" aria-label="Admin">⚙️</button>
 </div>
 
 <div class="shell">
@@ -2256,6 +2266,7 @@ async function boot() {
   $('#brand-btn').addEventListener('click', () => { if (state.player) go('#home'); });
   $('#whoami').addEventListener('click', switchPlayer);
   $('#admin-entry').addEventListener('click', () => go('#admin'));
+  document.getElementById('topbar-admin')?.addEventListener('click', () => go('#admin'));
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
