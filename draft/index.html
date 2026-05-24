@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>12U Draft</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: -apple-system, sans-serif; background: #0d1117; color: #e6edf3; user-select: none; -webkit-user-select: none; }
+header { background: #161b22; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; height: 56px; }
+header h1 { font-size: 17px; font-weight: 600; }
+.actions { display: flex; gap: 8px; }
+.btn { padding: 9px 14px; border: 1px solid #30363d; background: #21262d; color: #e6edf3; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-undo { background: #1f3a5f; border-color: #1f6feb; }
+.btn-reset { position: relative; overflow: hidden; background: #5a1d1d; border-color: #8b1f1f; }
+.btn-reset .fill { position: absolute; left: 0; top: 0; height: 100%; background: rgba(255,255,255,0.25); width: 0; transition: width 0.05s linear; }
+.btn-reset span { position: relative; z-index: 1; }
+main { display: grid; grid-template-columns: 1.3fr 1fr 1.1fr; gap: 8px; padding: 8px; height: calc(100vh - 56px); }
+.col { background: #161b22; border: 1px solid #30363d; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+.col-header { padding: 11px 14px; background: #21262d; border-bottom: 1px solid #30363d; font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.count-badge { background: #0d1117; color: #8b949e; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+.col-body { overflow-y: auto; flex: 1; padding: 4px; -webkit-overflow-scrolling: touch; min-height: 0; }
+.player { padding: 11px 12px; margin: 4px; border-radius: 8px; background: #0d1117; border: 1px solid #30363d; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.player:active { background: #21262d; }
+.jersey { font-weight: 700; font-size: 17px; min-width: 44px; text-align: center; background: #21262d; padding: 7px 6px; border-radius: 6px; color: #58a6ff; }
+.player-name { flex: 1; font-size: 15px; }
+.player.locked { border-color: #b45309; background: #2a1a08; }
+.player.locked .jersey { color: #fbbf24; background: #3a2410; }
+.locked-tag { font-size: 10px; background: #b45309; color: #fff; padding: 3px 7px; border-radius: 4px; font-weight: 700; }
+.your-turn { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; border-radius: 10px; padding: 12px; margin: 6px; text-align: center; font-size: 20px; font-weight: 800; }
+.locked-incoming { background: #b45309; color: #fff; border-radius: 10px; padding: 10px; margin: 6px; text-align: center; font-size: 12px; font-weight: 600; }
+.locked-incoming .player-line { font-size: 16px; font-weight: 800; margin: 4px 0; }
+.locked-incoming .btn { background: #fff; color: #92400e; border: none; font-weight: 700; margin-top: 4px; }
+.clock-display { padding: 14px 12px; text-align: center; }
+.clock-label { font-size: 11px; color: #8b949e; letter-spacing: 1.5px; }
+.clock-pick-num { font-size: 56px; font-weight: 800; line-height: 1; margin: 4px 0; }
+.clock-coach { font-size: 20px; font-weight: 700; margin-top: 6px; }
+.clock-coach.dale { color: #4ade80; }
+.clock-round { font-size: 13px; color: #8b949e; margin-top: 4px; }
+.next-up { margin: 6px; padding: 8px 10px; background: #0d1117; border-radius: 8px; border: 1px solid #30363d; font-size: 12px; color: #8b949e; text-align: center; }
+.next-up strong { color: #e6edf3; }
+.draft-complete { text-align: center; font-size: 22px; padding: 30px 20px; color: #4ade80; font-weight: 800; }
+.roster-divider { margin: 4px 6px 0; padding: 8px 8px 4px; border-top: 1px solid #30363d; font-size: 11px; color: #8b949e; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: space-between; }
+.roster-pick { padding: 7px 10px; margin: 3px 6px; background: #0d1117; border-radius: 7px; display: flex; gap: 8px; align-items: center; border-left: 3px solid #16a34a; }
+.roster-pick .pick-num { font-size: 11px; color: #4ade80; min-width: 30px; font-weight: 700; }
+.roster-pick .jersey { font-size: 13px; min-width: 36px; padding: 4px 5px; }
+.roster-pick .player-name { font-size: 13px; }
+.empty-slot { padding: 7px 10px; margin: 3px 6px; background: #0d1117; border-radius: 7px; border-left: 3px solid #30363d; color: #6e7681; font-size: 12px; display: flex; gap: 8px; }
+.empty-slot .pick-num { min-width: 30px; font-weight: 600; }
+.taken-row { padding: 7px 10px; margin: 3px 4px; background: #0d1117; border-radius: 6px; border: 1px solid #30363d; display: flex; gap: 8px; align-items: center; }
+.taken-row.dale { border-color: #16a34a; background: #0d1f14; }
+.taken-row .pick-num { font-weight: 700; color: #8b949e; min-width: 30px; font-size: 11px; }
+.taken-row.dale .pick-num { color: #4ade80; }
+.taken-row .jersey { font-size: 12px; min-width: 34px; padding: 4px 4px; }
+.taken-row .name { flex: 1; font-size: 13px; }
+.taken-row .coach-tag { font-size: 10px; color: #8b949e; font-weight: 600; }
+.taken-empty { text-align: center; color: #6e7681; padding: 20px; font-size: 13px; font-style: italic; }
+@media (max-width: 720px) { main { grid-template-columns: 1fr; grid-template-rows: auto auto auto; } }
+</style>
+</head>
+<body>
+<header>
+<h1>12U Draft &middot; Coach Dale</h1>
+<div class="actions">
+<button class="btn btn-undo" onclick="undo()">Undo</button>
+<button class="btn btn-reset" id="resetBtn"><span>Hold to Reset</span></button>
+</div>
+</header>
+<main>
+<section class="col">
+<div class="col-header"><span>Best Available</span><span class="count-badge" id="availCount">60</span></div>
+<div class="col-body" id="availList"></div>
+</section>
+<section class="col">
+<div class="col-header">On the Clock</div>
+<div class="col-body">
+<div id="clockDisplay"></div>
+<div class="roster-divider"><span>Coach Dale's Roster</span><span id="rosterCount">0/10</span></div>
+<div id="rosterList"></div>
+</div>
+</section>
+<section class="col">
+<div class="col-header"><span>Players Taken</span><span class="count-badge" id="takenCount">0</span></div>
+<div class="col-body" id="takenList"></div>
+</section>
+</main>
+<script>
+var COACHES_R1=['Shawn Morton','Dale','Crissy','Shaun Powell','David','John'];
+var draftOrder=[];
+for(var r=1;r<=10;r++){var ord=(r%2===1)?COACHES_R1:COACHES_R1.slice().reverse();for(var p=0;p<6;p++)draftOrder.push({pick:(r-1)*6+p+1,round:r,pickInRound:p+1,coach:ord[p]});}
+var players=[
+{jersey:50,name:'Scarsellato, Nathan'},{jersey:47,name:'Rosenak, Lane'},{jersey:25,name:'Leitner, Herbert'},{jersey:13,name:'Foley, Drew'},
+{jersey:2,name:'Blevins, Kameron'},{jersey:42,name:'Protsman, Brady'},{jersey:38,name:'Palmer, Axton',lockedPick:7},{jersey:24,name:'Kautzmann, Bernardo'},
+{jersey:11,name:'Erickson, Max'},{jersey:46,name:'Rios Cairo'},{jersey:15,name:'Franzke, Kruz'},{jersey:12,name:'Facenda, Jason'},
+{jersey:10,name:'Duran, Michael'},{jersey:44,name:'Rau, Stephanie'},{jersey:39,name:'Pemberton, Derrick'},{jersey:9,name:'Difalco, Luka'},
+{jersey:4,name:'Carver, Alexander'},{jersey:57,name:'Wilkerson, Jaks'},{jersey:29,name:'Martinez, Ronan'},{jersey:59,name:'Willoughby, Carter'},
+{jersey:52,name:'Serio, Jamison'},{jersey:28,name:'Maldonado, Dominic'},{jersey:36,name:'Newman, Noah'},{jersey:60,name:'Wozney, Brantley'},
+{jersey:22,name:'Huffman, Joshua'},{jersey:8,name:'Cooper, Madison'},{jersey:30,name:'McCain, Cayden',lockedPick:27},{jersey:41,name:'Powell, Brogan',lockedPick:28},
+{jersey:5,name:'Clark, Easton'},{jersey:19,name:'Herring II, John',lockedPick:30},{jersey:54,name:'Sobul, Jacob'},{jersey:53,name:'Skocik, Jacob'},
+{jersey:26,name:'Lewis, Dominick'},{jersey:16,name:'Garcia, Axel'},{jersey:58,name:'Williams, Gavin'},{jersey:56,name:'Weaver, Elliot'},
+{jersey:43,name:'Ramirez, Enrique'},{jersey:14,name:'Francis, Jayden'},{jersey:33,name:'Morton, Michael',lockedPick:39},{jersey:6,name:'Clark, Jamarich',lockedPick:40},
+{jersey:1,name:'Abbate, Daniel',lockedPick:41},{jersey:7,name:'Cooper, Ethan'},{jersey:18,name:'Goossens, Joseph'},{jersey:31,name:'Merced, Izaiah'},
+{jersey:40,name:'Piscopo, Aj'},{jersey:21,name:'Howe, Gavin'},{jersey:35,name:'Neff, Phoenix'},{jersey:45,name:'Rice, Malakhi',lockedPick:48},
+{jersey:48,name:'Rosloniec, Owen'},{jersey:55,name:'Warnecke, Derek'},{jersey:3,name:'Brooks, Dean'},{jersey:37,name:'Page, Harrison'},
+{jersey:23,name:'Jasilewicz, Cole'},{jersey:27,name:'Long, Lucas'},{jersey:17,name:'Geier, Luke'},{jersey:20,name:'Heuglin, Reed'},
+{jersey:32,name:'Moore, Hudson'},{jersey:34,name:'Murphy, Rowan'},{jersey:49,name:'Santo, Dominick'},{jersey:51,name:'Sebastian, Eli'}];
+var lockedCoachByPick={};players.forEach(function(p){if(p.lockedPick)lockedCoachByPick[p.lockedPick]=draftOrder[p.lockedPick-1].coach;});
+var KEY='draft12u_v1';
+function loadState(){try{return JSON.parse(localStorage.getItem(KEY));}catch(e){return null;}}
+function saveState(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+var state=loadState()||{drafted:[],history:[]};
+function curPick(){return state.drafted.length+1;}
+function isDrafted(j){return state.drafted.some(function(d){return d.jersey===j;});}
+function getPlayer(j){for(var i=0;i<players.length;i++)if(players[i].jersey===j)return players[i];return null;}
+function draftPlayer(j){if(isDrafted(j))return;var pn=curPick();if(pn>60)return;var pl=getPlayer(j);
+if(pl.lockedPick&&pl.lockedPick!==pn){if(!confirm(pl.name+' (#'+pl.jersey+') is locked for pick '+pl.lockedPick+'. Take now anyway?'))return;}
+var o=draftOrder[pn-1];state.history.push(JSON.parse(JSON.stringify(state.drafted)));if(state.history.length>80)state.history.shift();
+state.drafted.push({jersey:j,pickNum:pn,coach:o.coach});saveState();render();}
+function undo(){if(!state.history.length)return;state.drafted=state.history.pop();saveState();render();}
+function reset(){state={drafted:[],history:[]};saveState();render();}
+function render(){renderAvail();renderClock();renderRoster();renderTaken();}
+function renderAvail(){var list=document.getElementById('availList');var avail=players.filter(function(p){return !isDrafted(p.jersey);});
+document.getElementById('availCount').textContent=avail.length;var h='';for(var i=0;i<avail.length;i++){var p=avail[i];
+var lt=p.lockedPick?'<span class="locked-tag">LOCK P'+p.lockedPick+' &middot; '+lockedCoachByPick[p.lockedPick]+'</span>':'';
+h+='<div class="player '+(p.lockedPick?'locked':'')+'" onclick="draftPlayer('+p.jersey+')"><div class="jersey">#'+p.jersey+'</div><div class="player-name">'+p.name+'</div>'+lt+'</div>';}
+list.innerHTML=h;}
+function renderClock(){var d=document.getElementById('clockDisplay');var pn=curPick();
+if(pn>60){d.innerHTML='<div class="draft-complete">DRAFT COMPLETE</div>';return;}
+var o=draftOrder[pn-1];var lp=null;for(var i=0;i<players.length;i++)if(players[i].lockedPick===pn&&!isDrafted(players[i].jersey)){lp=players[i];break;}
+var isYou=o.coach==='Dale';var nx=pn<60?draftOrder[pn]:null;var h='';
+if(isYou)h+='<div class="your-turn">YOU\'RE UP</div>';
+if(lp)h+='<div class="locked-incoming">LOCKED PICK<div class="player-line">#'+lp.jersey+' &middot; '+lp.name+'</div><button class="btn" onclick="draftPlayer('+lp.jersey+')">Take Locked Pick</button></div>';
+h+='<div class="clock-display"><div class="clock-label">PICK</div><div class="clock-pick-num">'+pn+'</div><div class="clock-round">Round '+o.round+' &middot; '+o.pickInRound+' of 6</div><div class="clock-coach '+(isYou?'dale':'')+'">Coach '+o.coach+'</div></div>';
+if(nx)h+='<div class="next-up">Next: <strong>Coach '+nx.coach+'</strong> (Pick '+nx.pick+')</div>';
+d.innerHTML=h;}
+function renderRoster(){var list=document.getElementById('rosterList');var dp=[2,11,14,23,26,35,38,47,50,59];var c=0,h='';
+for(var i=0;i<dp.length;i++){var pn=dp[i];var dr=null;for(var j=0;j<state.drafted.length;j++)if(state.drafted[j].pickNum===pn){dr=state.drafted[j];break;}
+if(dr){c++;var p=getPlayer(dr.jersey);h+='<div class="roster-pick"><div class="pick-num">P'+pn+'</div><div class="jersey">#'+p.jersey+'</div><div class="player-name">'+p.name+'</div></div>';}
+else h+='<div class="empty-slot"><span class="pick-num">P'+pn+'</span><span>open</span></div>';}
+list.innerHTML=h;document.getElementById('rosterCount').textContent=c+'/10';}
+function renderTaken(){var list=document.getElementById('takenList');var t=state.drafted.slice().reverse();
+document.getElementById('takenCount').textContent=state.drafted.length;
+if(!t.length){list.innerHTML='<div class="taken-empty">No picks yet</div>';return;}
+var h='';for(var i=0;i<t.length;i++){var d=t[i];var p=getPlayer(d.jersey);var iD=d.coach==='Dale';
+h+='<div class="taken-row '+(iD?'dale':'')+'"><div class="pick-num">P'+d.pickNum+'</div><div class="jersey">#'+p.jersey+'</div><div class="name">'+p.name+'</div><div class="coach-tag">'+d.coach+'</div></div>';}
+list.innerHTML=h;}
+var rb=document.getElementById('resetBtn');var fl=document.createElement('div');fl.className='fill';rb.insertBefore(fl,rb.firstChild);
+var ht=null,hs=0;var HM=2500;
+function sH(e){if(e)e.preventDefault();hs=Date.now();fl.style.width='0%';
+ht=setInterval(function(){var p=Math.min(100,(Date.now()-hs)/HM*100);fl.style.width=p+'%';if(p>=100){clearInterval(ht);ht=null;reset();fl.style.width='0%';}},40);}
+function eH(){if(ht){clearInterval(ht);ht=null;}fl.style.width='0%';}
+rb.addEventListener('mousedown',sH);rb.addEventListener('mouseup',eH);rb.addEventListener('mouseleave',eH);
+rb.addEventListener('touchstart',sH,{passive:false});rb.addEventListener('touchend',eH);rb.addEventListener('touchcancel',eH);
+render();
+</script>
+</body>
+</html>
