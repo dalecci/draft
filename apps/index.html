@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07090d">
+<title>J3T App Hub</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #07090d;
+    --panel: #0f1218;
+    --panel-2: #161b22;
+    --line: #2a2f3a;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --gold: #d4af37;
+    --gold-soft: rgba(212, 175, 55, 0.15);
+    --green: #4ade80;
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -100px, rgba(212,175,55,0.08), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+  .gate {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .gate-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 28px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .gate-logo {
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .gate-sub {
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .pin-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 28px;
+    text-align: center;
+    letter-spacing: 12px;
+    padding: 16px;
+    font-family: -apple-system, system-ui, sans-serif;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .pin-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  .pin-input.error { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2); animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .gate-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    background: var(--gold);
+    color: #1a1300;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .gate-btn:active { transform: scale(0.98); }
+  .gate-hint { color: var(--muted); font-size: 12px; margin-top: 18px; }
+
+  header {
+    max-width: 920px;
+    margin: 0 auto 32px;
+    text-align: center;
+  }
+  .brand {
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+    font-size: 44px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  main { max-width: 920px; margin: 0 auto; }
+
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    padding-left: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold-soft), transparent);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover { border-color: var(--gold); transform: translateY(-2px); background: var(--panel-2); }
+  .card:hover::before { opacity: 1; }
+  .card-row { display: flex; align-items: center; gap: 10px; }
+  .icon {
+    font-size: 22px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gold-soft);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 16px; font-weight: 600; }
+  .card-url {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.3px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    word-break: break-all;
+  }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.45; margin-top: 4px; }
+  .badge {
+    display: inline-block;
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-left: auto;
+  }
+  .badge.draft { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+  .badge.preview { background: rgba(96, 165, 250, 0.15); color: #93c5fd; }
+  .badge.local { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+
+  .card.disabled { opacity: 0.55; cursor: default; pointer-events: none; }
+
+  footer {
+    max-width: 920px;
+    margin: 40px auto 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  footer a { color: var(--gold); text-decoration: none; cursor: pointer; }
+
+  .logout-btn {
+    position: fixed;
+    top: 16px; right: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .logout-btn:hover { color: var(--gold); border-color: var(--gold); }
+
+  @media (max-width: 600px) {
+    .brand { font-size: 34px; }
+    body { padding: 18px 12px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">J3T</div>
+    <div class="gate-sub">App Hub</div>
+    <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" class="pin-input" id="pin" placeholder="••••" autocomplete="off">
+    <button class="gate-btn" id="unlockBtn">Unlock</button>
+    <div class="gate-hint">4-digit code required</div>
+  </div>
+</div>
+
+<button class="logout-btn" id="logoutBtn" style="display:none">Lock</button>
+
+<header>
+  <div class="brand">J3T App Hub</div>
+  <div class="tagline">Everything in one place</div>
+</header>
+
+<main id="main" style="display:none">
+
+  <section class="section">
+    <div class="section-title">Aviation</div>
+    <div class="grid">
+      <a class="card" href="https://j3taviation.com" target="_blank">
+        <div class="card-row">
+          <div class="icon">✈️</div>
+          <div class="card-title">J3T Main Site</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">j3taviation.com</div>
+        <div class="card-desc">Marketing site — Home / About / Programs / Contact / Links.</div>
+      </a>
+      <a class="card" href="https://j3taviation.com/jetdata" target="_blank">
+        <div class="card-row">
+          <div class="icon">📊</div>
+          <div class="card-title">Jet Data</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">j3taviation.com/jetdata</div>
+        <div class="card-desc">22-aircraft cost & performance comparator with trip calculator + winds aloft.</div>
+      </a>
+      <a class="card" href="https://draft.j3taviation.com/portal/" target="_blank">
+        <div class="card-row">
+          <div class="icon">🛩️</div>
+          <div class="card-title">Owner Portal</div>
+          <span class="badge preview">Preview</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com/portal/</div>
+        <div class="card-desc">Customer portal prototype — flights, invoices, docs, maintenance. Demo logins inside.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Warriors Basketball</div>
+    <div class="grid">
+      <a class="card" href="https://draft.j3taviation.com/Bball/" target="_blank">
+        <div class="card-row">
+          <div class="icon">🏀</div>
+          <div class="card-title">Training Portal</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com/Bball/</div>
+        <div class="card-desc">Video training for Warriors players — Lessons, playbook, coach's notes, auto-advance.</div>
+      </a>
+      <a class="card" href="https://draft.j3taviation.com/hoops.html" target="_blank">
+        <div class="card-row">
+          <div class="icon">📈</div>
+          <div class="card-title">Hoops Stats</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com/hoops.html</div>
+        <div class="card-desc">Game-day stat tracker — shot chart, +/-, subs, plus per-player breakdowns.</div>
+      </a>
+      <a class="card" href="https://draft.j3taviation.com/" target="_blank">
+        <div class="card-row">
+          <div class="icon">✏️</div>
+          <div class="card-title">Playmaker</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com</div>
+        <div class="card-desc">Play designer — drag players, animate motion paths, save to playbook, share with team.</div>
+      </a>
+      <a class="card" href="https://draft.j3taviation.com/draft/" target="_blank">
+        <div class="card-row">
+          <div class="icon">🎯</div>
+          <div class="card-title">12U Draft Board</div>
+          <span class="badge draft">New</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com/draft/</div>
+        <div class="card-desc">Live draft board for 60-kid draft night — clock, locked picks, undo, rosters.</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">Other Projects</div>
+    <div class="grid">
+      <a class="card" href="https://family.j3taviation.com" target="_blank">
+        <div class="card-row">
+          <div class="icon">👨‍👩‍👧</div>
+          <div class="card-title">Family Sit</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">family.j3taviation.com</div>
+        <div class="card-desc">Private family babysitting coordinator — invite-based, Supabase-backed.</div>
+      </a>
+      <a class="card" href="https://draft.j3taviation.com/clf-training/" target="_blank">
+        <div class="card-row">
+          <div class="icon">🎚️</div>
+          <div class="card-title">CLF Sound Training</div>
+          <span class="badge">Live</span>
+        </div>
+        <div class="card-url">draft.j3taviation.com/clf-training/</div>
+        <div class="card-desc">DiGiCo Quantum 338 volunteer LMS for Christian Life Fellowship sound team.</div>
+      </a>
+      <div class="card disabled">
+        <div class="card-row">
+          <div class="icon">🌿</div>
+          <div class="card-title">Vibrant Health</div>
+          <span class="badge local">Local</span>
+        </div>
+        <div class="card-url">not deployed yet</div>
+        <div class="card-desc">Sister's chiropractic site rebuild — static, replaces WordPress at vibranthealthswfl.com.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span id="footerText">Locked</span> · <a id="logoutLink" style="display:none">Lock again</a>
+</footer>
+
+<script>
+  const PIN = "4545";
+  const KEY = "j3t-hub-unlocked";
+
+  const gate = document.getElementById("gate");
+  const main = document.getElementById("main");
+  const pin = document.getElementById("pin");
+  const unlockBtn = document.getElementById("unlockBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const logoutLink = document.getElementById("logoutLink");
+  const footerText = document.getElementById("footerText");
+
+  function unlock() {
+    gate.style.display = "none";
+    main.style.display = "block";
+    logoutBtn.style.display = "block";
+    logoutLink.style.display = "inline";
+    footerText.textContent = "Session unlocked";
+  }
+
+  function tryUnlock() {
+    if (pin.value === PIN) {
+      sessionStorage.setItem(KEY, "1");
+      unlock();
+    } else {
+      pin.classList.add("error");
+      pin.value = "";
+      setTimeout(() => pin.classList.remove("error"), 500);
+      pin.focus();
+    }
+  }
+
+  function lock() {
+    sessionStorage.removeItem(KEY);
+    gate.style.display = "flex";
+    main.style.display = "none";
+    logoutBtn.style.display = "none";
+    logoutLink.style.display = "none";
+    footerText.textContent = "Locked";
+    pin.value = "";
+    pin.focus();
+  }
+
+  unlockBtn.addEventListener("click", tryUnlock);
+  pin.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  logoutBtn.addEventListener("click", lock);
+  logoutLink.addEventListener("click", lock);
+
+  if (sessionStorage.getItem(KEY) === "1") {
+    unlock();
+  } else {
+    setTimeout(() => pin.focus(), 100);
+  }
+</script>
+
+</body>
+</html>
