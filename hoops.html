@@ -646,6 +646,12 @@
   }
   .lu-chip .lu-num.no-num { background: var(--bg); color: var(--muted); border: 1px dashed var(--border-strong); }
   .lu-chip .lu-name { white-space: nowrap; }
+  .lu-chip .lu-pos {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
+    padding: 2px 6px; border-radius: 6px;
+    background: rgba(212,175,55,0.18); color: var(--gold-2);
+    border: 1px solid rgba(212,175,55,0.35);
+  }
   .lu-chip .lu-badge {
     font-size: 10px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 999px;
     background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700;
@@ -832,6 +838,8 @@ function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
    to localStorage so it survives even if the Supabase 'players' table has no
    'position' column yet. */
 const POSITIONS_LS_KEY = 'hoops-positions';
+const POS_LABELS = { 1: 'PG', 2: 'SG', 3: 'SF', 4: 'PF', 5: 'C' };
+function posLabel(pos) { return POS_LABELS[pos] || null; }
 function loadPositionsMap() {
   try { return JSON.parse(lsGet(POSITIONS_LS_KEY) || '{}') || {}; } catch(e) { return {}; }
 }
@@ -2033,11 +2041,11 @@ function renderRoster(root) {
       onchange: (e) => setPlayerPosition(p.id, e.target.value ? parseInt(e.target.value) : null),
     },
       el('option', { value: '' }, 'Pos'),
-      el('option', { value: '1' }, '1'),
-      el('option', { value: '2' }, '2'),
-      el('option', { value: '3' }, '3'),
-      el('option', { value: '4' }, '4'),
-      el('option', { value: '5' }, '5'),
+      el('option', { value: '1' }, 'PG'),
+      el('option', { value: '2' }, 'SG'),
+      el('option', { value: '3' }, 'SF'),
+      el('option', { value: '4' }, 'PF'),
+      el('option', { value: '5' }, 'C'),
     );
     posSelect.value = p.position != null ? String(p.position) : '';
 
@@ -2212,11 +2220,13 @@ function buildChip(p, usage, opts) {
     ? el('span', { class: 'lu-num' }, String(p.jersey_number))
     : el('span', { class: 'lu-num no-num' }, '·');
 
+  const posTag = posLabel(p.position);
   const children = [
     numNode,
     el('span', { class: 'lu-name' }, p.name),
+    posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
     el('span', { class: 'lu-badge' }, `${usage}/${LU_MAX_Q_PER_PLAYER}`),
-  ];
+  ].filter(Boolean);
 
   if (opts.source === 'quarter') {
     children.push(el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
