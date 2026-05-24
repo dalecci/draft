@@ -62,9 +62,19 @@
     display: flex;
     align-items: center;
     gap: 14px;
+    flex-wrap: wrap;
     position: sticky;
     top: 0; z-index: 50;
   }
+  @media (max-width: 720px) {
+    header.app-header { padding: 10px 12px; gap: 8px; }
+    .brand-sub { display: none; }
+    .brand-mark { width: 30px; height: 30px; }
+    .brand-name { font-size: 14px; }
+    .nav-btn { padding: 6px 10px; font-size: 11px; letter-spacing: 0.08em; }
+    main { padding: 14px 12px; }
+  }
+  html, body { overflow-x: hidden; }
   header.app-header::after {
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
     background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
