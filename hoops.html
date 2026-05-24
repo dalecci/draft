@@ -863,6 +863,38 @@
   .lu-total-card .lu-stats { margin-top: 10px; padding-top: 10px; }
   .lu-total-card .lu-stats-head { margin-bottom: 6px; }
 
+  .lu-q-overall-grid {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px; margin-top: 12px;
+  }
+  @media (max-width: 480px) {
+    .lu-q-overall-grid { gap: 6px; }
+  }
+  .lu-q-overall {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 12px 6px;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+  }
+  .lu-q-overall .lu-qo-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .lu-q-overall .lu-qo-val {
+    font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums;
+    color: var(--gold-2); line-height: 1;
+  }
+  .lu-q-overall .lu-qo-sub {
+    font-size: 9px; letter-spacing: 0.14em; color: var(--muted-2); margin-top: 4px;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .lu-q-overall.low  { border-color: rgba(240,87,79,0.5);  background: rgba(240,87,79,0.08); }
+  .lu-q-overall.low  .lu-qo-val { color: #f0746c; }
+  .lu-q-overall.mid  { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.08); }
+  .lu-q-overall.high { border-color: rgba(63,185,132,0.5); background: rgba(63,185,132,0.08); }
+  .lu-q-overall.high .lu-qo-val { color: #6bd49a; }
+  .lu-q-overall.none .lu-qo-val { color: var(--muted-2); font-weight: 600; }
+
   /* ---------- Ratings page ---------- */
   .rating-card { padding: 14px 16px; margin-bottom: 10px; }
   .rating-head {
@@ -2471,18 +2503,32 @@ function renderLineup(root) {
     }}, 'Reset'),
   ));
 
-  // ----- Game-wide total -----
-  const allIds = LU_QUARTERS.flatMap(q => luQuarterIds(lu, q));
-  if (!hideRatings && allIds.length > 0) {
-    const totalAgg = aggregateRatings(allIds);
-    const totalCard = el('div', { class: 'lu-total-card' });
-    totalCard.append(el('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' },
-      el('div', { style: 'font-size:12px;letter-spacing:0.18em;color:var(--muted);font-weight:700;text-transform:uppercase' }, 'Game plan'),
-      el('div', { style: 'font-size:11px;color:var(--muted)' },
-        `${allIds.length} of ${LU_QUARTERS.length * LU_MAX_PER_Q} slots filled`),
-    ));
-    totalCard.append(buildStatsPanel(totalAgg, 'All quarters combined'));
-    wrap.append(totalCard);
+  // ----- Per-quarter overall chart -----
+  if (!hideRatings) {
+    const anyFilled = LU_QUARTERS.some(q => luQuarterIds(lu, q).length > 0);
+    if (anyFilled) {
+      const totalCard = el('div', { class: 'lu-total-card' });
+      const totalFilled = LU_QUARTERS.reduce((n, q) => n + luQuarterIds(lu, q).length, 0);
+      totalCard.append(el('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' },
+        el('div', { style: 'font-size:12px;letter-spacing:0.18em;color:var(--muted);font-weight:700;text-transform:uppercase' }, 'Quarter overall scores'),
+        el('div', { style: 'font-size:11px;color:var(--muted)' },
+          `${totalFilled} of ${LU_QUARTERS.length * LU_MAX_PER_Q} slots filled`),
+      ));
+      const grid = el('div', { class: 'lu-q-overall-grid' });
+      for (const q of LU_QUARTERS) {
+        const ids = luQuarterIds(lu, q);
+        const agg = ids.length ? aggregateRatings(ids) : { overall: null };
+        const ovrText = agg.overall == null ? '—' : (Math.round(agg.overall * 10) / 10).toFixed(1);
+        const cls = statClass(agg.overall);
+        grid.append(el('div', { class: `lu-q-overall ${cls}` },
+          el('div', { class: 'lu-qo-label' }, q),
+          el('div', { class: 'lu-qo-val' }, ovrText),
+          el('div', { class: 'lu-qo-sub' }, `${ids.length}/${LU_MAX_PER_Q}`),
+        ));
+      }
+      totalCard.append(grid);
+      wrap.append(totalCard);
+    }
   }
 
   // ----- Quarters with 5 position slots each -----
