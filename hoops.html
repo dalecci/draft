@@ -2436,14 +2436,15 @@ function renderLineup(root) {
   }
 
   wrap.append(el('div', { class: 'lu-hint' },
-    `Drop a player onto a specific position slot (PG/SG/SF/PF/C), or tap a player then tap the slot. Badge shows quarters used so far.`
+    `Tap any position slot to pick a player. Badge on the chip shows how many quarters that player is in.`
   ));
 
   wrap.append(el('div', { class: 'lu-actions' },
+    el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
+    el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
     el('button', { class: 'nav-btn', onclick: () => {
       if (!confirm('Clear all quarters?')) return;
       luSave(luDefault());
-      luArmedId = null;
       render();
     }}, 'Reset'),
   ));
@@ -2462,24 +2463,6 @@ function renderLineup(root) {
     wrap.append(totalCard);
   }
 
-  // ----- Bench -----
-  const benchPlayers = [...state.players]
-    .filter(p => p.active !== false)
-    .sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999) || a.name.localeCompare(b.name));
-
-  const benchCard = el('div', { class: 'card lu-bench-card' },
-    el('div', { class: 'lu-bench-head' },
-      el('h3', {}, 'Bench'),
-      el('span', { class: 'lu-count' }, `${benchPlayers.length} player${benchPlayers.length === 1 ? '' : 's'}`),
-    ),
-  );
-  const benchEl = el('div', { class: 'lu-bench' });
-  for (const p of benchPlayers) {
-    benchEl.append(buildChip(p, luUsage(lu, p.id), { source: 'bench' }));
-  }
-  benchCard.append(benchEl);
-  wrap.append(benchCard);
-
   // ----- Quarters with 5 position slots each -----
   const grid = el('div', { class: 'lu-quarters' });
   for (const q of LU_QUARTERS) {
@@ -2495,7 +2478,7 @@ function renderLineup(root) {
     const slotsWrap = el('div', { class: 'lu-slots' });
     for (const slotName of LU_SLOTS) {
       const pid = lu[q][slotName];
-      const slotEl = el('div', { class: `lu-slot${pid ? '' : ' empty'}${luArmedId ? ' armed-target' : ''}` });
+      const slotEl = el('div', { class: `lu-slot${pid ? '' : ' empty'}` });
 
       if (pid) {
         const p = luPlayerById(pid);
@@ -2508,37 +2491,13 @@ function renderLineup(root) {
           slotEl.append(buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q, slot: slotName }));
         }
       } else {
-        slotEl.append('Empty');
+        slotEl.append('Tap to pick');
       }
 
-      // Drop / tap handlers — per slot
-      slotEl.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        slotEl.classList.add('drag-over');
-      });
-      slotEl.addEventListener('dragleave', () => slotEl.classList.remove('drag-over'));
-      slotEl.addEventListener('drop', (e) => {
-        e.preventDefault();
-        slotEl.classList.remove('drag-over');
-        const playerId = e.dataTransfer.getData('text/plain');
-        if (!playerId) return;
-        const cur = luLoad();
-        const r = luPlaceInSlot(cur, q, slotName, playerId);
-        if (!r.ok) return toast(r.msg);
-        luSave(cur);
-        luArmedId = null;
-        render();
-      });
       slotEl.addEventListener('click', (e) => {
-        if (!luArmedId) return;
         // Don't trigger when tapping the X inside a chip
         if (e.target.closest('.lu-x')) return;
-        const cur = luLoad();
-        const r = luPlaceInSlot(cur, q, slotName, luArmedId);
-        if (!r.ok) return toast(r.msg);
-        luSave(cur);
-        luArmedId = null;
-        render();
+        openPickerModal(q, slotName);
       });
 
       slotsWrap.append(el('div', { class: 'lu-slot-row' },
@@ -2561,11 +2520,8 @@ function renderLineup(root) {
 }
 
 function buildChip(p, usage, opts) {
-  const isBench = opts.source === 'bench';
-  const isArmed = isBench && luArmedId === p.id;
   const classes = ['lu-chip'];
   if (usage >= 1) classes.push(`use-${Math.min(usage, 4)}`);
-  if (isArmed) classes.push('armed');
 
   const numNode = (p.jersey_number != null && p.jersey_number !== '')
     ? el('span', { class: 'lu-num' }, String(p.jersey_number))
@@ -2581,36 +2537,16 @@ function buildChip(p, usage, opts) {
     posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
     el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
     el('span', { class: 'lu-badge', title: 'Quarters used' }, `${usage}/${LU_QUARTERS.length}`),
-  ].filter(Boolean);
-
-  if (opts.source === 'quarter') {
-    children.push(el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
+    el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
       e.stopPropagation();
       const cur = luLoad();
       luClearSlot(cur, opts.quarter, opts.slot);
       luSave(cur);
       render();
-    }}, '×'));
-  }
+    }}, '×'),
+  ].filter(Boolean);
 
-  const chip = el('div', { class: classes.join(' ') }, ...children);
-
-  if (isBench) {
-    chip.setAttribute('draggable', 'true');
-    chip.addEventListener('dragstart', (e) => {
-      e.dataTransfer.setData('text/plain', p.id);
-      e.dataTransfer.effectAllowed = 'move';
-      chip.classList.add('dragging');
-    });
-    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-    chip.addEventListener('click', (e) => {
-      e.stopPropagation();
-      luArmedId = luArmedId === p.id ? null : p.id;
-      render();
-    });
-  }
-
-  return chip;
+  return el('div', { class: classes.join(' ') }, ...children);
 }
 
 /* ============ RATINGS PAGE ============ */
@@ -2712,7 +2648,186 @@ function renderRatings(root) {
   root.append(wrap);
 }
 
-/* Build a mini bar-chart panel from an aggregateRatings() result. */
+/* ============ SAVED LINEUPS ============ */
+const SAVED_LU_LS_KEY = 'hoops-saved-lineups-v1';
+function loadSavedLineups() {
+  try { return JSON.parse(lsGet(SAVED_LU_LS_KEY) || '[]') || []; } catch(e) { return []; }
+}
+function saveSavedLineups(arr) { lsSet(SAVED_LU_LS_KEY, JSON.stringify(arr)); }
+function addSavedLineup(name) {
+  const arr = loadSavedLineups();
+  arr.unshift({ id: uuid(), name, savedAt: new Date().toISOString(), lu: luLoad() });
+  saveSavedLineups(arr);
+}
+function deleteSavedLineup(id) {
+  saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
+}
+function applySavedLineup(id) {
+  const s = loadSavedLineups().find(s => s.id === id);
+  if (!s) return false;
+  // Run through luLoad-like normalization to be safe
+  const out = luDefault();
+  for (const q of LU_QUARTERS) {
+    const cur = s.lu && s.lu[q];
+    if (cur && typeof cur === 'object') {
+      for (const sl of LU_SLOTS) if (cur[sl]) out[q][sl] = cur[sl];
+    }
+  }
+  luSave(out);
+  return true;
+}
+
+function openSaveLineupModal() {
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Save Lineup'),
+      el('div', { class: 'field' },
+        el('label', {}, 'Name'),
+        el('input', { type: 'text', id: 'sv-name', placeholder: 'e.g. Starters, Defensive set' }),
+      ),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-primary', onclick: () => {
+          const name = $('#sv-name').value.trim();
+          if (!name) return toast('Name required');
+          addSavedLineup(name);
+          closeModal();
+          toast('Lineup saved');
+        }}, 'Save'),
+      ),
+    )
+  );
+  setTimeout(() => $('#sv-name')?.focus(), 50);
+}
+
+function openLoadLineupModal() {
+  const list = loadSavedLineups();
+  const body = el('div', { class: 'modal modal-lg' }, el('h3', {}, 'Saved Lineups'));
+  if (!list.length) {
+    body.append(el('div', { style: 'color:var(--muted);font-size:13px;padding:18px 4px;text-align:center;letter-spacing:0.08em' },
+      'No saved lineups yet. Build a lineup and tap Save.'));
+  } else {
+    const listEl = el('div', { class: 'saved-list' });
+    for (const s of list) {
+      const when = new Date(s.savedAt).toLocaleString();
+      const filled = LU_QUARTERS.reduce((n, q) => n + LU_SLOTS.filter(sl => s.lu?.[q]?.[sl]).length, 0);
+      listEl.append(el('div', { class: 'saved-row' },
+        el('div', {},
+          el('div', { class: 'saved-name' }, s.name),
+          el('div', { class: 'saved-meta' }, `${filled} slots · saved ${when}`),
+        ),
+        el('button', { class: 'saved-load', onclick: () => {
+          if (!applySavedLineup(s.id)) return toast('Could not load');
+          closeModal();
+          render();
+          toast(`Loaded: ${s.name}`);
+        }}, 'Load'),
+        el('button', { class: 'saved-del', title: 'Delete', onclick: () => {
+          if (!confirm(`Delete saved lineup "${s.name}"?`)) return;
+          deleteSavedLineup(s.id);
+          closeModal();
+          openLoadLineupModal();
+        }}, '×'),
+      ));
+    }
+    body.append(listEl);
+  }
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+  ));
+  openModal(body);
+}
+
+/* ============ PLAYER PICKER (slot tap) ============ */
+function openPickerModal(q, slot) {
+  const lu = luLoad();
+  const currentPid = lu[q][slot];
+  const currentPlayer = currentPid ? luPlayerById(currentPid) : null;
+
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, `${q} · ${slot}`));
+
+  if (currentPlayer) {
+    body.append(el('div', { class: 'picker-current-bar' },
+      el('span', { class: 'pc-name' }, currentPlayer.name),
+      posLabel(currentPlayer.position) ? el('span', { class: 'picker-pos' }, posLabel(currentPlayer.position)) : null,
+      el('button', { class: 'picker-remove', onclick: () => {
+        const cur = luLoad();
+        luClearSlot(cur, q, slot);
+        luSave(cur);
+        closeModal();
+        render();
+      }}, 'Remove'),
+    ));
+  }
+
+  const players = [...state.players].filter(p => p.active !== false);
+  if (!players.length) {
+    body.append(el('div', { style: 'padding:20px 0;color:var(--muted);text-align:center' },
+      'No players. Add some on the Roster page.'));
+  } else {
+    const decorated = players.map(p => {
+      const overall = playerOverallRating(p.id);
+      const existingSlot = luFindSlotInQuarter(lu, q, p.id);
+      const sameQ = !!existingSlot && existingSlot !== slot;
+      const usage = luUsage(lu, p.id);
+      return { p, overall, sameQ, existingSlot, usage };
+    });
+    decorated.sort((a, b) => {
+      // Sort by overall desc, nulls last; tiebreak by jersey
+      const ao = a.overall == null ? -Infinity : a.overall;
+      const bo = b.overall == null ? -Infinity : b.overall;
+      if (bo !== ao) return bo - ao;
+      return (a.p.jersey_number || 999) - (b.p.jersey_number || 999);
+    });
+
+    body.append(el('div', { class: 'picker-section' }, 'All players · sorted by Overall'));
+    const listEl = el('div', { class: 'picker-list' });
+    for (const d of decorated) {
+      const { p, overall, sameQ, existingSlot, usage } = d;
+      const isCurrent = currentPid === p.id;
+      const ovrClass = statClass(overall);
+      const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
+
+      const numNode = (p.jersey_number != null && p.jersey_number !== '')
+        ? el('div', { class: 'picker-jersey' }, String(p.jersey_number))
+        : el('div', { class: 'picker-jersey no-num' }, '·');
+
+      const note = isCurrent ? 'Currently here'
+        : sameQ ? `Move from ${existingSlot}`
+        : `${usage}/${LU_QUARTERS.length}`;
+
+      const row = el('div', { class: `picker-row${isCurrent ? ' current' : ''}` },
+        numNode,
+        el('div', {},
+          el('div', { class: 'picker-name' }, p.name),
+          el('div', { class: 'picker-note' }, note),
+        ),
+        el('div', { class: 'picker-meta' },
+          posLabel(p.position) ? el('span', { class: 'picker-pos' }, posLabel(p.position)) : null,
+        ),
+        el('div', { class: `picker-ovr ${ovrClass}` }, ovrText),
+      );
+      row.addEventListener('click', () => {
+        const cur = luLoad();
+        const r = luPlaceInSlot(cur, q, slot, p.id);
+        if (!r.ok) return toast(r.msg);
+        luSave(cur);
+        closeModal();
+        render();
+      });
+      listEl.append(row);
+    }
+    body.append(listEl);
+  }
+
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+  ));
+  openModal(body);
+}
+
+/* Score panel: Overall + grid of color-coded score pills. */
 function buildStatsPanel(agg, titleText) {
   const panel = el('div', { class: 'lu-stats' });
   panel.append(el('div', { class: 'lu-stats-head' },
@@ -2722,20 +2837,18 @@ function buildStatsPanel(agg, titleText) {
       fmt1(agg.overall),
     ),
   ));
+  const pills = el('div', { class: 'lu-score-pills' });
   for (const attr of RATING_ATTRS) {
-    const { avg, missing } = agg.perAttr[attr.key];
-    const pct = avg == null ? 0 : (avg / 10) * 100;
-    const fill = el('div', { class: `lu-stat-fill ${statClass(avg)}`, style: `width:${pct}%` });
-    panel.append(el('div', { class: 'lu-stat-row' },
-      el('div', { class: 'lu-stat-label' }, attr.short),
-      el('div', { class: 'lu-stat-bar' }, fill),
-      el('div', { class: `lu-stat-val ${avg == null ? 'none' : ''}` }, fmt1(avg)),
+    const { avg } = agg.perAttr[attr.key];
+    pills.append(el('div', { class: `lu-score-pill ${statClass(avg)}`, title: attr.label },
+      el('span', { class: 'sp-lbl' }, attr.short),
+      el('span', { class: 'sp-val' }, fmt1(avg)),
     ));
   }
-  const totalMissing = agg.fullyUnrated;
-  if (totalMissing > 0) {
+  panel.append(pills);
+  if (agg.fullyUnrated > 0) {
     panel.append(el('div', { class: 'lu-stat-missing' },
-      `${totalMissing} unrated player${totalMissing === 1 ? '' : 's'}`));
+      `${agg.fullyUnrated} unrated player${agg.fullyUnrated === 1 ? '' : 's'}`));
   }
   return panel;
 }
