@@ -681,14 +681,28 @@
   .lu-q-count { font-size: 11px; letter-spacing: 0.16em; color: var(--muted); font-weight: 700; }
   .lu-q-count.full { color: #3fb984; }
   .lu-slots { display: grid; gap: 6px; }
+  .lu-slot-row {
+    display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: stretch;
+  }
+  .lu-slot-label {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; letter-spacing: 0.12em;
+    color: var(--gold-2);
+    background: rgba(212,175,55,0.08);
+    border: 1px solid rgba(212,175,55,0.22);
+    border-radius: 10px;
+  }
   .lu-slot {
     min-height: 44px;
     display: flex; align-items: center;
     padding: 4px 6px;
     border: 1px dashed var(--border); border-radius: 10px;
     background: rgba(0,0,0,0.18);
+    transition: border-color .12s, background .12s;
   }
   .lu-slot.empty { color: var(--muted-2); font-size: 11px; letter-spacing: 0.18em; justify-content: center; }
+  .lu-slot.drag-over { border-color: var(--gold); border-style: solid; background: rgba(212,175,55,0.10); }
+  .lu-slot.armed-target { border-color: var(--gold-2); border-style: solid; }
   .lu-slot .lu-chip { flex: 1; cursor: default; }
   .lu-slot .lu-chip:hover { transform: none; }
   .lu-chip .lu-x {
@@ -2067,38 +2081,75 @@ function renderRoster(root) {
 /* ============ LINEUP TOOL ============ */
 const LU_LS_KEY = 'hoops-lineup-v1';
 const LU_QUARTERS = ['Q1','Q2','Q3','Q4'];
-const LU_MAX_PER_Q = 5;
+const LU_SLOTS = ['PG','SG','SF','PF','C'];
+const LU_MAX_PER_Q = LU_SLOTS.length;
 const LU_MAX_Q_PER_PLAYER = 2;
 let luArmedId = null; // tap-to-place selection
 
+function luDefaultQuarter() {
+  return { PG: null, SG: null, SF: null, PF: null, C: null };
+}
+function luDefault() {
+  const out = {};
+  for (const q of LU_QUARTERS) out[q] = luDefaultQuarter();
+  return out;
+}
 function luLoad() {
   try {
     const raw = lsGet(LU_LS_KEY);
     if (raw) {
-      const v = JSON.parse(raw);
+      const v = JSON.parse(raw) || {};
       const out = {};
-      for (const q of LU_QUARTERS) out[q] = Array.isArray(v[q]) ? v[q] : [];
+      for (const q of LU_QUARTERS) {
+        const cur = v[q];
+        const slotObj = luDefaultQuarter();
+        if (Array.isArray(cur)) {
+          // Migrate old shape (array of ids) into PG..C order
+          for (let i = 0; i < cur.length && i < LU_SLOTS.length; i++) {
+            if (cur[i]) slotObj[LU_SLOTS[i]] = cur[i];
+          }
+        } else if (cur && typeof cur === 'object') {
+          for (const s of LU_SLOTS) if (cur[s]) slotObj[s] = cur[s];
+        }
+        out[q] = slotObj;
+      }
       return out;
     }
   } catch(e) {}
-  return { Q1: [], Q2: [], Q3: [], Q4: [] };
+  return luDefault();
 }
 function luSave(lu) { lsSet(LU_LS_KEY, JSON.stringify(lu)); }
-function luUsage(lu, playerId) {
-  return LU_QUARTERS.reduce((n, q) => n + (lu[q].includes(playerId) ? 1 : 0), 0);
-}
 function luPlayerById(id) { return state.players.find(p => p.id === id); }
+function luQuarterIds(lu, q) { return LU_SLOTS.map(s => lu[q][s]).filter(Boolean); }
+function luQuarterFilledCount(lu, q) { return luQuarterIds(lu, q).length; }
+function luUsage(lu, playerId) {
+  return LU_QUARTERS.reduce(
+    (n, q) => n + (LU_SLOTS.some(s => lu[q][s] === playerId) ? 1 : 0),
+    0
+  );
+}
+function luFindSlotInQuarter(lu, q, playerId) {
+  for (const s of LU_SLOTS) if (lu[q][s] === playerId) return s;
+  return null;
+}
 
-function luAdd(lu, q, playerId) {
-  if (lu[q].includes(playerId)) return { ok: false, msg: 'Already in this quarter' };
-  if (lu[q].length >= LU_MAX_PER_Q) return { ok: false, msg: `${q} already has ${LU_MAX_PER_Q}` };
-  if (luUsage(lu, playerId) >= LU_MAX_Q_PER_PLAYER) return { ok: false, msg: 'Player capped at 2 quarters' };
-  lu[q].push(playerId);
+/* Place a player in a specific (q, slot). Allows moving within the same
+   quarter (does not double-count usage). Overwrites whoever was in the slot. */
+function luPlaceInSlot(lu, q, slot, playerId) {
+  const existingSlot = luFindSlotInQuarter(lu, q, playerId);
+  if (existingSlot === slot) return { ok: true };
+  if (existingSlot) {
+    lu[q][existingSlot] = null;
+    lu[q][slot] = playerId;
+    return { ok: true, moved: true };
+  }
+  if (luUsage(lu, playerId) >= LU_MAX_Q_PER_PLAYER) {
+    return { ok: false, msg: 'Player capped at 2 quarters' };
+  }
+  lu[q][slot] = playerId;
   return { ok: true };
 }
-function luRemove(lu, q, playerId) {
-  lu[q] = lu[q].filter(id => id !== playerId);
-}
+function luClearSlot(lu, q, slot) { lu[q][slot] = null; }
 
 function renderLineup(root) {
   const lu = luLoad();
@@ -2116,20 +2167,19 @@ function renderLineup(root) {
   }
 
   wrap.append(el('div', { class: 'lu-hint' },
-    `Drag a player into a quarter, or tap to pick then tap a quarter. Max ${LU_MAX_PER_Q} per quarter · each player max ${LU_MAX_Q_PER_PLAYER} quarters.`
+    `Drop a player onto a specific position slot (PG/SG/SF/PF/C), or tap a player then tap the slot. Each player max ${LU_MAX_Q_PER_PLAYER} quarters.`
   ));
 
   wrap.append(el('div', { class: 'lu-actions' },
     el('button', { class: 'nav-btn', onclick: () => {
       if (!confirm('Clear all quarters?')) return;
-      luSave({ Q1: [], Q2: [], Q3: [], Q4: [] });
+      luSave(luDefault());
       luArmedId = null;
       render();
     }}, 'Reset'),
   ));
 
   // ----- Bench -----
-  const assignedIds = new Set(LU_QUARTERS.flatMap(q => lu[q]));
   const benchPlayers = [...state.players]
     .filter(p => p.active !== false)
     .sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999) || a.name.localeCompare(b.name));
@@ -2147,59 +2197,73 @@ function renderLineup(root) {
   benchCard.append(benchEl);
   wrap.append(benchCard);
 
-  // ----- Quarters -----
+  // ----- Quarters with 5 position slots each -----
   const grid = el('div', { class: 'lu-quarters' });
   for (const q of LU_QUARTERS) {
-    const ids = lu[q];
-    const isFull = ids.length >= LU_MAX_PER_Q;
+    const filled = luQuarterFilledCount(lu, q);
+    const isFull = filled >= LU_MAX_PER_Q;
     const qCard = el('div', { class: `lu-q${isFull ? ' full' : ''}`, 'data-q': q });
-
-    qCard.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      qCard.classList.add('drag-over');
-    });
-    qCard.addEventListener('dragleave', () => qCard.classList.remove('drag-over'));
-    qCard.addEventListener('drop', (e) => {
-      e.preventDefault();
-      qCard.classList.remove('drag-over');
-      const playerId = e.dataTransfer.getData('text/plain');
-      if (!playerId) return;
-      const cur = luLoad();
-      const r = luAdd(cur, q, playerId);
-      if (!r.ok) return toast(r.msg);
-      luSave(cur);
-      luArmedId = null;
-      render();
-    });
-
-    qCard.addEventListener('click', () => {
-      if (!luArmedId) return;
-      const cur = luLoad();
-      const r = luAdd(cur, q, luArmedId);
-      if (!r.ok) return toast(r.msg);
-      luSave(cur);
-      luArmedId = null;
-      render();
-    });
 
     qCard.append(el('div', { class: 'lu-q-head' },
       el('div', { class: 'lu-q-title' }, q),
-      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${ids.length} / ${LU_MAX_PER_Q}`),
+      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${filled} / ${LU_MAX_PER_Q}`),
     ));
 
-    const slots = el('div', { class: 'lu-slots' });
-    for (let i = 0; i < LU_MAX_PER_Q; i++) {
-      const pid = ids[i];
+    const slotsWrap = el('div', { class: 'lu-slots' });
+    for (const slotName of LU_SLOTS) {
+      const pid = lu[q][slotName];
+      const slotEl = el('div', { class: `lu-slot${pid ? '' : ' empty'}${luArmedId ? ' armed-target' : ''}` });
+
       if (pid) {
         const p = luPlayerById(pid);
-        if (!p) { luRemove(lu, q, pid); luSave(lu); continue; }
-        const chip = buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q });
-        slots.append(el('div', { class: 'lu-slot' }, chip));
+        if (!p) {
+          luClearSlot(lu, q, slotName);
+          luSave(lu);
+          slotEl.classList.add('empty');
+          slotEl.append('Empty');
+        } else {
+          slotEl.append(buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q, slot: slotName }));
+        }
       } else {
-        slots.append(el('div', { class: 'lu-slot empty' }, 'Empty'));
+        slotEl.append('Empty');
       }
+
+      // Drop / tap handlers — per slot
+      slotEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        slotEl.classList.add('drag-over');
+      });
+      slotEl.addEventListener('dragleave', () => slotEl.classList.remove('drag-over'));
+      slotEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        slotEl.classList.remove('drag-over');
+        const playerId = e.dataTransfer.getData('text/plain');
+        if (!playerId) return;
+        const cur = luLoad();
+        const r = luPlaceInSlot(cur, q, slotName, playerId);
+        if (!r.ok) return toast(r.msg);
+        luSave(cur);
+        luArmedId = null;
+        render();
+      });
+      slotEl.addEventListener('click', (e) => {
+        if (!luArmedId) return;
+        // Don't trigger when tapping the X inside a chip
+        if (e.target.closest('.lu-x')) return;
+        const cur = luLoad();
+        const r = luPlaceInSlot(cur, q, slotName, luArmedId);
+        if (!r.ok) return toast(r.msg);
+        luSave(cur);
+        luArmedId = null;
+        render();
+      });
+
+      slotsWrap.append(el('div', { class: 'lu-slot-row' },
+        el('div', { class: 'lu-slot-label' }, slotName),
+        slotEl,
+      ));
     }
-    qCard.append(slots);
+    qCard.append(slotsWrap);
     grid.append(qCard);
   }
   wrap.append(grid);
@@ -2232,7 +2296,7 @@ function buildChip(p, usage, opts) {
     children.push(el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
       e.stopPropagation();
       const cur = luLoad();
-      luRemove(cur, opts.quarter, p.id);
+      luClearSlot(cur, opts.quarter, opts.slot);
       luSave(cur);
       render();
     }}, '×'));
