@@ -189,28 +189,47 @@ function renderKid() {
   }
 
   const rewardsWrap = document.getElementById('kidRewards');
+  const congratsWrap = document.getElementById('kidCongrats');
   const rewards = state.rewards.filter(function (r) {
     return (r.kid_id === kid.id || r.kid_id === null) && !r.claimed_at;
   }).sort(function (a, b) { return a.points_required - b.points_required; });
+  const earned = rewards.filter(function (r) { return p.net >= r.points_required; });
+  const targets = rewards.filter(function (r) { return p.net < r.points_required; });
+
+  if (earned.length === 0) {
+    congratsWrap.className = 'hidden';
+    congratsWrap.innerHTML = '';
+  } else {
+    congratsWrap.className = 'congrats-card';
+    const rows = earned.map(function (r) {
+      return '<div class="reward-row-c">🎉 ' + escapeHtml(r.name) + '</div>';
+    }).join('');
+    congratsWrap.innerHTML =
+      '<div class="big">Congratulations, ' + escapeHtml(kid.name) + '!</div>' +
+      '<div class="sub">You earned ' + (earned.length === 1 ? 'this reward' : 'these rewards') + ':</div>' +
+      rows +
+      '<div class="sub">Ask mom or dad to give it to you!</div>';
+  }
+
   if (rewards.length === 0) {
     rewardsWrap.innerHTML = '<div class="empty">No rewards set yet</div>';
+  } else if (targets.length === 0) {
+    rewardsWrap.innerHTML = '<div class="empty">All current rewards earned — see above!</div>';
   } else {
     rewardsWrap.innerHTML = '';
-    rewards.forEach(function (r) {
+    targets.forEach(function (r) {
       const row = document.createElement('div');
       row.className = 'reward-row';
       const pct = Math.max(0, Math.min(100, (p.net / r.points_required) * 100));
-      const cls = p.net >= r.points_required ? 'over' : (p.net < 0 ? 'short' : '');
+      const cls = p.net < 0 ? 'short' : '';
       const remaining = r.points_required - p.net;
-      const statusText = p.net >= r.points_required
-        ? '🎉 Earned! Ask mom/dad'
-        : remaining + ' more to go';
+      const statusText = remaining + ' more to go';
       row.innerHTML =
         '<div class="reward-top">' +
           '<span class="reward-name">' + escapeHtml(r.name) + '</span>' +
           '<span class="reward-points">' + p.net + '/' + r.points_required + '</span>' +
         '</div>' +
-        '<div class="progress"><div class="progress-bar ' + cls + '" style="width: ' + pct + '%; background: ' + (pct >= 100 ? kid.color : '') + '"></div></div>' +
+        '<div class="progress"><div class="progress-bar ' + cls + '" style="width: ' + pct + '%"></div></div>' +
         '<div style="font-size: 12px; color: var(--muted); margin-top: 4px;">' + statusText + '</div>';
       rewardsWrap.appendChild(row);
     });
@@ -603,19 +622,33 @@ function renderAdminRewards() {
     row.className = 'reward-item';
     const earned = p.net >= r.points_required;
     const scope = r.kid_id === null ? 'All kids' : (kid ? kid.name : '');
-    const claimText = r.claimed_at ? ' · claimed ' + formatShort(new Date(r.claimed_at)) : '';
-    const claimBtn = !r.claimed_at && earned
-      ? '<button class="btn-primary" style="padding: 6px 10px; font-size: 12px;" onclick="claimReward(\'' + r.id + '\')">Claim</button>'
+    const giveBtn = earned
+      ? '<button class="btn-primary" style="padding: 6px 10px; font-size: 12px; background: ' + (kid ? kid.color : '#10b981') + ';" onclick="giveReward(\'' + r.id + '\')">Give (−' + r.points_required + ')</button>'
       : '';
     row.innerHTML =
       '<div class="grow">' +
         '<div>' + escapeHtml(r.name) + (earned ? ' 🎉' : '') + '</div>' +
-        '<div class="meta">' + r.points_required + ' pts · ' + scope + claimText + '</div>' +
+        '<div class="meta">' + r.points_required + ' pts · ' + scope + '</div>' +
       '</div>' +
-      claimBtn +
+      giveBtn +
       '<button class="btn-danger" onclick="deleteReward(\'' + r.id + '\')">✕</button>';
     wrap.appendChild(row);
   });
+}
+async function giveReward(id) {
+  const r = state.rewards.find(function (x) { return x.id === id; });
+  if (!r) return;
+  const kid = getKid(state.currentKidId);
+  if (!confirm('Give "' + r.name + '" to ' + (kid ? kid.name : 'this kid') + '? This deducts ' + r.points_required + ' points so they can earn it again.')) return;
+  const res = await supa.from('behavior_points').insert({
+    kid_id: state.currentKidId,
+    amount: -r.points_required,
+    reason: 'Reward given: ' + r.name,
+  });
+  if (res.error) { toast('Failed: ' + res.error.message, 'error'); return; }
+  toast('Reward given — ' + r.points_required + ' pts deducted', 'success');
+  await loadAll();
+  renderAdmin();
 }
 async function saveReward() {
   const name = document.getElementById('rewardName').value.trim();
@@ -632,14 +665,6 @@ async function saveReward() {
   await loadAll();
   renderAdmin();
   toast('Reward added', 'success');
-}
-async function claimReward(id) {
-  if (!confirm('Mark this reward as claimed?')) return;
-  const res = await supa.from('behavior_rewards').update({ claimed_at: new Date().toISOString() }).eq('id', id);
-  if (res.error) { toast('Save failed: ' + res.error.message, 'error'); return; }
-  await loadAll();
-  renderAdmin();
-  toast('Reward claimed 🎉', 'success');
 }
 async function deleteReward(id) {
   if (!confirm('Delete this reward?')) return;
