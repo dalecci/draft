@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
+<title>Family Behavior</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --green: #10b981;
+    --green-soft: rgba(16, 185, 129, 0.15);
+    --red: #ef4444;
+    --red-soft: rgba(239, 68, 68, 0.15);
+    --accent: #6366f1;
+    --warn: #f59e0b;
+    --border: rgba(255, 255, 255, 0.08);
+  }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  button {
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+  input, select, textarea {
+    font-family: inherit;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 16px;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  .hidden { display: none !important; }
+  .screen { flex: 1; display: flex; flex-direction: column; padding: 16px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+  #gateScreen { align-items: center; justify-content: center; text-align: center; }
+  .gate-card { background: var(--panel); border-radius: 20px; padding: 32px 28px; width: 100%; max-width: 360px; border: 1px solid var(--border); }
+  .gate-card h1 { font-size: 26px; margin-bottom: 6px; }
+  .gate-card .sub { color: var(--muted); margin-bottom: 24px; font-size: 14px; }
+  .pin-display { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+  .pin-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--panel-2); border: 2px solid var(--border); transition: background 0.15s; }
+  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pin-btn { aspect-ratio: 1; background: var(--panel-2); border-radius: 14px; font-size: 24px; font-weight: 600; color: var(--text); transition: transform 0.08s, background 0.1s; }
+  .pin-btn:active { transform: scale(0.94); background: #475569; }
+  .shake { animation: shake 0.4s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+  .gate-err { color: var(--red); margin-top: 12px; font-size: 14px; min-height: 20px; }
+
+  #loginScreen { padding: 24px 16px; }
+  .login-header { text-align: center; margin-bottom: 28px; }
+  .login-header h1 { font-size: 24px; margin-bottom: 4px; }
+  .login-header .sub { color: var(--muted); font-size: 14px; }
+  .tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 480px; margin: 0 auto; width: 100%; }
+  .kid-tile { aspect-ratio: 1; border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 22px; color: white; transition: transform 0.1s; border: none; position: relative; overflow: hidden; }
+  .kid-tile:active { transform: scale(0.96); }
+  .kid-tile .avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; }
+  .kid-tile.admin { background: linear-gradient(135deg, #475569, #1e293b); color: var(--text); }
+  .kid-tile.admin .avatar { background: rgba(255,255,255,0.1); }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 8px 0; }
+  .topbar .title { font-size: 20px; font-weight: 700; }
+  .icon-btn { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 14px; color: var(--text); }
+  .icon-btn:hover { background: var(--panel-2); }
+
+  .kid-header { border-radius: 22px; padding: 24px; margin-bottom: 16px; color: white; text-align: center; position: relative; }
+  .kid-name { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+  .kid-net { font-size: 72px; font-weight: 900; line-height: 1; margin: 12px 0 8px; }
+  .kid-net.negative { color: #fecaca; }
+  .kid-stats { display: flex; justify-content: center; gap: 16px; font-size: 15px; opacity: 0.95; }
+  .kid-stats span { background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 10px; }
+
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .card h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  .reward-row { margin-bottom: 14px; }
+  .reward-row:last-child { margin-bottom: 0; }
+  .reward-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .reward-name { font-weight: 600; }
+  .reward-points { color: var(--muted); font-size: 14px; }
+  .progress { height: 10px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--green); transition: width 0.3s; border-radius: 6px; }
+  .progress-bar.over { background: var(--accent); }
+  .progress-bar.short { background: var(--warn); }
+
+  .conseq-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--red-soft); border-left: 3px solid var(--red); border-radius: 8px; margin-bottom: 8px; }
+  .conseq-item:last-child { margin-bottom: 0; }
+  .conseq-desc { font-weight: 600; }
+  .conseq-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .conseq-end { font-size: 13px; color: var(--red); font-weight: 600; }
+
+  .activity-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-amount { font-weight: 700; }
+  .activity-amount.pos { color: var(--green); }
+  .activity-amount.neg { color: var(--red); }
+  .activity-reason { color: var(--muted); flex: 1; padding: 0 12px; }
+  .activity-time { color: var(--muted); font-size: 12px; }
+
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 12px; font-style: italic; }
+
+  .kid-switcher { display: flex; gap: 6px; overflow-x: auto; padding: 4px; margin-bottom: 14px; background: var(--panel); border-radius: 14px; border: 1px solid var(--border); }
+  .kid-switcher button { flex: 1; min-width: 80px; padding: 10px 14px; border-radius: 10px; font-weight: 600; background: transparent; color: var(--muted); transition: background 0.15s; font-size: 14px; white-space: nowrap; }
+  .kid-switcher button.active { color: white; }
+  .quick-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .qp-btn { padding: 14px 6px; border-radius: 12px; font-weight: 700; font-size: 16px; color: white; }
+  .qp-green { background: var(--green); }
+  .qp-red { background: var(--red); }
+  .qp-btn:active { transform: scale(0.95); }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .row > * { flex: 1; }
+  .btn-primary { background: var(--accent); color: white; padding: 10px 14px; border-radius: 10px; font-weight: 600; }
+  .btn-secondary { background: var(--panel-2); color: var(--text); padding: 10px 14px; border-radius: 10px; font-weight: 600; }
+  .btn-danger { background: var(--red); color: white; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; }
+  .admin-conseq-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 12px; background: var(--panel-2); border-radius: 10px; margin-bottom: 8px; }
+  .admin-conseq-item .grow { flex: 1; }
+  .admin-row-actions { display: flex; gap: 6px; flex-direction: column; align-items: stretch; }
+  .label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; font-weight: 600; }
+
+  .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .cal-month { font-weight: 700; font-size: 16px; }
+  .cal-nav { display: flex; gap: 6px; }
+  .cal-nav button { width: 36px; height: 36px; border-radius: 8px; background: var(--panel-2); font-size: 18px; font-weight: 700; color: var(--text); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { text-align: center; font-size: 11px; color: var(--muted); font-weight: 700; padding: 6px 0; text-transform: uppercase; }
+  .cal-day { aspect-ratio: 1; background: var(--panel-2); border-radius: 8px; padding: 4px; display: flex; flex-direction: column; position: relative; font-size: 12px; min-height: 44px; }
+  .cal-day.today { outline: 2px solid var(--accent); }
+  .cal-day.other-month { opacity: 0.3; }
+  .cal-day-num { font-weight: 700; font-size: 12px; color: var(--muted); }
+  .cal-bars { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; flex: 1; justify-content: flex-end; }
+  .cal-bar { height: 4px; border-radius: 2px; opacity: 0.95; }
+
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 100; }
+  .modal { background: var(--panel); border-radius: 18px; padding: 22px; width: 100%; max-width: 440px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+  .modal h2 { margin-bottom: 14px; font-size: 18px; }
+  .modal .field { margin-bottom: 12px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .modal-actions button { flex: 1; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; background: var(--panel); padding: 4px; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; }
+  .tabs button { flex: 1; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .tabs button.active { background: var(--accent); color: white; }
+
+  .template-item, .reward-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--panel-2); border-radius: 8px; margin-bottom: 6px; font-size: 14px; gap: 8px; }
+  .template-item .grow, .reward-item .grow { flex: 1; }
+  .template-item .meta, .reward-item .meta { color: var(--muted); font-size: 12px; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--panel); color: var(--text); padding: 12px 18px; border-radius: 12px; font-size: 14px; z-index: 200; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .toast.error { border-color: var(--red); }
+  .toast.success { border-color: var(--green); }
+
+  @media (min-width: 720px) {
+    .tile-grid { grid-template-columns: repeat(4, 1fr); }
+    .quick-points { grid-template-columns: repeat(6, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen" id="gateScreen">
+  <div class="gate-card" id="gateCard">
+    <h1 id="gateTitle">Family Behavior</h1>
+    <p class="sub" id="gateSub">Enter the code to continue</p>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-pad" id="pinPad"></div>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<div class="screen hidden" id="loginScreen">
+  <div class="login-header">
+    <h1>Who's signing in?</h1>
+    <p class="sub">Tap a name to continue</p>
+  </div>
+  <div class="tile-grid" id="tileGrid"></div>
+</div>
+
+<div class="screen hidden" id="kidScreen">
+  <div class="topbar">
+    <div class="title" id="kidTitle">—</div>
+    <button class="icon-btn" onclick="logout()">Switch user</button>
+  </div>
+  <div class="kid-header" id="kidHeader">
+    <div class="kid-name" id="kidName">—</div>
+    <div class="kid-net" id="kidNet">0</div>
+    <div class="kid-stats">
+      <span>🟢 <span id="kidGreen">0</span> green</span>
+      <span>🔴 <span id="kidRed">0</span> red</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Active consequences</h3>
+    <div id="kidConsequences"></div>
+  </div>
+
+  <div class="card">
+    <h3>Rewards</h3>
+    <div id="kidRewards"></div>
+  </div>
+
+  <div class="card">
+    <h3>Recent activity</h3>
+    <div id="kidActivity"></div>
+  </div>
+</div>
+
+<div class="screen hidden" id="adminScreen">
+  <div class="topbar">
+    <div class="title">Admin</div>
+    <button class="icon-btn" onclick="logout()">Switch user</button>
+  </div>
+
+  <div class="kid-switcher" id="kidSwitcher"></div>
+
+  <div class="tabs">
+    <button class="active" data-tab="points">Points</button>
+    <button data-tab="consequences">Conseq.</button>
+    <button data-tab="rewards">Rewards</button>
+    <button data-tab="calendar">Calendar</button>
+    <button data-tab="settings">Settings</button>
+  </div>
+
+  <div class="tab-content" data-tab="points">
+    <div class="card">
+      <h3>Add points</h3>
+      <div class="quick-points">
+        <button class="qp-btn qp-green" onclick="addPoints(1)">+1</button>
+        <button class="qp-btn qp-green" onclick="addPoints(3)">+3</button>
+        <button class="qp-btn qp-green" onclick="addPoints(5)">+5</button>
+        <button class="qp-btn qp-red" onclick="addPoints(-1)">−1</button>
+        <button class="qp-btn qp-red" onclick="addPoints(-3)">−3</button>
+        <button class="qp-btn qp-red" onclick="addPoints(-5)">−5</button>
+      </div>
+      <button class="btn-secondary" style="width: 100%; margin-top: 8px;" onclick="openCustomPoints()">Custom amount + reason…</button>
+    </div>
+
+    <div class="card">
+      <h3>Current score</h3>
+      <div id="adminScore" style="font-size: 36px; font-weight: 800; text-align: center; margin: 8px 0;">0</div>
+      <div style="text-align: center; color: var(--muted); font-size: 14px;">
+        <span id="adminGreen">0</span> green · <span id="adminRed">0</span> red
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Recent activity</h3>
+      <div id="adminActivity"></div>
+    </div>
+  </div>
+
+  <div class="tab-content hidden" data-tab="consequences">
+    <div class="card">
+      <h3>Add consequence</h3>
+      <div class="field">
+        <span class="label">Template (optional)</span>
+        <select id="conseqTemplate" onchange="applyTemplate()">
+          <option value="">— Write custom —</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="label">Description</span>
+        <input id="conseqDesc" placeholder="e.g. No iPad" />
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <div>
+          <span class="label">Start</span>
+          <input type="date" id="conseqStart" />
+        </div>
+        <div>
+          <span class="label">End</span>
+          <input type="date" id="conseqEnd" />
+        </div>
+      </div>
+      <button class="btn-primary" style="width: 100%;" onclick="saveConsequence()">Add consequence</button>
+    </div>
+
+    <div class="card">
+      <h3>Active & upcoming</h3>
+      <div id="adminConsequencesActive"></div>
+    </div>
+
+    <div class="card">
+      <h3>Past</h3>
+      <div id="adminConsequencesPast"></div>
+    </div>
+  </div>
+
+  <div class="tab-content hidden" data-tab="rewards">
+    <div class="card">
+      <h3>Add reward</h3>
+      <div class="field">
+        <span class="label">Name</span>
+        <input id="rewardName" placeholder="e.g. New Lego set" />
+      </div>
+      <div class="row" style="margin-bottom: 12px;">
+        <div>
+          <span class="label">Points required</span>
+          <input type="number" id="rewardPoints" placeholder="50" />
+        </div>
+        <div>
+          <span class="label">For</span>
+          <select id="rewardScope">
+            <option value="kid">This kid only</option>
+            <option value="all">All kids</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width: 100%;" onclick="saveReward()">Add reward</button>
+    </div>
+
+    <div class="card">
+      <h3>Rewards for this kid</h3>
+      <div id="adminRewards"></div>
+    </div>
+  </div>
+
+  <div class="tab-content hidden" data-tab="calendar">
+    <div class="card">
+      <div class="calendar-header">
+        <div class="cal-month" id="calMonth">—</div>
+        <div class="cal-nav">
+          <button onclick="calNav(-1)">‹</button>
+          <button onclick="calNav(0)">Today</button>
+          <button onclick="calNav(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div style="margin-top: 12px; font-size: 12px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap;" id="calLegend"></div>
+    </div>
+  </div>
+
+  <div class="tab-content hidden" data-tab="settings">
+    <div class="card">
+      <h3>Consequence templates</h3>
+      <div class="row" style="margin-bottom: 8px;">
+        <input id="newTemplateDesc" placeholder="Description (e.g. No iPad)" style="flex: 2;" />
+        <input id="newTemplateDays" type="number" placeholder="Days" value="1" style="flex: 1; max-width: 80px;" />
+        <button class="btn-primary" onclick="saveTemplate()" style="flex: 0 0 auto;">Add</button>
+      </div>
+      <div id="adminTemplates"></div>
+    </div>
+
+    <div class="card">
+      <h3>Kids</h3>
+      <div id="adminKids"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
