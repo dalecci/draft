@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Outcomes — Sport-Études Florida</title>
+<meta name="description" content="Across every measured academic outcome — HS graduation, CEGEP course success, college persistence — Sport-Études students sit at or above the general Quebec population." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Primary">
+    <a href="index.html" class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>Sport-Études<small>Florida · Basketball</small></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="program.html">Program</a></li>
+      <li><a href="outcomes.html" class="active">Outcomes</a></li>
+      <li><a href="for-boys.html">For Boys</a></li>
+      <li><a href="for-parents.html">For Parents</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-flame nav-cta">Join the list</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="document.getElementById('mobileNav').classList.toggle('open'); this.setAttribute('aria-expanded', document.getElementById('mobileNav').classList.contains('open'));">Menu</button>
+  </nav>
+  <div class="nav-mobile" id="mobileNav">
+    <ul>
+      <li><a href="program.html">Program</a></li>
+      <li><a href="outcomes.html">Outcomes</a></li>
+      <li><a href="for-boys.html">For Boys</a></li>
+      <li><a href="for-parents.html">For Parents</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-flame">Join the interest list</a>
+  </div>
+</header>
+
+<main>
+
+<section class="page-hero">
+  <span class="ghost-side" aria-hidden="true">+23.4</span>
+  <div class="wrap">
+    <span class="kicker">The Data</span>
+    <h1>The data isn't hopeful.<br/>It's <span class="text-flame">settled.</span></h1>
+    <p class="lead" style="margin-top:2rem;">Every claim on this page is traceable to a primary source — the Alliance Sport-Études annual report, Quebec Ministry of Education data, individual partner-school reporting, and peer-reviewed research. Where a number cannot be sourced, it doesn't appear here.</p>
+  </div>
+</section>
+
+<section style="padding-top:3rem;">
+  <div class="wrap">
+    <div class="section-num">01 / Side-by-side</div>
+    <h2 style="max-width:24ch;">Sport-Études outperforms the general Quebec population <span class="text-flame">across every measured outcome.</span></h2>
+
+    <div class="chart-shell">
+      <h3>Success / graduation rate (%) — Sport-Études vs general Quebec population</h3>
+      <div class="chart-wrap">
+        <canvas id="outcomesChart" role="img" aria-label="Grouped bar chart comparing Sport-Études (100, 99.4, 85.0, 95.1, 96.2) vs general Quebec population (82.4, 76.0, 76.8, 93.6, 91.5) across five academic outcomes. Sport-Études leads on every category."></canvas>
+      </div>
+      <p style="color:var(--text-mute); font-size:0.82rem; margin-top:1.5rem; margin-bottom:0;">Sources: Alliance Sport-Études Rapport annuel 2021-2022, École Mont-Bleu, Escadron operator data, Cégep de Drummondville, Quebec ISQ.</p>
+    </div>
+
+    <div class="deltas">
+      <div class="delta-tile">
+        <div class="delta-num" data-count="17.6" data-suffix=" pts" data-prefix="+">+17.6 pts</div>
+        <div class="delta-label">Best HS grad delta</div>
+        <p class="delta-caption">Mont-Bleu Sport-Études vs Quebec baseline.</p>
+      </div>
+      <div class="delta-tile">
+        <div class="delta-num" data-count="23.4" data-suffix=" pts" data-prefix="+">+23.4 pts</div>
+        <div class="delta-label">Biggest CEGEP gain</div>
+        <p class="delta-caption">Escadron network vs regular programs.</p>
+      </div>
+      <div class="delta-tile">
+        <div class="delta-num" data-count="8.2" data-suffix=" pts" data-prefix="+">+8.2 pts</div>
+        <div class="delta-label">Boys' CEGEP advantage</div>
+        <p class="delta-caption">Sport-Études boys vs general male pop, Social Sciences.</p>
+      </div>
+      <div class="delta-tile">
+        <div class="delta-num">≥90%</div>
+        <div class="delta-label">Multi-year consistency</div>
+        <p class="delta-caption">Alliance Sport-Études CEGEP success, 5 consecutive years.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="light">
+  <div class="wrap">
+    <div class="section-num">02 / Full transparency</div>
+    <h2 style="margin-top:0; max-width:22ch;">Every outcome, every source.</h2>
+    <p style="max-width:60ch; color:var(--text-dark-soft);">The complete dataset behind the chart above, including breakdowns we omit from the chart for readability. The "General population" column reflects the comparable Quebec baseline for that specific cohort and course track.</p>
+
+    <div class="table-wrap" style="background:var(--bg-cream); border-color:rgba(7,17,30,0.1); margin-top:2.5rem;">
+      <table>
+        <thead>
+          <tr>
+            <th style="color:rgba(7,17,30,0.5); background:rgba(7,17,30,0.04);">Outcome</th>
+            <th class="num" style="color:rgba(7,17,30,0.5); background:rgba(7,17,30,0.04);">Sport-Études</th>
+            <th class="num" style="color:rgba(7,17,30,0.5); background:rgba(7,17,30,0.04);">General pop.</th>
+            <th class="num" style="color:rgba(7,17,30,0.5); background:rgba(7,17,30,0.04);">Delta</th>
+            <th style="color:rgba(7,17,30,0.5); background:rgba(7,17,30,0.04);">Source</th>
+          </tr>
+        </thead>
+        <tbody style="color:var(--text-dark);">
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">HS graduation, École Mont-Bleu (multi-cohort)</td><td class="num" style="border-color:rgba(7,17,30,0.08);">100%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">82.4%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+17.6 pts</td><td style="border-color:rgba(7,17,30,0.08);">École Mont-Bleu program page</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">HS academic success, Escadron network</td><td class="num" style="border-color:rgba(7,17,30,0.08);">99.4%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">~76%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+23.4 pts</td><td style="border-color:rgba(7,17,30,0.08);">Escadron operator data</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">CEGEP boys, Sci-humaines first session, Fall 2021</td><td class="num" style="border-color:rgba(7,17,30,0.08);">85.0%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">76.8%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+8.2 pts</td><td style="border-color:rgba(7,17,30,0.08);">Alliance Sport-Études 2021-22</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">CEGEP boys, Sci-nature first session, Fall 2021</td><td class="num" style="border-color:rgba(7,17,30,0.08);">97.6%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">90.9%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+6.7 pts</td><td style="border-color:rgba(7,17,30,0.08);">Alliance Sport-Études 2021-22</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">CEGEP girls, Sci-humaines first session, Fall 2021</td><td class="num" style="border-color:rgba(7,17,30,0.08);">91.1%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">85.1%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+6.0 pts</td><td style="border-color:rgba(7,17,30,0.08);">Alliance Sport-Études 2021-22</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">CEGEP girls, Sci-nature first session, Fall 2021</td><td class="num" style="border-color:rgba(7,17,30,0.08);">95.1%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">93.6%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+1.5 pts</td><td style="border-color:rgba(7,17,30,0.08);">Alliance Sport-Études 2021-22</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">CEGEP cohort success rate, Cégep de Drummondville</td><td class="num" style="border-color:rgba(7,17,30,0.08);">96.2%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">91.5%</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">+4.7 pts</td><td style="border-color:rgba(7,17,30,0.08);">Cégep de Drummondville (Spring 2017)</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">5-year Sport-Études CEGEP success trend</td><td class="num" style="border-color:rgba(7,17,30,0.08);">≥90%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">—</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">—</td><td style="border-color:rgba(7,17,30,0.08);">Alliance Sport-Études (peak 95% in 2020)</td></tr>
+          <tr style="border-color:rgba(7,17,30,0.08);"><td style="border-color:rgba(7,17,30,0.08);">UQAM athletes with GPA ≥80%, 2019-20</td><td class="num" style="border-color:rgba(7,17,30,0.08);">52%</td><td class="num" style="border-color:rgba(7,17,30,0.08);">—</td><td class="num delta-cell" style="border-color:rgba(7,17,30,0.08);">—</td><td style="border-color:rgba(7,17,30,0.08);">UQAM athletic department</td></tr>
+          <tr><td>UQAM athletes with GPA ≥4.0/4.3, 2019-20</td><td class="num">12%</td><td class="num">—</td><td class="num delta-cell">—</td><td>UQAM athletic department</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap-prose">
+    <div class="section-num">03 / The boys gap</div>
+    <h2 style="margin-top:0;">Quebec's boys-vs-girls grad gap — <span class="text-flame">closed.</span></h2>
+    <p>Quebec's official seven-year secondary graduation rate is <strong style="color:var(--flame-bright); font-weight:500;">82.4% overall</strong> (2017-18 cohort, reported 2023-24). The gender breakdown matters: girls at <strong style="color:var(--flame-bright); font-weight:500;">86.9%</strong>, boys at <strong style="color:var(--flame-bright); font-weight:500;">78.2%</strong> — a gap of nearly nine points. Sport-Études programs report graduation rates that close this gap or erase it entirely.</p>
+
+    <div class="big-stats" style="margin-top:3rem;">
+      <div class="big-stat">
+        <div class="label">Overall 7-yr graduation</div>
+        <div>
+          <div class="value" data-count="82.4" data-suffix="%">82.4%</div>
+          <p class="caption">Quebec 2017-18 cohort, reported 2023-24.</p>
+        </div>
+      </div>
+      <div class="big-stat">
+        <div class="label">Girls</div>
+        <div>
+          <div class="value" data-count="86.9" data-suffix="%">86.9%</div>
+          <p class="caption">7-year graduation rate.</p>
+        </div>
+      </div>
+      <div class="big-stat">
+        <div class="label">Boys</div>
+        <div>
+          <div class="value" data-count="78.2" data-suffix="%">78.2%</div>
+          <p class="caption">7-year graduation rate — the gap Sport-Études closes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="light">
+  <div class="wrap-prose">
+    <div class="section-num">04 / The pipeline</div>
+    <h2 style="margin-top:0;">The athletic outcome is real, too.</h2>
+    <ul style="list-style:none; padding:0; margin:2rem 0;">
+      <li style="padding:1.2rem 0; border-bottom:1px solid rgba(7,17,30,0.1); font-size:1.05rem;">Canada exported <strong style="color:var(--flame); font-weight:500;">168 players</strong> to NCAA Division I men's basketball for 2025–26 — the largest foreign-country pipeline. Quebec Sport-Études alumni feature prominently.</li>
+      <li style="padding:1.2rem 0; border-bottom:1px solid rgba(7,17,30,0.1); font-size:1.05rem;">Basketball Québec operates Sport-Études basketball across <strong style="color:var(--flame); font-weight:500;">19 regions</strong> of the province.</li>
+      <li style="padding:1.2rem 0; font-size:1.05rem;">Alumni include Olympic gold medalists (Alexandre Bilodeau — twice), Olympic alpine and freestyle skiers, and multiple national-team basketball players.</li>
+    </ul>
+
+    <div class="btn-group" style="margin-top:2rem;">
+      <a href="contact.html" class="btn btn-flame btn-arrow">Join the interest list</a>
+      <a href="for-boys.html" class="btn btn-ghost btn-arrow">For Boys</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-wrap">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="footer-brand">Sport-Études Florida</span>
+      </div>
+      <p>A proposed Florida private school basketball program built on Quebec's 50-year-old Sport-Études framework. Federation-certified athletic development and rigorous academics, under one roof.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Program</h4>
+      <ul>
+        <li><a href="program.html">The Program</a></li>
+        <li><a href="outcomes.html">Outcomes</a></li>
+        <li><a href="for-boys.html">For Boys</a></li>
+        <li><a href="for-parents.html">For Parents</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="contact.html">Join the interest list</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; <span id="year"></span> Sport-Études Florida. All data sourced; see Outcomes.</span>
+    <span>Modeled on Quebec MEQ Sport-Études framework.</span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Count-up animation
+(function() {
+  const els = document.querySelectorAll('[data-count]');
+  if (!els.length) return;
+  const animate = (el) => {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const prefix = el.dataset.prefix || '';
+    const dur = 1400;
+    const start = performance.now();
+    const isFloat = target % 1 !== 0;
+    function tick(now) {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const val = target * eased;
+      el.textContent = prefix + (isFloat ? val.toFixed(1) : Math.round(val)) + suffix;
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  };
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { animate(e.target); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.4 });
+  els.forEach(el => obs.observe(el));
+})();
+
+// Chart
+(function() {
+  const ctx = document.getElementById('outcomesChart');
+  if (!ctx || typeof Chart === 'undefined') return;
+
+  Chart.defaults.color = 'rgba(255,255,255,0.7)';
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: [
+        ['HS graduation', '(Mont-Bleu)'],
+        ['HS success', '(Escadron)'],
+        ['CEGEP boys', 'Sci-humaines'],
+        ['CEGEP girls', 'Sci-nature'],
+        ['CEGEP cohort', '(Drummondville)']
+      ],
+      datasets: [
+        {
+          label: 'Sport-Études',
+          data: [100, 99.4, 85.0, 95.1, 96.2],
+          backgroundColor: '#FF6B1A',
+          hoverBackgroundColor: '#FF8534',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 56
+        },
+        {
+          label: 'General Quebec population',
+          data: [82.4, 76.0, 76.8, 93.6, 91.5],
+          backgroundColor: 'rgba(255, 255, 255, 0.22)',
+          hoverBackgroundColor: 'rgba(255, 255, 255, 0.35)',
+          borderRadius: 4,
+          borderSkipped: false,
+          maxBarThickness: 56
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 12 } },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'start',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'rectRounded',
+            font: { size: 12, weight: '600' },
+            color: 'rgba(255,255,255,0.85)',
+            padding: 18,
+            boxWidth: 14,
+            boxHeight: 14
+          }
+        },
+        tooltip: {
+          backgroundColor: '#07111E',
+          borderColor: '#FF6B1A',
+          borderWidth: 1,
+          titleFont: { size: 13, weight: '700' },
+          bodyFont: { size: 13 },
+          padding: 12,
+          cornerRadius: 4,
+          displayColors: true,
+          callbacks: {
+            title: (items) => {
+              const lbl = items[0].label;
+              return Array.isArray(lbl) ? lbl.join(' ') : lbl;
+            },
+            label: (item) => item.dataset.label + ': ' + item.parsed.y.toFixed(1) + '%'
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          min: 0, max: 110,
+          ticks: {
+            stepSize: 20,
+            callback: (v) => v + '%',
+            font: { size: 11 },
+            color: 'rgba(255,255,255,0.5)'
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.06)', drawBorder: false }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: {
+            font: { size: 11 },
+            color: 'rgba(255,255,255,0.7)',
+            autoSkip: false,
+            maxRotation: 0
+          }
+        }
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
