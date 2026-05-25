@@ -72,7 +72,10 @@
     .brand-mark { width: 30px; height: 30px; }
     .brand-name { font-size: 14px; }
     .nav-btn { padding: 6px 10px; font-size: 11px; letter-spacing: 0.08em; }
-    main { padding: 14px 12px; }
+    main {
+      padding: 14px 12px;
+      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    }
   }
   html, body { overflow-x: hidden; }
   header.app-header::after {
@@ -104,7 +107,11 @@
   .nav-btn.danger:hover { background: var(--missed); color: white; border-color: var(--missed); }
 
   /* ---------- Layout ---------- */
-  main { padding: 18px; max-width: 1600px; margin: 0 auto; }
+  main {
+    padding: 18px;
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    max-width: 1600px; margin: 0 auto;
+  }
   h2 { font-size: 22px; margin: 0 0 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-2); font-weight: 700; }
   h3 { font-size: 15px; margin: 0 0 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
