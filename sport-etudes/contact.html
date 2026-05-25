@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Join the interest list — Sport-Études Florida</title>
+<meta name="description" content="Be among the first. Tell us about your student-athlete and we'll be in touch with program updates as we approach our launch." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav" aria-label="Primary">
+    <a href="index.html" class="brand">
+      Sport-Études Florida
+      <small>Basketball · Academics · Discipline</small>
+    </a>
+    <ul class="nav-links">
+      <li><a href="program.html">Program</a></li>
+      <li><a href="outcomes.html">Outcomes</a></li>
+      <li><a href="for-boys.html">For Boys</a></li>
+      <li><a href="for-parents.html">For Parents</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary nav-cta">Join the interest list</a>
+    <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" onclick="document.getElementById('mobileNav').classList.toggle('open'); this.setAttribute('aria-expanded', document.getElementById('mobileNav').classList.contains('open'));">Menu</button>
+  </nav>
+  <div class="nav-mobile" id="mobileNav">
+    <ul>
+      <li><a href="program.html">Program</a></li>
+      <li><a href="outcomes.html">Outcomes</a></li>
+      <li><a href="for-boys.html">For Boys</a></li>
+      <li><a href="for-parents.html">For Parents</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <a href="contact.html" class="btn btn-primary" style="width:100%;">Join the interest list</a>
+  </div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="hero-inner">
+    <span class="kicker">Interest list</span>
+    <h1>Be among the first.</h1>
+    <p class="lead">We are building the first Sport-Études basketball program in the United States, and our founding cohort will be selected from families who join the interest list. Tell us about your student-athlete and we'll be in touch with program updates as we approach our launch.</p>
+  </div>
+</section>
+
+<section style="padding-top:1rem;">
+  <div class="container-prose">
+    <form id="interestForm" class="form-grid" novalidate>
+      <div class="field">
+        <label for="parent_name">Parent / guardian name</label>
+        <input type="text" id="parent_name" name="parent_name" required autocomplete="name" />
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="phone">Phone <span class="text-muted" style="font-weight:400;">(optional)</span></label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" />
+      </div>
+      <div class="field">
+        <label for="student_name">Student first name</label>
+        <input type="text" id="student_name" name="student_name" required />
+      </div>
+      <div class="field">
+        <label for="grade">Student current grade level</label>
+        <select id="grade" name="grade" required>
+          <option value="">Select a grade</option>
+          <option>5th</option>
+          <option>6th</option>
+          <option>7th</option>
+          <option>8th</option>
+          <option>9th</option>
+          <option>10th</option>
+          <option>11th</option>
+          <option>12th</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="current_school">Current school</label>
+        <input type="text" id="current_school" name="current_school" />
+      </div>
+      <div class="field full">
+        <label for="bball_years">Years of basketball experience</label>
+        <input type="text" id="bball_years" name="bball_years" placeholder="e.g. 4 years club, 2 years AAU" />
+      </div>
+      <div class="field full">
+        <label for="notes">Anything else you want us to know</label>
+        <textarea id="notes" name="notes" rows="5"></textarea>
+      </div>
+      <div class="field field-checkbox full">
+        <input type="checkbox" id="consent" name="consent" required />
+        <label for="consent">I agree to receive program updates by email.</label>
+      </div>
+      <div class="form-actions full">
+        <button type="submit" class="btn btn-primary">Submit interest</button>
+        <span id="formStatus" class="text-muted" style="margin-left:1rem;font-size:0.9rem;"></span>
+      </div>
+    </form>
+
+    <p class="text-muted" style="margin-top:3rem;font-size:0.95rem;">Questions? Email us at <a href="mailto:hello@sportetudes-florida.com">hello@sportetudes-florida.com</a>.</p>
+    <p class="text-muted" style="font-size:0.85rem;"><em>Form submissions are stored locally for review during the pre-launch period. A full CRM integration will be in place before the program opens enrollment.</em></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Sport-Études Florida</div>
+      <p>A proposed Florida private school program built on Quebec's 50-year-old Sport-Études framework. Bringing federation-certified athletic development and rigorous academics under one roof.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Program</h4>
+      <ul>
+        <li><a href="program.html">The Program</a></li>
+        <li><a href="outcomes.html">Outcomes</a></li>
+        <li><a href="for-boys.html">For Boys</a></li>
+        <li><a href="for-parents.html">For Parents</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="about.html">About / Vision</a></li>
+        <li><a href="contact.html">Join the interest list</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; <span id="year"></span> Sport-Études Florida. All data sourced; see Outcomes page.</span>
+    <span>Modeled on Quebec MEQ Sport-Études framework.</span>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script>
+(function() {
+  const form = document.getElementById('interestForm');
+  const status = document.getElementById('formStatus');
+  if (!form) return;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      status.textContent = 'Please fill in the required fields.';
+      status.style.color = '#B0463E';
+      form.reportValidity();
+      return;
+    }
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.submitted_at = new Date().toISOString();
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('sport_etudes_interest') || '[]');
+      existing.push(data);
+      localStorage.setItem('sport_etudes_interest', JSON.stringify(existing));
+    } catch (err) {
+      console.warn('Could not persist locally', err);
+    }
+
+    status.textContent = 'Thanks — we have your information. We will be in touch.';
+    status.style.color = '#1D9E75';
+    form.reset();
+  });
+})();
+</script>
+
+</body>
+</html>

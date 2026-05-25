@@ -1,0 +1,25 @@
+{
+  "title": "Sport-Études vs General Quebec Population — Academic Outcomes",
+  "subtitle": "Every metric, Sport-Études outperforms.",
+  "yAxis": { "label": "Success / graduation rate", "min": 0, "max": 110, "unit": "%" },
+  "categories": [
+    "HS graduation (Mont-Bleu cohort)",
+    "HS academic success (Escadron network)",
+    "CEGEP boys, Sci-humaines first session",
+    "CEGEP girls, Sci-nature first session",
+    "CEGEP cohort (Cégep de Drummondville)"
+  ],
+  "series": [
+    {
+      "name": "Sport-Études",
+      "color": "#185FA5",
+      "data": [100, 99.4, 85.0, 95.1, 96.2]
+    },
+    {
+      "name": "General Quebec population",
+      "color": "#B4B2A9",
+      "data": [82.4, 76.0, 76.8, 93.6, 91.5]
+    }
+  ],
+  "deltas": [17.6, 23.4, 8.2, 1.5, 4.7]
+}
