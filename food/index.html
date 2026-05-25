@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>Fuel — Food & Nutrition for Kids</title>
+<meta name="theme-color" content="#10b981" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Fuel" />
+<link rel="preconnect" href="https://world.openfoodfacts.org" />
+<style>
+  :root {
+    --bg: #0a0d12;
+    --bg-2: #0f1419;
+    --panel: rgba(22, 28, 36, 0.85);
+    --panel-solid: #161c24;
+    --panel-2: #1d2530;
+    --panel-3: #28313e;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --ink: #f4f6f8;
+    --ink-2: #cfd4dc;
+    --muted: #8a93a0;
+    --muted-2: #5a6270;
+
+    --green: #22c55e;
+    --green-2: #4ade80;
+    --green-glow: rgba(34, 197, 94, 0.32);
+    --yellow: #facc15;
+    --yellow-2: #fde047;
+    --yellow-glow: rgba(250, 204, 21, 0.32);
+    --red: #ef4444;
+    --red-2: #f87171;
+    --red-glow: rgba(239, 68, 68, 0.32);
+    --orange: #f97316;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
+
+    --accent: #10b981;
+    --accent-2: #34d399;
+    --accent-glow: rgba(16, 185, 129, 0.32);
+
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+    --shadow-lg: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; touch-action: manipulation; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background:
+      radial-gradient(ellipse at top left, rgba(16, 185, 129, 0.06), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.05), transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+    letter-spacing: 0.01em;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; color: inherit; }
+
+  /* ============ LOADER ============ */
+  .loader {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase;
+  }
+  .loader::after {
+    content: '...'; display: inline-block; width: 24px; text-align: left;
+    animation: dots 1.4s infinite;
+  }
+  @keyframes dots { 0%,20%{content:'.'} 40%{content:'..'} 60%,100%{content:'...'} }
+
+  /* ============ HEADER ============ */
+  header.app-header {
+    padding: 14px 18px;
+    background: linear-gradient(180deg, rgba(15,20,25,0.95), rgba(15,20,25,0.78));
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .brand-mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #047857);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.1; }
+  .brand-name {
+    font-weight: 800; font-size: 16px; letter-spacing: 0.04em; color: var(--accent-2);
+  }
+  .brand-sub { font-size: 10px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+  .header-spacer { flex: 1; }
+  .kid-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--panel-2); border: 1px solid var(--border-strong);
+    padding: 6px 12px 6px 6px; border-radius: 99px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .kid-chip:hover { border-color: var(--accent); }
+  .kid-chip .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
+  .kid-chip .name { font-size: 13px; font-weight: 600; }
+  .nav-btn {
+    background: transparent; border: 1px solid var(--border-strong);
+    color: var(--ink); padding: 8px 14px; border-radius: 9px;
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover, .nav-btn.active { background: var(--accent); color: #08231b; border-color: var(--accent); }
+
+  /* ============ MAIN LAYOUT ============ */
+  main { padding: 18px; max-width: 1100px; margin: 0 auto; padding-bottom: 110px; }
+  h1 { font-size: 28px; margin: 0 0 8px; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 22px; margin: 0 0 14px; font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 13px; margin: 0 0 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; backdrop-filter: blur(12px); }
+  .panel + .panel { margin-top: 14px; }
+
+  /* ============ BOTTOM NAV ============ */
+  nav.bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(15,20,25,0.95); backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
+    z-index: 40;
+  }
+  nav.bottom-nav button {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 4px; border-radius: 12px; color: var(--muted);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  nav.bottom-nav button .icon { font-size: 22px; }
+  nav.bottom-nav button.active { color: var(--accent-2); }
+  nav.bottom-nav button.active .icon { transform: scale(1.1); }
+
+  /* ============ LOGIN / KID PICKER ============ */
+  .login-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; gap: 24px; }
+  .login-title { text-align: center; }
+  .login-title .big-mark { font-size: 72px; line-height: 1; margin-bottom: 8px; }
+  .login-title h1 { font-size: 36px; margin: 0; background: linear-gradient(135deg, var(--accent-2), var(--cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .login-title p { color: var(--muted); margin: 6px 0 0; font-size: 14px; letter-spacing: 0.06em; }
+
+  .kid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; max-width: 600px; width: 100%; }
+  .kid-tile {
+    aspect-ratio: 1; border-radius: 20px; border: 2px solid var(--border-strong);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; transition: all 0.2s; background: var(--panel-2);
+  }
+  .kid-tile:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 0 24px var(--accent-glow); }
+  .kid-tile .avatar { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; }
+  .kid-tile .name { font-size: 14px; font-weight: 700; }
+  .kid-tile.add { border-style: dashed; color: var(--muted); }
+  .kid-tile.add:hover { color: var(--accent); }
+
+  .login-tools { display: flex; gap: 10px; margin-top: 8px; }
+  .login-tools button { color: var(--muted); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 14px; }
+  .login-tools button:hover { color: var(--accent-2); }
+
+  /* ============ SCAN VIEW ============ */
+  .scan-shell { display: flex; flex-direction: column; gap: 14px; }
+  #qr-reader {
+    width: 100%; border-radius: 16px; overflow: hidden;
+    background: #000; border: 1px solid var(--border);
+    aspect-ratio: 4/3;
+  }
+  #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover; }
+  #qr-reader__dashboard_section_csr button, #qr-reader__dashboard_section_csr select, #qr-reader__dashboard button { background: var(--panel-2) !important; color: var(--ink) !important; border: 1px solid var(--border-strong) !important; padding: 8px 14px !important; border-radius: 8px !important; font-family: inherit !important; }
+  #qr-reader__scan_region img { display: none; }
+  .scan-hint { color: var(--muted); text-align: center; font-size: 13px; }
+  .scan-actions { display: flex; gap: 10px; }
+  .scan-actions button { flex: 1; padding: 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border-strong); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .scan-actions button.primary { background: var(--accent); color: #08231b; border-color: var(--accent); }
+
+  /* ============ SEARCH VIEW ============ */
+  .search-input-wrap { display: flex; gap: 8px; margin-bottom: 14px; }
+  .search-input {
+    flex: 1; background: var(--panel-2); border: 1px solid var(--border-strong);
+    padding: 14px 16px; border-radius: 12px; font-size: 16px; outline: none;
+    transition: all 0.2s;
+  }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .search-input::placeholder { color: var(--muted-2); }
+  .search-btn { padding: 14px 18px; border-radius: 12px; background: var(--accent); color: #08231b; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; border: none; }
+
+  .filter-chips { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-chip { padding: 6px 12px; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--border-strong); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+  .filter-chip.active { background: var(--accent); color: #08231b; border-color: var(--accent); }
+
+  .results-list { display: flex; flex-direction: column; gap: 8px; }
+  .result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; border-radius: 12px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .result-item:hover { border-color: var(--accent); transform: translateX(2px); }
+  .result-item .thumb { width: 48px; height: 48px; border-radius: 10px; background: var(--panel-3); display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; flex-shrink: 0; }
+  .result-item .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .result-item .body { flex: 1; min-width: 0; }
+  .result-item .name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .result-item .brand { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .result-item .light-pill { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .light-pill.green { background: var(--green); box-shadow: 0 0 12px var(--green-glow); }
+  .light-pill.yellow { background: var(--yellow); box-shadow: 0 0 12px var(--yellow-glow); }
+  .light-pill.red { background: var(--red); box-shadow: 0 0 12px var(--red-glow); }
+  .light-pill.gray { background: var(--muted-2); }
+
+  /* ============ FOOD DETAIL ============ */
+  .food-hero { display: flex; gap: 16px; align-items: flex-start; }
+  .food-hero .img { width: 96px; height: 96px; border-radius: 16px; background: var(--panel-3); display: flex; align-items: center; justify-content: center; font-size: 48px; overflow: hidden; flex-shrink: 0; }
+  .food-hero .img img { width: 100%; height: 100%; object-fit: cover; }
+  .food-hero .body { flex: 1; min-width: 0; }
+  .food-hero .name { font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .food-hero .brand { font-size: 12px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 4px; }
+  .food-hero .serving { margin-top: 8px; color: var(--ink-2); font-size: 13px; }
+
+  .scores-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .score-card { padding: 16px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--border); text-align: center; }
+  .score-card .label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .score-card .light-big { width: 64px; height: 64px; border-radius: 50%; margin: 10px auto; }
+  .light-big.green { background: var(--green); box-shadow: 0 0 32px var(--green-glow), inset 0 0 0 4px rgba(255,255,255,0.15); }
+  .light-big.yellow { background: var(--yellow); box-shadow: 0 0 32px var(--yellow-glow), inset 0 0 0 4px rgba(255,255,255,0.15); }
+  .light-big.red { background: var(--red); box-shadow: 0 0 32px var(--red-glow), inset 0 0 0 4px rgba(255,255,255,0.15); }
+  .light-big.gray { background: var(--muted-2); }
+  .score-card .verdict { font-size: 14px; font-weight: 700; margin-top: 4px; }
+  .nutri-badge { width: 64px; height: 64px; border-radius: 14px; margin: 10px auto; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900; color: white; }
+  .nutri-badge.A { background: #1f7a3d; }
+  .nutri-badge.B { background: #84bd00; color: #1a3000; }
+  .nutri-badge.C { background: #ffc524; color: #4a3500; }
+  .nutri-badge.D { background: #ed8b00; }
+  .nutri-badge.E { background: #d62a1f; }
+  .nutri-badge.unknown { background: var(--muted-2); font-size: 14px; }
+
+  .macros-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 14px; }
+  .macro-card { padding: 12px; border-radius: 12px; background: var(--panel-2); border-left: 4px solid var(--accent); }
+  .macro-card .lbl { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .macro-card .val { font-size: 18px; font-weight: 800; margin-top: 4px; }
+  .macro-card .val small { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .macro-card.cal { border-color: var(--orange); }
+  .macro-card.protein { border-color: var(--blue); }
+  .macro-card.carbs { border-color: var(--yellow); }
+  .macro-card.fat { border-color: var(--purple); }
+  .macro-card.sugar { border-color: var(--pink); }
+  .macro-card.fiber { border-color: var(--green); }
+  .macro-card.sodium { border-color: var(--red); }
+  .macro-card.satfat { border-color: var(--red-2); }
+
+  .lights-detail { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .light-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
+  .light-row .light-pill { width: 14px; height: 14px; }
+  .light-row .lbl { flex: 1; font-size: 13px; font-weight: 600; }
+  .light-row .val { font-size: 13px; color: var(--ink-2); }
+  .light-row .why { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .kid-explainer { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(168, 85, 247, 0.1)); border: 1px solid var(--accent); border-radius: 14px; padding: 14px; margin-top: 14px; }
+  .kid-explainer .lbl { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-2); font-weight: 700; }
+  .kid-explainer .text { font-size: 14px; margin-top: 8px; line-height: 1.5; color: var(--ink); }
+
+  .detail-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .detail-actions .btn-a, .detail-actions .btn-b { padding: 14px; border-radius: 12px; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; border: 2px solid; }
+  .btn-a { background: rgba(59, 130, 246, 0.15); border-color: var(--blue); color: var(--blue); }
+  .btn-a:hover { background: var(--blue); color: white; }
+  .btn-b { background: rgba(168, 85, 247, 0.15); border-color: var(--purple); color: var(--purple); }
+  .btn-b:hover { background: var(--purple); color: white; }
+  .fav-btn { width: 100%; margin-top: 10px; padding: 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border-strong); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+  .fav-btn.is-fav { background: rgba(236, 72, 153, 0.18); color: var(--pink); border-color: var(--pink); }
+
+  .portion-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px; background: var(--panel-2); border-radius: 12px; }
+  .portion-row label { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+  .portion-row input { flex: 1; background: var(--panel-3); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+  .portion-row select { background: var(--panel-3); border: 1px solid var(--border); padding: 8px 10px; border-radius: 8px; font-size: 14px; }
+
+  /* ============ COMPARE VIEW ============ */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .plate { padding: 14px; border-radius: 16px; background: var(--panel); border: 2px solid; min-height: 200px; }
+  .plate.a { border-color: var(--blue); }
+  .plate.b { border-color: var(--purple); }
+  .plate-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .plate-head .badge { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: white; }
+  .plate.a .plate-head .badge { background: var(--blue); }
+  .plate.b .plate-head .badge { background: var(--purple); }
+  .plate-head h3 { margin: 0; color: var(--ink); font-size: 14px; letter-spacing: 0.06em; text-transform: none; }
+  .plate-items { display: flex; flex-direction: column; gap: 6px; }
+  .plate-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel-2); border-radius: 8px; }
+  .plate-item .name { flex: 1; font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plate-item .qty { font-size: 11px; color: var(--muted); }
+  .plate-item .remove { color: var(--red); font-size: 16px; opacity: 0.6; padding: 0 4px; }
+  .plate-item .remove:hover { opacity: 1; }
+  .plate-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 14px 0; font-style: italic; }
+  .plate-totals { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; margin-top: 10px; border-top: 1px dashed var(--border-strong); font-size: 12px; }
+  .plate-totals .row { display: flex; justify-content: space-between; }
+  .plate-totals .row .v { font-weight: 700; }
+  .plate-totals .row.cal .v { color: var(--orange); font-size: 16px; }
+  .plate-light { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 10px; margin-top: 10px; background: var(--panel-2); border-radius: 10px; font-weight: 700; font-size: 13px; }
+
+  .comparison-winner { margin-top: 16px; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(168,85,247,0.08)); border: 1px solid var(--accent); }
+  .comparison-winner h3 { color: var(--accent-2); margin: 0 0 10px; }
+  .winner-rows { display: flex; flex-direction: column; gap: 6px; }
+  .winner-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; padding: 8px 10px; background: var(--panel-2); border-radius: 8px; font-size: 12px; }
+  .winner-row .metric { color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; font-weight: 700; text-align: center; }
+  .winner-row .v { font-weight: 700; }
+  .winner-row .v.win { color: var(--green-2); }
+  .winner-row .v.lose { color: var(--red-2); }
+  .winner-row .a-side { text-align: right; color: var(--blue); }
+  .winner-row .b-side { text-align: left; color: var(--purple); }
+
+  .compare-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .compare-actions button { flex: 1; padding: 12px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--border-strong); font-weight: 600; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .compare-actions button.primary { background: var(--accent); color: #08231b; border-color: var(--accent); }
+
+  /* ============ FAVORITES ============ */
+  .favorites-section { margin-bottom: 24px; }
+  .favorites-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .empty-state { padding: 40px 20px; text-align: center; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ============ ADMIN ============ */
+  .pin-input { width: 100%; padding: 18px; font-size: 24px; text-align: center; letter-spacing: 0.5em; background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 12px; outline: none; }
+  .pin-input:focus { border-color: var(--accent); }
+  .admin-section { margin-bottom: 20px; }
+  .threshold-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px; background: var(--panel-2); border-radius: 10px; margin-bottom: 6px; }
+  .threshold-row .lbl { font-size: 13px; font-weight: 600; }
+  .threshold-row .lbl small { color: var(--muted); font-size: 11px; display: block; }
+  .threshold-row .inputs { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+  .threshold-row input { width: 60px; background: var(--panel-3); border: 1px solid var(--border); padding: 6px 8px; border-radius: 6px; font-size: 13px; text-align: center; }
+
+  .kids-admin-list { display: flex; flex-direction: column; gap: 8px; }
+  .kid-admin-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--panel-2); border-radius: 10px; }
+  .kid-admin-item .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+  .kid-admin-item .name { flex: 1; font-weight: 600; }
+  .kid-admin-item .del { color: var(--red); padding: 6px 10px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+
+  .form-row { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .form-row label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .form-row input, .form-row select { background: var(--panel-2); border: 1px solid var(--border-strong); padding: 12px; border-radius: 10px; font-size: 14px; outline: none; }
+  .form-row input:focus, .form-row select:focus { border-color: var(--accent); }
+
+  .btn-primary { background: var(--accent); color: #08231b; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .btn-secondary { background: var(--panel-2); border: 1px solid var(--border-strong); color: var(--ink); padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .btn-danger { background: rgba(239,68,68,0.18); color: var(--red); border: 1px solid var(--red); padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+    z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+    animation: fade-in 0.2s;
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slide-up { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal {
+    background: var(--bg-2); border-top: 1px solid var(--border-strong);
+    border-radius: 24px 24px 0 0; width: 100%; max-width: 600px; max-height: 92vh;
+    overflow-y: auto; padding: 18px; padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    animation: slide-up 0.25s ease-out;
+  }
+  .modal-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .modal-head h2 { flex: 1; margin: 0; }
+  .modal-close { padding: 8px 14px; background: var(--panel-2); border-radius: 8px; font-size: 13px; font-weight: 700; }
+
+  /* ============ TOAST ============ */
+  #toast-root { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 200; pointer-events: none; }
+  .toast {
+    background: var(--panel-solid); border: 1px solid var(--border-strong); color: var(--ink);
+    padding: 12px 18px; border-radius: 12px; box-shadow: var(--shadow-lg);
+    margin-bottom: 8px; font-size: 13px; font-weight: 600;
+    animation: slide-up 0.2s ease-out;
+  }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--red); }
+
+  /* ============ MISC ============ */
+  .source-tag { display: inline-block; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); padding: 2px 6px; border-radius: 4px; background: var(--panel-3); margin-left: 6px; font-weight: 700; }
+  .error-banner { background: rgba(239,68,68,0.15); border: 1px solid var(--red); color: var(--red-2); padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; }
+  .info-banner { background: rgba(59,130,246,0.12); border: 1px solid var(--blue); color: #93c5fd; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; }
+
+  @media (max-width: 480px) {
+    main { padding: 14px; }
+    .scores-row { grid-template-columns: 1fr 1fr; }
+    .macros-grid { grid-template-columns: 1fr 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toast-root"></div>
+<div id="modal-root"></div>
+<div id="app"><div class="loader">Loading Fuel</div></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+/* ============ SUPABASE CONFIG ============
+   Shares the playmaker-stats project (Hoops/Bball/Draft).
+   Tables are prefixed food_* to avoid collisions. */
+const SUPABASE_URL = 'https://vlcpgwxeybpzwidjackz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ============ UUID polyfill ============ */
+function uuid() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try { return crypto.randomUUID(); } catch(e) {}
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/* ============ STATE ============ */
+const state = {
+  view: 'login',
+  kids: [],
+  activeKidId: null,
+  favorites: [], // {id, kid_id, food_key, food_data}
+  scoringRules: defaultRules(),
+  plateA: [], // [{food, grams}]
+  plateB: [],
+  comparisons: [], // saved comparisons
+  searchQuery: '',
+  searchResults: [],
+  searching: false,
+  searchSource: 'all', // 'all' | 'whole' | 'packaged'
+  currentFood: null, // when viewing detail
+  adminUnlocked: false,
+  pin: '',
+};
+
+const PARENT_PIN_DEFAULT = '1234'; // changeable in admin
+function getParentPin() { return localStorage.getItem('fuel_parent_pin') || PARENT_PIN_DEFAULT; }
+function setParentPin(p) { localStorage.setItem('fuel_parent_pin', p); }
+
+/* ============ DEFAULT SCORING RULES ============ */
+function defaultRules() {
+  return {
+    sugar:    { greenMax: 5,   yellowMax: 12 },  // grams per serving
+    satFat:   { greenMax: 1.5, yellowMax: 5  },  // g
+    sodium:   { greenMax: 140, yellowMax: 400 }, // mg
+    fiber:    { greenMin: 3,   yellowMin: 1  },  // higher = better
+    protein:  { greenMin: 8,   yellowMin: 3  },  // higher = better
+    nova:     { greenMax: 2,   yellowMax: 3  },  // 1-4, lower = better
+  };
+}
+
+/* ============ BUILT-IN WHOLE FOODS ============
+   USDA-verified, per 100g. Covers ~50 common kid-teaching items. */
+const WHOLE_FOODS = [
+  { key:'egg-whole-raw',     name:'Egg (whole, raw)',         emoji:'🥚', servingG:50,  per100:{ kcal:143, protein:12.6, carbs:0.7,  sugar:0.4, fiber:0,   fat:9.5,  satfat:3.1, sodium:142 }, nova:1 },
+  { key:'egg-scrambled',     name:'Scrambled egg (with milk)',emoji:'🍳', servingG:60,  per100:{ kcal:166, protein:11.1, carbs:2.2,  sugar:1.6, fiber:0,   fat:12.2, satfat:3.7, sodium:208 }, nova:1 },
+  { key:'banana',            name:'Banana',                   emoji:'🍌', servingG:118, per100:{ kcal:89,  protein:1.1,  carbs:22.8, sugar:12.2,fiber:2.6, fat:0.3,  satfat:0.1, sodium:1   }, nova:1 },
+  { key:'apple',             name:'Apple',                    emoji:'🍎', servingG:182, per100:{ kcal:52,  protein:0.3,  carbs:13.8, sugar:10.4,fiber:2.4, fat:0.2,  satfat:0,   sodium:1   }, nova:1 },
+  { key:'orange',            name:'Orange',                   emoji:'🍊', servingG:131, per100:{ kcal:47,  protein:0.9,  carbs:11.8, sugar:9.4, fiber:2.4, fat:0.1,  satfat:0,   sodium:0   }, nova:1 },
+  { key:'strawberries',      name:'Strawberries',             emoji:'🍓', servingG:100, per100:{ kcal:32,  protein:0.7,  carbs:7.7,  sugar:4.9, fiber:2.0, fat:0.3,  satfat:0,   sodium:1   }, nova:1 },
+  { key:'blueberries',       name:'Blueberries',              emoji:'🫐', servingG:148, per100:{ kcal:57,  protein:0.7,  carbs:14.5, sugar:10,  fiber:2.4, fat:0.3,  satfat:0,   sodium:1   }, nova:1 },
+  { key:'grapes',            name:'Grapes',                   emoji:'🍇', servingG:92,  per100:{ kcal:69,  protein:0.7,  carbs:18.1, sugar:15.5,fiber:0.9, fat:0.2,  satfat:0,   sodium:2   }, nova:1 },
+  { key:'avocado',           name:'Avocado',                  emoji:'🥑', servingG:68,  per100:{ kcal:160, protein:2,    carbs:8.5,  sugar:0.7, fiber:6.7, fat:14.7, satfat:2.1, sodium:7   }, nova:1 },
+  { key:'tomato',            name:'Tomato',                   emoji:'🍅', servingG:123, per100:{ kcal:18,  protein:0.9,  carbs:3.9,  sugar:2.6, fiber:1.2, fat:0.2,  satfat:0,   sodium:5   }, nova:1 },
+  { key:'cucumber',          name:'Cucumber',                 emoji:'🥒', servingG:104, per100:{ kcal:15,  protein:0.7,  carbs:3.6,  sugar:1.7, fiber:0.5, fat:0.1,  satfat:0,   sodium:2   }, nova:1 },
+  { key:'carrot',            name:'Carrot',                   emoji:'🥕', servingG:61,  per100:{ kcal:41,  protein:0.9,  carbs:9.6,  sugar:4.7, fiber:2.8, fat:0.2,  satfat:0,   sodium:69  }, nova:1 },
+  { key:'broccoli',          name:'Broccoli (raw)',           emoji:'🥦', servingG:91,  per100:{ kcal:34,  protein:2.8,  carbs:6.6,  sugar:1.7, fiber:2.6, fat:0.4,  satfat:0,   sodium:33  }, nova:1 },
+  { key:'spinach',           name:'Spinach (raw)',            emoji:'🥬', servingG:30,  per100:{ kcal:23,  protein:2.9,  carbs:3.6,  sugar:0.4, fiber:2.2, fat:0.4,  satfat:0.1, sodium:79  }, nova:1 },
+  { key:'sweet-potato',      name:'Sweet potato (baked)',     emoji:'🍠', servingG:151, per100:{ kcal:90,  protein:2,    carbs:20.7, sugar:6.5, fiber:3.3, fat:0.1,  satfat:0,   sodium:36  }, nova:1 },
+  { key:'potato-baked',      name:'Potato (baked, w/skin)',   emoji:'🥔', servingG:173, per100:{ kcal:93,  protein:2.5,  carbs:21.2, sugar:1.2, fiber:2.2, fat:0.1,  satfat:0,   sodium:10  }, nova:1 },
+  { key:'rice-white-cooked', name:'Rice (white, cooked)',     emoji:'🍚', servingG:158, per100:{ kcal:130, protein:2.7,  carbs:28.2, sugar:0,   fiber:0.4, fat:0.3,  satfat:0.1, sodium:1   }, nova:1 },
+  { key:'rice-brown-cooked', name:'Rice (brown, cooked)',     emoji:'🍚', servingG:195, per100:{ kcal:123, protein:2.7,  carbs:25.6, sugar:0.4, fiber:1.6, fat:1,    satfat:0.2, sodium:4   }, nova:1 },
+  { key:'oats-cooked',       name:'Oatmeal (cooked, water)',  emoji:'🥣', servingG:234, per100:{ kcal:71,  protein:2.5,  carbs:12,   sugar:0.3, fiber:1.7, fat:1.5,  satfat:0.3, sodium:4   }, nova:1 },
+  { key:'bread-white',       name:'White bread',              emoji:'🍞', servingG:28,  per100:{ kcal:266, protein:9.4,  carbs:49,   sugar:5.7, fiber:2.7, fat:3.3,  satfat:0.7, sodium:491 }, nova:3 },
+  { key:'bread-whole-wheat', name:'Whole-wheat bread',        emoji:'🍞', servingG:28,  per100:{ kcal:247, protein:13,   carbs:41,   sugar:5.6, fiber:7,   fat:3.4,  satfat:0.7, sodium:472 }, nova:3 },
+  { key:'pasta-cooked',      name:'Pasta (cooked)',           emoji:'🍝', servingG:140, per100:{ kcal:131, protein:5,    carbs:25,   sugar:0.6, fiber:1.8, fat:1.1,  satfat:0.2, sodium:6   }, nova:1 },
+  { key:'milk-whole',        name:'Whole milk',               emoji:'🥛', servingG:244, per100:{ kcal:61,  protein:3.2,  carbs:4.8,  sugar:5.1, fiber:0,   fat:3.3,  satfat:1.9, sodium:43  }, nova:1 },
+  { key:'milk-2percent',     name:'Milk (2%)',                emoji:'🥛', servingG:244, per100:{ kcal:50,  protein:3.3,  carbs:4.8,  sugar:5.1, fiber:0,   fat:2,    satfat:1.2, sodium:44  }, nova:1 },
+  { key:'milk-skim',         name:'Milk (skim)',              emoji:'🥛', servingG:244, per100:{ kcal:34,  protein:3.4,  carbs:5,    sugar:5.1, fiber:0,   fat:0.1,  satfat:0.1, sodium:42  }, nova:1 },
+  { key:'yogurt-plain',      name:'Yogurt (plain, low-fat)',  emoji:'🥛', servingG:170, per100:{ kcal:63,  protein:5.3,  carbs:7,    sugar:7,   fiber:0,   fat:1.6,  satfat:1,   sodium:70  }, nova:1 },
+  { key:'cheese-cheddar',    name:'Cheddar cheese',           emoji:'🧀', servingG:28,  per100:{ kcal:404, protein:23,   carbs:3.4,  sugar:0.5, fiber:0,   fat:33.1, satfat:21,  sodium:653 }, nova:3 },
+  { key:'butter',            name:'Butter',                   emoji:'🧈', servingG:14,  per100:{ kcal:717, protein:0.9,  carbs:0.1,  sugar:0.1, fiber:0,   fat:81.1, satfat:51.4,sodium:11  }, nova:3 },
+  { key:'olive-oil',         name:'Olive oil',                emoji:'🫒', servingG:14,  per100:{ kcal:884, protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:100,  satfat:13.8,sodium:2   }, nova:2 },
+  { key:'peanut-butter',     name:'Peanut butter',            emoji:'🥜', servingG:32,  per100:{ kcal:588, protein:25,   carbs:20,   sugar:9.2, fiber:6,   fat:50,   satfat:10,  sodium:476 }, nova:3 },
+  { key:'almonds',           name:'Almonds',                  emoji:'🥜', servingG:28,  per100:{ kcal:579, protein:21.2, carbs:21.6, sugar:4.4, fiber:12.5,fat:49.9, satfat:3.8, sodium:1   }, nova:1 },
+  { key:'walnuts',           name:'Walnuts',                  emoji:'🥜', servingG:28,  per100:{ kcal:654, protein:15.2, carbs:13.7, sugar:2.6, fiber:6.7, fat:65.2, satfat:6.1, sodium:2   }, nova:1 },
+  { key:'chicken-breast',    name:'Chicken breast (cooked)',  emoji:'🍗', servingG:120, per100:{ kcal:165, protein:31,   carbs:0,    sugar:0,   fiber:0,   fat:3.6,  satfat:1,   sodium:74  }, nova:1 },
+  { key:'beef-ground',       name:'Ground beef (cooked, 85%)',emoji:'🥩', servingG:85,  per100:{ kcal:250, protein:26,   carbs:0,    sugar:0,   fiber:0,   fat:17,   satfat:6.6, sodium:75  }, nova:1 },
+  { key:'salmon-cooked',     name:'Salmon (cooked)',          emoji:'🐟', servingG:124, per100:{ kcal:206, protein:22,   carbs:0,    sugar:0,   fiber:0,   fat:12,   satfat:3,   sodium:61  }, nova:1 },
+  { key:'tuna-canned-water', name:'Tuna (canned, in water)',  emoji:'🐟', servingG:85,  per100:{ kcal:116, protein:25.5, carbs:0,    sugar:0,   fiber:0,   fat:0.8,  satfat:0.2, sodium:247 }, nova:3 },
+  { key:'beans-black',       name:'Black beans (cooked)',     emoji:'🫘', servingG:172, per100:{ kcal:132, protein:8.9,  carbs:23.7, sugar:0.3, fiber:8.7, fat:0.5,  satfat:0.1, sodium:1   }, nova:1 },
+  { key:'lentils',           name:'Lentils (cooked)',         emoji:'🫘', servingG:198, per100:{ kcal:116, protein:9,    carbs:20,   sugar:1.8, fiber:7.9, fat:0.4,  satfat:0.1, sodium:2   }, nova:1 },
+  { key:'tofu',              name:'Tofu (firm)',              emoji:'🍱', servingG:126, per100:{ kcal:144, protein:17.3, carbs:2.8,  sugar:0.6, fiber:2.3, fat:8.7,  satfat:1.3, sodium:14  }, nova:3 },
+  { key:'jam-strawberry',    name:'Strawberry jam',           emoji:'🍓', servingG:20,  per100:{ kcal:278, protein:0.4,  carbs:69,   sugar:48,  fiber:1.1, fat:0.1,  satfat:0,   sodium:32  }, nova:3 },
+  { key:'honey',             name:'Honey',                    emoji:'🍯', servingG:21,  per100:{ kcal:304, protein:0.3,  carbs:82.4, sugar:82.1,fiber:0.2, fat:0,    satfat:0,   sodium:4   }, nova:1 },
+  { key:'sugar',             name:'White sugar',              emoji:'🍬', servingG:4,   per100:{ kcal:387, protein:0,    carbs:100,  sugar:100, fiber:0,   fat:0,    satfat:0,   sodium:1   }, nova:3 },
+  { key:'orange-juice',      name:'Orange juice',             emoji:'🧃', servingG:248, per100:{ kcal:45,  protein:0.7,  carbs:10.4, sugar:8.4, fiber:0.2, fat:0.2,  satfat:0,   sodium:1   }, nova:3 },
+  { key:'apple-juice',       name:'Apple juice',              emoji:'🧃', servingG:248, per100:{ kcal:46,  protein:0.1,  carbs:11.3, sugar:9.6, fiber:0.2, fat:0.1,  satfat:0,   sodium:4   }, nova:3 },
+  { key:'water',             name:'Water',                    emoji:'💧', servingG:240, per100:{ kcal:0,   protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:0,    satfat:0,   sodium:0   }, nova:1 },
+  { key:'corn-tortilla',     name:'Corn tortilla',            emoji:'🌮', servingG:24,  per100:{ kcal:218, protein:5.7,  carbs:44.6, sugar:0.9, fiber:6.3, fat:2.9,  satfat:0.4, sodium:45  }, nova:1 },
+  { key:'flour-tortilla',    name:'Flour tortilla',           emoji:'🌯', servingG:49,  per100:{ kcal:306, protein:8.2,  carbs:51.5, sugar:1.8, fiber:3.2, fat:7.1,  satfat:1.8, sodium:643 }, nova:3 },
+  { key:'cereal-sweet',      name:'Sweetened cereal (typical)',emoji:'🥣',servingG:30,  per100:{ kcal:380, protein:5,    carbs:84,   sugar:35,  fiber:3,   fat:3,    satfat:1,   sodium:520 }, nova:4 },
+  { key:'pretzels',          name:'Pretzels',                 emoji:'🥨', servingG:28,  per100:{ kcal:381, protein:10.4, carbs:80.4, sugar:2.2, fiber:3.4, fat:3.5,  satfat:0.5, sodium:1240}, nova:3 },
+  { key:'chips-potato',      name:'Potato chips',             emoji:'🍟', servingG:28,  per100:{ kcal:536, protein:7,    carbs:53,   sugar:0.5, fiber:4.4, fat:34.6, satfat:11.3,sodium:525 }, nova:4 },
+];
+
+/* ============ NUTRI-SCORE (simplified, official spec) ============
+   Returns letter A-E given per-100g nutrient data. */
+function nutriScore(p) {
+  if (!p) return null;
+  const kcal = p.kcal || 0;
+  const energyKJ = kcal * 4.184;
+  const sugars = p.sugar || 0;
+  const satfat = p.satfat || 0;
+  const sodium = p.sodium || 0;
+  const fiber = p.fiber || 0;
+  const protein = p.protein || 0;
+  const fvn = p.fruitVegNut || 0; // 0 if unknown
+
+  // Negative points
+  let nE = 0;
+  for (const t of [335,670,1005,1340,1675,2010,2345,2680,3015,3350]) if (energyKJ > t) nE++;
+  let nS = 0;
+  for (const t of [4.5,9,13.5,18,22.5,27,31,36,40,45]) if (sugars > t) nS++;
+  let nSat = 0;
+  for (const t of [1,2,3,4,5,6,7,8,9,10]) if (satfat > t) nSat++;
+  let nNa = 0;
+  for (const t of [90,180,270,360,450,540,630,720,810,900]) if (sodium > t) nNa++;
+  const N = nE + nS + nSat + nNa;
+
+  // Positive points
+  let pFib = 0;
+  for (const t of [0.9,1.9,2.8,3.7,4.7]) if (fiber > t) pFib++;
+  let pPro = 0;
+  for (const t of [1.6,3.2,4.8,6.4,8.0]) if (protein > t) pPro++;
+  let pFvn = 0;
+  if (fvn >= 80) pFvn = 5;
+  else if (fvn >= 60) pFvn = 2;
+  else if (fvn >= 40) pFvn = 1;
+  const P = pFib + pPro + pFvn;
+
+  // Final
+  let score;
+  if (N >= 11 && fvn < 80) score = N - (pFvn + pFib); // protein doesn't count if too unhealthy
+  else score = N - P;
+
+  if (score <= -1) return 'A';
+  if (score <= 2)  return 'B';
+  if (score <= 10) return 'C';
+  if (score <= 18) return 'D';
+  return 'E';
+}
+
+/* ============ CUSTOM TRAFFIC LIGHT ============
+   Per-serving evaluation against user rules. Returns
+   { lights: {sugar,satFat,sodium,fiber,protein,nova}, overall: 'green'|'yellow'|'red' } */
+function trafficLight(perServing, novaScore, rules) {
+  rules = rules || state.scoringRules;
+  const r = rules;
+  const lights = {};
+
+  const downMetric = (val, cfg) => {
+    if (val == null) return 'gray';
+    if (val <= cfg.greenMax) return 'green';
+    if (val <= cfg.yellowMax) return 'yellow';
+    return 'red';
+  };
+  const upMetric = (val, cfg) => {
+    if (val == null) return 'gray';
+    if (val >= cfg.greenMin) return 'green';
+    if (val >= cfg.yellowMin) return 'yellow';
+    return 'red';
+  };
+
+  lights.sugar   = downMetric(perServing.sugar, r.sugar);
+  lights.satFat  = downMetric(perServing.satfat, r.satFat);
+  lights.sodium  = downMetric(perServing.sodium, r.sodium);
+  lights.fiber   = upMetric(perServing.fiber, r.fiber);
+  lights.protein = upMetric(perServing.protein, r.protein);
+  lights.nova    = (novaScore == null)
+    ? 'gray'
+    : (novaScore <= r.nova.greenMax ? 'green' : (novaScore <= r.nova.yellowMax ? 'yellow' : 'red'));
+
+  // Overall: tally
+  const counts = { green:0, yellow:0, red:0, gray:0 };
+  Object.values(lights).forEach(l => counts[l]++);
+  let overall;
+  if (counts.red >= 3) overall = 'red';
+  else if (counts.green >= 3 && counts.red <= 1) overall = 'green';
+  else overall = 'yellow';
+
+  return { lights, overall, counts };
+}
+
+/* ============ NUTRIENT MATH ============ */
+function perServing(per100, grams) {
+  const factor = grams / 100;
+  return {
+    kcal: round((per100.kcal||0) * factor, 0),
+    protein: round((per100.protein||0) * factor, 1),
+    carbs: round((per100.carbs||0) * factor, 1),
+    sugar: round((per100.sugar||0) * factor, 1),
+    fiber: round((per100.fiber||0) * factor, 1),
+    fat: round((per100.fat||0) * factor, 1),
+    satfat: round((per100.satfat||0) * factor, 1),
+    sodium: round((per100.sodium||0) * factor, 0),
+  };
+}
+function round(n, d=0) { const f = Math.pow(10, d); return Math.round(n*f)/f; }
+
+/* ============ OPEN FOOD FACTS CLIENT ============ */
+const OFF_BASE = 'https://world.openfoodfacts.org';
+
+async function offByBarcode(barcode) {
+  // Check cache
+  const cached = cacheGet('off-barcode-' + barcode);
+  if (cached) return cached;
+  try {
+    const res = await fetch(`${OFF_BASE}/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,brands,nutriments,image_small_url,serving_size,serving_quantity,nova_group,nutriscore_grade,nutrient_levels,categories_tags`);
+    const j = await res.json();
+    if (j.status !== 1 || !j.product) return null;
+    const food = normalizeOff(j.product, barcode);
+    cacheSet('off-barcode-' + barcode, food);
+    return food;
+  } catch (e) { console.error('OFF barcode', e); return null; }
+}
+
+async function offSearch(query, page=1) {
+  try {
+    const res = await fetch(`${OFF_BASE}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&page=${page}&fields=code,product_name,brands,nutriments,image_small_url,serving_size,serving_quantity,nova_group,nutriscore_grade`);
+    const j = await res.json();
+    return (j.products || []).map(p => normalizeOff(p, p.code)).filter(p => p.name);
+  } catch (e) { console.error('OFF search', e); return []; }
+}
+
+function normalizeOff(p, code) {
+  const n = p.nutriments || {};
+  const per100 = {
+    kcal:    n['energy-kcal_100g'] ?? (n['energy_100g'] ? n['energy_100g']/4.184 : 0),
+    protein: n['proteins_100g'] || 0,
+    carbs:   n['carbohydrates_100g'] || 0,
+    sugar:   n['sugars_100g'] || 0,
+    fiber:   n['fiber_100g'] || 0,
+    fat:     n['fat_100g'] || 0,
+    satfat:  n['saturated-fat_100g'] || 0,
+    sodium:  (n['sodium_100g'] != null ? n['sodium_100g']*1000 : (n['salt_100g'] ? n['salt_100g']*400 : 0)),
+  };
+  const serving = p.serving_quantity || parseServing(p.serving_size) || 100;
+  return {
+    key: 'off-' + code,
+    source: 'OFF',
+    barcode: code,
+    name: p.product_name || 'Unknown product',
+    brand: p.brands || '',
+    emoji: '📦',
+    image: p.image_small_url || null,
+    servingG: serving,
+    per100,
+    nova: p.nova_group || null,
+    nutriGrade: p.nutriscore_grade ? p.nutriscore_grade.toUpperCase() : null,
+  };
+}
+
+function parseServing(s) {
+  if (!s) return null;
+  const m = String(s).match(/(\d+\.?\d*)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
+/* ============ LOCAL CACHE ============ */
+function cacheGet(key) {
+  try {
+    const v = localStorage.getItem('fuel_cache_' + key);
+    if (!v) return null;
+    const o = JSON.parse(v);
+    if (o.expires && Date.now() > o.expires) { localStorage.removeItem('fuel_cache_' + key); return null; }
+    return o.data;
+  } catch (e) { return null; }
+}
+function cacheSet(key, data, ttlMs=30*24*3600*1000) {
+  try { localStorage.setItem('fuel_cache_' + key, JSON.stringify({ data, expires: Date.now() + ttlMs })); } catch (e) {}
+}
+
+/* ============ SUPABASE PERSISTENCE ============ */
+async function loadKidsFromDb() {
+  if (!sb) { state.kids = JSON.parse(localStorage.getItem('fuel_kids') || '[]'); return; }
+  const { data, error } = await sb.from('food_kids').select('*').order('created_at', { ascending: true });
+  if (error) { console.error('load kids', error); state.kids = JSON.parse(localStorage.getItem('fuel_kids') || '[]'); return; }
+  state.kids = data || [];
+  localStorage.setItem('fuel_kids', JSON.stringify(state.kids));
+}
+
+async function saveKid(kid) {
+  state.kids.push(kid);
+  localStorage.setItem('fuel_kids', JSON.stringify(state.kids));
+  if (!sb) return;
+  const { error } = await sb.from('food_kids').insert(kid);
+  if (error) { toast('Kid saved offline (sync error: ' + error.message + ')', 'error'); }
+}
+
+async function deleteKid(id) {
+  state.kids = state.kids.filter(k => k.id !== id);
+  localStorage.setItem('fuel_kids', JSON.stringify(state.kids));
+  if (state.activeKidId === id) state.activeKidId = null;
+  if (!sb) return;
+  await sb.from('food_kids').delete().eq('id', id);
+  await sb.from('food_favorites').delete().eq('kid_id', id);
+}
+
+async function loadFavorites() {
+  if (!state.activeKidId) { state.favorites = []; return; }
+  const cacheKey = 'fuel_favs_' + state.activeKidId;
+  state.favorites = JSON.parse(localStorage.getItem(cacheKey) || '[]');
+  if (!sb) return;
+  const { data, error } = await sb.from('food_favorites').select('*').eq('kid_id', state.activeKidId);
+  if (!error && data) { state.favorites = data; localStorage.setItem(cacheKey, JSON.stringify(data)); }
+}
+
+async function toggleFavorite(food) {
+  if (!state.activeKidId) { toast('Pick a kid first', 'error'); return; }
+  const existing = state.favorites.find(f => f.food_key === food.key);
+  if (existing) {
+    state.favorites = state.favorites.filter(f => f.id !== existing.id);
+    if (sb) await sb.from('food_favorites').delete().eq('id', existing.id);
+  } else {
+    const row = { id: uuid(), kid_id: state.activeKidId, food_key: food.key, food_data: food, created_at: new Date().toISOString() };
+    state.favorites.push(row);
+    if (sb) await sb.from('food_favorites').insert(row);
+  }
+  localStorage.setItem('fuel_favs_' + state.activeKidId, JSON.stringify(state.favorites));
+}
+
+async function loadScoringRules() {
+  const local = localStorage.getItem('fuel_rules');
+  if (local) try { state.scoringRules = JSON.parse(local); } catch(e) {}
+  if (!sb) return;
+  const { data } = await sb.from('food_scoring_rules').select('rules').eq('id', 'global').maybeSingle();
+  if (data && data.rules) { state.scoringRules = data.rules; localStorage.setItem('fuel_rules', JSON.stringify(data.rules)); }
+}
+
+async function saveScoringRules() {
+  localStorage.setItem('fuel_rules', JSON.stringify(state.scoringRules));
+  if (!sb) return;
+  await sb.from('food_scoring_rules').upsert({ id: 'global', rules: state.scoringRules, updated_at: new Date().toISOString() });
+}
+
+async function loadComparisons() {
+  if (!state.activeKidId) { state.comparisons = []; return; }
+  state.comparisons = JSON.parse(localStorage.getItem('fuel_cmps_' + state.activeKidId) || '[]');
+  if (!sb) return;
+  const { data } = await sb.from('food_comparisons').select('*').eq('kid_id', state.activeKidId).order('created_at', { ascending: false }).limit(20);
+  if (data) { state.comparisons = data; localStorage.setItem('fuel_cmps_' + state.activeKidId, JSON.stringify(data)); }
+}
+
+async function saveComparison(label) {
+  if (!state.activeKidId) { toast('Pick a kid first', 'error'); return; }
+  if (!state.plateA.length || !state.plateB.length) { toast('Both plates must have food', 'error'); return; }
+  const row = {
+    id: uuid(),
+    kid_id: state.activeKidId,
+    label: label || 'Comparison ' + new Date().toLocaleString(),
+    plate_a: state.plateA,
+    plate_b: state.plateB,
+    created_at: new Date().toISOString(),
+  };
+  state.comparisons.unshift(row);
+  localStorage.setItem('fuel_cmps_' + state.activeKidId, JSON.stringify(state.comparisons));
+  if (sb) await sb.from('food_comparisons').insert(row);
+  toast('Comparison saved', 'success');
+}
+
+/* ============ FOOD HELPERS ============ */
+function findWhole(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) return [];
+  return WHOLE_FOODS.filter(f =>
+    f.name.toLowerCase().includes(q) ||
+    f.key.includes(q.replace(/\s+/g, '-'))
+  );
+}
+
+function isFavorite(food) {
+  return state.favorites.some(f => f.food_key === food.key);
+}
+
+/* ============ TOAST ============ */
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.getElementById('toast-root').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; }, 2500);
+  setTimeout(() => el.remove(), 2900);
+}
+
+/* ============ MODAL ============ */
+function openModal(html) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="modal-backdrop" onclick="if(event.target===this) window.closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal() { document.getElementById('modal-root').innerHTML = ''; }
+window.closeModal = closeModal;
+
+/* ============ AVATAR HELPERS ============ */
+const AVATAR_COLORS = ['#3b82f6','#a855f7','#ec4899','#f97316','#10b981','#facc15','#06b6d4','#ef4444'];
+function avatarStyle(kid) {
+  return `background: ${kid.color || AVATAR_COLORS[0]}; color: white;`;
+}
+function avatarEmoji(kid) {
+  return kid.emoji || (kid.name || '?').charAt(0).toUpperCase();
+}
+
+/* ============ VIEWS ============ */
+function viewLogin() {
+  const tiles = state.kids.map(k => `
+    <button class="kid-tile" onclick="window.pickKid('${k.id}')">
+      <div class="avatar" style="${avatarStyle(k)}">${avatarEmoji(k)}</div>
+      <div class="name">${escape(k.name)}</div>
+    </button>
+  `).join('');
+  return `
+    <div class="login-wrap">
+      <div class="login-title">
+        <div class="big-mark">🍎</div>
+        <h1>Fuel</h1>
+        <p>FOOD &amp; NUTRITION FOR KIDS</p>
+      </div>
+      <div class="kid-grid">
+        ${tiles}
+        <button class="kid-tile add" onclick="window.openAddKid()">
+          <div class="avatar" style="background: var(--panel-3);">+</div>
+          <div class="name">Add Kid</div>
+        </button>
+      </div>
+      <div class="login-tools">
+        <button onclick="window.go('admin')">⚙ Parent Settings</button>
+      </div>
+    </div>
+  `;
+}
+
+function viewHeader() {
+  const activeKid = state.kids.find(k => k.id === state.activeKidId);
+  const kidChip = activeKid ? `
+    <div class="kid-chip" onclick="window.go('login')">
+      <div class="avatar" style="${avatarStyle(activeKid)}">${avatarEmoji(activeKid)}</div>
+      <span class="name">${escape(activeKid.name)}</span>
+    </div>
+  ` : '';
+  return `
+    <header class="app-header">
+      <div class="brand" onclick="window.go('scan')">
+        <div class="brand-mark">🍎</div>
+        <div class="brand-text">
+          <span class="brand-name">FUEL</span>
+          <span class="brand-sub">Food for Kids</span>
+        </div>
+      </div>
+      <div class="header-spacer"></div>
+      ${kidChip}
+    </header>
+  `;
+}
+
+function viewBottomNav() {
+  const tab = (id, icon, label) => `
+    <button class="${state.view === id ? 'active' : ''}" onclick="window.go('${id}')">
+      <span class="icon">${icon}</span>
+      <span>${label}</span>
+    </button>
+  `;
+  return `
+    <nav class="bottom-nav">
+      ${tab('scan','📷','Scan')}
+      ${tab('search','🔍','Search')}
+      ${tab('compare','⚖️','Compare')}
+      ${tab('favorites','❤️','Favorites')}
+      ${tab('admin','⚙️','Parent')}
+    </nav>
+  `;
+}
+
+function viewScan() {
+  return `
+    ${viewHeader()}
+    <main>
+      <div class="panel">
+        <h2>Scan Barcode</h2>
+        <p style="color: var(--muted); font-size: 13px; margin: -8px 0 14px;">Point at any product barcode</p>
+        <div id="qr-reader"></div>
+        <div style="margin-top: 12px;">
+          <div class="scan-hint">Or type the number below:</div>
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <input id="manual-barcode" class="search-input" inputmode="numeric" placeholder="e.g. 028400003049" />
+            <button class="search-btn" onclick="window.manualBarcode()">Look Up</button>
+          </div>
+        </div>
+      </div>
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function viewSearch() {
+  const chips = [
+    { id: 'all', label: 'All' },
+    { id: 'whole', label: 'Whole Foods' },
+    { id: 'packaged', label: 'Packaged' },
+  ].map(c => `<button class="filter-chip ${state.searchSource===c.id?'active':''}" onclick="window.setSource('${c.id}')">${c.label}</button>`).join('');
+
+  const results = state.searching
+    ? `<div style="text-align:center; padding: 40px; color: var(--muted);">Searching…</div>`
+    : (state.searchResults.length
+        ? state.searchResults.map(f => resultItemHtml(f)).join('')
+        : (state.searchQuery
+            ? `<div class="empty-state"><div class="icon">🤔</div>No results for "${escape(state.searchQuery)}"</div>`
+            : `<div class="empty-state"><div class="icon">🔍</div>Search for any food — "egg", "Cheerios", "Oreo"…</div>`));
+
+  return `
+    ${viewHeader()}
+    <main>
+      <h2>Search Food</h2>
+      <div class="search-input-wrap">
+        <input id="search-input" class="search-input" placeholder="Type a food name…" value="${escape(state.searchQuery)}" />
+        <button class="search-btn" onclick="window.doSearch()">Go</button>
+      </div>
+      <div class="filter-chips">${chips}</div>
+      <div class="results-list">${results}</div>
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function resultItemHtml(food) {
+  const grams = food.servingG || 100;
+  const ps = perServing(food.per100, grams);
+  const tl = trafficLight(ps, food.nova);
+  const img = food.image
+    ? `<img src="${food.image}" alt="" />`
+    : food.emoji;
+  return `
+    <div class="result-item" onclick="window.openFood('${escapeAttr(food.key)}')">
+      <div class="thumb">${img}</div>
+      <div class="body">
+        <div class="name">${escape(food.name)}${food.source==='OFF'?'<span class="source-tag">PACK</span>':''}</div>
+        <div class="brand">${escape(food.brand || (food.source==='WHOLE'?'Whole food':''))}</div>
+      </div>
+      <div class="light-pill ${tl.overall}"></div>
+    </div>
+  `;
+}
+
+function viewFoodDetail() {
+  const food = state.currentFood;
+  if (!food) return viewSearch();
+  const grams = state.detailGrams || food.servingG || 100;
+  const ps = perServing(food.per100, grams);
+  const tl = trafficLight(ps, food.nova);
+  const nutriBuiltIn = food.nutriGrade;
+  const nutriComputed = nutriScore(food.per100);
+  const nutri = nutriBuiltIn || nutriComputed || null;
+  const fav = isFavorite(food);
+
+  const lightRow = (key, label, val, unit, light, hint) => `
+    <div class="light-row">
+      <div class="light-pill ${light}"></div>
+      <div style="flex:1;">
+        <div class="lbl">${label}</div>
+        ${hint?`<div class="why">${hint}</div>`:''}
+      </div>
+      <div class="val">${val}${unit}</div>
+    </div>
+  `;
+
+  const r = state.scoringRules;
+  const explainer = buildKidExplainer(food, ps, tl, nutri);
+
+  return `
+    ${viewHeader()}
+    <main>
+      <div style="margin-bottom: 10px;"><button onclick="window.go('${state.lastList||'search'}')" style="color: var(--muted); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;">← Back</button></div>
+      <div class="panel">
+        <div class="food-hero">
+          <div class="img">${food.image?`<img src="${food.image}" alt="" />`:food.emoji}</div>
+          <div class="body">
+            <div class="name">${escape(food.name)}</div>
+            ${food.brand?`<div class="brand">${escape(food.brand)}</div>`:''}
+            <div class="serving">Per serving: ~${grams}g</div>
+          </div>
+        </div>
+
+        <div class="portion-row">
+          <label>Portion</label>
+          <input type="number" id="portion-g" value="${grams}" min="1" max="2000" step="1" oninput="window.setPortion(this.value)" />
+          <span style="color: var(--muted); font-size: 13px;">g</span>
+          <select onchange="window.setPortionPreset(this.value)">
+            <option value="">Preset…</option>
+            <option value="${food.servingG||100}">1 serving</option>
+            <option value="${(food.servingG||100)*2}">2 servings</option>
+            <option value="${Math.round((food.servingG||100)/2)}">½ serving</option>
+            <option value="100">100g</option>
+            <option value="30">Small bite (30g)</option>
+            <option value="50">Medium (50g)</option>
+            <option value="150">Large (150g)</option>
+          </select>
+        </div>
+
+        <div class="scores-row">
+          <div class="score-card">
+            <div class="label">Kid Score</div>
+            <div class="light-big ${tl.overall}"></div>
+            <div class="verdict">${verdictText(tl.overall)}</div>
+          </div>
+          <div class="score-card">
+            <div class="label">Nutri-Score</div>
+            <div class="nutri-badge ${nutri||'unknown'}">${nutri||'?'}</div>
+            <div class="verdict">${nutri?nutriVerdict(nutri):'Not enough data'}</div>
+          </div>
+        </div>
+
+        <div class="kid-explainer">
+          <div class="lbl">💡 What this means</div>
+          <div class="text">${explainer}</div>
+        </div>
+
+        <h3 style="margin-top: 20px;">Nutrition (per ${grams}g)</h3>
+        <div class="macros-grid">
+          <div class="macro-card cal"><div class="lbl">Calories</div><div class="val">${ps.kcal} <small>kcal</small></div></div>
+          <div class="macro-card protein"><div class="lbl">Protein</div><div class="val">${ps.protein}<small>g</small></div></div>
+          <div class="macro-card carbs"><div class="lbl">Carbs</div><div class="val">${ps.carbs}<small>g</small></div></div>
+          <div class="macro-card fat"><div class="lbl">Fat</div><div class="val">${ps.fat}<small>g</small></div></div>
+          <div class="macro-card sugar"><div class="lbl">Sugar</div><div class="val">${ps.sugar}<small>g</small></div></div>
+          <div class="macro-card fiber"><div class="lbl">Fiber</div><div class="val">${ps.fiber}<small>g</small></div></div>
+          <div class="macro-card satfat"><div class="lbl">Sat Fat</div><div class="val">${ps.satfat}<small>g</small></div></div>
+          <div class="macro-card sodium"><div class="lbl">Sodium</div><div class="val">${ps.sodium}<small>mg</small></div></div>
+        </div>
+
+        <h3 style="margin-top: 20px;">Why this score</h3>
+        <div class="lights-detail">
+          ${lightRow('sugar','Sugar', ps.sugar, 'g', tl.lights.sugar, `Less than ${r.sugar.greenMax}g = green`)}
+          ${lightRow('satFat','Saturated fat', ps.satfat, 'g', tl.lights.satFat, `Less than ${r.satFat.greenMax}g = green`)}
+          ${lightRow('sodium','Sodium', ps.sodium, 'mg', tl.lights.sodium, `Less than ${r.sodium.greenMax}mg = green`)}
+          ${lightRow('fiber','Fiber', ps.fiber, 'g', tl.lights.fiber, `${r.fiber.greenMin}g or more = green`)}
+          ${lightRow('protein','Protein', ps.protein, 'g', tl.lights.protein, `${r.protein.greenMin}g or more = green`)}
+          ${lightRow('nova','Processing', food.nova||'?', '/4', tl.lights.nova, '1-2 = whole/minimal; 4 = ultra-processed')}
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn-a" onclick="window.addToPlate('A')">+ Plate A</button>
+          <button class="btn-b" onclick="window.addToPlate('B')">+ Plate B</button>
+        </div>
+        <button class="fav-btn ${fav?'is-fav':''}" onclick="window.toggleFav()">${fav?'❤️ In Favorites':'🤍 Add to Favorites'}</button>
+      </div>
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function verdictText(light) {
+  if (light === 'green') return '✓ Great choice';
+  if (light === 'yellow') return '◐ Sometimes';
+  if (light === 'red') return '✗ Treat only';
+  return 'Unknown';
+}
+function nutriVerdict(g) {
+  return { A:'Excellent', B:'Good', C:'Okay', D:'Poor', E:'Very poor' }[g] || '';
+}
+
+function buildKidExplainer(food, ps, tl, nutri) {
+  const pieces = [];
+  if (tl.overall === 'green') pieces.push(`This is a <b>green-light food</b> — good fuel for your body!`);
+  else if (tl.overall === 'yellow') pieces.push(`This is a <b>yellow-light food</b> — okay sometimes, but not every day.`);
+  else if (tl.overall === 'red') pieces.push(`This is a <b>red-light food</b> — fun as a treat, but it doesn't give your body much fuel.`);
+
+  if (ps.sugar > 15) pieces.push(`It has <b>${ps.sugar}g of sugar</b> — that's about ${Math.round(ps.sugar/4)} teaspoons. 🍬`);
+  if (ps.protein >= 10) pieces.push(`Lots of <b>protein (${ps.protein}g)</b> — that helps your muscles grow strong. 💪`);
+  if (ps.fiber >= 3) pieces.push(`Good <b>fiber (${ps.fiber}g)</b> — it keeps your tummy happy. 🌾`);
+  if (food.nova === 4) pieces.push(`This is <b>ultra-processed</b> — made in a factory with lots of ingredients you can't pronounce. 🏭`);
+  if (food.nova === 1) pieces.push(`This is a <b>whole food</b> — straight from nature! 🌱`);
+  if (ps.sodium > 600) pieces.push(`It's <b>really salty (${ps.sodium}mg sodium)</b>. ⚠️`);
+
+  return pieces.join(' ');
+}
+
+function viewCompare() {
+  const plateHtml = (which) => {
+    const plate = which === 'A' ? state.plateA : state.plateB;
+    const items = plate.map((it, i) => `
+      <div class="plate-item">
+        <span style="font-size: 18px;">${it.food.emoji||'🍽️'}</span>
+        <span class="name">${escape(it.food.name)}</span>
+        <span class="qty">${it.grams}g</span>
+        <button class="remove" onclick="window.removeFromPlate('${which}', ${i})">×</button>
+      </div>
+    `).join('');
+    const totals = plateTotals(plate);
+    const novaWorst = plate.length ? Math.max(...plate.map(it => it.food.nova || 1)) : null;
+    const tl = trafficLight(totals, novaWorst);
+    return `
+      <div class="plate ${which.toLowerCase()}">
+        <div class="plate-head">
+          <div class="badge">${which}</div>
+          <h3>Plate ${which}</h3>
+        </div>
+        <div class="plate-items">
+          ${items || `<div class="plate-empty">Tap "+ Plate ${which}" on any food</div>`}
+        </div>
+        ${plate.length ? `
+          <div class="plate-totals">
+            <div class="row cal"><span>Calories</span><span class="v">${totals.kcal} kcal</span></div>
+            <div class="row"><span>Protein</span><span class="v">${totals.protein}g</span></div>
+            <div class="row"><span>Carbs</span><span class="v">${totals.carbs}g</span></div>
+            <div class="row"><span>Sugar</span><span class="v">${totals.sugar}g</span></div>
+            <div class="row"><span>Fiber</span><span class="v">${totals.fiber}g</span></div>
+            <div class="row"><span>Fat</span><span class="v">${totals.fat}g</span></div>
+            <div class="row"><span>Sat Fat</span><span class="v">${totals.satfat}g</span></div>
+            <div class="row"><span>Sodium</span><span class="v">${totals.sodium}mg</span></div>
+          </div>
+          <div class="plate-light"><div class="light-pill ${tl.overall}"></div><span>${verdictText(tl.overall)}</span></div>
+        ` : ''}
+      </div>
+    `;
+  };
+
+  const winnerSection = (state.plateA.length && state.plateB.length) ? renderWinner() : '';
+
+  return `
+    ${viewHeader()}
+    <main>
+      <h2>Compare Plates</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: -8px 0 14px;">Build two meals, see which is better fuel</p>
+      <div class="compare-grid">
+        ${plateHtml('A')}
+        ${plateHtml('B')}
+      </div>
+      ${winnerSection}
+      <div class="compare-actions">
+        <button onclick="window.clearPlates()">Clear Both</button>
+        <button onclick="window.go('search')">+ Add Food</button>
+        ${state.plateA.length && state.plateB.length ? `<button class="primary" onclick="window.saveCmp()">💾 Save</button>` : ''}
+      </div>
+      ${state.comparisons.length ? renderSavedComparisons() : ''}
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function plateTotals(plate) {
+  const t = { kcal:0, protein:0, carbs:0, sugar:0, fiber:0, fat:0, satfat:0, sodium:0 };
+  for (const it of plate) {
+    const ps = perServing(it.food.per100, it.grams);
+    for (const k of Object.keys(t)) t[k] += ps[k] || 0;
+  }
+  for (const k of Object.keys(t)) t[k] = round(t[k], k==='kcal'||k==='sodium'?0:1);
+  return t;
+}
+
+function renderWinner() {
+  const a = plateTotals(state.plateA);
+  const b = plateTotals(state.plateB);
+  const novaA = Math.max(...state.plateA.map(it => it.food.nova || 1));
+  const novaB = Math.max(...state.plateB.map(it => it.food.nova || 1));
+  const tlA = trafficLight(a, novaA);
+  const tlB = trafficLight(b, novaB);
+
+  // For each metric, mark winner (lower = better unless fiber/protein)
+  const rows = [
+    { key:'kcal',    lbl:'Calories', better:'lower', unit:' kcal' },
+    { key:'protein', lbl:'Protein',  better:'higher', unit:'g' },
+    { key:'sugar',   lbl:'Sugar',    better:'lower', unit:'g' },
+    { key:'fiber',   lbl:'Fiber',    better:'higher', unit:'g' },
+    { key:'satfat',  lbl:'Sat Fat',  better:'lower', unit:'g' },
+    { key:'sodium',  lbl:'Sodium',   better:'lower', unit:'mg' },
+  ];
+  const winnerRows = rows.map(r => {
+    const av = a[r.key], bv = b[r.key];
+    let aClass = '', bClass = '';
+    if (av !== bv) {
+      const aWins = r.better === 'lower' ? av < bv : av > bv;
+      aClass = aWins ? 'win' : 'lose';
+      bClass = aWins ? 'lose' : 'win';
+    }
+    return `<div class="winner-row">
+      <span class="a-side v ${aClass}">${av}${r.unit}</span>
+      <span class="metric">${r.lbl}</span>
+      <span class="b-side v ${bClass}">${bv}${r.unit}</span>
+    </div>`;
+  }).join('');
+
+  // Overall winner
+  let summary;
+  const order = { green: 3, yellow: 2, red: 1, gray: 0 };
+  if (order[tlA.overall] > order[tlB.overall]) summary = `<b style="color: var(--blue);">Plate A</b> is the better fuel overall.`;
+  else if (order[tlB.overall] > order[tlA.overall]) summary = `<b style="color: var(--purple);">Plate B</b> is the better fuel overall.`;
+  else summary = `Both plates score about the same — look at the details to decide.`;
+
+  return `
+    <div class="comparison-winner">
+      <h3>🏆 Side by side</h3>
+      <div class="winner-rows">${winnerRows}</div>
+      <div style="margin-top: 12px; font-size: 14px; text-align: center;">${summary}</div>
+    </div>
+  `;
+}
+
+function renderSavedComparisons() {
+  return `
+    <div style="margin-top: 24px;">
+      <h3>Recent Comparisons</h3>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        ${state.comparisons.slice(0, 5).map(c => `
+          <div class="result-item" onclick="window.loadCmp('${c.id}')">
+            <div class="thumb">📋</div>
+            <div class="body">
+              <div class="name">${escape(c.label)}</div>
+              <div class="brand">${c.plate_a.length} vs ${c.plate_b.length} foods · ${new Date(c.created_at).toLocaleDateString()}</div>
+            </div>
+            <button class="remove" onclick="event.stopPropagation(); window.deleteCmp('${c.id}')" style="color: var(--red); padding: 4px 8px;">×</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function viewFavorites() {
+  if (!state.activeKidId) return viewLogin();
+  const activeKid = state.kids.find(k => k.id === state.activeKidId);
+  const items = state.favorites.length
+    ? state.favorites.map(f => resultItemHtml(f.food_data)).join('')
+    : `<div class="empty-state"><div class="icon">❤️</div>No favorites yet.<br>Tap the heart on any food to save it.</div>`;
+  return `
+    ${viewHeader()}
+    <main>
+      <h2>${escape(activeKid?.name || 'Kid')}'s Favorites</h2>
+      <div class="results-list">${items}</div>
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function viewAdmin() {
+  if (!state.adminUnlocked) {
+    return `
+      ${viewHeader()}
+      <main>
+        <h2>Parent Settings</h2>
+        <div class="panel">
+          <h3>Enter PIN</h3>
+          <input id="pin" class="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="••••" oninput="window.tryPin(this.value)" autofocus />
+          <p style="color: var(--muted); font-size: 12px; margin-top: 12px;">Default PIN: <code style="background: var(--panel-3); padding: 2px 6px; border-radius: 4px;">1234</code> (change below after unlocking)</p>
+        </div>
+      </main>
+      ${viewBottomNav()}
+    `;
+  }
+
+  const r = state.scoringRules;
+  return `
+    ${viewHeader()}
+    <main>
+      <h2>Parent Settings</h2>
+
+      <div class="panel admin-section">
+        <h3>Kids</h3>
+        <div class="kids-admin-list">
+          ${state.kids.map(k => `
+            <div class="kid-admin-item">
+              <div class="avatar" style="${avatarStyle(k)}">${avatarEmoji(k)}</div>
+              <div class="name">${escape(k.name)}</div>
+              <button class="del" onclick="window.confirmDeleteKid('${k.id}')">Delete</button>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn-primary" style="margin-top: 12px;" onclick="window.openAddKid()">+ Add Kid</button>
+      </div>
+
+      <div class="panel admin-section">
+        <h3>Traffic-Light Rules <small style="color: var(--muted); font-weight: 500;">(per serving)</small></h3>
+        ${thresholdRow('sugar', 'Sugar', 'less than X = green', r.sugar, 'down', 'g')}
+        ${thresholdRow('satFat', 'Saturated Fat', 'less than X = green', r.satFat, 'down', 'g')}
+        ${thresholdRow('sodium', 'Sodium', 'less than X = green', r.sodium, 'down', 'mg')}
+        ${thresholdRow('fiber', 'Fiber', 'X or more = green', r.fiber, 'up', 'g')}
+        ${thresholdRow('protein', 'Protein', 'X or more = green', r.protein, 'up', 'g')}
+        ${thresholdRow('nova', 'Processing (NOVA)', 'lower X = green; 4 is worst', r.nova, 'down', '/4')}
+        <button class="btn-secondary" style="margin-top: 12px;" onclick="window.resetRules()">Reset to defaults</button>
+      </div>
+
+      <div class="panel admin-section">
+        <h3>Parent PIN</h3>
+        <div class="form-row">
+          <label>New PIN (4-6 digits)</label>
+          <input type="password" inputmode="numeric" maxlength="6" id="new-pin" placeholder="••••" />
+        </div>
+        <button class="btn-primary" onclick="window.changePin()">Update PIN</button>
+      </div>
+
+      <div class="panel admin-section">
+        <h3>Status</h3>
+        <p style="color: var(--muted); font-size: 13px; line-height: 1.6;">
+          Sync: <b style="color: ${sb?'var(--green-2)':'var(--yellow)'};">${sb?'Connected':'Offline (localStorage only)'}</b><br>
+          Kids: ${state.kids.length} · Favorites cached: ${state.favorites.length}<br>
+          Comparisons saved: ${state.comparisons.length}
+        </p>
+      </div>
+
+      <button class="btn-secondary" style="width:100%; margin-top: 12px;" onclick="window.lockAdmin()">🔒 Lock Settings</button>
+    </main>
+    ${viewBottomNav()}
+  `;
+}
+
+function thresholdRow(key, label, hint, cfg, dir, unit) {
+  if (dir === 'down') {
+    return `
+      <div class="threshold-row">
+        <div class="lbl">${label}<small>${hint}</small></div>
+        <div class="inputs">
+          <span>green ≤</span>
+          <input type="number" step="0.1" value="${cfg.greenMax}" oninput="window.updateRule('${key}','greenMax',this.value)" />
+          <span>${unit}, yellow ≤</span>
+          <input type="number" step="0.1" value="${cfg.yellowMax}" oninput="window.updateRule('${key}','yellowMax',this.value)" />
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="threshold-row">
+      <div class="lbl">${label}<small>${hint}</small></div>
+      <div class="inputs">
+        <span>green ≥</span>
+        <input type="number" step="0.1" value="${cfg.greenMin}" oninput="window.updateRule('${key}','greenMin',this.value)" />
+        <span>${unit}, yellow ≥</span>
+        <input type="number" step="0.1" value="${cfg.yellowMin}" oninput="window.updateRule('${key}','yellowMin',this.value)" />
+      </div>
+    </div>
+  `;
+}
+
+/* ============ MAIN RENDER ============ */
+function render() {
+  const app = document.getElementById('app');
+  let html;
+  switch (state.view) {
+    case 'login':     html = viewLogin(); break;
+    case 'scan':      html = viewScan(); break;
+    case 'search':    html = viewSearch(); break;
+    case 'food':      html = viewFoodDetail(); break;
+    case 'compare':   html = viewCompare(); break;
+    case 'favorites': html = viewFavorites(); break;
+    case 'admin':     html = viewAdmin(); break;
+    default: html = viewLogin();
+  }
+  app.innerHTML = html;
+
+  // View-specific mount logic
+  if (state.view === 'scan') mountScanner();
+  if (state.view === 'search') {
+    const inp = document.getElementById('search-input');
+    if (inp) {
+      inp.focus();
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') { state.searchQuery = inp.value; doSearch(); }});
+      inp.addEventListener('input', e => { state.searchQuery = e.target.value; });
+    }
+  }
+}
+
+/* ============ NAV ============ */
+function go(view) {
+  // Cleanup scanner if leaving
+  if (state.view === 'scan' && view !== 'scan') stopScanner();
+  if (view === 'login') { state.adminUnlocked = false; }
+  if ((view === 'search' || view === 'favorites' || view === 'compare' || view === 'scan') && !state.activeKidId) {
+    // Allow but show login if no kid
+    state.view = 'login';
+  } else {
+    state.view = view;
+  }
+  if (view === 'favorites') loadFavorites().then(() => render());
+  if (view === 'compare') loadComparisons().then(() => render());
+  render();
+}
+window.go = go;
+
+async function pickKid(id) {
+  state.activeKidId = id;
+  localStorage.setItem('fuel_active_kid', id);
+  await Promise.all([loadFavorites(), loadComparisons()]);
+  go('scan');
+}
+window.pickKid = pickKid;
+
+/* ============ ADD KID MODAL ============ */
+function openAddKid() {
+  const colors = AVATAR_COLORS.map(c => `<button style="width:32px;height:32px;border-radius:50%;background:${c};border:2px solid transparent" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.style.borderColor='transparent'); this.style.borderColor='white'; window.__newKidColor='${c}'"></button>`).join('');
+  const emojis = ['😀','🦁','🐯','🐻','🐼','🦊','🐸','🐵','🦄','🐲','⚽','🏀','🎨','🎮','🚀'];
+  const emojiBtns = emojis.map(e => `<button style="font-size:22px; padding:6px;border:2px solid transparent;border-radius:8px;" onclick="this.parentNode.querySelectorAll('button').forEach(b=>b.style.borderColor='transparent'); this.style.borderColor='var(--accent)'; window.__newKidEmoji='${e}'">${e}</button>`).join('');
+  openModal(`
+    <div class="modal-head">
+      <h2>Add Kid</h2>
+      <button class="modal-close" onclick="closeModal()">Cancel</button>
+    </div>
+    <div class="form-row">
+      <label>Name</label>
+      <input id="kid-name" placeholder="e.g. Mason" autofocus />
+    </div>
+    <div class="form-row">
+      <label>Avatar Color</label>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">${colors}</div>
+    </div>
+    <div class="form-row">
+      <label>Emoji</label>
+      <div style="display: flex; gap: 4px; flex-wrap: wrap;">${emojiBtns}</div>
+    </div>
+    <button class="btn-primary" style="width:100%;" onclick="window.confirmAddKid()">Add</button>
+  `);
+  window.__newKidColor = AVATAR_COLORS[0];
+  window.__newKidEmoji = null;
+}
+window.openAddKid = openAddKid;
+
+async function confirmAddKid() {
+  const name = document.getElementById('kid-name').value.trim();
+  if (!name) { toast('Enter a name', 'error'); return; }
+  const kid = {
+    id: uuid(),
+    name,
+    color: window.__newKidColor || AVATAR_COLORS[0],
+    emoji: window.__newKidEmoji,
+    created_at: new Date().toISOString(),
+  };
+  await saveKid(kid);
+  closeModal();
+  toast('Added ' + name, 'success');
+  render();
+}
+window.confirmAddKid = confirmAddKid;
+
+function confirmDeleteKid(id) {
+  const kid = state.kids.find(k => k.id === id);
+  if (!kid) return;
+  openModal(`
+    <div class="modal-head"><h2>Delete ${escape(kid.name)}?</h2></div>
+    <p>This removes ${escape(kid.name)}'s profile, favorites, and comparison history.</p>
+    <div style="display: flex; gap: 8px; margin-top: 14px;">
+      <button class="btn-secondary" style="flex:1;" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" style="flex:1;" onclick="window.doDeleteKid('${id}')">Delete</button>
+    </div>
+  `);
+}
+window.confirmDeleteKid = confirmDeleteKid;
+
+async function doDeleteKid(id) {
+  await deleteKid(id);
+  closeModal();
+  toast('Kid deleted', 'success');
+  render();
+}
+window.doDeleteKid = doDeleteKid;
+
+/* ============ SCANNER ============ */
+let scannerInstance = null;
+async function mountScanner() {
+  if (!window.Html5Qrcode) {
+    // Load library dynamically
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    }).catch(() => { toast('Scanner library failed to load', 'error'); return; });
+  }
+  if (!window.Html5Qrcode) return;
+  try {
+    stopScanner();
+    scannerInstance = new Html5Qrcode('qr-reader');
+    const config = {
+      fps: 10,
+      qrbox: { width: 280, height: 140 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+      ],
+    };
+    await scannerInstance.start(
+      { facingMode: 'environment' },
+      config,
+      async (decodedText) => {
+        stopScanner();
+        toast('Scanned: ' + decodedText, 'success');
+        await lookupBarcode(decodedText);
+      },
+      () => {}
+    );
+  } catch (e) {
+    console.error('scanner', e);
+    toast('Camera access denied or unavailable', 'error');
+  }
+}
+
+function stopScanner() {
+  if (scannerInstance) {
+    try { scannerInstance.stop().then(()=>scannerInstance.clear()); } catch(e) {}
+    scannerInstance = null;
+  }
+}
+
+async function lookupBarcode(code) {
+  const result = await offByBarcode(code);
+  if (!result) { toast('No product found for ' + code, 'error'); render(); return; }
+  state.currentFood = result;
+  state.lastList = 'scan';
+  state.view = 'food';
+  state.detailGrams = result.servingG;
+  render();
+}
+
+async function manualBarcode() {
+  const code = document.getElementById('manual-barcode').value.trim();
+  if (!code) return;
+  toast('Looking up ' + code + '…');
+  await lookupBarcode(code);
+}
+window.manualBarcode = manualBarcode;
+
+/* ============ SEARCH ============ */
+async function doSearch() {
+  const q = (document.getElementById('search-input')?.value || state.searchQuery).trim();
+  state.searchQuery = q;
+  if (!q) { state.searchResults = []; render(); return; }
+  state.searching = true; render();
+
+  let results = [];
+  if (state.searchSource === 'all' || state.searchSource === 'whole') {
+    const whole = findWhole(q).map(w => ({ ...w, source: 'WHOLE' }));
+    results = results.concat(whole);
+  }
+  if (state.searchSource === 'all' || state.searchSource === 'packaged') {
+    const off = await offSearch(q);
+    results = results.concat(off);
+  }
+  state.searchResults = results;
+  state.searching = false;
+  render();
+}
+window.doSearch = doSearch;
+
+function setSource(s) { state.searchSource = s; if (state.searchQuery) doSearch(); else render(); }
+window.setSource = setSource;
+
+function openFood(key) {
+  let food;
+  if (key.startsWith('off-')) {
+    food = state.searchResults.find(f => f.key === key);
+    if (!food) food = state.favorites.find(f => f.food_key === key)?.food_data;
+  } else {
+    food = WHOLE_FOODS.find(f => f.key === key);
+    if (food) food = { ...food, source: 'WHOLE' };
+    if (!food) food = state.searchResults.find(f => f.key === key);
+    if (!food) food = state.favorites.find(f => f.food_key === key)?.food_data;
+  }
+  if (!food) { toast('Could not load food', 'error'); return; }
+  state.currentFood = food;
+  state.lastList = state.view;
+  state.detailGrams = food.servingG || 100;
+  state.view = 'food';
+  render();
+}
+window.openFood = openFood;
+
+function setPortion(g) {
+  state.detailGrams = Math.max(1, parseFloat(g) || 1);
+  render();
+}
+window.setPortion = setPortion;
+
+function setPortionPreset(g) {
+  if (!g) return;
+  state.detailGrams = parseFloat(g);
+  render();
+}
+window.setPortionPreset = setPortionPreset;
+
+function addToPlate(which) {
+  if (!state.currentFood) return;
+  const plate = which === 'A' ? state.plateA : state.plateB;
+  plate.push({ food: state.currentFood, grams: state.detailGrams });
+  toast('Added to Plate ' + which, 'success');
+}
+window.addToPlate = addToPlate;
+
+function removeFromPlate(which, idx) {
+  const plate = which === 'A' ? state.plateA : state.plateB;
+  plate.splice(idx, 1);
+  render();
+}
+window.removeFromPlate = removeFromPlate;
+
+function clearPlates() {
+  state.plateA = [];
+  state.plateB = [];
+  render();
+}
+window.clearPlates = clearPlates;
+
+async function toggleFav() {
+  if (!state.currentFood) return;
+  await toggleFavorite(state.currentFood);
+  toast(isFavorite(state.currentFood) ? 'Added to favorites' : 'Removed', 'success');
+  render();
+}
+window.toggleFav = toggleFav;
+
+function saveCmp() {
+  openModal(`
+    <div class="modal-head"><h2>Save Comparison</h2><button class="modal-close" onclick="closeModal()">Cancel</button></div>
+    <div class="form-row">
+      <label>Label</label>
+      <input id="cmp-label" placeholder="e.g. PB&amp;J vs Eggs+Toast+Fruit" autofocus />
+    </div>
+    <button class="btn-primary" style="width:100%;" onclick="window.doSaveCmp()">Save</button>
+  `);
+}
+window.saveCmp = saveCmp;
+
+async function doSaveCmp() {
+  const label = document.getElementById('cmp-label').value.trim();
+  await saveComparison(label);
+  closeModal();
+  render();
+}
+window.doSaveCmp = doSaveCmp;
+
+function loadCmp(id) {
+  const c = state.comparisons.find(x => x.id === id);
+  if (!c) return;
+  state.plateA = c.plate_a;
+  state.plateB = c.plate_b;
+  toast('Loaded: ' + c.label);
+  render();
+}
+window.loadCmp = loadCmp;
+
+async function deleteCmp(id) {
+  state.comparisons = state.comparisons.filter(c => c.id !== id);
+  localStorage.setItem('fuel_cmps_' + state.activeKidId, JSON.stringify(state.comparisons));
+  if (sb) await sb.from('food_comparisons').delete().eq('id', id);
+  render();
+}
+window.deleteCmp = deleteCmp;
+
+/* ============ ADMIN ============ */
+function tryPin(val) {
+  if (val.length >= 4 && val === getParentPin()) {
+    state.adminUnlocked = true;
+    toast('Unlocked', 'success');
+    render();
+  }
+}
+window.tryPin = tryPin;
+
+function lockAdmin() { state.adminUnlocked = false; render(); }
+window.lockAdmin = lockAdmin;
+
+function updateRule(key, sub, val) {
+  state.scoringRules[key][sub] = parseFloat(val) || 0;
+  saveScoringRules();
+}
+window.updateRule = updateRule;
+
+function resetRules() {
+  state.scoringRules = defaultRules();
+  saveScoringRules();
+  render();
+}
+window.resetRules = resetRules;
+
+function changePin() {
+  const v = document.getElementById('new-pin').value.trim();
+  if (v.length < 4) { toast('PIN must be at least 4 digits', 'error'); return; }
+  setParentPin(v);
+  toast('PIN updated', 'success');
+}
+window.changePin = changePin;
+
+/* ============ ESCAPE ============ */
+function escape(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return String(s||'').replace(/['"\\]/g, '\\$&'); }
+
+/* ============ BOOT ============ */
+async function boot() {
+  await loadKidsFromDb();
+  await loadScoringRules();
+  const lastKid = localStorage.getItem('fuel_active_kid');
+  if (lastKid && state.kids.find(k => k.id === lastKid)) {
+    state.activeKidId = lastKid;
+    await Promise.all([loadFavorites(), loadComparisons()]);
+    state.view = 'scan';
+  } else {
+    state.view = 'login';
+  }
+  render();
+}
+
+boot().catch(e => {
+  console.error('boot error', e);
+  document.getElementById('app').innerHTML = `<div class="loader">Error loading app: ${escape(e.message)}</div>`;
+});
+
+</script>
+</body>
+</html>
