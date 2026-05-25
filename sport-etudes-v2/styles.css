@@ -1,4 +1,4 @@
-/* Sport-Études Florida V2 — punchy, dark, athletic */
+/* Sport-Études Florida V2: punchy, dark, athletic */
 
 :root {
   /* Dark palette */
@@ -807,8 +807,8 @@ tbody tr:hover { background: rgba(255, 107, 26, 0.04); }
   font-family: var(--sans);
 }
 .faq details[open] summary::after {
-  content: '–';
-  transform: rotate(180deg);
+  content: '+';
+  transform: rotate(45deg);
   background: var(--flame);
   color: var(--text);
 }
