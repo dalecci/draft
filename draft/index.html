@@ -86,7 +86,11 @@ main { display: grid; grid-template-columns: 1.3fr 1fr 1.1fr; gap: 8px; padding:
 <div class="col-body" id="takenList"></div>
 </section>
 </main>
-<script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+const SUPA_URL='https://vlcpgwxeybpzwidjackz.supabase.co';
+const SUPA_KEY='sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+const sb=createClient(SUPA_URL,SUPA_KEY);
 var COACHES_R1=['Shawn Morton','Dale','Crissy','Shaun Powell','David','John'];
 var draftOrder=[];
 for(var r=1;r<=10;r++){var ord=(r%2===1)?COACHES_R1:COACHES_R1.slice().reverse();for(var p=0;p<6;p++)draftOrder.push({pick:(r-1)*6+p+1,round:r,pickInRound:p+1,coach:ord[p]});}
@@ -107,19 +111,68 @@ var players=[
 {jersey:23,name:'Jasilewicz, Cole'},{jersey:27,name:'Long, Lucas'},{jersey:17,name:'Geier, Luke'},{jersey:20,name:'Heuglin, Reed'},
 {jersey:32,name:'Moore, Hudson'},{jersey:34,name:'Murphy, Rowan'},{jersey:49,name:'Santo, Dominick'},{jersey:51,name:'Sebastian, Eli'}];
 var lockedCoachByPick={};players.forEach(function(p){if(p.lockedPick)lockedCoachByPick[p.lockedPick]=draftOrder[p.lockedPick-1].coach;});
-var KEY='draft12u_v1';
-function loadState(){try{return JSON.parse(localStorage.getItem(KEY));}catch(e){return null;}}
-function saveState(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
-var state=loadState()||{drafted:[],history:[]};
+var KEY='draft12u_v2';
+function loadCache(){try{var c=JSON.parse(localStorage.getItem(KEY));return (c&&c.drafted)?c.drafted:[];}catch(e){return [];}}
+function saveCache(){try{localStorage.setItem(KEY,JSON.stringify({drafted:state.drafted}));}catch(e){}}
+var state={drafted:loadCache()};
+var syncStatus='offline';
 function curPick(){return state.drafted.length+1;}
 function isDrafted(j){return state.drafted.some(function(d){return d.jersey===j;});}
 function getPlayer(j){for(var i=0;i<players.length;i++)if(players[i].jersey===j)return players[i];return null;}
-function draftPlayer(j){if(isDrafted(j))return;var pn=curPick();if(pn>60)return;var pl=getPlayer(j);
-if(pl.lockedPick&&pl.lockedPick!==pn){if(!confirm(pl.name+' (#'+pl.jersey+') is locked for pick '+pl.lockedPick+'. Take now anyway?'))return;}
-var o=draftOrder[pn-1];state.history.push(JSON.parse(JSON.stringify(state.drafted)));if(state.history.length>80)state.history.shift();
-state.drafted.push({jersey:j,pickNum:pn,coach:o.coach});saveState();render();}
-function undo(){if(!state.history.length)return;state.drafted=state.history.pop();saveState();render();}
-function reset(){state={drafted:[],history:[]};saveState();render();}
+async function pullFromCloud(){
+  try{
+    var res=await sb.from('draft_picks').select('*').order('pick_num');
+    if(res.error){console.error('draft pull',res.error);syncStatus='offline';render();return;}
+    state.drafted=(res.data||[]).map(function(r){return {jersey:r.jersey,pickNum:r.pick_num,coach:r.coach};});
+    syncStatus='synced';saveCache();render();
+  }catch(e){console.error('draft pull ex',e);syncStatus='offline';render();}
+}
+async function initialSync(){
+  try{
+    var res=await sb.from('draft_picks').select('*').order('pick_num');
+    if(res.error){console.error('initial sync',res.error);syncStatus='offline';render();return;}
+    var cloud=(res.data||[]).map(function(r){return {jersey:r.jersey,pickNum:r.pick_num,coach:r.coach};});
+    if(cloud.length===0&&state.drafted.length>0){
+      var rows=state.drafted.map(function(d){var p=getPlayer(d.jersey);return {pick_num:d.pickNum,jersey:d.jersey,player_name:p?p.name:'',coach:d.coach};});
+      var ins=await sb.from('draft_picks').insert(rows);
+      if(ins.error){console.error('migrate up',ins.error);syncStatus='offline';render();return;}
+    } else {
+      state.drafted=cloud;saveCache();
+    }
+    syncStatus='synced';render();
+  }catch(e){console.error('initial sync ex',e);syncStatus='offline';render();}
+}
+async function draftPlayer(j){
+  if(isDrafted(j))return;
+  var pn=curPick();if(pn>60)return;
+  var pl=getPlayer(j);
+  if(pl.lockedPick&&pl.lockedPick!==pn){if(!confirm(pl.name+' (#'+pl.jersey+') is locked for pick '+pl.lockedPick+'. Take now anyway?'))return;}
+  var o=draftOrder[pn-1];
+  state.drafted.push({jersey:j,pickNum:pn,coach:o.coach});saveCache();render();
+  try{
+    var res=await sb.from('draft_picks').insert({pick_num:pn,jersey:j,player_name:pl.name,coach:o.coach});
+    if(res.error){console.error('draft insert',res.error);alert('Pick failed to save to cloud — try refresh. Error: '+res.error.message);}
+  }catch(e){console.error('draft insert ex',e);}
+}
+async function undo(){
+  if(!state.drafted.length)return;
+  var last=state.drafted[state.drafted.length-1];
+  state.drafted.pop();saveCache();render();
+  try{
+    var res=await sb.from('draft_picks').delete().eq('pick_num',last.pickNum);
+    if(res.error)console.error('undo',res.error);
+  }catch(e){console.error('undo ex',e);}
+}
+async function reset(){
+  if(!confirm('Wipe the entire draft (cloud + local)? This affects every device.'))return;
+  state={drafted:[]};saveCache();render();
+  try{
+    var res=await sb.from('draft_picks').delete().gte('pick_num',1);
+    if(res.error)console.error('reset',res.error);
+  }catch(e){console.error('reset ex',e);}
+}
+window.draftPlayer=draftPlayer;window.undo=undo;
+sb.channel('draft_picks_changes').on('postgres_changes',{event:'*',schema:'public',table:'draft_picks'},function(){pullFromCloud();}).subscribe();
 function render(){renderAvail();renderClock();renderRoster();renderTaken();}
 function renderAvail(){var list=document.getElementById('availList');var avail=players.filter(function(p){return !isDrafted(p.jersey);});
 document.getElementById('availCount').textContent=avail.length;var h='';for(var i=0;i<avail.length;i++){var p=avail[i];
@@ -153,7 +206,7 @@ ht=setInterval(function(){var p=Math.min(100,(Date.now()-hs)/HM*100);fl.style.wi
 function eH(){if(ht){clearInterval(ht);ht=null;}fl.style.width='0%';}
 rb.addEventListener('mousedown',sH);rb.addEventListener('mouseup',eH);rb.addEventListener('mouseleave',eH);
 rb.addEventListener('touchstart',sH,{passive:false});rb.addEventListener('touchend',eH);rb.addEventListener('touchcancel',eH);
-render();
+render();initialSync();
 </script>
 </body>
 </html>
