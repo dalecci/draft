@@ -2,7 +2,7 @@
 const SUPABASE_URL = 'https://ikypiznimyzidmyzzoys.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlreXBpem5pbXl6aWRteXp6b3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzUzODIsImV4cCI6MjA5MzMxMTM4Mn0.Ee0FWPHjLBSOIFXWmdPSjG8oT3QmKyKG14BF8oPGgjk';
 const GATE_PIN = '4545';
-const ADMIN_PIN = '4545';
+const ADMIN_PIN = '1212';
 
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -14,7 +14,7 @@ const state = {
   rewards: [],
   currentKidId: null,
   isAdmin: false,
-  currentTab: 'points',
+  currentTab: 'overview',
   calDate: new Date(),
 };
 
@@ -276,11 +276,130 @@ function renderAdmin() {
     c.classList.toggle('hidden', c.dataset.tab !== state.currentTab);
   });
 
+  if (state.currentTab === 'overview') renderAdminOverview();
   if (state.currentTab === 'points') renderAdminPoints();
   if (state.currentTab === 'consequences') renderAdminConsequences();
   if (state.currentTab === 'rewards') renderAdminRewards();
   if (state.currentTab === 'calendar') renderAdminCalendar();
   if (state.currentTab === 'settings') renderAdminSettings();
+}
+
+function renderAdminOverview() {
+  const wrap = document.getElementById('overviewCharts');
+  if (!wrap) return;
+
+  // Per-kid summary cards
+  const cardsWrap = document.getElementById('overviewCards');
+  cardsWrap.innerHTML = '';
+  state.kids.forEach(function (kid) {
+    const p = kidPoints(kid.id);
+    const card = document.createElement('div');
+    card.className = 'overview-card';
+    card.style.borderTop = '4px solid ' + kid.color;
+    card.innerHTML =
+      '<div class="overview-name" style="color: ' + kid.color + '">' + escapeHtml(kid.name) + '</div>' +
+      '<div class="overview-net">' + p.net + '</div>' +
+      '<div class="overview-split">' +
+        '<span style="color: var(--green)">+' + p.green + '</span>' +
+        ' · ' +
+        '<span style="color: var(--red)">−' + p.red + '</span>' +
+      '</div>';
+    cardsWrap.appendChild(card);
+  });
+
+  // Bar chart — green vs red per kid
+  drawBarChart();
+  // Line chart — net over last 30 days per kid
+  drawLineChart();
+}
+
+let _barChart = null;
+function drawBarChart() {
+  const canvas = document.getElementById('barChart');
+  if (!canvas || !window.Chart) return;
+  if (_barChart) { _barChart.destroy(); _barChart = null; }
+  const labels = state.kids.map(function (k) { return k.name; });
+  const greens = state.kids.map(function (k) { return kidPoints(k.id).green; });
+  const reds = state.kids.map(function (k) { return kidPoints(k.id).red; });
+  const nets = state.kids.map(function (k) { return kidPoints(k.id).net; });
+  _barChart = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Green', data: greens, backgroundColor: '#10b981', borderRadius: 6 },
+        { label: 'Red', data: reds, backgroundColor: '#ef4444', borderRadius: 6 },
+        { label: 'Net', data: nets, backgroundColor: '#6366f1', borderRadius: 6 },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#f1f5f9' } },
+        tooltip: { mode: 'index', intersect: false },
+      },
+      scales: {
+        x: { ticks: { color: '#f1f5f9' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
+      },
+    },
+  });
+}
+
+let _lineChart = null;
+function drawLineChart() {
+  const canvas = document.getElementById('lineChart');
+  if (!canvas || !window.Chart) return;
+  if (_lineChart) { _lineChart.destroy(); _lineChart = null; }
+  const DAYS = 30;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const labels = [];
+  const dayKeys = [];
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    dayKeys.push(ymd(d));
+    labels.push(d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }));
+  }
+  const datasets = state.kids.map(function (kid) {
+    // Build cumulative net per day from oldest point ever, then sample on dayKeys
+    const kp = state.points.filter(function (p) { return p.kid_id === kid.id; })
+      .slice().sort(function (a, b) { return new Date(a.recorded_at) - new Date(b.recorded_at); });
+    const data = dayKeys.map(function (dk) {
+      const end = new Date(dk + 'T23:59:59');
+      let sum = 0;
+      for (const p of kp) {
+        if (new Date(p.recorded_at) <= end) sum += p.amount;
+        else break;
+      }
+      return sum;
+    });
+    return {
+      label: kid.name,
+      data: data,
+      borderColor: kid.color,
+      backgroundColor: kid.color + '33',
+      tension: 0.25,
+      pointRadius: 2,
+      borderWidth: 2,
+      fill: false,
+    };
+  });
+  _lineChart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#f1f5f9' } } },
+      scales: {
+        x: { ticks: { color: '#94a3b8', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      },
+    },
+  });
 }
 function switchTab(t) { state.currentTab = t; renderAdmin(); }
 
