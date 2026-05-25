@@ -313,14 +313,25 @@
   .light-mid.yellow { background: var(--yellow); box-shadow: 0 0 16px var(--yellow-glow), inset 0 0 0 3px rgba(255,255,255,0.15); }
   .light-mid.red { background: var(--red); box-shadow: 0 0 16px var(--red-glow), inset 0 0 0 3px rgba(255,255,255,0.15); }
   .light-mid.gray { background: var(--muted-2); }
-  .nutri-mid { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: white; }
-  .nutri-mid.A { background: #1f7a3d; }
-  .nutri-mid.B { background: #84bd00; color: #1a3000; }
-  .nutri-mid.C { background: #ffc524; color: #4a3500; }
-  .nutri-mid.D { background: #ed8b00; }
-  .nutri-mid.E { background: #d62a1f; }
-  .nutri-mid.unknown { background: var(--muted-2); font-size: 12px; }
   .plate-score-card .verdict-mid { font-size: 11px; font-weight: 700; color: var(--ink-2); text-align: center; }
+
+  /* Diet badges — used wherever Nutri-Score badge used to sit */
+  .diet-badges { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; align-items: center; }
+  .diet-badges.row { flex-direction: row; gap: 6px; }
+  .diet-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase; border: 1.5px solid transparent;
+    min-width: 70px; justify-content: center;
+  }
+  .diet-badge.yes { background: rgba(34,197,94,0.15); color: var(--green-2); border-color: var(--green); }
+  .diet-badge.no  { background: rgba(239,68,68,0.12); color: var(--red-2);   border-color: rgba(239,68,68,0.5); }
+  .diet-badge.unk { background: var(--panel-3); color: var(--muted); border-color: var(--border-strong); }
+  .diet-badge .icon { font-size: 13px; }
+
+  /* Compact variant for meal cards / small spaces */
+  .diet-badge.mini { padding: 2px 6px; font-size: 9px; min-width: 0; letter-spacing: 0.06em; }
+  .diet-badge.mini .icon { font-size: 11px; }
 
   .save-meal-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: 10px; background: rgba(236, 72, 153, 0.12); border: 1px dashed var(--pink); color: var(--pink); font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
   .save-meal-btn:hover { background: var(--pink); color: white; border-style: solid; }
@@ -484,121 +495,131 @@ function setParentPin(p) { localStorage.setItem('fuel_parent_pin', p); }
 /* ============ DEFAULT SCORING RULES ============ */
 function defaultRules() {
   return {
-    sugar:    { greenMax: 5,   yellowMax: 12 },  // grams per serving
-    satFat:   { greenMax: 1.5, yellowMax: 5  },  // g
-    sodium:   { greenMax: 140, yellowMax: 400 }, // mg
-    fiber:    { greenMin: 3,   yellowMin: 1  },  // higher = better
-    protein:  { greenMin: 8,   yellowMin: 3  },  // higher = better
-    nova:     { greenMax: 2,   yellowMax: 3  },  // 1-4, lower = better
+    netCarbs: { greenMax: 10, yellowMax: 25 }, // g per serving (carbs − fiber). Paleo tolerates fruit; keto via flag
+    sugar:    { greenMax: 5,  yellowMax: 15 }, // g per serving — natural < 5g OK, > 15g treat
+    protein:  { greenMin: 8,  yellowMin: 4  }, // g per serving
+    nova:     { greenMax: 2,  yellowMax: 3  }, // 1-4
   };
 }
 
 /* ============ BUILT-IN WHOLE FOODS ============
-   USDA-verified, per 100g. Covers ~50 common kid-teaching items. */
+   USDA-verified per-100g. keto/paleo flags hand-classified.
+   keto: ✓ = low net-carb, fits ketogenic diet
+   paleo: ✓ = whole food, no grains/legumes/refined sugar/(strict) dairy */
 const WHOLE_FOODS = [
-  { key:'egg-whole-raw',     name:'Egg (whole, raw)',         emoji:'🥚', servingG:50,  per100:{ kcal:143, protein:12.6, carbs:0.7,  sugar:0.4, fiber:0,   fat:9.5,  satfat:3.1, sodium:142 }, nova:1 },
-  { key:'egg-scrambled',     name:'Scrambled egg (with milk)',emoji:'🍳', servingG:60,  per100:{ kcal:166, protein:11.1, carbs:2.2,  sugar:1.6, fiber:0,   fat:12.2, satfat:3.7, sodium:208 }, nova:1 },
-  { key:'banana',            name:'Banana',                   emoji:'🍌', servingG:118, per100:{ kcal:89,  protein:1.1,  carbs:22.8, sugar:12.2,fiber:2.6, fat:0.3,  satfat:0.1, sodium:1   }, nova:1 },
-  { key:'apple',             name:'Apple',                    emoji:'🍎', servingG:182, per100:{ kcal:52,  protein:0.3,  carbs:13.8, sugar:10.4,fiber:2.4, fat:0.2,  satfat:0,   sodium:1   }, nova:1 },
-  { key:'orange',            name:'Orange',                   emoji:'🍊', servingG:131, per100:{ kcal:47,  protein:0.9,  carbs:11.8, sugar:9.4, fiber:2.4, fat:0.1,  satfat:0,   sodium:0   }, nova:1 },
-  { key:'strawberries',      name:'Strawberries',             emoji:'🍓', servingG:100, per100:{ kcal:32,  protein:0.7,  carbs:7.7,  sugar:4.9, fiber:2.0, fat:0.3,  satfat:0,   sodium:1   }, nova:1 },
-  { key:'blueberries',       name:'Blueberries',              emoji:'🫐', servingG:148, per100:{ kcal:57,  protein:0.7,  carbs:14.5, sugar:10,  fiber:2.4, fat:0.3,  satfat:0,   sodium:1   }, nova:1 },
-  { key:'grapes',            name:'Grapes',                   emoji:'🍇', servingG:92,  per100:{ kcal:69,  protein:0.7,  carbs:18.1, sugar:15.5,fiber:0.9, fat:0.2,  satfat:0,   sodium:2   }, nova:1 },
-  { key:'avocado',           name:'Avocado',                  emoji:'🥑', servingG:68,  per100:{ kcal:160, protein:2,    carbs:8.5,  sugar:0.7, fiber:6.7, fat:14.7, satfat:2.1, sodium:7   }, nova:1 },
-  { key:'tomato',            name:'Tomato',                   emoji:'🍅', servingG:123, per100:{ kcal:18,  protein:0.9,  carbs:3.9,  sugar:2.6, fiber:1.2, fat:0.2,  satfat:0,   sodium:5   }, nova:1 },
-  { key:'cucumber',          name:'Cucumber',                 emoji:'🥒', servingG:104, per100:{ kcal:15,  protein:0.7,  carbs:3.6,  sugar:1.7, fiber:0.5, fat:0.1,  satfat:0,   sodium:2   }, nova:1 },
-  { key:'carrot',            name:'Carrot',                   emoji:'🥕', servingG:61,  per100:{ kcal:41,  protein:0.9,  carbs:9.6,  sugar:4.7, fiber:2.8, fat:0.2,  satfat:0,   sodium:69  }, nova:1 },
-  { key:'broccoli',          name:'Broccoli (raw)',           emoji:'🥦', servingG:91,  per100:{ kcal:34,  protein:2.8,  carbs:6.6,  sugar:1.7, fiber:2.6, fat:0.4,  satfat:0,   sodium:33  }, nova:1 },
-  { key:'spinach',           name:'Spinach (raw)',            emoji:'🥬', servingG:30,  per100:{ kcal:23,  protein:2.9,  carbs:3.6,  sugar:0.4, fiber:2.2, fat:0.4,  satfat:0.1, sodium:79  }, nova:1 },
-  { key:'sweet-potato',      name:'Sweet potato (baked)',     emoji:'🍠', servingG:151, per100:{ kcal:90,  protein:2,    carbs:20.7, sugar:6.5, fiber:3.3, fat:0.1,  satfat:0,   sodium:36  }, nova:1 },
-  { key:'potato-baked',      name:'Potato (baked, w/skin)',   emoji:'🥔', servingG:173, per100:{ kcal:93,  protein:2.5,  carbs:21.2, sugar:1.2, fiber:2.2, fat:0.1,  satfat:0,   sodium:10  }, nova:1 },
-  { key:'rice-white-cooked', name:'Rice (white, cooked)',     emoji:'🍚', servingG:158, per100:{ kcal:130, protein:2.7,  carbs:28.2, sugar:0,   fiber:0.4, fat:0.3,  satfat:0.1, sodium:1   }, nova:1 },
-  { key:'rice-brown-cooked', name:'Rice (brown, cooked)',     emoji:'🍚', servingG:195, per100:{ kcal:123, protein:2.7,  carbs:25.6, sugar:0.4, fiber:1.6, fat:1,    satfat:0.2, sodium:4   }, nova:1 },
-  { key:'oats-cooked',       name:'Oatmeal (cooked, water)',  emoji:'🥣', servingG:234, per100:{ kcal:71,  protein:2.5,  carbs:12,   sugar:0.3, fiber:1.7, fat:1.5,  satfat:0.3, sodium:4   }, nova:1 },
-  { key:'bread-white',       name:'White bread',              emoji:'🍞', servingG:28,  per100:{ kcal:266, protein:9.4,  carbs:49,   sugar:5.7, fiber:2.7, fat:3.3,  satfat:0.7, sodium:491 }, nova:3 },
-  { key:'bread-whole-wheat', name:'Whole-wheat bread',        emoji:'🍞', servingG:28,  per100:{ kcal:247, protein:13,   carbs:41,   sugar:5.6, fiber:7,   fat:3.4,  satfat:0.7, sodium:472 }, nova:3 },
-  { key:'pasta-cooked',      name:'Pasta (cooked)',           emoji:'🍝', servingG:140, per100:{ kcal:131, protein:5,    carbs:25,   sugar:0.6, fiber:1.8, fat:1.1,  satfat:0.2, sodium:6   }, nova:1 },
-  { key:'milk-whole',        name:'Whole milk',               emoji:'🥛', servingG:244, per100:{ kcal:61,  protein:3.2,  carbs:4.8,  sugar:5.1, fiber:0,   fat:3.3,  satfat:1.9, sodium:43  }, nova:1 },
-  { key:'milk-2percent',     name:'Milk (2%)',                emoji:'🥛', servingG:244, per100:{ kcal:50,  protein:3.3,  carbs:4.8,  sugar:5.1, fiber:0,   fat:2,    satfat:1.2, sodium:44  }, nova:1 },
-  { key:'milk-skim',         name:'Milk (skim)',              emoji:'🥛', servingG:244, per100:{ kcal:34,  protein:3.4,  carbs:5,    sugar:5.1, fiber:0,   fat:0.1,  satfat:0.1, sodium:42  }, nova:1 },
-  { key:'yogurt-plain',      name:'Yogurt (plain, low-fat)',  emoji:'🥛', servingG:170, per100:{ kcal:63,  protein:5.3,  carbs:7,    sugar:7,   fiber:0,   fat:1.6,  satfat:1,   sodium:70  }, nova:1 },
-  { key:'cheese-cheddar',    name:'Cheddar cheese',           emoji:'🧀', servingG:28,  per100:{ kcal:404, protein:23,   carbs:3.4,  sugar:0.5, fiber:0,   fat:33.1, satfat:21,  sodium:653 }, nova:3 },
-  { key:'butter',            name:'Butter',                   emoji:'🧈', servingG:14,  per100:{ kcal:717, protein:0.9,  carbs:0.1,  sugar:0.1, fiber:0,   fat:81.1, satfat:51.4,sodium:11  }, nova:3 },
-  { key:'olive-oil',         name:'Olive oil',                emoji:'🫒', servingG:14,  per100:{ kcal:884, protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:100,  satfat:13.8,sodium:2   }, nova:2 },
-  { key:'peanut-butter',     name:'Peanut butter',            emoji:'🥜', servingG:32,  per100:{ kcal:588, protein:25,   carbs:20,   sugar:9.2, fiber:6,   fat:50,   satfat:10,  sodium:476 }, nova:3 },
-  { key:'almonds',           name:'Almonds',                  emoji:'🥜', servingG:28,  per100:{ kcal:579, protein:21.2, carbs:21.6, sugar:4.4, fiber:12.5,fat:49.9, satfat:3.8, sodium:1   }, nova:1 },
-  { key:'walnuts',           name:'Walnuts',                  emoji:'🥜', servingG:28,  per100:{ kcal:654, protein:15.2, carbs:13.7, sugar:2.6, fiber:6.7, fat:65.2, satfat:6.1, sodium:2   }, nova:1 },
-  { key:'chicken-breast',    name:'Chicken breast (cooked)',  emoji:'🍗', servingG:120, per100:{ kcal:165, protein:31,   carbs:0,    sugar:0,   fiber:0,   fat:3.6,  satfat:1,   sodium:74  }, nova:1 },
-  { key:'beef-ground',       name:'Ground beef (cooked, 85%)',emoji:'🥩', servingG:85,  per100:{ kcal:250, protein:26,   carbs:0,    sugar:0,   fiber:0,   fat:17,   satfat:6.6, sodium:75  }, nova:1 },
-  { key:'salmon-cooked',     name:'Salmon (cooked)',          emoji:'🐟', servingG:124, per100:{ kcal:206, protein:22,   carbs:0,    sugar:0,   fiber:0,   fat:12,   satfat:3,   sodium:61  }, nova:1 },
-  { key:'tuna-canned-water', name:'Tuna (canned, in water)',  emoji:'🐟', servingG:85,  per100:{ kcal:116, protein:25.5, carbs:0,    sugar:0,   fiber:0,   fat:0.8,  satfat:0.2, sodium:247 }, nova:3 },
-  { key:'beans-black',       name:'Black beans (cooked)',     emoji:'🫘', servingG:172, per100:{ kcal:132, protein:8.9,  carbs:23.7, sugar:0.3, fiber:8.7, fat:0.5,  satfat:0.1, sodium:1   }, nova:1 },
-  { key:'lentils',           name:'Lentils (cooked)',         emoji:'🫘', servingG:198, per100:{ kcal:116, protein:9,    carbs:20,   sugar:1.8, fiber:7.9, fat:0.4,  satfat:0.1, sodium:2   }, nova:1 },
-  { key:'tofu',              name:'Tofu (firm)',              emoji:'🍱', servingG:126, per100:{ kcal:144, protein:17.3, carbs:2.8,  sugar:0.6, fiber:2.3, fat:8.7,  satfat:1.3, sodium:14  }, nova:3 },
-  { key:'jam-strawberry',    name:'Strawberry jam',           emoji:'🍓', servingG:20,  per100:{ kcal:278, protein:0.4,  carbs:69,   sugar:48,  fiber:1.1, fat:0.1,  satfat:0,   sodium:32  }, nova:3 },
-  { key:'honey',             name:'Honey',                    emoji:'🍯', servingG:21,  per100:{ kcal:304, protein:0.3,  carbs:82.4, sugar:82.1,fiber:0.2, fat:0,    satfat:0,   sodium:4   }, nova:1 },
-  { key:'sugar',             name:'White sugar',              emoji:'🍬', servingG:4,   per100:{ kcal:387, protein:0,    carbs:100,  sugar:100, fiber:0,   fat:0,    satfat:0,   sodium:1   }, nova:3 },
-  { key:'orange-juice',      name:'Orange juice',             emoji:'🧃', servingG:248, per100:{ kcal:45,  protein:0.7,  carbs:10.4, sugar:8.4, fiber:0.2, fat:0.2,  satfat:0,   sodium:1   }, nova:3 },
-  { key:'apple-juice',       name:'Apple juice',              emoji:'🧃', servingG:248, per100:{ kcal:46,  protein:0.1,  carbs:11.3, sugar:9.6, fiber:0.2, fat:0.1,  satfat:0,   sodium:4   }, nova:3 },
-  { key:'water',             name:'Water',                    emoji:'💧', servingG:240, per100:{ kcal:0,   protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:0,    satfat:0,   sodium:0   }, nova:1 },
-  { key:'corn-tortilla',     name:'Corn tortilla',            emoji:'🌮', servingG:24,  per100:{ kcal:218, protein:5.7,  carbs:44.6, sugar:0.9, fiber:6.3, fat:2.9,  satfat:0.4, sodium:45  }, nova:1 },
-  { key:'flour-tortilla',    name:'Flour tortilla',           emoji:'🌯', servingG:49,  per100:{ kcal:306, protein:8.2,  carbs:51.5, sugar:1.8, fiber:3.2, fat:7.1,  satfat:1.8, sodium:643 }, nova:3 },
-  { key:'cereal-sweet',      name:'Sweetened cereal (typical)',emoji:'🥣',servingG:30,  per100:{ kcal:380, protein:5,    carbs:84,   sugar:35,  fiber:3,   fat:3,    satfat:1,   sodium:520 }, nova:4 },
-  { key:'pretzels',          name:'Pretzels',                 emoji:'🥨', servingG:28,  per100:{ kcal:381, protein:10.4, carbs:80.4, sugar:2.2, fiber:3.4, fat:3.5,  satfat:0.5, sodium:1240}, nova:3 },
-  { key:'chips-potato',      name:'Potato chips',             emoji:'🍟', servingG:28,  per100:{ kcal:536, protein:7,    carbs:53,   sugar:0.5, fiber:4.4, fat:34.6, satfat:11.3,sodium:525 }, nova:4 },
+  { key:'egg-whole-raw',     name:'Egg (whole, raw)',         emoji:'🥚', servingG:50,  per100:{ kcal:143, protein:12.6, carbs:0.7,  sugar:0.4, fiber:0,   fat:9.5,  satfat:3.1, sodium:142 }, nova:1, keto:true,  paleo:true  },
+  { key:'egg-scrambled',     name:'Scrambled egg (with milk)',emoji:'🍳', servingG:60,  per100:{ kcal:166, protein:11.1, carbs:2.2,  sugar:1.6, fiber:0,   fat:12.2, satfat:3.7, sodium:208 }, nova:1, keto:true,  paleo:false },
+  { key:'banana',            name:'Banana',                   emoji:'🍌', servingG:118, per100:{ kcal:89,  protein:1.1,  carbs:22.8, sugar:12.2,fiber:2.6, fat:0.3,  satfat:0.1, sodium:1   }, nova:1, keto:false, paleo:true  },
+  { key:'apple',             name:'Apple',                    emoji:'🍎', servingG:182, per100:{ kcal:52,  protein:0.3,  carbs:13.8, sugar:10.4,fiber:2.4, fat:0.2,  satfat:0,   sodium:1   }, nova:1, keto:false, paleo:true  },
+  { key:'orange',            name:'Orange',                   emoji:'🍊', servingG:131, per100:{ kcal:47,  protein:0.9,  carbs:11.8, sugar:9.4, fiber:2.4, fat:0.1,  satfat:0,   sodium:0   }, nova:1, keto:false, paleo:true  },
+  { key:'strawberries',      name:'Strawberries',             emoji:'🍓', servingG:100, per100:{ kcal:32,  protein:0.7,  carbs:7.7,  sugar:4.9, fiber:2.0, fat:0.3,  satfat:0,   sodium:1   }, nova:1, keto:true,  paleo:true  },
+  { key:'blueberries',       name:'Blueberries',              emoji:'🫐', servingG:148, per100:{ kcal:57,  protein:0.7,  carbs:14.5, sugar:10,  fiber:2.4, fat:0.3,  satfat:0,   sodium:1   }, nova:1, keto:true,  paleo:true  },
+  { key:'grapes',            name:'Grapes',                   emoji:'🍇', servingG:92,  per100:{ kcal:69,  protein:0.7,  carbs:18.1, sugar:15.5,fiber:0.9, fat:0.2,  satfat:0,   sodium:2   }, nova:1, keto:false, paleo:true  },
+  { key:'avocado',           name:'Avocado',                  emoji:'🥑', servingG:68,  per100:{ kcal:160, protein:2,    carbs:8.5,  sugar:0.7, fiber:6.7, fat:14.7, satfat:2.1, sodium:7   }, nova:1, keto:true,  paleo:true  },
+  { key:'tomato',            name:'Tomato',                   emoji:'🍅', servingG:123, per100:{ kcal:18,  protein:0.9,  carbs:3.9,  sugar:2.6, fiber:1.2, fat:0.2,  satfat:0,   sodium:5   }, nova:1, keto:true,  paleo:true  },
+  { key:'cucumber',          name:'Cucumber',                 emoji:'🥒', servingG:104, per100:{ kcal:15,  protein:0.7,  carbs:3.6,  sugar:1.7, fiber:0.5, fat:0.1,  satfat:0,   sodium:2   }, nova:1, keto:true,  paleo:true  },
+  { key:'carrot',            name:'Carrot',                   emoji:'🥕', servingG:61,  per100:{ kcal:41,  protein:0.9,  carbs:9.6,  sugar:4.7, fiber:2.8, fat:0.2,  satfat:0,   sodium:69  }, nova:1, keto:true,  paleo:true  },
+  { key:'broccoli',          name:'Broccoli (raw)',           emoji:'🥦', servingG:91,  per100:{ kcal:34,  protein:2.8,  carbs:6.6,  sugar:1.7, fiber:2.6, fat:0.4,  satfat:0,   sodium:33  }, nova:1, keto:true,  paleo:true  },
+  { key:'spinach',           name:'Spinach (raw)',            emoji:'🥬', servingG:30,  per100:{ kcal:23,  protein:2.9,  carbs:3.6,  sugar:0.4, fiber:2.2, fat:0.4,  satfat:0.1, sodium:79  }, nova:1, keto:true,  paleo:true  },
+  { key:'sweet-potato',      name:'Sweet potato (baked)',     emoji:'🍠', servingG:151, per100:{ kcal:90,  protein:2,    carbs:20.7, sugar:6.5, fiber:3.3, fat:0.1,  satfat:0,   sodium:36  }, nova:1, keto:false, paleo:true  },
+  { key:'potato-baked',      name:'Potato (baked, w/skin)',   emoji:'🥔', servingG:173, per100:{ kcal:93,  protein:2.5,  carbs:21.2, sugar:1.2, fiber:2.2, fat:0.1,  satfat:0,   sodium:10  }, nova:1, keto:false, paleo:true  },
+  { key:'rice-white-cooked', name:'Rice (white, cooked)',     emoji:'🍚', servingG:158, per100:{ kcal:130, protein:2.7,  carbs:28.2, sugar:0,   fiber:0.4, fat:0.3,  satfat:0.1, sodium:1   }, nova:1, keto:false, paleo:false },
+  { key:'rice-brown-cooked', name:'Rice (brown, cooked)',     emoji:'🍚', servingG:195, per100:{ kcal:123, protein:2.7,  carbs:25.6, sugar:0.4, fiber:1.6, fat:1,    satfat:0.2, sodium:4   }, nova:1, keto:false, paleo:false },
+  { key:'oats-cooked',       name:'Oatmeal (cooked, water)',  emoji:'🥣', servingG:234, per100:{ kcal:71,  protein:2.5,  carbs:12,   sugar:0.3, fiber:1.7, fat:1.5,  satfat:0.3, sodium:4   }, nova:1, keto:false, paleo:false },
+  { key:'bread-white',       name:'White bread',              emoji:'🍞', servingG:28,  per100:{ kcal:266, protein:9.4,  carbs:49,   sugar:5.7, fiber:2.7, fat:3.3,  satfat:0.7, sodium:491 }, nova:3, keto:false, paleo:false },
+  { key:'bread-whole-wheat', name:'Whole-wheat bread',        emoji:'🍞', servingG:28,  per100:{ kcal:247, protein:13,   carbs:41,   sugar:5.6, fiber:7,   fat:3.4,  satfat:0.7, sodium:472 }, nova:3, keto:false, paleo:false },
+  { key:'pasta-cooked',      name:'Pasta (cooked)',           emoji:'🍝', servingG:140, per100:{ kcal:131, protein:5,    carbs:25,   sugar:0.6, fiber:1.8, fat:1.1,  satfat:0.2, sodium:6   }, nova:1, keto:false, paleo:false },
+  { key:'milk-whole',        name:'Whole milk',               emoji:'🥛', servingG:244, per100:{ kcal:61,  protein:3.2,  carbs:4.8,  sugar:5.1, fiber:0,   fat:3.3,  satfat:1.9, sodium:43  }, nova:1, keto:false, paleo:false },
+  { key:'milk-2percent',     name:'Milk (2%)',                emoji:'🥛', servingG:244, per100:{ kcal:50,  protein:3.3,  carbs:4.8,  sugar:5.1, fiber:0,   fat:2,    satfat:1.2, sodium:44  }, nova:1, keto:false, paleo:false },
+  { key:'milk-skim',         name:'Milk (skim)',              emoji:'🥛', servingG:244, per100:{ kcal:34,  protein:3.4,  carbs:5,    sugar:5.1, fiber:0,   fat:0.1,  satfat:0.1, sodium:42  }, nova:1, keto:false, paleo:false },
+  { key:'yogurt-plain',      name:'Yogurt (plain, low-fat)',  emoji:'🥛', servingG:170, per100:{ kcal:63,  protein:5.3,  carbs:7,    sugar:7,   fiber:0,   fat:1.6,  satfat:1,   sodium:70  }, nova:1, keto:false, paleo:false },
+  { key:'cheese-cheddar',    name:'Cheddar cheese',           emoji:'🧀', servingG:28,  per100:{ kcal:404, protein:23,   carbs:3.4,  sugar:0.5, fiber:0,   fat:33.1, satfat:21,  sodium:653 }, nova:3, keto:true,  paleo:false },
+  { key:'butter',            name:'Butter',                   emoji:'🧈', servingG:14,  per100:{ kcal:717, protein:0.9,  carbs:0.1,  sugar:0.1, fiber:0,   fat:81.1, satfat:51.4,sodium:11  }, nova:3, keto:true,  paleo:true  },
+  { key:'olive-oil',         name:'Olive oil',                emoji:'🫒', servingG:14,  per100:{ kcal:884, protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:100,  satfat:13.8,sodium:2   }, nova:2, keto:true,  paleo:true  },
+  { key:'peanut-butter',     name:'Peanut butter',            emoji:'🥜', servingG:32,  per100:{ kcal:588, protein:25,   carbs:20,   sugar:9.2, fiber:6,   fat:50,   satfat:10,  sodium:476 }, nova:3, keto:false, paleo:false },
+  { key:'almonds',           name:'Almonds',                  emoji:'🥜', servingG:28,  per100:{ kcal:579, protein:21.2, carbs:21.6, sugar:4.4, fiber:12.5,fat:49.9, satfat:3.8, sodium:1   }, nova:1, keto:true,  paleo:true  },
+  { key:'walnuts',           name:'Walnuts',                  emoji:'🥜', servingG:28,  per100:{ kcal:654, protein:15.2, carbs:13.7, sugar:2.6, fiber:6.7, fat:65.2, satfat:6.1, sodium:2   }, nova:1, keto:true,  paleo:true  },
+  { key:'chicken-breast',    name:'Chicken breast (cooked)',  emoji:'🍗', servingG:120, per100:{ kcal:165, protein:31,   carbs:0,    sugar:0,   fiber:0,   fat:3.6,  satfat:1,   sodium:74  }, nova:1, keto:true,  paleo:true  },
+  { key:'beef-ground',       name:'Ground beef (cooked, 85%)',emoji:'🥩', servingG:85,  per100:{ kcal:250, protein:26,   carbs:0,    sugar:0,   fiber:0,   fat:17,   satfat:6.6, sodium:75  }, nova:1, keto:true,  paleo:true  },
+  { key:'salmon-cooked',     name:'Salmon (cooked)',          emoji:'🐟', servingG:124, per100:{ kcal:206, protein:22,   carbs:0,    sugar:0,   fiber:0,   fat:12,   satfat:3,   sodium:61  }, nova:1, keto:true,  paleo:true  },
+  { key:'tuna-canned-water', name:'Tuna (canned, in water)',  emoji:'🐟', servingG:85,  per100:{ kcal:116, protein:25.5, carbs:0,    sugar:0,   fiber:0,   fat:0.8,  satfat:0.2, sodium:247 }, nova:3, keto:true,  paleo:true  },
+  { key:'beans-black',       name:'Black beans (cooked)',     emoji:'🫘', servingG:172, per100:{ kcal:132, protein:8.9,  carbs:23.7, sugar:0.3, fiber:8.7, fat:0.5,  satfat:0.1, sodium:1   }, nova:1, keto:false, paleo:false },
+  { key:'lentils',           name:'Lentils (cooked)',         emoji:'🫘', servingG:198, per100:{ kcal:116, protein:9,    carbs:20,   sugar:1.8, fiber:7.9, fat:0.4,  satfat:0.1, sodium:2   }, nova:1, keto:false, paleo:false },
+  { key:'tofu',              name:'Tofu (firm)',              emoji:'🍱', servingG:126, per100:{ kcal:144, protein:17.3, carbs:2.8,  sugar:0.6, fiber:2.3, fat:8.7,  satfat:1.3, sodium:14  }, nova:3, keto:true,  paleo:false },
+  { key:'jam-strawberry',    name:'Strawberry jam',           emoji:'🍓', servingG:20,  per100:{ kcal:278, protein:0.4,  carbs:69,   sugar:48,  fiber:1.1, fat:0.1,  satfat:0,   sodium:32  }, nova:3, keto:false, paleo:false },
+  { key:'honey',             name:'Honey',                    emoji:'🍯', servingG:21,  per100:{ kcal:304, protein:0.3,  carbs:82.4, sugar:82.1,fiber:0.2, fat:0,    satfat:0,   sodium:4   }, nova:1, keto:false, paleo:true  },
+  { key:'sugar',             name:'White sugar',              emoji:'🍬', servingG:4,   per100:{ kcal:387, protein:0,    carbs:100,  sugar:100, fiber:0,   fat:0,    satfat:0,   sodium:1   }, nova:3, keto:false, paleo:false },
+  { key:'orange-juice',      name:'Orange juice',             emoji:'🧃', servingG:248, per100:{ kcal:45,  protein:0.7,  carbs:10.4, sugar:8.4, fiber:0.2, fat:0.2,  satfat:0,   sodium:1   }, nova:3, keto:false, paleo:false },
+  { key:'apple-juice',       name:'Apple juice',              emoji:'🧃', servingG:248, per100:{ kcal:46,  protein:0.1,  carbs:11.3, sugar:9.6, fiber:0.2, fat:0.1,  satfat:0,   sodium:4   }, nova:3, keto:false, paleo:false },
+  { key:'water',             name:'Water',                    emoji:'💧', servingG:240, per100:{ kcal:0,   protein:0,    carbs:0,    sugar:0,   fiber:0,   fat:0,    satfat:0,   sodium:0   }, nova:1, keto:true,  paleo:true  },
+  { key:'corn-tortilla',     name:'Corn tortilla',            emoji:'🌮', servingG:24,  per100:{ kcal:218, protein:5.7,  carbs:44.6, sugar:0.9, fiber:6.3, fat:2.9,  satfat:0.4, sodium:45  }, nova:1, keto:false, paleo:false },
+  { key:'flour-tortilla',    name:'Flour tortilla',           emoji:'🌯', servingG:49,  per100:{ kcal:306, protein:8.2,  carbs:51.5, sugar:1.8, fiber:3.2, fat:7.1,  satfat:1.8, sodium:643 }, nova:3, keto:false, paleo:false },
+  { key:'cereal-sweet',      name:'Sweetened cereal (typical)',emoji:'🥣',servingG:30,  per100:{ kcal:380, protein:5,    carbs:84,   sugar:35,  fiber:3,   fat:3,    satfat:1,   sodium:520 }, nova:4, keto:false, paleo:false },
+  { key:'pretzels',          name:'Pretzels',                 emoji:'🥨', servingG:28,  per100:{ kcal:381, protein:10.4, carbs:80.4, sugar:2.2, fiber:3.4, fat:3.5,  satfat:0.5, sodium:1240}, nova:3, keto:false, paleo:false },
+  { key:'chips-potato',      name:'Potato chips',             emoji:'🍟', servingG:28,  per100:{ kcal:536, protein:7,    carbs:53,   sugar:0.5, fiber:4.4, fat:34.6, satfat:11.3,sodium:525 }, nova:4, keto:false, paleo:false },
 ];
 
-/* ============ NUTRI-SCORE (simplified, official spec) ============
-   Returns letter A-E given per-100g nutrient data. */
-function nutriScore(p) {
-  if (!p) return null;
-  const kcal = p.kcal || 0;
-  const energyKJ = kcal * 4.184;
-  const sugars = p.sugar || 0;
-  const satfat = p.satfat || 0;
-  const sodium = p.sodium || 0;
-  const fiber = p.fiber || 0;
-  const protein = p.protein || 0;
-  const fvn = p.fruitVegNut || 0; // 0 if unknown
-
-  // Negative points
-  let nE = 0;
-  for (const t of [335,670,1005,1340,1675,2010,2345,2680,3015,3350]) if (energyKJ > t) nE++;
-  let nS = 0;
-  for (const t of [4.5,9,13.5,18,22.5,27,31,36,40,45]) if (sugars > t) nS++;
-  let nSat = 0;
-  for (const t of [1,2,3,4,5,6,7,8,9,10]) if (satfat > t) nSat++;
-  let nNa = 0;
-  for (const t of [90,180,270,360,450,540,630,720,810,900]) if (sodium > t) nNa++;
-  const N = nE + nS + nSat + nNa;
-
-  // Positive points
-  let pFib = 0;
-  for (const t of [0.9,1.9,2.8,3.7,4.7]) if (fiber > t) pFib++;
-  let pPro = 0;
-  for (const t of [1.6,3.2,4.8,6.4,8.0]) if (protein > t) pPro++;
-  let pFvn = 0;
-  if (fvn >= 80) pFvn = 5;
-  else if (fvn >= 60) pFvn = 2;
-  else if (fvn >= 40) pFvn = 1;
-  const P = pFib + pPro + pFvn;
-
-  // Final
-  let score;
-  if (N >= 11 && fvn < 80) score = N - (pFvn + pFib); // protein doesn't count if too unhealthy
-  else score = N - P;
-
-  if (score <= -1) return 'A';
-  if (score <= 2)  return 'B';
-  if (score <= 10) return 'C';
-  if (score <= 18) return 'D';
-  return 'E';
+/* ============ KETO / PALEO HELPERS ============ */
+function netCarbsOf(perVal) {
+  return Math.max(0, (perVal.carbs || 0) - (perVal.fiber || 0));
 }
 
-/* ============ CUSTOM TRAFFIC LIGHT ============
-   Per-serving evaluation against user rules. Returns
-   { lights: {sugar,satFat,sodium,fiber,protein,nova}, overall: 'green'|'yellow'|'red' } */
-function trafficLight(perServing, novaScore, rules) {
+// Returns true/false/null for keto and paleo compatibility for a food.
+// Whole foods are hand-flagged; OFF products fall back to inference.
+function dietFlags(food) {
+  if (!food) return { keto: null, paleo: null };
+  let keto = food.keto, paleo = food.paleo;
+  if (keto != null && paleo != null) return { keto, paleo };
+  // Inference for unflagged (mostly OFF packaged foods)
+  const p = food.per100 || {};
+  const netCarbs100 = netCarbsOf(p);
+  const sugar100 = p.sugar || 0;
+  const nova = food.nova;
+  if (keto == null) {
+    if (netCarbs100 > 12 || sugar100 > 10) keto = false;
+    else if (netCarbs100 < 5 && (nova == null || nova < 4)) keto = true;
+    else keto = null;
+  }
+  if (paleo == null) {
+    if (nova === 4 || sugar100 > 15) paleo = false;
+    else if (nova != null && nova <= 2 && netCarbs100 < 30) paleo = true;
+    else paleo = null;
+  }
+  return { keto, paleo };
+}
+
+// Combined "Diet Fit" verdict from keto + paleo flags
+function dietFit(food) {
+  const { keto, paleo } = dietFlags(food);
+  if (keto && paleo) return 'green';
+  if (keto || paleo) return 'yellow';
+  if (keto === false && paleo === false) return 'red';
+  return 'gray';
+}
+
+// For a plate (array of {food, grams}), reduce keto/paleo across items.
+// A plate is keto only if every item is keto (or unknown); same for paleo.
+function plateKetoPaleo(plate) {
+  if (!plate || !plate.length) return { keto: null, paleo: null };
+  let keto = true, paleo = true, anyKetoKnown = false, anyPaleoKnown = false;
+  for (const it of plate) {
+    const f = dietFlags(it.food);
+    if (f.keto != null)  anyKetoKnown = true;
+    if (f.paleo != null) anyPaleoKnown = true;
+    if (f.keto === false)  keto = false;
+    if (f.paleo === false) paleo = false;
+  }
+  return {
+    keto:  anyKetoKnown  ? keto  : null,
+    paleo: anyPaleoKnown ? paleo : null,
+  };
+}
+
+/* ============ KETO/PALEO TRAFFIC LIGHT ============
+   Per-serving evaluation. Returns
+   { lights: {netCarbs,sugar,protein,nova,diet}, overall: 'green'|'yellow'|'red' }
+   The "diet" sub-light is the keto+paleo composite and is the strongest signal. */
+function trafficLight(perServing, novaScore, rules, food) {
   rules = rules || state.scoringRules;
   const r = rules;
   const lights = {};
@@ -616,22 +637,38 @@ function trafficLight(perServing, novaScore, rules) {
     return 'red';
   };
 
-  lights.sugar   = downMetric(perServing.sugar, r.sugar);
-  lights.satFat  = downMetric(perServing.satfat, r.satFat);
-  lights.sodium  = downMetric(perServing.sodium, r.sodium);
-  lights.fiber   = upMetric(perServing.fiber, r.fiber);
-  lights.protein = upMetric(perServing.protein, r.protein);
-  lights.nova    = (novaScore == null)
+  const netCarbs = netCarbsOf(perServing);
+  lights.netCarbs = downMetric(netCarbs, r.netCarbs);
+  lights.sugar    = downMetric(perServing.sugar, r.sugar);
+  lights.protein  = upMetric(perServing.protein, r.protein);
+  lights.nova     = (novaScore == null)
     ? 'gray'
     : (novaScore <= r.nova.greenMax ? 'green' : (novaScore <= r.nova.yellowMax ? 'yellow' : 'red'));
+  lights.diet     = food ? dietFit(food) : 'gray';
 
-  // Overall: tally
+  // Overall: diet-fit IS the score. Keto+paleo philosophy drives the kid-light.
+  //   diet=red    → red  (off-plan; never "great choice")
+  //   diet=green  → green (unless major nutrient red, then yellow)
+  //   diet=yellow → yellow (fits one diet, not both)
+  //   diet=gray   → fall back to nutritional tally for unknown packaged foods
   const counts = { green:0, yellow:0, red:0, gray:0 };
   Object.values(lights).forEach(l => counts[l]++);
+  // Exclude diet from the count of "other" lights for tie-breaking
+  const otherReds = counts.red - (lights.diet === 'red' ? 1 : 0);
+
   let overall;
-  if (counts.red >= 3) overall = 'red';
-  else if (counts.green >= 3 && counts.red <= 1) overall = 'green';
-  else overall = 'yellow';
+  if (lights.diet === 'red') {
+    overall = 'red';
+  } else if (lights.diet === 'green') {
+    overall = otherReds >= 2 ? 'yellow' : 'green';
+  } else if (lights.diet === 'yellow') {
+    overall = 'yellow';
+  } else {
+    // Unknown diet flags — tally the other metrics
+    if (counts.red >= 2) overall = 'red';
+    else if (counts.green >= 3 && counts.red === 0) overall = 'green';
+    else overall = 'yellow';
+  }
 
   return { lights, overall, counts };
 }
@@ -777,9 +814,19 @@ async function toggleFavorite(food) {
 async function loadScoringRules() {
   const local = localStorage.getItem('fuel_rules');
   if (local) try { state.scoringRules = JSON.parse(local); } catch(e) {}
-  if (!sb) return;
+  if (!sb) { migrateRulesSchema(); return; }
   const { data } = await sb.from('food_scoring_rules').select('rules').eq('id', 'global').maybeSingle();
   if (data && data.rules) { state.scoringRules = data.rules; localStorage.setItem('fuel_rules', JSON.stringify(data.rules)); }
+  migrateRulesSchema();
+}
+
+// Old schema had {sugar,satFat,sodium,fiber,protein,nova}. New schema needs netCarbs and drops satFat/sodium/fiber.
+// If the new keys aren't present, replace with defaults (also persists the new rules).
+function migrateRulesSchema() {
+  if (!state.scoringRules || !state.scoringRules.netCarbs || !state.scoringRules.sugar || !state.scoringRules.protein || !state.scoringRules.nova) {
+    state.scoringRules = defaultRules();
+    saveScoringRules();
+  }
 }
 
 async function saveScoringRules() {
@@ -978,7 +1025,7 @@ function viewSearch() {
 function resultItemHtml(food) {
   const grams = food.servingG || 100;
   const ps = perServing(food.per100, grams);
-  const tl = trafficLight(ps, food.nova);
+  const tl = trafficLight(ps, food.nova, null, food);
   const img = food.image
     ? `<img src="${food.image}" alt="" />`
     : food.emoji;
@@ -999,10 +1046,9 @@ function viewFoodDetail() {
   if (!food) return viewSearch();
   const grams = state.detailGrams || food.servingG || 100;
   const ps = perServing(food.per100, grams);
-  const tl = trafficLight(ps, food.nova);
-  const nutriBuiltIn = food.nutriGrade;
-  const nutriComputed = nutriScore(food.per100);
-  const nutri = nutriBuiltIn || nutriComputed || null;
+  const tl = trafficLight(ps, food.nova, null, food);
+  const flags = dietFlags(food);
+  const netCarbs = round(netCarbsOf(ps), 1);
   const fav = isFavorite(food);
 
   const lightRow = (key, label, val, unit, light, hint) => `
@@ -1017,7 +1063,7 @@ function viewFoodDetail() {
   `;
 
   const r = state.scoringRules;
-  const explainer = buildKidExplainer(food, ps, tl, nutri);
+  const explainer = buildKidExplainer(food, ps, tl, flags);
 
   return `
     ${viewHeader()}
@@ -1056,9 +1102,12 @@ function viewFoodDetail() {
             <div class="verdict">${verdictText(tl.overall)}</div>
           </div>
           <div class="score-card">
-            <div class="label">Nutri-Score</div>
-            <div class="nutri-badge ${nutri||'unknown'}">${nutri||'?'}</div>
-            <div class="verdict">${nutri?nutriVerdict(nutri):'Not enough data'}</div>
+            <div class="label">Diet Fit</div>
+            <div class="diet-badges">
+              ${dietBadgeHtml('keto', flags.keto)}
+              ${dietBadgeHtml('paleo', flags.paleo)}
+            </div>
+            <div class="verdict">${dietFitVerdict(flags)}</div>
           </div>
         </div>
 
@@ -1071,7 +1120,7 @@ function viewFoodDetail() {
         <div class="macros-grid">
           <div class="macro-card cal"><div class="lbl">Calories</div><div class="val">${ps.kcal} <small>kcal</small></div></div>
           <div class="macro-card protein"><div class="lbl">Protein</div><div class="val">${ps.protein}<small>g</small></div></div>
-          <div class="macro-card carbs"><div class="lbl">Carbs</div><div class="val">${ps.carbs}<small>g</small></div></div>
+          <div class="macro-card carbs"><div class="lbl">Net Carbs</div><div class="val">${netCarbs}<small>g</small></div></div>
           <div class="macro-card fat"><div class="lbl">Fat</div><div class="val">${ps.fat}<small>g</small></div></div>
           <div class="macro-card sugar"><div class="lbl">Sugar</div><div class="val">${ps.sugar}<small>g</small></div></div>
           <div class="macro-card fiber"><div class="lbl">Fiber</div><div class="val">${ps.fiber}<small>g</small></div></div>
@@ -1081,12 +1130,11 @@ function viewFoodDetail() {
 
         <h3 style="margin-top: 20px;">Why this score</h3>
         <div class="lights-detail">
+          ${lightRow('diet','Keto + Paleo fit', dietFitLabel(flags), '', tl.lights.diet, 'Both diets agree = green; only one = yellow')}
+          ${lightRow('netCarbs','Net Carbs', netCarbs, 'g', tl.lights.netCarbs, `Less than ${r.netCarbs.greenMax}g = green (carbs − fiber)`)}
           ${lightRow('sugar','Sugar', ps.sugar, 'g', tl.lights.sugar, `Less than ${r.sugar.greenMax}g = green`)}
-          ${lightRow('satFat','Saturated fat', ps.satfat, 'g', tl.lights.satFat, `Less than ${r.satFat.greenMax}g = green`)}
-          ${lightRow('sodium','Sodium', ps.sodium, 'mg', tl.lights.sodium, `Less than ${r.sodium.greenMax}mg = green`)}
-          ${lightRow('fiber','Fiber', ps.fiber, 'g', tl.lights.fiber, `${r.fiber.greenMin}g or more = green`)}
           ${lightRow('protein','Protein', ps.protein, 'g', tl.lights.protein, `${r.protein.greenMin}g or more = green`)}
-          ${lightRow('nova','Processing', food.nova||'?', '/4', tl.lights.nova, '1-2 = whole/minimal; 4 = ultra-processed')}
+          ${lightRow('nova','Processing', food.nova||'?', '/4', tl.lights.nova, '1-2 = whole; 4 = ultra-processed')}
         </div>
 
         <div class="detail-actions">
@@ -1106,22 +1154,52 @@ function verdictText(light) {
   if (light === 'red') return '✗ Treat only';
   return 'Unknown';
 }
-function nutriVerdict(g) {
-  return { A:'Excellent', B:'Good', C:'Okay', D:'Poor', E:'Very poor' }[g] || '';
+
+function dietBadgeHtml(name, val, mini=false) {
+  const labels = { keto: 'KETO', paleo: 'PALEO' };
+  const icons  = { keto: '🥑',   paleo: '🦴'   };
+  const cls = val === true ? 'yes' : val === false ? 'no' : 'unk';
+  const mark = val === true ? '✓' : val === false ? '✗' : '?';
+  return `<span class="diet-badge ${cls}${mini?' mini':''}"><span class="icon">${icons[name]}</span>${labels[name]} ${mark}</span>`;
 }
 
-function buildKidExplainer(food, ps, tl, nutri) {
-  const pieces = [];
-  if (tl.overall === 'green') pieces.push(`This is a <b>green-light food</b> — good fuel for your body!`);
-  else if (tl.overall === 'yellow') pieces.push(`This is a <b>yellow-light food</b> — okay sometimes, but not every day.`);
-  else if (tl.overall === 'red') pieces.push(`This is a <b>red-light food</b> — fun as a treat, but it doesn't give your body much fuel.`);
+function dietFitVerdict(flags) {
+  const { keto, paleo } = flags;
+  if (keto && paleo) return '✓ Both diets';
+  if (keto && paleo === false) return 'Keto only';
+  if (paleo && keto === false) return 'Paleo only';
+  if (keto === false && paleo === false) return '✗ Off-plan';
+  if (keto || paleo) return 'Partial fit';
+  return 'Unknown';
+}
 
-  if (ps.sugar > 15) pieces.push(`It has <b>${ps.sugar}g of sugar</b> — that's about ${Math.round(ps.sugar/4)} teaspoons. 🍬`);
-  if (ps.protein >= 10) pieces.push(`Lots of <b>protein (${ps.protein}g)</b> — that helps your muscles grow strong. 💪`);
-  if (ps.fiber >= 3) pieces.push(`Good <b>fiber (${ps.fiber}g)</b> — it keeps your tummy happy. 🌾`);
-  if (food.nova === 4) pieces.push(`This is <b>ultra-processed</b> — made in a factory with lots of ingredients you can't pronounce. 🏭`);
-  if (food.nova === 1) pieces.push(`This is a <b>whole food</b> — straight from nature! 🌱`);
-  if (ps.sodium > 600) pieces.push(`It's <b>really salty (${ps.sodium}mg sodium)</b>. ⚠️`);
+function dietFitLabel(flags) {
+  return dietFitVerdict(flags);
+}
+
+function buildKidExplainer(food, ps, tl, flags) {
+  const pieces = [];
+
+  // Lead with verdict — always matches the score
+  if (tl.overall === 'green') pieces.push(`<b>Great choice!</b> This food fits the plan.`);
+  else if (tl.overall === 'yellow') pieces.push(`<b>Okay sometimes</b> — not every day.`);
+  else pieces.push(`<b>Treat only</b> — fun once in a while, not regular fuel.`);
+
+  // Keto/Paleo line
+  if (flags) {
+    if (flags.keto && flags.paleo) pieces.push(`✓ Works for both Keto and Paleo.`);
+    else if (flags.keto)  pieces.push(`✓ Keto-friendly. ✗ Not paleo.`);
+    else if (flags.paleo) pieces.push(`✓ Paleo-friendly. ✗ Not keto.`);
+    else if (flags.keto === false && flags.paleo === false) pieces.push(`✗ Not keto. ✗ Not paleo.`);
+  }
+
+  // Facts gated to never contradict the verdict
+  const netCarbs = round(netCarbsOf(ps), 1);
+  if (tl.overall !== 'green' && netCarbs >= 15) pieces.push(`High net carbs: <b>${netCarbs}g</b> can spike blood sugar.`);
+  if (tl.overall !== 'green' && ps.sugar >= 10) pieces.push(`Lots of sugar: <b>${ps.sugar}g</b> ≈ ${Math.round(ps.sugar/4)} tsp. 🍬`);
+  if (tl.overall === 'green' && ps.protein >= 10) pieces.push(`Strong protein (<b>${ps.protein}g</b>) for muscles. 💪`);
+  if (food.nova === 4) pieces.push(`Ultra-processed — made in a factory. 🏭`);
+  if (tl.overall === 'green' && food.nova === 1) pieces.push(`Whole food — straight from nature! 🌱`);
 
   return pieces.join(' ');
 }
@@ -1139,8 +1217,9 @@ function viewCompare() {
     `).join('');
     const totals = plateTotals(plate);
     const novaWorst = plate.length ? Math.max(...plate.map(it => it.food.nova || 1)) : null;
-    const tl = trafficLight(totals, novaWorst);
-    const nutri = plateNutriScore(plate);
+    const plateFlags = plateKetoPaleo(plate);
+    const tl = trafficLight(totals, novaWorst, null, plateFlags);
+    const netCarbs = round(netCarbsOf(totals), 1);
     return `
       <div class="plate ${which.toLowerCase()}">
         <div class="plate-head">
@@ -1154,7 +1233,7 @@ function viewCompare() {
           <div class="plate-totals">
             <div class="row cal"><span class="lbl">Calories</span><span class="leader"></span><span class="v">${totals.kcal} kcal</span></div>
             <div class="row"><span class="lbl">Protein</span><span class="leader"></span><span class="v">${totals.protein}g</span></div>
-            <div class="row"><span class="lbl">Carbs</span><span class="leader"></span><span class="v">${totals.carbs}g</span></div>
+            <div class="row"><span class="lbl">Net Carbs</span><span class="leader"></span><span class="v">${netCarbs}g</span></div>
             <div class="row"><span class="lbl">Sugar</span><span class="leader"></span><span class="v">${totals.sugar}g</span></div>
             <div class="row"><span class="lbl">Fiber</span><span class="leader"></span><span class="v">${totals.fiber}g</span></div>
             <div class="row"><span class="lbl">Fat</span><span class="leader"></span><span class="v">${totals.fat}g</span></div>
@@ -1168,9 +1247,12 @@ function viewCompare() {
               <div class="verdict-mid">${verdictText(tl.overall)}</div>
             </div>
             <div class="plate-score-card">
-              <div class="label">Nutri-Score</div>
-              <div class="nutri-mid ${nutri||'unknown'}">${nutri||'?'}</div>
-              <div class="verdict-mid">${nutri?nutriVerdict(nutri):'—'}</div>
+              <div class="label">Diet Fit</div>
+              <div class="diet-badges">
+                ${dietBadgeHtml('keto', plateFlags.keto, true)}
+                ${dietBadgeHtml('paleo', plateFlags.paleo, true)}
+              </div>
+              <div class="verdict-mid">${dietFitVerdict(plateFlags)}</div>
             </div>
           </div>
           <button class="save-meal-btn" onclick="window.openSaveMeal('${which}')">💾 Save Plate ${which} as Meal</button>
@@ -1212,55 +1294,54 @@ function plateTotals(plate) {
   return t;
 }
 
-function plateNutriScore(plate) {
-  if (!plate || !plate.length) return null;
-  const totalGrams = plate.reduce((s, it) => s + (it.grams || 0), 0);
-  if (totalGrams <= 0) return null;
-  const totals = plateTotals(plate);
-  const factor = 100 / totalGrams;
-  return nutriScore({
-    kcal:    totals.kcal    * factor,
-    protein: totals.protein * factor,
-    carbs:   totals.carbs   * factor,
-    sugar:   totals.sugar   * factor,
-    fiber:   totals.fiber   * factor,
-    fat:     totals.fat     * factor,
-    satfat:  totals.satfat  * factor,
-    sodium:  totals.sodium  * factor,
-  });
-}
-
 function renderWinner() {
   const a = plateTotals(state.plateA);
   const b = plateTotals(state.plateB);
   const novaA = Math.max(...state.plateA.map(it => it.food.nova || 1));
   const novaB = Math.max(...state.plateB.map(it => it.food.nova || 1));
-  const tlA = trafficLight(a, novaA);
-  const tlB = trafficLight(b, novaB);
+  const flagsA = plateKetoPaleo(state.plateA);
+  const flagsB = plateKetoPaleo(state.plateB);
+  const tlA = trafficLight(a, novaA, null, flagsA);
+  const tlB = trafficLight(b, novaB, null, flagsB);
+  const netA = round(netCarbsOf(a), 1);
+  const netB = round(netCarbsOf(b), 1);
 
-  // For each metric, mark winner (lower = better unless fiber/protein)
+  // Comparison rows — focused on keto/paleo-relevant metrics
   const rows = [
-    { key:'kcal',    lbl:'Calories', better:'lower', unit:' kcal' },
-    { key:'protein', lbl:'Protein',  better:'higher', unit:'g' },
-    { key:'sugar',   lbl:'Sugar',    better:'lower', unit:'g' },
-    { key:'fiber',   lbl:'Fiber',    better:'higher', unit:'g' },
-    { key:'satfat',  lbl:'Sat Fat',  better:'lower', unit:'g' },
-    { key:'sodium',  lbl:'Sodium',   better:'lower', unit:'mg' },
+    { key:'kcal',     lbl:'Calories',  better:'lower',  unit:' kcal', av:a.kcal,    bv:b.kcal    },
+    { key:'protein',  lbl:'Protein',   better:'higher', unit:'g',     av:a.protein, bv:b.protein },
+    { key:'netCarbs', lbl:'Net Carbs', better:'lower',  unit:'g',     av:netA,      bv:netB      },
+    { key:'sugar',    lbl:'Sugar',     better:'lower',  unit:'g',     av:a.sugar,   bv:b.sugar   },
+    { key:'fiber',    lbl:'Fiber',     better:'higher', unit:'g',     av:a.fiber,   bv:b.fiber   },
+    { key:'satfat',   lbl:'Sat Fat',   better:'lower',  unit:'g',     av:a.satfat,  bv:b.satfat  },
   ];
   const winnerRows = rows.map(r => {
-    const av = a[r.key], bv = b[r.key];
     let aClass = '', bClass = '';
-    if (av !== bv) {
-      const aWins = r.better === 'lower' ? av < bv : av > bv;
+    if (r.av !== r.bv) {
+      const aWins = r.better === 'lower' ? r.av < r.bv : r.av > r.bv;
       aClass = aWins ? 'win' : 'lose';
       bClass = aWins ? 'lose' : 'win';
     }
     return `<div class="winner-row">
-      <span class="a-side v ${aClass}">${av}${r.unit}</span>
+      <span class="a-side v ${aClass}">${r.av}${r.unit}</span>
       <span class="metric">${r.lbl}</span>
-      <span class="b-side v ${bClass}">${bv}${r.unit}</span>
+      <span class="b-side v ${bClass}">${r.bv}${r.unit}</span>
     </div>`;
   }).join('');
+
+  // Diet-fit row at the top
+  const fitA = dietFitVerdict(flagsA);
+  const fitB = dietFitVerdict(flagsB);
+  const fitOrder = { 'green':3,'yellow':2,'red':1,'gray':0 };
+  const fitAScore = fitOrder[dietFit({keto: flagsA.keto, paleo: flagsA.paleo})];
+  const fitBScore = fitOrder[dietFit({keto: flagsB.keto, paleo: flagsB.paleo})];
+  const fitARow = fitAScore > fitBScore ? 'win' : (fitAScore < fitBScore ? 'lose' : '');
+  const fitBRow = fitBScore > fitAScore ? 'win' : (fitBScore < fitAScore ? 'lose' : '');
+  const dietRow = `<div class="winner-row">
+    <span class="a-side v ${fitARow}">${fitA}</span>
+    <span class="metric">Diet Fit</span>
+    <span class="b-side v ${fitBRow}">${fitB}</span>
+  </div>`;
 
   // Overall winner
   let summary;
@@ -1272,7 +1353,7 @@ function renderWinner() {
   return `
     <div class="comparison-winner">
       <h3>🏆 Side by side</h3>
-      <div class="winner-rows">${winnerRows}</div>
+      <div class="winner-rows">${dietRow}${winnerRows}</div>
       <div style="margin-top: 12px; font-size: 14px; text-align: center;">${summary}</div>
     </div>
   `;
@@ -1340,8 +1421,8 @@ function mealCardHtml(fav) {
   const m = fav.food_data;
   const totals = plateTotals(m.items);
   const novaWorst = m.items.length ? Math.max(...m.items.map(it => it.food.nova || 1)) : null;
-  const tl = trafficLight(totals, novaWorst);
-  const nutri = plateNutriScore(m.items);
+  const flags = plateKetoPaleo(m.items);
+  const tl = trafficLight(totals, novaWorst, null, flags);
   const itemSummary = m.items.map(it => `${it.food.emoji || ''} ${escape(it.food.name)}`).join(' · ');
   return `
     <div class="meal-card" onclick="window.openMealDetail('${fav.id}')">
@@ -1349,7 +1430,8 @@ function mealCardHtml(fav) {
       <div class="meal-items">${itemSummary}</div>
       <div class="meal-footer">
         <div class="light-pill ${tl.overall}"></div>
-        <div class="nutri-tiny ${nutri||'unknown'}">${nutri||'?'}</div>
+        ${dietBadgeHtml('keto', flags.keto, true)}
+        ${dietBadgeHtml('paleo', flags.paleo, true)}
         <div class="cal-total">${totals.kcal} kcal</div>
       </div>
     </div>
@@ -1394,12 +1476,13 @@ function viewAdmin() {
 
       <div class="panel admin-section">
         <h3>Traffic-Light Rules <small style="color: var(--muted); font-weight: 500;">(per serving)</small></h3>
-        ${thresholdRow('sugar', 'Sugar', 'less than X = green', r.sugar, 'down', 'g')}
-        ${thresholdRow('satFat', 'Saturated Fat', 'less than X = green', r.satFat, 'down', 'g')}
-        ${thresholdRow('sodium', 'Sodium', 'less than X = green', r.sodium, 'down', 'mg')}
-        ${thresholdRow('fiber', 'Fiber', 'X or more = green', r.fiber, 'up', 'g')}
+        ${thresholdRow('netCarbs', 'Net Carbs', 'less than X = green (carbs − fiber, the keto metric)', r.netCarbs, 'down', 'g')}
+        ${thresholdRow('sugar', 'Sugar', 'less than X = green (both diets avoid)', r.sugar, 'down', 'g')}
         ${thresholdRow('protein', 'Protein', 'X or more = green', r.protein, 'up', 'g')}
-        ${thresholdRow('nova', 'Processing (NOVA)', 'lower X = green; 4 is worst', r.nova, 'down', '/4')}
+        ${thresholdRow('nova', 'Processing (NOVA)', 'lower X = green; 4 is ultra-processed', r.nova, 'down', '/4')}
+        <p style="color: var(--muted); font-size: 12px; line-height: 1.5; margin: 10px 0 0;">
+          <b>Keto + Paleo fit</b> is a 5th metric — green if both compatible, yellow if one, red if neither. Not user-adjustable.
+        </p>
         <button class="btn-secondary" style="margin-top: 12px;" onclick="window.resetRules()">Reset to defaults</button>
       </div>
 
@@ -1809,8 +1892,9 @@ function openMealDetail(favId) {
   const m = fav.food_data;
   const totals = plateTotals(m.items);
   const novaWorst = Math.max(...m.items.map(it => it.food.nova || 1));
-  const tl = trafficLight(totals, novaWorst);
-  const nutri = plateNutriScore(m.items);
+  const flags = plateKetoPaleo(m.items);
+  const tl = trafficLight(totals, novaWorst, null, flags);
+  const netCarbs = round(netCarbsOf(totals), 1);
   const itemsHtml = m.items.map(it => `
     <div class="plate-item">
       <span style="font-size: 18px;">${it.food.emoji||'🍽️'}</span>
@@ -1827,10 +1911,10 @@ function openMealDetail(favId) {
     <div class="plate-totals">
       <div class="row cal"><span class="lbl">Calories</span><span class="leader"></span><span class="v">${totals.kcal} kcal</span></div>
       <div class="row"><span class="lbl">Protein</span><span class="leader"></span><span class="v">${totals.protein}g</span></div>
+      <div class="row"><span class="lbl">Net Carbs</span><span class="leader"></span><span class="v">${netCarbs}g</span></div>
       <div class="row"><span class="lbl">Sugar</span><span class="leader"></span><span class="v">${totals.sugar}g</span></div>
       <div class="row"><span class="lbl">Fiber</span><span class="leader"></span><span class="v">${totals.fiber}g</span></div>
       <div class="row"><span class="lbl">Sat Fat</span><span class="leader"></span><span class="v">${totals.satfat}g</span></div>
-      <div class="row"><span class="lbl">Sodium</span><span class="leader"></span><span class="v">${totals.sodium}mg</span></div>
     </div>
     <div class="plate-scores">
       <div class="plate-score-card">
@@ -1839,9 +1923,12 @@ function openMealDetail(favId) {
         <div class="verdict-mid">${verdictText(tl.overall)}</div>
       </div>
       <div class="plate-score-card">
-        <div class="label">Nutri-Score</div>
-        <div class="nutri-mid ${nutri||'unknown'}">${nutri||'?'}</div>
-        <div class="verdict-mid">${nutri?nutriVerdict(nutri):'—'}</div>
+        <div class="label">Diet Fit</div>
+        <div class="diet-badges">
+          ${dietBadgeHtml('keto', flags.keto, true)}
+          ${dietBadgeHtml('paleo', flags.paleo, true)}
+        </div>
+        <div class="verdict-mid">${dietFitVerdict(flags)}</div>
       </div>
     </div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
