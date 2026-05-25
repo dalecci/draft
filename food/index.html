@@ -296,11 +296,34 @@
   .plate-item .remove { color: var(--red); font-size: 16px; opacity: 0.6; padding: 0 4px; }
   .plate-item .remove:hover { opacity: 1; }
   .plate-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 14px 0; font-style: italic; }
-  .plate-totals { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; margin-top: 10px; border-top: 1px dashed var(--border-strong); font-size: 12px; }
-  .plate-totals .row { display: flex; justify-content: space-between; }
-  .plate-totals .row .v { font-weight: 700; }
+  .plate-totals { display: flex; flex-direction: column; gap: 6px; padding-top: 10px; margin-top: 10px; border-top: 1px dashed var(--border-strong); font-size: 12px; }
+  .plate-totals .row { display: flex; align-items: baseline; gap: 4px; }
+  .plate-totals .row .lbl { color: var(--ink-2); flex-shrink: 0; }
+  .plate-totals .row .leader { flex: 1; border-bottom: 1px dotted var(--muted-2); min-width: 10px; align-self: flex-end; margin: 0 4px 4px; opacity: 0.5; }
+  .plate-totals .row .v { font-weight: 700; flex-shrink: 0; color: var(--ink); }
   .plate-totals .row.cal .v { color: var(--orange); font-size: 16px; }
-  .plate-light { display: flex; align-items: center; gap: 8px; justify-content: center; padding: 10px; margin-top: 10px; background: var(--panel-2); border-radius: 10px; font-weight: 700; font-size: 13px; }
+  .plate-totals .row.cal .lbl { font-weight: 700; color: var(--ink); }
+
+  /* Side-by-side scores: kid light + nutri badge */
+  .plate-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .plate-score-card { padding: 10px 8px; border-radius: 10px; background: var(--panel-2); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .plate-score-card .label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .plate-score-card .light-mid { width: 36px; height: 36px; border-radius: 50%; }
+  .light-mid.green { background: var(--green); box-shadow: 0 0 16px var(--green-glow), inset 0 0 0 3px rgba(255,255,255,0.15); }
+  .light-mid.yellow { background: var(--yellow); box-shadow: 0 0 16px var(--yellow-glow), inset 0 0 0 3px rgba(255,255,255,0.15); }
+  .light-mid.red { background: var(--red); box-shadow: 0 0 16px var(--red-glow), inset 0 0 0 3px rgba(255,255,255,0.15); }
+  .light-mid.gray { background: var(--muted-2); }
+  .nutri-mid { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; color: white; }
+  .nutri-mid.A { background: #1f7a3d; }
+  .nutri-mid.B { background: #84bd00; color: #1a3000; }
+  .nutri-mid.C { background: #ffc524; color: #4a3500; }
+  .nutri-mid.D { background: #ed8b00; }
+  .nutri-mid.E { background: #d62a1f; }
+  .nutri-mid.unknown { background: var(--muted-2); font-size: 12px; }
+  .plate-score-card .verdict-mid { font-size: 11px; font-weight: 700; color: var(--ink-2); text-align: center; }
+
+  .save-meal-btn { width: 100%; margin-top: 8px; padding: 10px; border-radius: 10px; background: rgba(236, 72, 153, 0.12); border: 1px dashed var(--pink); color: var(--pink); font-weight: 700; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .save-meal-btn:hover { background: var(--pink); color: white; border-style: solid; }
 
   .comparison-winner { margin-top: 16px; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(168,85,247,0.08)); border: 1px solid var(--accent); }
   .comparison-winner h3 { color: var(--accent-2); margin: 0 0 10px; }
@@ -319,9 +342,26 @@
 
   /* ============ FAVORITES ============ */
   .favorites-section { margin-bottom: 24px; }
+  .favorites-section h3 { display: flex; align-items: center; gap: 8px; }
+  .favorites-section h3 .count { font-size: 11px; color: var(--muted); background: var(--panel-2); padding: 2px 8px; border-radius: 99px; letter-spacing: 0; }
   .favorites-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
   .empty-state { padding: 40px 20px; text-align: center; color: var(--muted); }
   .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+
+  .meal-card { padding: 14px; border-radius: 14px; background: var(--panel-2); border: 1px solid var(--border-strong); cursor: pointer; transition: all 0.15s; }
+  .meal-card:hover { border-color: var(--pink); transform: translateY(-1px); }
+  .meal-card .meal-name { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .meal-card .meal-items { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .meal-card .meal-footer { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); }
+  .meal-card .meal-footer .light-pill { width: 14px; height: 14px; }
+  .meal-card .meal-footer .nutri-tiny { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; color: white; }
+  .meal-card .meal-footer .nutri-tiny.A { background: #1f7a3d; }
+  .meal-card .meal-footer .nutri-tiny.B { background: #84bd00; color: #1a3000; }
+  .meal-card .meal-footer .nutri-tiny.C { background: #ffc524; color: #4a3500; }
+  .meal-card .meal-footer .nutri-tiny.D { background: #ed8b00; }
+  .meal-card .meal-footer .nutri-tiny.E { background: #d62a1f; }
+  .meal-card .meal-footer .nutri-tiny.unknown { background: var(--muted-2); font-size: 9px; }
+  .meal-card .meal-footer .cal-total { margin-left: auto; font-weight: 700; color: var(--orange); font-size: 14px; }
 
   /* ============ ADMIN ============ */
   .pin-input { width: 100%; padding: 18px; font-size: 24px; text-align: center; letter-spacing: 0.5em; background: var(--panel-2); border: 1px solid var(--border-strong); border-radius: 12px; outline: none; }
@@ -1100,6 +1140,7 @@ function viewCompare() {
     const totals = plateTotals(plate);
     const novaWorst = plate.length ? Math.max(...plate.map(it => it.food.nova || 1)) : null;
     const tl = trafficLight(totals, novaWorst);
+    const nutri = plateNutriScore(plate);
     return `
       <div class="plate ${which.toLowerCase()}">
         <div class="plate-head">
@@ -1111,16 +1152,28 @@ function viewCompare() {
         </div>
         ${plate.length ? `
           <div class="plate-totals">
-            <div class="row cal"><span>Calories</span><span class="v">${totals.kcal} kcal</span></div>
-            <div class="row"><span>Protein</span><span class="v">${totals.protein}g</span></div>
-            <div class="row"><span>Carbs</span><span class="v">${totals.carbs}g</span></div>
-            <div class="row"><span>Sugar</span><span class="v">${totals.sugar}g</span></div>
-            <div class="row"><span>Fiber</span><span class="v">${totals.fiber}g</span></div>
-            <div class="row"><span>Fat</span><span class="v">${totals.fat}g</span></div>
-            <div class="row"><span>Sat Fat</span><span class="v">${totals.satfat}g</span></div>
-            <div class="row"><span>Sodium</span><span class="v">${totals.sodium}mg</span></div>
+            <div class="row cal"><span class="lbl">Calories</span><span class="leader"></span><span class="v">${totals.kcal} kcal</span></div>
+            <div class="row"><span class="lbl">Protein</span><span class="leader"></span><span class="v">${totals.protein}g</span></div>
+            <div class="row"><span class="lbl">Carbs</span><span class="leader"></span><span class="v">${totals.carbs}g</span></div>
+            <div class="row"><span class="lbl">Sugar</span><span class="leader"></span><span class="v">${totals.sugar}g</span></div>
+            <div class="row"><span class="lbl">Fiber</span><span class="leader"></span><span class="v">${totals.fiber}g</span></div>
+            <div class="row"><span class="lbl">Fat</span><span class="leader"></span><span class="v">${totals.fat}g</span></div>
+            <div class="row"><span class="lbl">Sat Fat</span><span class="leader"></span><span class="v">${totals.satfat}g</span></div>
+            <div class="row"><span class="lbl">Sodium</span><span class="leader"></span><span class="v">${totals.sodium}mg</span></div>
           </div>
-          <div class="plate-light"><div class="light-pill ${tl.overall}"></div><span>${verdictText(tl.overall)}</span></div>
+          <div class="plate-scores">
+            <div class="plate-score-card">
+              <div class="label">Kid Score</div>
+              <div class="light-mid ${tl.overall}"></div>
+              <div class="verdict-mid">${verdictText(tl.overall)}</div>
+            </div>
+            <div class="plate-score-card">
+              <div class="label">Nutri-Score</div>
+              <div class="nutri-mid ${nutri||'unknown'}">${nutri||'?'}</div>
+              <div class="verdict-mid">${nutri?nutriVerdict(nutri):'—'}</div>
+            </div>
+          </div>
+          <button class="save-meal-btn" onclick="window.openSaveMeal('${which}')">💾 Save Plate ${which} as Meal</button>
         ` : ''}
       </div>
     `;
@@ -1157,6 +1210,24 @@ function plateTotals(plate) {
   }
   for (const k of Object.keys(t)) t[k] = round(t[k], k==='kcal'||k==='sodium'?0:1);
   return t;
+}
+
+function plateNutriScore(plate) {
+  if (!plate || !plate.length) return null;
+  const totalGrams = plate.reduce((s, it) => s + (it.grams || 0), 0);
+  if (totalGrams <= 0) return null;
+  const totals = plateTotals(plate);
+  const factor = 100 / totalGrams;
+  return nutriScore({
+    kcal:    totals.kcal    * factor,
+    protein: totals.protein * factor,
+    carbs:   totals.carbs   * factor,
+    sugar:   totals.sugar   * factor,
+    fiber:   totals.fiber   * factor,
+    fat:     totals.fat     * factor,
+    satfat:  totals.satfat  * factor,
+    sodium:  totals.sodium  * factor,
+  });
 }
 
 function renderWinner() {
@@ -1230,16 +1301,58 @@ function renderSavedComparisons() {
 function viewFavorites() {
   if (!state.activeKidId) return viewLogin();
   const activeKid = state.kids.find(k => k.id === state.activeKidId);
-  const items = state.favorites.length
-    ? state.favorites.map(f => resultItemHtml(f.food_data)).join('')
-    : `<div class="empty-state"><div class="icon">❤️</div>No favorites yet.<br>Tap the heart on any food to save it.</div>`;
+
+  const meals = state.favorites.filter(f => f.food_data?.type === 'meal');
+  const foods = state.favorites.filter(f => f.food_data?.type !== 'meal');
+
+  const mealCards = meals.map(m => mealCardHtml(m)).join('');
+  const foodItems = foods.map(f => resultItemHtml(f.food_data)).join('');
+
+  const mealsSection = meals.length
+    ? `<div class="favorites-section">
+         <h3>🍽️ Saved Meals <span class="count">${meals.length}</span></h3>
+         <div class="favorites-list">${mealCards}</div>
+       </div>`
+    : '';
+  const foodsSection = foods.length
+    ? `<div class="favorites-section">
+         <h3>🍎 Favorite Foods <span class="count">${foods.length}</span></h3>
+         <div class="results-list">${foodItems}</div>
+       </div>`
+    : '';
+  const empty = (!meals.length && !foods.length)
+    ? `<div class="empty-state"><div class="icon">❤️</div>No favorites yet.<br>Tap the heart on any food, or save a plate from Compare.</div>`
+    : '';
+
   return `
     ${viewHeader()}
     <main>
       <h2>${escape(activeKid?.name || 'Kid')}'s Favorites</h2>
-      <div class="results-list">${items}</div>
+      ${mealsSection}
+      ${foodsSection}
+      ${empty}
     </main>
     ${viewBottomNav()}
+  `;
+}
+
+function mealCardHtml(fav) {
+  const m = fav.food_data;
+  const totals = plateTotals(m.items);
+  const novaWorst = m.items.length ? Math.max(...m.items.map(it => it.food.nova || 1)) : null;
+  const tl = trafficLight(totals, novaWorst);
+  const nutri = plateNutriScore(m.items);
+  const itemSummary = m.items.map(it => `${it.food.emoji || ''} ${escape(it.food.name)}`).join(' · ');
+  return `
+    <div class="meal-card" onclick="window.openMealDetail('${fav.id}')">
+      <div class="meal-name">🍽️ ${escape(m.name || 'Untitled meal')}</div>
+      <div class="meal-items">${itemSummary}</div>
+      <div class="meal-footer">
+        <div class="light-pill ${tl.overall}"></div>
+        <div class="nutri-tiny ${nutri||'unknown'}">${nutri||'?'}</div>
+        <div class="cal-total">${totals.kcal} kcal</div>
+      </div>
+    </div>
   `;
 }
 
@@ -1648,6 +1761,118 @@ function loadCmp(id) {
   render();
 }
 window.loadCmp = loadCmp;
+
+function openSaveMeal(which) {
+  const plate = which === 'A' ? state.plateA : state.plateB;
+  if (!plate.length) { toast('Plate ' + which + ' is empty', 'error'); return; }
+  if (!state.activeKidId) { toast('Pick a kid first', 'error'); return; }
+  const itemNames = plate.map(it => it.food.name).join(', ');
+  const suggestion = plate.length === 1 ? plate[0].food.name : `${plate.length}-item meal`;
+  openModal(`
+    <div class="modal-head"><h2>Save Plate ${which}</h2><button class="modal-close" onclick="closeModal()">Cancel</button></div>
+    <p style="color: var(--muted); font-size: 13px; margin: -4px 0 12px;">${escape(itemNames)}</p>
+    <div class="form-row">
+      <label>Meal Name</label>
+      <input id="meal-name" placeholder="e.g. PB&amp;J Lunch, Breakfast Combo" value="${escape(suggestion)}" autofocus />
+    </div>
+    <button class="btn-primary" style="width:100%;" onclick="window.doSaveMeal('${which}')">Save Meal</button>
+  `);
+}
+window.openSaveMeal = openSaveMeal;
+
+async function doSaveMeal(which) {
+  const name = document.getElementById('meal-name').value.trim();
+  if (!name) { toast('Enter a name', 'error'); return; }
+  const plate = which === 'A' ? state.plateA : state.plateB;
+  const row = {
+    id: uuid(),
+    kid_id: state.activeKidId,
+    food_key: 'meal-' + uuid(),
+    food_data: { type: 'meal', name, items: JSON.parse(JSON.stringify(plate)) },
+    created_at: new Date().toISOString(),
+  };
+  state.favorites.push(row);
+  localStorage.setItem('fuel_favs_' + state.activeKidId, JSON.stringify(state.favorites));
+  if (sb) {
+    const { error } = await sb.from('food_favorites').insert(row);
+    if (error) toast('Saved offline: ' + error.message, 'error');
+  }
+  closeModal();
+  toast('Saved meal: ' + name, 'success');
+  render();
+}
+window.doSaveMeal = doSaveMeal;
+
+function openMealDetail(favId) {
+  const fav = state.favorites.find(f => f.id === favId);
+  if (!fav) return;
+  const m = fav.food_data;
+  const totals = plateTotals(m.items);
+  const novaWorst = Math.max(...m.items.map(it => it.food.nova || 1));
+  const tl = trafficLight(totals, novaWorst);
+  const nutri = plateNutriScore(m.items);
+  const itemsHtml = m.items.map(it => `
+    <div class="plate-item">
+      <span style="font-size: 18px;">${it.food.emoji||'🍽️'}</span>
+      <span class="name">${escape(it.food.name)}</span>
+      <span class="qty">${it.grams}g</span>
+    </div>
+  `).join('');
+  openModal(`
+    <div class="modal-head">
+      <h2>🍽️ ${escape(m.name)}</h2>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+    <div class="plate-items" style="margin-bottom: 12px;">${itemsHtml}</div>
+    <div class="plate-totals">
+      <div class="row cal"><span class="lbl">Calories</span><span class="leader"></span><span class="v">${totals.kcal} kcal</span></div>
+      <div class="row"><span class="lbl">Protein</span><span class="leader"></span><span class="v">${totals.protein}g</span></div>
+      <div class="row"><span class="lbl">Sugar</span><span class="leader"></span><span class="v">${totals.sugar}g</span></div>
+      <div class="row"><span class="lbl">Fiber</span><span class="leader"></span><span class="v">${totals.fiber}g</span></div>
+      <div class="row"><span class="lbl">Sat Fat</span><span class="leader"></span><span class="v">${totals.satfat}g</span></div>
+      <div class="row"><span class="lbl">Sodium</span><span class="leader"></span><span class="v">${totals.sodium}mg</span></div>
+    </div>
+    <div class="plate-scores">
+      <div class="plate-score-card">
+        <div class="label">Kid Score</div>
+        <div class="light-mid ${tl.overall}"></div>
+        <div class="verdict-mid">${verdictText(tl.overall)}</div>
+      </div>
+      <div class="plate-score-card">
+        <div class="label">Nutri-Score</div>
+        <div class="nutri-mid ${nutri||'unknown'}">${nutri||'?'}</div>
+        <div class="verdict-mid">${nutri?nutriVerdict(nutri):'—'}</div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+      <button class="btn-a" onclick="window.loadMealInto('${favId}','A')">Load to Plate A</button>
+      <button class="btn-b" onclick="window.loadMealInto('${favId}','B')">Load to Plate B</button>
+    </div>
+    <button class="btn-danger" style="width:100%; margin-top: 8px;" onclick="window.deleteMeal('${favId}')">🗑 Delete Meal</button>
+  `);
+}
+window.openMealDetail = openMealDetail;
+
+function loadMealInto(favId, which) {
+  const fav = state.favorites.find(f => f.id === favId);
+  if (!fav) return;
+  const items = JSON.parse(JSON.stringify(fav.food_data.items));
+  if (which === 'A') state.plateA = items; else state.plateB = items;
+  closeModal();
+  toast(`Loaded "${fav.food_data.name}" to Plate ${which}`, 'success');
+  go('compare');
+}
+window.loadMealInto = loadMealInto;
+
+async function deleteMeal(favId) {
+  state.favorites = state.favorites.filter(f => f.id !== favId);
+  localStorage.setItem('fuel_favs_' + state.activeKidId, JSON.stringify(state.favorites));
+  if (sb) await sb.from('food_favorites').delete().eq('id', favId);
+  closeModal();
+  toast('Meal deleted', 'success');
+  render();
+}
+window.deleteMeal = deleteMeal;
 
 async function deleteCmp(id) {
   state.comparisons = state.comparisons.filter(c => c.id !== id);
