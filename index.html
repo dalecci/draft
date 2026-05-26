@@ -518,6 +518,14 @@
     font-weight: 700;
   }
 
+  /* ---------- Draw mode ---------- */
+  button.draw-active {
+    background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%) !important;
+    color: #0a0a0a !important; border-color: transparent !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px var(--gold-glow) !important;
+  }
+
   /* ---------- SVG entity styles ---------- */
   .player { cursor: grab; transition: filter 0.15s; }
   .player:hover { filter: drop-shadow(0 0 6px var(--gold-glow)); }
@@ -825,17 +833,20 @@
 
     <!-- Zones (defensive areas, lanes, freehand annotations) — added 2026-05-19 -->
     <div class="section">
-      <div class="section-title">Zones &amp; Annotations</div>
+      <div class="section-title">
+        <span>Zones &amp; Annotations</span>
+        <button class="small-btn danger" id="clearFreehandBtn" title="Clear all freehand drawings">Clear drawings</button>
+      </div>
       <div class="row" style="gap:6px;flex-wrap:wrap">
         <button class="ghost" id="addOvalBtn" type="button" title="Add an oval zone">⬭ Oval</button>
         <button class="ghost" id="addRectBtn" type="button" title="Add a rectangle zone">▭ Rect</button>
-        <button class="ghost" id="addFreeBtn" type="button" title="Free-draw a path">✏️ Draw</button>
+        <button class="ghost" id="addFreeBtn" type="button" title="Free-draw — click again or press Esc to stop">✏️ Draw</button>
       </div>
       <div class="row" id="zoneColorPalette" style="gap:5px;margin-top:8px;flex-wrap:wrap">
         <!-- color swatches injected by JS -->
       </div>
       <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
-        Static shapes on the court — defensive zones, lanes, areas. Tap to select &amp; drag to move; corner handles to resize. They save with the play.
+        <b>Draw:</b> tap ✏️ then drag as many lines as you want. Tap ✏️ again or press <b>Esc</b> to stop. Tap a shape to select &amp; delete.
       </div>
     </div>
 
@@ -1174,7 +1185,7 @@
     });
   }
 
-  function renderAll() { renderEntities(); renderPaths(); renderSteps(); renderZones(); }
+  function renderAll() { renderEntities(); renderPaths(); renderSteps(); renderZones(); updateDrawBtn(); }
 
   // ──────────────────────── Zones (defensive areas, lanes, freehand) ────────────────────────
   function renderZones() {
@@ -1404,8 +1415,6 @@
   function finishFreeDraw(evt) {
     if (!freeDraw.active) return;
     freeDraw.active = false;
-    document.body.classList.remove('pm-drawing');
-    state.drawMode = false;
     const preview = document.getElementById('freeDrawPreview');
     const d = preview.getAttribute('d');
     preview.setAttribute('d', '');
@@ -1413,9 +1422,29 @@
     const z = { id: newZoneId(), shape: 'freehand', d, color: state.zoneColor };
     pushHistory();
     state.zones.push(z);
-    state.selectedZoneId = z.id;
+    // Don't auto-select or exit draw mode — user can keep drawing immediately
     renderZones();
     zonesChanged();
+  }
+
+  function exitDrawMode() {
+    state.drawMode = false;
+    freeDraw.active = false;
+    document.body.classList.remove('pm-drawing');
+    document.getElementById('freeDrawPreview').setAttribute('d', '');
+    updateDrawBtn();
+  }
+
+  function updateDrawBtn() {
+    const btn = document.getElementById('addFreeBtn');
+    if (!btn) return;
+    if (state.drawMode) {
+      btn.classList.add('draw-active');
+      btn.textContent = '✏️ Stop Drawing';
+    } else {
+      btn.classList.remove('draw-active');
+      btn.textContent = '✏️ Draw';
+    }
   }
 
   // ──────────────────────── End zones module ────────────────────────
@@ -2096,7 +2125,27 @@
   // Zone toolbar buttons
   document.getElementById('addOvalBtn').addEventListener('click', () => addZone('oval'));
   document.getElementById('addRectBtn').addEventListener('click', () => addZone('rect'));
-  document.getElementById('addFreeBtn').addEventListener('click', () => addZone('freehand'));
+  document.getElementById('addFreeBtn').addEventListener('click', () => {
+    if (state.drawMode) {
+      exitDrawMode();
+    } else {
+      state.selectedZoneId = null;
+      state.drawMode = true;
+      document.body.classList.add('pm-drawing');
+      updateDrawBtn();
+      toast('Draw mode — drag to draw, tap ✏️ or Esc to stop');
+    }
+  });
+  document.getElementById('clearFreehandBtn').addEventListener('click', () => {
+    const count = state.zones.filter(z => z.shape === 'freehand').length;
+    if (!count) { toast('No drawings to clear'); return; }
+    pushHistory();
+    state.zones = state.zones.filter(z => z.shape !== 'freehand');
+    state.selectedZoneId = null;
+    renderZones();
+    zonesChanged();
+    toast('Drawings cleared');
+  });
   // Color palette swatches
   const palette = document.getElementById('zoneColorPalette');
   for (const c of ZONE_COLORS) {
@@ -2120,10 +2169,8 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (state.drawMode) {
-        state.drawMode = false;
-        document.body.classList.remove('pm-drawing');
-        document.getElementById('freeDrawPreview').setAttribute('d', '');
-        toast('Draw mode canceled');
+        exitDrawMode();
+        toast('Draw mode off');
       } else if (state.selectedZoneId) {
         state.selectedZoneId = null; renderZones();
       }
