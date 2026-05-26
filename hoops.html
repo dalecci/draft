@@ -62,22 +62,9 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    flex-wrap: wrap;
     position: sticky;
     top: 0; z-index: 50;
   }
-  @media (max-width: 720px) {
-    header.app-header { padding: 10px 12px; gap: 8px; }
-    .brand-sub { display: none; }
-    .brand-mark { width: 30px; height: 30px; }
-    .brand-name { font-size: 14px; }
-    .nav-btn { padding: 6px 10px; font-size: 11px; letter-spacing: 0.08em; }
-    main {
-      padding: 14px 12px;
-      padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
-    }
-  }
-  html, body { overflow-x: hidden; }
   header.app-header::after {
     content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px;
     background: linear-gradient(90deg, transparent, var(--gold-glow), transparent);
@@ -107,11 +94,7 @@
   .nav-btn.danger:hover { background: var(--missed); color: white; border-color: var(--missed); }
 
   /* ---------- Layout ---------- */
-  main {
-    padding: 18px;
-    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    max-width: 1600px; margin: 0 auto;
-  }
+  main { padding: 18px; max-width: 1600px; margin: 0 auto; }
   h2 { font-size: 22px; margin: 0 0 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold-2); font-weight: 700; }
   h3 { font-size: 15px; margin: 0 0 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
@@ -369,7 +352,7 @@
   .player-pick {
     background: rgba(255,255,255,0.04); border: 2px solid var(--border);
     border-radius: 10px; padding: 12px 8px; cursor: pointer;
-    text-align: center; transition: all 0.15s;
+    text-align: center; transition: all 0.15s; position: relative;
   }
   .player-pick:hover { border-color: var(--border-strong); }
   .player-pick.active {
@@ -409,21 +392,15 @@
   /* Roster view */
   .roster-list { display: grid; gap: 8px; }
   .roster-row {
-    display: grid; grid-template-columns: 50px 70px 1fr auto; gap: 10px; align-items: center;
+    display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center;
     background: var(--panel-solid); border: 1px solid var(--border);
     border-radius: 10px; padding: 10px 12px;
   }
-  .roster-row input[type=text], .roster-row input[type=number], .roster-row select {
+  .roster-row input[type=text], .roster-row input[type=number] {
     background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: var(--ink);
     padding: 6px 10px; border-radius: 7px; font-size: 13px;
-    font-family: inherit;
   }
   .roster-row input[type=number] { width: 60px; }
-  .roster-row select { width: 70px; -webkit-appearance: none; appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
-    background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
-    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; padding-right: 22px;
-  }
 
   /* Player detail */
   .pd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
@@ -635,342 +612,6 @@
     text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px;
     letter-spacing: 0.14em; text-transform: uppercase;
   }
-
-  /* ---------- Lineup tool ---------- */
-  .lu-hint { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin: 4px 0 14px; }
-  .lu-bench-card { padding: 14px 14px 10px; margin-bottom: 16px; }
-  .lu-bench-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-  .lu-bench-head h3 { margin: 0; }
-  .lu-bench-head .lu-count { font-size: 11px; color: var(--muted); letter-spacing: 0.16em; }
-  .lu-bench { display: flex; flex-wrap: wrap; gap: 8px; min-height: 56px; }
-
-  .lu-chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 8px 12px 8px 8px;
-    background: var(--bg-2); border: 1px solid var(--border-strong); border-radius: 999px;
-    color: var(--text); font-size: 14px; font-weight: 600;
-    cursor: grab; user-select: none; transition: transform .12s, border-color .12s, background .12s, opacity .12s;
-    touch-action: manipulation;
-  }
-  .lu-chip:hover { border-color: var(--gold); transform: translateY(-1px); }
-  .lu-chip.dragging { opacity: 0.4; cursor: grabbing; }
-  .lu-chip.armed { border-color: var(--gold); background: rgba(212,175,55,0.16); box-shadow: 0 0 0 2px var(--gold-glow); }
-  .lu-chip .lu-num {
-    width: 26px; height: 26px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 12px; letter-spacing: 0;
-  }
-  .lu-chip .lu-num.no-num { background: var(--bg); color: var(--muted); border: 1px dashed var(--border-strong); }
-  .lu-chip .lu-name { white-space: nowrap; }
-  .lu-chip .lu-pos {
-    font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
-    padding: 2px 6px; border-radius: 6px;
-    background: rgba(212,175,55,0.18); color: var(--gold-2);
-    border: 1px solid rgba(212,175,55,0.35);
-  }
-  .lu-chip .lu-ovr {
-    font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums;
-    padding: 2px 7px; border-radius: 6px; line-height: 1;
-    background: rgba(212,175,55,0.16); color: var(--gold-2);
-    border: 1px solid rgba(212,175,55,0.35);
-  }
-  .lu-chip .lu-ovr.low  { background: rgba(240,87,79,0.16);  color: #f0746c; border-color: rgba(240,87,79,0.4); }
-  .lu-chip .lu-ovr.high { background: rgba(63,185,132,0.16); color: #6bd49a; border-color: rgba(63,185,132,0.45); }
-  .lu-chip .lu-ovr.none { background: transparent; color: var(--muted-2); border-color: var(--border); font-weight: 600; }
-  .lu-chip .lu-badge {
-    font-size: 10px; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 999px;
-    background: rgba(255,255,255,0.05); color: var(--muted); font-weight: 700;
-  }
-  .lu-chip.use-1 .lu-badge { background: rgba(212,175,55,0.14); color: var(--gold-2); }
-  .lu-chip.use-2 .lu-badge { background: rgba(212,175,55,0.24); color: var(--gold-2); }
-  .lu-chip.use-3 .lu-badge { background: rgba(212,175,55,0.38); color: #fff1c2; }
-  .lu-chip.use-4 .lu-badge { background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208; box-shadow: 0 0 6px var(--gold-glow); }
-
-  .lu-quarters {
-    display: grid; gap: 14px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  @media (max-width: 720px) {
-    .lu-quarters { grid-template-columns: 1fr; }
-  }
-
-  .lu-q {
-    background: var(--panel-solid, var(--bg-2));
-    border: 1px solid var(--border); border-radius: 14px; padding: 14px;
-    transition: border-color .15s, background .15s;
-  }
-  .lu-q.drag-over { border-color: var(--gold); background: rgba(212,175,55,0.06); }
-  .lu-q.full { border-color: rgba(63,185,132,0.45); }
-  .lu-q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .lu-q-title { font-size: 16px; font-weight: 800; letter-spacing: 0.14em; color: var(--gold-2); }
-  .lu-q-count { font-size: 11px; letter-spacing: 0.16em; color: var(--muted); font-weight: 700; }
-  .lu-q-count.full { color: #3fb984; }
-  .lu-slots { display: grid; gap: 6px; }
-  .lu-slot-row {
-    display: grid; grid-template-columns: 44px 1fr; gap: 8px; align-items: stretch;
-  }
-  .lu-slot-label {
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 800; letter-spacing: 0.12em;
-    color: var(--gold-2);
-    background: rgba(212,175,55,0.08);
-    border: 1px solid rgba(212,175,55,0.22);
-    border-radius: 10px;
-  }
-  .lu-slot {
-    min-height: 44px;
-    display: flex; align-items: center;
-    padding: 4px 6px;
-    border: 1px dashed var(--border); border-radius: 10px;
-    background: rgba(0,0,0,0.18);
-    transition: border-color .12s, background .12s;
-  }
-  .lu-slot.empty { color: var(--muted-2); font-size: 11px; letter-spacing: 0.18em; justify-content: center; }
-  .lu-slot.drag-over { border-color: var(--gold); border-style: solid; background: rgba(212,175,55,0.10); }
-  .lu-slot.armed-target { border-color: var(--gold-2); border-style: solid; }
-  .lu-slot .lu-chip { flex: 1; cursor: default; }
-  .lu-slot .lu-chip:hover { transform: none; }
-  .lu-chip .lu-x {
-    margin-left: auto; padding: 2px 8px; border-radius: 999px;
-    background: rgba(255,255,255,0.06); color: var(--muted); cursor: pointer;
-    font-size: 14px; line-height: 1; border: none;
-  }
-  .lu-chip .lu-x:hover { background: rgba(240,87,79,0.2); color: #f0746c; }
-  .lu-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-
-  /* ---------- Lineup stats (score pills) ---------- */
-  .lu-stats { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-  .lu-stats-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
-  .lu-stats-title { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
-  .lu-overall {
-    font-size: 22px; font-weight: 800; color: var(--gold-2); font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
-  }
-  .lu-overall.low { color: #f0746c; }
-  .lu-overall.high { color: #6bd49a; }
-  .lu-overall.none { color: var(--muted-2); font-weight: 600; }
-  .lu-overall .lu-overall-lbl { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-right: 6px; }
-  .lu-score-pills {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 6px;
-  }
-  .lu-score-pill {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 6px;
-    padding: 6px 9px; border-radius: 8px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.03);
-  }
-  .lu-score-pill .sp-lbl { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; }
-  .lu-score-pill .sp-val { font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
-  .lu-score-pill.low  { border-color: rgba(240,87,79,0.45);   background: rgba(240,87,79,0.10); }
-  .lu-score-pill.low  .sp-val { color: #f0746c; }
-  .lu-score-pill.high { border-color: rgba(63,185,132,0.45); background: rgba(63,185,132,0.10); }
-  .lu-score-pill.high .sp-val { color: #6bd49a; }
-  .lu-score-pill.mid  { border-color: rgba(212,175,55,0.4);   background: rgba(212,175,55,0.08); }
-  .lu-score-pill.mid  .sp-val { color: var(--gold-2); }
-  .lu-score-pill.none .sp-val { color: var(--muted-2); font-weight: 600; }
-  .lu-stat-missing {
-    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted-2); margin-top: 8px;
-  }
-
-  /* ---------- Player picker modal ---------- */
-  .picker-list { display: grid; gap: 6px; margin-top: 12px; max-height: 60vh; overflow-y: auto; }
-  .picker-row {
-    display: grid; grid-template-columns: 32px 1fr auto auto; gap: 10px; align-items: center;
-    padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px;
-    background: rgba(255,255,255,0.02); cursor: pointer;
-    transition: border-color .12s, background .12s;
-  }
-  .picker-row:hover { border-color: var(--gold); background: rgba(212,175,55,0.08); }
-  .picker-row.disabled { opacity: 0.42; cursor: not-allowed; }
-  .picker-row.disabled:hover { border-color: var(--border); background: rgba(255,255,255,0.02); }
-  .picker-row.current { border-color: var(--gold-2); background: rgba(212,175,55,0.12); }
-  .picker-jersey {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 12px;
-  }
-  .picker-jersey.no-num { background: var(--bg); color: var(--muted); border: 1px dashed var(--border-strong); }
-  .picker-name { font-weight: 600; color: var(--text); }
-  .picker-meta { display: flex; align-items: center; gap: 6px; }
-  .picker-pos {
-    font-size: 9px; font-weight: 800; letter-spacing: 0.08em;
-    padding: 2px 6px; border-radius: 5px;
-    background: rgba(212,175,55,0.18); color: var(--gold-2);
-    border: 1px solid rgba(212,175,55,0.35);
-  }
-  .picker-ovr {
-    font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums;
-    padding: 2px 8px; border-radius: 6px; min-width: 36px; text-align: center;
-    background: rgba(212,175,55,0.16); color: var(--gold-2);
-    border: 1px solid rgba(212,175,55,0.35);
-  }
-  .picker-ovr.low  { background: rgba(240,87,79,0.16);  color: #f0746c; border-color: rgba(240,87,79,0.4); }
-  .picker-ovr.high { background: rgba(63,185,132,0.16); color: #6bd49a; border-color: rgba(63,185,132,0.45); }
-  .picker-ovr.none { background: transparent; color: var(--muted-2); border-color: var(--border); }
-  .picker-note { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
-  .picker-section { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 10px 4px 4px; }
-  .picker-current-bar {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 12px;
-    background: rgba(212,175,55,0.08); margin-top: 10px;
-  }
-  .picker-current-bar .pc-name { font-weight: 700; }
-  .picker-remove {
-    margin-left: auto; padding: 6px 12px; border-radius: 8px;
-    border: 1px solid rgba(240,87,79,0.45); color: #f0746c;
-    background: rgba(240,87,79,0.1); font-weight: 700; cursor: pointer; font-size: 12px;
-  }
-  .picker-remove:hover { background: rgba(240,87,79,0.18); }
-
-  /* ---------- Saved lineups ---------- */
-  .saved-list { display: grid; gap: 8px; margin-top: 8px; max-height: 60vh; overflow-y: auto; }
-  .saved-row {
-    display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center;
-    padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px;
-    background: rgba(255,255,255,0.02);
-  }
-  .saved-name { font-weight: 700; color: var(--text); font-size: 14px; }
-  .saved-meta { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 0.06em; }
-  .saved-load { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--gold); color: var(--gold-2); background: rgba(212,175,55,0.1); font-weight: 700; cursor: pointer; font-size: 12px; }
-  .saved-load:hover { background: var(--gold); color: #1a1208; }
-  .saved-del { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); color: var(--muted); background: transparent; cursor: pointer; font-size: 14px; }
-  .saved-del:hover { color: #f0746c; border-color: rgba(240,87,79,0.45); }
-  .lu-stat-row {
-    display: grid; grid-template-columns: 26px 1fr 32px; gap: 8px; align-items: center;
-    font-size: 11px; letter-spacing: 0.06em; color: var(--muted);
-    padding: 3px 0;
-  }
-  .lu-stat-label { font-weight: 800; color: var(--gold-2); letter-spacing: 0.1em; }
-  .lu-stat-bar {
-    height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .lu-stat-fill {
-    height: 100%; border-radius: 4px;
-    transition: width .25s;
-    background: linear-gradient(90deg, var(--gold), var(--gold-2));
-  }
-  .lu-stat-fill.low { background: linear-gradient(90deg, #c14d44, #f0746c); }
-  .lu-stat-fill.high { background: linear-gradient(90deg, #3fa073, #6bd49a); }
-  .lu-stat-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--text); font-weight: 700; }
-  .lu-stat-val.none { color: var(--muted-2); font-weight: 500; }
-  .lu-stat-missing {
-    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted-2); margin-top: 6px;
-  }
-
-  .lu-total-card {
-    background: linear-gradient(180deg, rgba(212,175,55,0.06), transparent);
-    border: 1px solid var(--border-strong); border-radius: 14px;
-    padding: 14px 16px; margin-bottom: 16px;
-  }
-  .lu-total-card .lu-stats { margin-top: 10px; padding-top: 10px; }
-  .lu-total-card .lu-stats-head { margin-bottom: 6px; }
-
-  .lu-q-overall-grid {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px; margin-top: 12px;
-  }
-  @media (max-width: 480px) {
-    .lu-q-overall-grid { gap: 6px; }
-  }
-  .lu-q-overall {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 12px 6px;
-    border: 1px solid var(--border); border-radius: 12px;
-    background: rgba(255,255,255,0.02);
-  }
-  .lu-q-overall .lu-qo-label {
-    font-size: 11px; font-weight: 800; letter-spacing: 0.18em; color: var(--muted);
-    margin-bottom: 4px;
-  }
-  .lu-q-overall .lu-qo-val {
-    font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums;
-    color: var(--gold-2); line-height: 1;
-  }
-  .lu-q-overall .lu-qo-sub {
-    font-size: 9px; letter-spacing: 0.14em; color: var(--muted-2); margin-top: 4px;
-    text-transform: uppercase; font-weight: 700;
-  }
-  .lu-q-overall.low  { border-color: rgba(240,87,79,0.5);  background: rgba(240,87,79,0.08); }
-  .lu-q-overall.low  .lu-qo-val { color: #f0746c; }
-  .lu-q-overall.mid  { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.08); }
-  .lu-q-overall.high { border-color: rgba(63,185,132,0.5); background: rgba(63,185,132,0.08); }
-  .lu-q-overall.high .lu-qo-val { color: #6bd49a; }
-  .lu-q-overall.none .lu-qo-val { color: var(--muted-2); font-weight: 600; }
-
-  /* ---------- Ratings page ---------- */
-  .rating-card { padding: 14px 16px; margin-bottom: 10px; }
-  .rating-head {
-    display: flex; align-items: center; gap: 10px;
-    padding-bottom: 8px; margin-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .rating-jersey {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 13px;
-  }
-  .rating-jersey.no-num { background: var(--bg); color: var(--muted); border: 1px dashed var(--border-strong); }
-  .rating-name { font-weight: 700; font-size: 15px; color: var(--text); }
-  .rating-pos {
-    font-size: 10px; font-weight: 800; letter-spacing: 0.08em;
-    padding: 2px 6px; border-radius: 6px;
-    background: rgba(212,175,55,0.18); color: var(--gold-2);
-    border: 1px solid rgba(212,175,55,0.35);
-  }
-  .rating-overall {
-    margin-left: auto;
-    font-size: 16px; font-weight: 800; color: var(--gold-2);
-    font-variant-numeric: tabular-nums;
-  }
-  .rating-overall .lbl { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-right: 6px; }
-  .rating-overall.none { color: var(--muted-2); }
-  .rating-row {
-    display: grid; grid-template-columns: 92px 1fr 38px 30px; gap: 10px; align-items: center;
-    padding: 6px 0;
-  }
-  .rating-row .rl { font-size: 12px; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
-  .rating-row input[type=range] {
-    -webkit-appearance: none; appearance: none; width: 100%; height: 26px;
-    background: transparent; padding: 0; margin: 0;
-  }
-  .rating-row input[type=range]::-webkit-slider-runnable-track {
-    height: 6px; border-radius: 3px;
-    background: linear-gradient(90deg, var(--gold) 0%, var(--gold) var(--pct, 50%), rgba(255,255,255,0.08) var(--pct, 50%), rgba(255,255,255,0.08) 100%);
-    border: 1px solid var(--border);
-  }
-  .rating-row input[type=range]::-moz-range-track {
-    height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); border: 1px solid var(--border);
-  }
-  .rating-row input[type=range]::-moz-range-progress {
-    height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-2));
-  }
-  .rating-row input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--gold-2); border: 2px solid #1a1208;
-    margin-top: -8px; cursor: pointer; box-shadow: 0 0 8px var(--gold-glow);
-  }
-  .rating-row input[type=range]::-moz-range-thumb {
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--gold-2); border: 2px solid #1a1208;
-    cursor: pointer; box-shadow: 0 0 8px var(--gold-glow);
-  }
-  .rating-row.unrated input[type=range]::-webkit-slider-thumb { background: var(--muted-2); box-shadow: none; }
-  .rating-row.unrated input[type=range]::-moz-range-thumb { background: var(--muted-2); box-shadow: none; }
-  .rating-row.unrated input[type=range]::-webkit-slider-runnable-track { background: rgba(255,255,255,0.06); }
-  .rating-row .rv { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
-  .rating-row.unrated .rv { color: var(--muted-2); font-weight: 500; }
-  .rating-row .rclr {
-    background: transparent; border: 1px solid var(--border); color: var(--muted);
-    border-radius: 6px; font-size: 11px; padding: 4px 6px; cursor: pointer;
-  }
-  .rating-row .rclr:hover { color: var(--text); border-color: var(--border-strong); }
 </style>
 </head>
 <body>
@@ -985,9 +626,7 @@
     <div class="header-spacer"></div>
     <button class="nav-btn" id="nav-workout">Workout</button>
     <button class="nav-btn" id="nav-roster">Roster</button>
-    <button class="nav-btn" id="nav-ratings">Ratings</button>
     <a class="nav-btn" href="/">Plays</a>
-    <button class="nav-btn" id="nav-lineup">Lineup Tool</button>
   </header>
 
   <div id="toast-root"></div>
@@ -1074,11 +713,6 @@ async function loadInitial() {
     if (gm.error) throw gm.error;
     state.players = pl.data || [];
     state.games = gm.data || [];
-    mergePositionsIntoPlayers();
-    mergeRatingsFromPlayers();
-    migrateLocalPositionsToSupabase();
-    migrateLocalRatingsToSupabase();
-    syncSavedLineupsWithSupabase();
     state.error = null;
     saveCache();
   } catch (e) {
@@ -1112,136 +746,26 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return nu
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
 
-/* Player position 1-5 (PG/SG/SF/PF/C). Stored on the player row and mirrored
-   to localStorage so it survives even if the Supabase 'players' table has no
-   'position' column yet. */
-const POSITIONS_LS_KEY = 'hoops-positions';
-const POS_LABELS = { 1: 'PG', 2: 'SG', 3: 'SF', 4: 'PF', 5: 'C' };
-function posLabel(pos) { return POS_LABELS[pos] || null; }
-function loadPositionsMap() {
-  try { return JSON.parse(lsGet(POSITIONS_LS_KEY) || '{}') || {}; } catch(e) { return {}; }
+// Half-quarter pair plans: { primary_id, partner_id } stored per game+quarter.
+// Primary starts the quarter, partner is queued to sub in at halftime (each = 0.5 of slot).
+function pairsKey(quarter) { return `pairs-${state.currentGameId}-${quarter}`; }
+function loadPendingPairs(quarter) {
+  try { return JSON.parse(lsGet(pairsKey(quarter)) || '[]'); } catch(e) { return []; }
 }
-function savePositionsMap(m) { lsSet(POSITIONS_LS_KEY, JSON.stringify(m)); }
-function mergePositionsIntoPlayers() {
-  const m = loadPositionsMap();
-  for (const p of state.players) {
-    if (p.position == null && m[p.id] != null) p.position = m[p.id];
-  }
+function savePendingPairs(quarter, pairs) {
+  lsSet(pairsKey(quarter), JSON.stringify(pairs));
 }
-function setPlayerPosition(id, position) {
-  const m = loadPositionsMap();
-  if (position == null) delete m[id]; else m[id] = position;
-  savePositionsMap(m);
-  updatePlayer(id, { position });
+function removePendingPair(quarter, primaryId) {
+  const pairs = loadPendingPairs(quarter).filter(p => p.primary_id !== primaryId);
+  savePendingPairs(quarter, pairs);
 }
-/* If a player's position lives only in localStorage (Supabase is null), push
-   it up. After this runs, Supabase position column becomes source of truth. */
-function migrateLocalPositionsToSupabase() {
-  const m = loadPositionsMap();
-  for (const p of state.players) {
-    if (p.position == null && m[p.id] != null) {
-      sb.from('players').update({ position: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
-    }
-  }
+function getPartnerForPrimary(quarter, primaryId) {
+  const pair = loadPendingPairs(quarter).find(p => p.primary_id === primaryId);
+  return pair ? pair.partner_id : null;
 }
-
-/* Player ability ratings 1-10 across 5 attributes. localStorage only for now;
-   if needed later we can sync to a separate Supabase table. */
-const RATINGS_LS_KEY = 'hoops-ratings-v1';
-const RATING_ATTRS = [
-  { key: 'def', label: 'Defense',    short: 'D'  },
-  { key: 'sh',  label: 'Shooting',   short: 'Sh' },
-  { key: 'dr',  label: 'Driving',    short: 'Dr' },
-  { key: 'db',  label: 'Dribbling',  short: 'Db' },
-  { key: 'pm',  label: 'Playmaking', short: 'Pm' },
-  { key: 'rb',  label: 'Rebounding', short: 'Re' },
-  { key: 'sp',  label: 'Speed',      short: 'Sp' },
-];
-const RATINGS_PIN = '4545';
-let ratingsUnlocked = false; // session-only; resets on reload
-
-const LINEUP_HIDE_RATINGS_KEY = 'hoops-lineup-hide-ratings';
-function isLineupRatingsHidden() { return lsGet(LINEUP_HIDE_RATINGS_KEY) === '1'; }
-function setLineupRatingsHidden(v) { lsSet(LINEUP_HIDE_RATINGS_KEY, v ? '1' : '0'); }
-function loadRatings() {
-  try { return JSON.parse(lsGet(RATINGS_LS_KEY) || '{}') || {}; } catch(e) { return {}; }
-}
-function saveRatings(m) { lsSet(RATINGS_LS_KEY, JSON.stringify(m)); }
-function getPlayerRatings(playerId) { return loadRatings()[playerId] || {}; }
-function setPlayerRating(playerId, attrKey, value) {
-  const m = loadRatings();
-  if (!m[playerId]) m[playerId] = {};
-  if (value == null || value === '') {
-    delete m[playerId][attrKey];
-  } else {
-    const n = Math.max(1, Math.min(10, parseInt(value)));
-    if (!Number.isNaN(n)) m[playerId][attrKey] = n;
-  }
-  if (Object.keys(m[playerId]).length === 0) delete m[playerId];
-  saveRatings(m);
-  syncPlayerRatingsToSupabase(playerId);
-}
-function syncPlayerRatingsToSupabase(playerId) {
-  const m = loadRatings();
-  const r = m[playerId];
-  const payload = r && Object.keys(r).length ? r : null;
-  sb.from('players').update({ ratings: payload }).eq('id', playerId).then(() => {}, () => {});
-}
-/* Called after loadInitial pulls players from Supabase. Overrides localStorage
-   with anything coming from Supabase so cross-device sync works. */
-function mergeRatingsFromPlayers() {
-  const m = loadRatings();
-  let changed = false;
-  for (const p of state.players) {
-    if (p.ratings && typeof p.ratings === 'object' && Object.keys(p.ratings).length) {
-      m[p.id] = { ...p.ratings };
-      changed = true;
-    }
-  }
-  if (changed) saveRatings(m);
-}
-/* One-time push: if a player has localStorage ratings but Supabase is empty,
-   migrate up. After this runs once, Supabase becomes source of truth. */
-function migrateLocalRatingsToSupabase() {
-  const m = loadRatings();
-  for (const p of state.players) {
-    const supaEmpty = !p.ratings || Object.keys(p.ratings).length === 0;
-    const localHas = m[p.id] && Object.keys(m[p.id]).length;
-    if (supaEmpty && localHas) {
-      sb.from('players').update({ ratings: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
-    }
-  }
-}
-function playerOverallRating(playerId) {
-  const r = getPlayerRatings(playerId);
-  const vals = RATING_ATTRS.map(a => r[a.key]).filter(v => v != null);
-  if (!vals.length) return null;
-  return vals.reduce((s, v) => s + v, 0) / vals.length;
-}
-
-/* Aggregate stats for an array of playerIds. Skips unrated values per
-   attribute, returns counts so the UI can warn about missing data. */
-function aggregateRatings(playerIds) {
-  const map = loadRatings();
-  const perAttr = {};
-  let overallSum = 0, overallCount = 0;
-  for (const a of RATING_ATTRS) {
-    let sum = 0, count = 0;
-    for (const pid of playerIds) {
-      const v = map[pid] && map[pid][a.key];
-      if (v != null) { sum += v; count++; }
-    }
-    const avg = count ? sum / count : null;
-    perAttr[a.key] = { avg, count, missing: playerIds.length - count };
-    if (avg != null) { overallSum += avg; overallCount++; }
-  }
-  const overall = overallCount ? overallSum / overallCount : null;
-  // Players in this set with NO ratings at all
-  const fullyUnrated = playerIds.filter(pid => {
-    const r = map[pid] || {};
-    return !RATING_ATTRS.some(a => r[a.key] != null);
-  }).length;
-  return { perAttr, overall, totalPlayers: playerIds.length, fullyUnrated };
+function getPrimaryForPartner(quarter, partnerId) {
+  const pair = loadPendingPairs(quarter).find(p => p.partner_id === partnerId);
+  return pair ? pair.primary_id : null;
 }
 
 function saveCache() {
@@ -1252,7 +776,6 @@ function loadCache() {
     const c = JSON.parse(lsGet('hoops-cache') || '{}');
     if (c.games) state.games = c.games;
     if (c.players) state.players = c.players;
-    mergePositionsIntoPlayers();
   } catch (e) {}
 }
 
@@ -1360,6 +883,34 @@ async function endStint(stintId, secsRemaining) {
   stint.ended_seconds_remaining = secsRemaining;
   state.undoStack.push({ type: 'stint-end', id: stintId });
   await sb.from('stints').update({ ended_seconds_remaining: secsRemaining }).eq('id', stintId);
+  render();
+}
+
+// Swap every half-quarter pair whose primary is still on the floor: end primary stint, start partner.
+async function executePairSwaps() {
+  const quarter = state.currentQuarter;
+  const pairs = loadPendingPairs(quarter);
+  if (!pairs.length) return;
+  const t = getCurrentClockSeconds();
+  const onFloorIds = getOnFloorIds(quarter);
+  let swapped = 0;
+  let skipped = 0;
+  const remaining = [];
+  for (const pp of pairs) {
+    const primaryOnFloor = onFloorIds.includes(pp.primary_id);
+    const partnerAlreadyOnFloor = onFloorIds.includes(pp.partner_id);
+    if (!primaryOnFloor || partnerAlreadyOnFloor) {
+      skipped++;
+      continue; // orphaned pair — drop
+    }
+    const outStint = state.stints.find(s => s.player_id === pp.primary_id && s.quarter === quarter && s.ended_seconds_remaining === null);
+    if (outStint) await endStint(outStint.id, t);
+    await startStint(pp.partner_id, t);
+    swapped++;
+  }
+  savePendingPairs(quarter, remaining);
+  if (swapped) toast(skipped ? `Swapped ${swapped} · skipped ${skipped}` : `Swapped ${swapped} pair${swapped === 1 ? '' : 's'}`);
+  else toast('No pairs to swap');
   render();
 }
 
@@ -1548,8 +1099,6 @@ function render() {
   else if (state.view === 'player') renderPlayerDetail(root);
   else if (state.view === 'roster') renderRoster(root);
   else if (state.view === 'workout') renderWorkout(root);
-  else if (state.view === 'lineup') renderLineup(root);
-  else if (state.view === 'ratings') renderRatings(root);
 }
 
 /* ----- HOME ----- */
@@ -1757,6 +1306,36 @@ function renderQuarter() {
   const right = el('div');
 
   right.append(el('h3', {}, `Q${state.currentQuarter} · On Floor`));
+
+  // Half-quarter pair swap banner
+  const pendingPairs = loadPendingPairs(state.currentQuarter);
+  const onFloorPairs = pendingPairs.filter(pp => onFloorIds.includes(pp.primary_id));
+  if (onFloorPairs.length) {
+    const qLen = getQuarterLengthSec();
+    const curSec = getCurrentClockSeconds();
+    const pastHalf = curSec <= Math.floor(qLen / 2);
+    const banner = el('div', {
+      class: 'panel-section',
+      style: 'display:flex; align-items:center; gap:10px; padding:12px 14px; margin-bottom:10px; border-radius:10px;'
+        + (pastHalf
+          ? ' background:rgba(255,106,31,0.18); border:2px solid var(--accent); box-shadow:0 0 14px rgba(255,106,31,0.25);'
+          : ' background:rgba(212,175,55,0.08); border:1px solid var(--border);'),
+    },
+      el('div', { style: 'flex:1;' },
+        el('div', { style: 'font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:' + (pastHalf ? 'var(--accent)' : 'var(--gold-2)') + '; margin-bottom:4px;' },
+          pastHalf ? '½-SLOT SWAP READY' : '½-SLOT PAIRS QUEUED'),
+        el('div', { style: 'font-size:12px; color:var(--ink-2); line-height:1.5;' },
+          onFloorPairs.map(pp => {
+            const a = state.players.find(x => x.id === pp.primary_id);
+            const b = state.players.find(x => x.id === pp.partner_id);
+            return (a && b) ? `${shortName(a.name)} → ${shortName(b.name)}` : '';
+          }).filter(Boolean).join(' · ')),
+      ),
+      el('button', { class: 'btn btn-primary', style: 'padding:8px 14px; font-size:12px;', onclick: executePairSwaps }, 'SWAP NOW'),
+    );
+    right.append(banner);
+  }
+
   const floorGrid = el('div', { class: 'on-floor-grid panel-section' });
   for (let i = 0; i < 5; i++) {
     if (onFloorIds[i]) {
@@ -1814,10 +1393,18 @@ function renderPlayerCard(playerId) {
   const p = state.players.find(p => p.id === playerId);
   if (!p) return el('div');
   const stats = getPlayerStats(playerId, state.currentQuarter);
+  const partnerId = getPartnerForPrimary(state.currentQuarter, playerId);
+  const partner = partnerId ? state.players.find(x => x.id === partnerId) : null;
   const card = el('div', { class: 'player-card', id: `pcard-${playerId}` },
     el('div', { class: 'pc-head' },
       el('div', { class: 'pc-jersey' }, p.jersey_number || (p.name[0])),
-      el('div', { class: 'pc-name', onclick: () => openPlayerDetail(playerId), style: 'cursor:pointer' }, shortName(p.name)),
+      el('div', { class: 'pc-name', onclick: () => openPlayerDetail(playerId), style: 'cursor:pointer' },
+        shortName(p.name),
+        partner ? el('span', {
+          style: 'margin-left:6px; background:var(--gold-2); color:#000; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px; letter-spacing:0.06em; vertical-align:middle;',
+          title: `Half-slot pair: subs out for ${shortName(partner.name)} at half`,
+        }, `½ → ${shortName(partner.name).toUpperCase()}`) : null,
+      ),
       el('div', { class: 'pc-pts' },
         el('strong', {}, String(stats.pts)), ' pts · ',
         `${stats.fgm}/${stats.fga}`,
@@ -2057,26 +1644,73 @@ function openAddStarterModal() {
   if (!available.length) return toast('No bench players');
   const slotsLeft = 5 - onFloorIds.length;
   const selected = new Set();
+  const pairs = {}; // primary_id -> partner_id (½ shared slot, partner subs in at half)
+  let pairingFor = null; // when set, grid is in "pick partner for X" mode
 
   function update() {
     const root = $('#modal-root');
     root.innerHTML = '';
-    const grid = el('div', { class: 'player-pick-grid' },
-      ...available.map(p => el('div', {
-        class: `player-pick ${selected.has(p.id) ? 'active' : ''}`,
-        onclick: () => {
-          if (selected.has(p.id)) {
-            selected.delete(p.id);
-          } else {
-            if (selected.size >= slotsLeft) return toast(`Max ${slotsLeft}`);
-            selected.add(p.id);
-          }
-          update();
+    const partneredIds = new Set(Object.values(pairs));
+
+    // Grid behavior changes when pairing
+    let grid;
+    if (pairingFor) {
+      const primary = state.players.find(p => p.id === pairingFor);
+      const candidates = available.filter(p => !selected.has(p.id) && !partneredIds.has(p.id));
+      grid = el('div', { class: 'player-pick-grid' },
+        ...candidates.map(p => el('div', {
+          class: 'player-pick',
+          onclick: () => {
+            pairs[pairingFor] = p.id;
+            pairingFor = null;
+            update();
+          },
         },
-      },
-        el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
-        el('div', { class: 'pp-name' }, shortName(p.name)),
-      ))
+          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+          el('div', { class: 'pp-name' }, shortName(p.name)),
+        ))
+      );
+      if (!candidates.length) {
+        grid = el('div', { style: 'text-align:center; color:var(--muted); font-size:13px; padding:20px;' }, 'No bench players left to pair with');
+      }
+      const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
+        el('div', { class: 'modal modal-lg' },
+          el('h3', {}, `Pick ½-Slot Partner For ${shortName(primary.name)}`),
+          el('div', { style: 'text-align:center; margin-bottom:12px; font-size:12px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase;' },
+            `${shortName(primary.name)} plays 1st half · partner plays 2nd half`),
+          grid,
+          el('div', { class: 'modal-actions' },
+            el('button', { class: 'btn btn-ghost', onclick: () => { pairingFor = null; update(); } }, 'Back'),
+          ),
+        )
+      );
+      root.append(modal);
+      return;
+    }
+
+    grid = el('div', { class: 'player-pick-grid' },
+      ...available.map(p => {
+        const isSelected = selected.has(p.id);
+        const isPartner = partneredIds.has(p.id);
+        return el('div', {
+          class: `player-pick ${isSelected ? 'active' : ''}`,
+          style: isPartner ? 'opacity:0.45; pointer-events:none; border-color: var(--gold-2);' : '',
+          onclick: () => {
+            if (selected.has(p.id)) {
+              selected.delete(p.id);
+              delete pairs[p.id];
+            } else {
+              if (selected.size >= slotsLeft) return toast(`Max ${slotsLeft}`);
+              selected.add(p.id);
+            }
+            update();
+          },
+        },
+          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+          el('div', { class: 'pp-name' }, shortName(p.name)),
+          isPartner ? el('div', { style: 'position:absolute; top:4px; right:4px; background:var(--gold-2); color:#000; font-size:9px; font-weight:800; padding:1px 5px; border-radius:8px; letter-spacing:0.08em;' }, '½ PAIRED') : null,
+        );
+      })
     );
 
     const counter = el('div', {
@@ -2084,11 +1718,48 @@ function openAddStarterModal() {
         + (selected.size === slotsLeft ? ' color:var(--made);' : ' color:var(--gold-2);'),
     }, `${selected.size} / ${slotsLeft} selected`);
 
+    // Pairing section
+    let pairingSection = null;
+    if (selected.size > 0) {
+      const rows = [];
+      for (const pid of selected) {
+        const p = state.players.find(x => x.id === pid);
+        if (!p) continue;
+        const partnerId = pairs[pid];
+        const partner = partnerId ? state.players.find(x => x.id === partnerId) : null;
+        const row = el('div', {
+          style: 'display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--surface); border-radius:8px; margin-bottom:6px;'
+        },
+          el('span', { style: 'flex:1; font-weight:600; font-size:13px;' }, shortName(p.name)),
+          partner
+            ? el('div', { style: 'display:flex; align-items:center; gap:8px;' },
+                el('span', { style: 'color:var(--gold-2); font-size:12px; font-weight:700;' }, `½ ↔ ${shortName(partner.name)}`),
+                el('button', {
+                  class: 'btn btn-ghost',
+                  style: 'padding:4px 8px; font-size:10px; letter-spacing:0.06em;',
+                  onclick: () => { delete pairs[pid]; update(); }
+                }, 'UNPAIR'),
+              )
+            : el('button', {
+                class: 'btn btn-ghost',
+                style: 'padding:5px 10px; font-size:11px; letter-spacing:0.06em;',
+                onclick: () => { pairingFor = pid; update(); },
+              }, '+ PAIR (½)'),
+        );
+        rows.push(row);
+      }
+      pairingSection = el('div', { style: 'margin-top:14px;' },
+        el('h4', { style: 'font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0 0 10px;' }, 'Half-Quarter Pairs (optional)'),
+        ...rows,
+      );
+    }
+
     const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
       el('div', { class: 'modal modal-lg' },
         el('h3', {}, slotsLeft === 5 ? `Pick 5 Starters — Q${state.currentQuarter}` : `Add Up To ${slotsLeft} — Q${state.currentQuarter}`),
         counter,
         grid,
+        pairingSection,
         el('div', { class: 'modal-actions' },
           el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
           el('button', {
@@ -2101,6 +1772,14 @@ function openAddStarterModal() {
               for (const pid of selected) {
                 await startStint(pid, startSec);
               }
+              // Persist pair plan (merge with any existing pairs for this quarter)
+              const existing = loadPendingPairs(state.currentQuarter);
+              const newPairs = Object.entries(pairs).map(([primary_id, partner_id]) => ({ primary_id, partner_id }));
+              const merged = [
+                ...existing.filter(p => !newPairs.find(np => np.primary_id === p.primary_id)),
+                ...newPairs,
+              ];
+              savePendingPairs(state.currentQuarter, merged);
               closeModal();
             },
           }, `Load ${selected.size}`),
@@ -2424,23 +2103,9 @@ function renderRoster(root) {
   const list = el('div', { class: 'roster-list card' });
   const sorted = [...state.players].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
   for (const p of sorted) {
-    const posSelect = el('select', {
-      title: 'Position (1=PG, 2=SG, 3=SF, 4=PF, 5=C)',
-      onchange: (e) => setPlayerPosition(p.id, e.target.value ? parseInt(e.target.value) : null),
-    },
-      el('option', { value: '' }, 'Pos'),
-      el('option', { value: '1' }, 'PG'),
-      el('option', { value: '2' }, 'SG'),
-      el('option', { value: '3' }, 'SF'),
-      el('option', { value: '4' }, 'PF'),
-      el('option', { value: '5' }, 'C'),
-    );
-    posSelect.value = p.position != null ? String(p.position) : '';
-
     list.append(el('div', { class: 'roster-row' },
       el('input', { type: 'number', value: p.jersey_number || '', placeholder: '#',
         onchange: (e) => updatePlayer(p.id, { jersey_number: parseInt(e.target.value) || null }) }),
-      posSelect,
       el('input', { type: 'text', value: p.name,
         onchange: (e) => updatePlayer(p.id, { name: e.target.value }) }),
       el('button', { class: 'iconbtn', title: 'Remove', onclick: () => {
@@ -2450,601 +2115,6 @@ function renderRoster(root) {
   }
   wrap.append(list);
   root.append(wrap);
-}
-
-/* ============ LINEUP TOOL ============ */
-const LU_LS_KEY = 'hoops-lineup-v1';
-const LU_QUARTERS = ['Q1','Q2','Q3','Q4'];
-const LU_SLOTS = ['PG','SG','SF','PF','C'];
-const LU_MAX_PER_Q = LU_SLOTS.length;
-let luArmedId = null; // tap-to-place selection
-
-function luDefaultQuarter() {
-  return { PG: null, SG: null, SF: null, PF: null, C: null };
-}
-function luDefault() {
-  const out = {};
-  for (const q of LU_QUARTERS) out[q] = luDefaultQuarter();
-  return out;
-}
-function luLoad() {
-  try {
-    const raw = lsGet(LU_LS_KEY);
-    if (raw) {
-      const v = JSON.parse(raw) || {};
-      const out = {};
-      for (const q of LU_QUARTERS) {
-        const cur = v[q];
-        const slotObj = luDefaultQuarter();
-        if (Array.isArray(cur)) {
-          // Migrate old shape (array of ids) into PG..C order
-          for (let i = 0; i < cur.length && i < LU_SLOTS.length; i++) {
-            if (cur[i]) slotObj[LU_SLOTS[i]] = cur[i];
-          }
-        } else if (cur && typeof cur === 'object') {
-          for (const s of LU_SLOTS) if (cur[s]) slotObj[s] = cur[s];
-        }
-        out[q] = slotObj;
-      }
-      return out;
-    }
-  } catch(e) {}
-  return luDefault();
-}
-function luSave(lu) { lsSet(LU_LS_KEY, JSON.stringify(lu)); }
-function luPlayerById(id) { return state.players.find(p => p.id === id); }
-function luQuarterIds(lu, q) { return LU_SLOTS.map(s => lu[q][s]).filter(Boolean); }
-function luQuarterFilledCount(lu, q) { return luQuarterIds(lu, q).length; }
-function luUsage(lu, playerId) {
-  return LU_QUARTERS.reduce(
-    (n, q) => n + (LU_SLOTS.some(s => lu[q][s] === playerId) ? 1 : 0),
-    0
-  );
-}
-function luFindSlotInQuarter(lu, q, playerId) {
-  for (const s of LU_SLOTS) if (lu[q][s] === playerId) return s;
-  return null;
-}
-
-/* Place a player in a specific (q, slot). Allows moving within the same
-   quarter (does not double-count usage). Overwrites whoever was in the slot. */
-function luPlaceInSlot(lu, q, slot, playerId) {
-  const existingSlot = luFindSlotInQuarter(lu, q, playerId);
-  if (existingSlot === slot) return { ok: true };
-  if (existingSlot) {
-    lu[q][existingSlot] = null;
-    lu[q][slot] = playerId;
-    return { ok: true, moved: true };
-  }
-  lu[q][slot] = playerId;
-  return { ok: true };
-}
-function luClearSlot(lu, q, slot) { lu[q][slot] = null; }
-
-function renderLineup(root) {
-  const lu = luLoad();
-
-  const wrap = el('div');
-  wrap.append(el('div', { class: 'game-header' },
-    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
-    el('h2', { style: 'margin:0' }, 'Lineup Tool'),
-  ));
-
-  if (!state.players.length) {
-    wrap.append(el('div', { class: 'wo-empty' }, 'No players yet — add some on the Roster page'));
-    root.append(wrap);
-    return;
-  }
-
-  wrap.append(el('div', { class: 'lu-hint' },
-    `Tap any position slot to pick a player. Badge on the chip shows how many quarters that player is in.`
-  ));
-
-  const hideRatings = isLineupRatingsHidden();
-
-  wrap.append(el('div', { class: 'lu-actions' },
-    el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
-    el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
-    el('button', { class: 'nav-btn', onclick: () => {
-      setLineupRatingsHidden(!hideRatings);
-      render();
-    }}, hideRatings ? '👁 Show ratings' : '🙈 Hide ratings'),
-    el('button', { class: 'nav-btn', onclick: () => {
-      if (!confirm('Clear all quarters?')) return;
-      luSave(luDefault());
-      render();
-    }}, 'Reset'),
-  ));
-
-  // ----- Per-quarter overall chart -----
-  if (!hideRatings) {
-    const anyFilled = LU_QUARTERS.some(q => luQuarterIds(lu, q).length > 0);
-    if (anyFilled) {
-      const totalCard = el('div', { class: 'lu-total-card' });
-      const totalFilled = LU_QUARTERS.reduce((n, q) => n + luQuarterIds(lu, q).length, 0);
-      totalCard.append(el('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' },
-        el('div', { style: 'font-size:12px;letter-spacing:0.18em;color:var(--muted);font-weight:700;text-transform:uppercase' }, 'Quarter overall scores'),
-        el('div', { style: 'font-size:11px;color:var(--muted)' },
-          `${totalFilled} of ${LU_QUARTERS.length * LU_MAX_PER_Q} slots filled`),
-      ));
-      const grid = el('div', { class: 'lu-q-overall-grid' });
-      for (const q of LU_QUARTERS) {
-        const ids = luQuarterIds(lu, q);
-        const agg = ids.length ? aggregateRatings(ids) : { overall: null };
-        const ovrText = agg.overall == null ? '—' : (Math.round(agg.overall * 10) / 10).toFixed(1);
-        const cls = statClass(agg.overall);
-        grid.append(el('div', { class: `lu-q-overall ${cls}` },
-          el('div', { class: 'lu-qo-label' }, q),
-          el('div', { class: 'lu-qo-val' }, ovrText),
-          el('div', { class: 'lu-qo-sub' }, `${ids.length}/${LU_MAX_PER_Q}`),
-        ));
-      }
-      totalCard.append(grid);
-      wrap.append(totalCard);
-    }
-  }
-
-  // ----- Quarters with 5 position slots each -----
-  const grid = el('div', { class: 'lu-quarters' });
-  for (const q of LU_QUARTERS) {
-    const filled = luQuarterFilledCount(lu, q);
-    const isFull = filled >= LU_MAX_PER_Q;
-    const qCard = el('div', { class: `lu-q${isFull ? ' full' : ''}`, 'data-q': q });
-
-    qCard.append(el('div', { class: 'lu-q-head' },
-      el('div', { class: 'lu-q-title' }, q),
-      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${filled} / ${LU_MAX_PER_Q}`),
-    ));
-
-    const slotsWrap = el('div', { class: 'lu-slots' });
-    for (const slotName of LU_SLOTS) {
-      const pid = lu[q][slotName];
-      const slotEl = el('div', { class: `lu-slot${pid ? '' : ' empty'}` });
-
-      if (pid) {
-        const p = luPlayerById(pid);
-        if (!p) {
-          luClearSlot(lu, q, slotName);
-          luSave(lu);
-          slotEl.classList.add('empty');
-          slotEl.append('Empty');
-        } else {
-          slotEl.append(buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q, slot: slotName }));
-        }
-      } else {
-        slotEl.append('Tap to pick');
-      }
-
-      slotEl.addEventListener('click', (e) => {
-        // Don't trigger when tapping the X inside a chip
-        if (e.target.closest('.lu-x')) return;
-        openPickerModal(q, slotName);
-      });
-
-      slotsWrap.append(el('div', { class: 'lu-slot-row' },
-        el('div', { class: 'lu-slot-label' }, slotName),
-        slotEl,
-      ));
-    }
-    qCard.append(slotsWrap);
-
-    const qIds = luQuarterIds(lu, q);
-    if (!hideRatings && qIds.length > 0) {
-      qCard.append(buildStatsPanel(aggregateRatings(qIds), `${q} score`));
-    }
-
-    grid.append(qCard);
-  }
-  wrap.append(grid);
-
-  root.append(wrap);
-}
-
-function buildChip(p, usage, opts) {
-  const hideRating = isLineupRatingsHidden();
-  const classes = ['lu-chip'];
-  if (usage >= 1) classes.push(`use-${Math.min(usage, 4)}`);
-
-  const numNode = (p.jersey_number != null && p.jersey_number !== '')
-    ? el('span', { class: 'lu-num' }, String(p.jersey_number))
-    : el('span', { class: 'lu-num no-num' }, '·');
-
-  const posTag = posLabel(p.position);
-  const overall = playerOverallRating(p.id);
-  const ovrClass = statClass(overall);
-  const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
-  const children = [
-    numNode,
-    el('span', { class: 'lu-name' }, p.name),
-    posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
-    hideRating ? null : el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
-    el('span', { class: 'lu-badge', title: 'Quarters used' }, `${usage}/${LU_QUARTERS.length}`),
-    el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
-      e.stopPropagation();
-      const cur = luLoad();
-      luClearSlot(cur, opts.quarter, opts.slot);
-      luSave(cur);
-      render();
-    }}, '×'),
-  ].filter(Boolean);
-
-  return el('div', { class: classes.join(' ') }, ...children);
-}
-
-/* ============ RATINGS PAGE ============ */
-function fmt1(n) { return n == null ? '—' : (Math.round(n * 10) / 10).toFixed(1); }
-function statClass(v) {
-  if (v == null) return 'none';
-  if (v < 5) return 'low';
-  if (v >= 7) return 'high';
-  return 'mid';
-}
-
-function renderRatingsLock(wrap) {
-  const card = el('div', { class: 'card', style: 'max-width:380px;margin:60px auto;padding:28px 24px;text-align:center' },
-    el('div', { style: 'font-size:30px;margin-bottom:6px' }, '🔒'),
-    el('h3', { style: 'color:var(--gold-2);letter-spacing:0.18em;margin:0 0 6px' }, 'Ratings locked'),
-    el('p', { style: 'color:var(--muted);font-size:13px;margin:0 0 18px' }, 'Enter PIN to unlock'),
-    el('input', {
-      type: 'password', id: 'ratings-pin', inputmode: 'numeric', maxlength: '8',
-      autocomplete: 'off', placeholder: '••••',
-      style: 'width:100%;padding:14px;border-radius:10px;border:1px solid var(--border-strong);background:rgba(0,0,0,0.3);color:var(--text);font-size:22px;text-align:center;letter-spacing:10px;font-family:inherit',
-    }),
-    el('div', { id: 'ratings-pin-err', style: 'color:#f0746c;font-size:12px;min-height:18px;margin-top:8px;letter-spacing:0.06em;font-weight:600' }, ''),
-    el('button', { class: 'btn btn-primary', style: 'margin-top:10px;width:100%', onclick: tryUnlockRatings }, 'Unlock'),
-  );
-  wrap.append(card);
-  setTimeout(() => {
-    const input = $('#ratings-pin');
-    if (!input) return;
-    input.focus();
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlockRatings(); });
-  }, 30);
-}
-
-function tryUnlockRatings() {
-  const v = ($('#ratings-pin')?.value || '').trim();
-  if (v === RATINGS_PIN) {
-    ratingsUnlocked = true;
-    render();
-  } else {
-    const err = $('#ratings-pin-err');
-    if (err) err.textContent = 'Incorrect PIN';
-    const input = $('#ratings-pin');
-    if (input) { input.value = ''; input.focus(); }
-  }
-}
-
-function renderRatings(root) {
-  const wrap = el('div');
-  wrap.append(el('div', { class: 'game-header' },
-    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
-    el('h2', { style: 'margin:0' }, 'Ratings'),
-    el('div', { class: 'header-spacer' }),
-    ratingsUnlocked ? el('button', { class: 'nav-btn', onclick: () => {
-      ratingsUnlocked = false; render();
-    }}, '🔒 Lock') : null,
-  ));
-
-  if (!ratingsUnlocked) {
-    renderRatingsLock(wrap);
-    root.append(wrap);
-    return;
-  }
-
-  if (!state.players.length) {
-    wrap.append(el('div', { class: 'wo-empty' }, 'No players yet — add some on the Roster page'));
-    root.append(wrap);
-    return;
-  }
-
-  wrap.append(el('div', { class: 'lu-hint' },
-    'Rate each player 1–10 on five abilities. Used to score lineups. Unrated abilities are skipped from averages.'
-  ));
-
-  const sorted = [...state.players].filter(p => p.active !== false)
-    .sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999) || a.name.localeCompare(b.name));
-
-  for (const p of sorted) {
-    const card = el('div', { class: 'card rating-card', 'data-pid': p.id });
-    const overall = playerOverallRating(p.id);
-
-    const numNode = (p.jersey_number != null && p.jersey_number !== '')
-      ? el('span', { class: 'rating-jersey' }, String(p.jersey_number))
-      : el('span', { class: 'rating-jersey no-num' }, '·');
-
-    const posTag = posLabel(p.position);
-    const overallEl = el('div', { class: `rating-overall${overall == null ? ' none' : ''}` },
-      el('span', { class: 'lbl' }, 'Overall'),
-      fmt1(overall),
-    );
-
-    card.append(el('div', { class: 'rating-head' },
-      numNode,
-      el('span', { class: 'rating-name' }, p.name),
-      posTag ? el('span', { class: 'rating-pos' }, posTag) : null,
-      overallEl,
-    ));
-
-    for (const attr of RATING_ATTRS) {
-      const cur = (getPlayerRatings(p.id))[attr.key];
-      const rated = cur != null;
-      const row = el('div', { class: `rating-row${rated ? '' : ' unrated'}` });
-
-      const slider = el('input', {
-        type: 'range', min: '1', max: '10', step: '1',
-        value: rated ? String(cur) : '5',
-      });
-      const pct = ((parseInt(slider.value) - 1) / 9) * 100;
-      slider.style.setProperty('--pct', pct + '%');
-
-      const valEl = el('div', { class: 'rv' }, rated ? String(cur) : '—');
-
-      slider.addEventListener('input', () => {
-        const v = parseInt(slider.value);
-        valEl.textContent = String(v);
-        const p2 = ((v - 1) / 9) * 100;
-        slider.style.setProperty('--pct', p2 + '%');
-        row.classList.remove('unrated');
-      });
-      slider.addEventListener('change', () => {
-        setPlayerRating(p.id, attr.key, slider.value);
-        // Refresh just the Overall on this card
-        const newOverall = playerOverallRating(p.id);
-        overallEl.classList.toggle('none', newOverall == null);
-        overallEl.lastChild.nodeValue = fmt1(newOverall);
-      });
-
-      const clearBtn = el('button', { class: 'rclr', title: 'Clear rating', onclick: () => {
-        setPlayerRating(p.id, attr.key, null);
-        render();
-      }}, '×');
-
-      row.append(
-        el('div', { class: 'rl' }, attr.label),
-        slider,
-        valEl,
-        clearBtn,
-      );
-      card.append(row);
-    }
-
-    wrap.append(card);
-  }
-
-  root.append(wrap);
-}
-
-/* ============ SAVED LINEUPS ============ */
-const SAVED_LU_LS_KEY = 'hoops-saved-lineups-v1';
-function loadSavedLineups() {
-  try { return JSON.parse(lsGet(SAVED_LU_LS_KEY) || '[]') || []; } catch(e) { return []; }
-}
-function saveSavedLineups(arr) { lsSet(SAVED_LU_LS_KEY, JSON.stringify(arr)); }
-function addSavedLineup(name) {
-  const arr = loadSavedLineups();
-  const row = { id: uuid(), name, savedAt: new Date().toISOString(), lu: luLoad() };
-  arr.unshift(row);
-  saveSavedLineups(arr);
-  sb.from('saved_lineups').insert({
-    id: row.id, name: row.name, saved_at: row.savedAt, lineup: row.lu,
-  }).then(() => {}, () => {});
-}
-function deleteSavedLineup(id) {
-  saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
-  sb.from('saved_lineups').delete().eq('id', id).then(() => {}, () => {});
-}
-/* Pull saved lineups from Supabase. Pushes any local-only entries up first,
-   then overwrites localStorage with the merged source-of-truth list. If the
-   saved_lineups table doesn't exist yet, falls back to localStorage. */
-async function syncSavedLineupsWithSupabase() {
-  const local = loadSavedLineups();
-  const { data, error } = await sb.from('saved_lineups').select('*').order('saved_at', { ascending: false });
-  if (error) return; // table not created yet → keep localStorage as-is
-  const remoteIds = new Set((data || []).map(r => r.id));
-  // Push local-only entries up so they aren't lost
-  for (const s of local) {
-    if (!remoteIds.has(s.id)) {
-      sb.from('saved_lineups').insert({
-        id: s.id, name: s.name, saved_at: s.savedAt, lineup: s.lu,
-      }).then(() => {}, () => {});
-    }
-  }
-  const remote = (data || []).map(r => ({ id: r.id, name: r.name, savedAt: r.saved_at, lu: r.lineup }));
-  const localOnly = local.filter(s => !remoteIds.has(s.id));
-  // Local-only entries appear at the top since they're being newly synced
-  saveSavedLineups([...localOnly, ...remote]);
-}
-function applySavedLineup(id) {
-  const s = loadSavedLineups().find(s => s.id === id);
-  if (!s) return false;
-  // Run through luLoad-like normalization to be safe
-  const out = luDefault();
-  for (const q of LU_QUARTERS) {
-    const cur = s.lu && s.lu[q];
-    if (cur && typeof cur === 'object') {
-      for (const sl of LU_SLOTS) if (cur[sl]) out[q][sl] = cur[sl];
-    }
-  }
-  luSave(out);
-  return true;
-}
-
-function openSaveLineupModal() {
-  openModal(
-    el('div', { class: 'modal' },
-      el('h3', {}, 'Save Lineup'),
-      el('div', { class: 'field' },
-        el('label', {}, 'Name'),
-        el('input', { type: 'text', id: 'sv-name', placeholder: 'e.g. Starters, Defensive set' }),
-      ),
-      el('div', { class: 'modal-actions' },
-        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
-        el('button', { class: 'btn btn-primary', onclick: () => {
-          const name = $('#sv-name').value.trim();
-          if (!name) return toast('Name required');
-          addSavedLineup(name);
-          closeModal();
-          toast('Lineup saved');
-        }}, 'Save'),
-      ),
-    )
-  );
-  setTimeout(() => $('#sv-name')?.focus(), 50);
-}
-
-function openLoadLineupModal() {
-  const list = loadSavedLineups();
-  const body = el('div', { class: 'modal modal-lg' }, el('h3', {}, 'Saved Lineups'));
-  if (!list.length) {
-    body.append(el('div', { style: 'color:var(--muted);font-size:13px;padding:18px 4px;text-align:center;letter-spacing:0.08em' },
-      'No saved lineups yet. Build a lineup and tap Save.'));
-  } else {
-    const listEl = el('div', { class: 'saved-list' });
-    for (const s of list) {
-      const when = new Date(s.savedAt).toLocaleString();
-      const filled = LU_QUARTERS.reduce((n, q) => n + LU_SLOTS.filter(sl => s.lu?.[q]?.[sl]).length, 0);
-      listEl.append(el('div', { class: 'saved-row' },
-        el('div', {},
-          el('div', { class: 'saved-name' }, s.name),
-          el('div', { class: 'saved-meta' }, `${filled} slots · saved ${when}`),
-        ),
-        el('button', { class: 'saved-load', onclick: () => {
-          if (!applySavedLineup(s.id)) return toast('Could not load');
-          closeModal();
-          render();
-          toast(`Loaded: ${s.name}`);
-        }}, 'Load'),
-        el('button', { class: 'saved-del', title: 'Delete', onclick: () => {
-          if (!confirm(`Delete saved lineup "${s.name}"?`)) return;
-          deleteSavedLineup(s.id);
-          closeModal();
-          openLoadLineupModal();
-        }}, '×'),
-      ));
-    }
-    body.append(listEl);
-  }
-  body.append(el('div', { class: 'modal-actions' },
-    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
-  ));
-  openModal(body);
-}
-
-/* ============ PLAYER PICKER (slot tap) ============ */
-function openPickerModal(q, slot) {
-  const lu = luLoad();
-  const currentPid = lu[q][slot];
-  const currentPlayer = currentPid ? luPlayerById(currentPid) : null;
-
-  const body = el('div', { class: 'modal modal-lg' });
-  body.append(el('h3', {}, `${q} · ${slot}`));
-
-  if (currentPlayer) {
-    body.append(el('div', { class: 'picker-current-bar' },
-      el('span', { class: 'pc-name' }, currentPlayer.name),
-      posLabel(currentPlayer.position) ? el('span', { class: 'picker-pos' }, posLabel(currentPlayer.position)) : null,
-      el('button', { class: 'picker-remove', onclick: () => {
-        const cur = luLoad();
-        luClearSlot(cur, q, slot);
-        luSave(cur);
-        closeModal();
-        render();
-      }}, 'Remove'),
-    ));
-  }
-
-  const players = [...state.players].filter(p => p.active !== false);
-  if (!players.length) {
-    body.append(el('div', { style: 'padding:20px 0;color:var(--muted);text-align:center' },
-      'No players. Add some on the Roster page.'));
-  } else {
-    const decorated = players.map(p => {
-      const overall = playerOverallRating(p.id);
-      const existingSlot = luFindSlotInQuarter(lu, q, p.id);
-      const sameQ = !!existingSlot && existingSlot !== slot;
-      const usage = luUsage(lu, p.id);
-      return { p, overall, sameQ, existingSlot, usage };
-    });
-    decorated.sort((a, b) => {
-      // Sort by overall desc, nulls last; tiebreak by jersey
-      const ao = a.overall == null ? -Infinity : a.overall;
-      const bo = b.overall == null ? -Infinity : b.overall;
-      if (bo !== ao) return bo - ao;
-      return (a.p.jersey_number || 999) - (b.p.jersey_number || 999);
-    });
-
-    body.append(el('div', { class: 'picker-section' }, 'All players · sorted by Overall'));
-    const listEl = el('div', { class: 'picker-list' });
-    for (const d of decorated) {
-      const { p, overall, sameQ, existingSlot, usage } = d;
-      const isCurrent = currentPid === p.id;
-      const ovrClass = statClass(overall);
-      const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
-
-      const numNode = (p.jersey_number != null && p.jersey_number !== '')
-        ? el('div', { class: 'picker-jersey' }, String(p.jersey_number))
-        : el('div', { class: 'picker-jersey no-num' }, '·');
-
-      const note = isCurrent ? 'Currently here'
-        : sameQ ? `Move from ${existingSlot}`
-        : `${usage}/${LU_QUARTERS.length}`;
-
-      const hideRating = isLineupRatingsHidden();
-      const row = el('div', { class: `picker-row${isCurrent ? ' current' : ''}` },
-        numNode,
-        el('div', {},
-          el('div', { class: 'picker-name' }, p.name),
-          el('div', { class: 'picker-note' }, note),
-        ),
-        el('div', { class: 'picker-meta' },
-          posLabel(p.position) ? el('span', { class: 'picker-pos' }, posLabel(p.position)) : null,
-        ),
-        hideRating ? null : el('div', { class: `picker-ovr ${ovrClass}` }, ovrText),
-      );
-      row.addEventListener('click', () => {
-        const cur = luLoad();
-        const r = luPlaceInSlot(cur, q, slot, p.id);
-        if (!r.ok) return toast(r.msg);
-        luSave(cur);
-        closeModal();
-        render();
-      });
-      listEl.append(row);
-    }
-    body.append(listEl);
-  }
-
-  body.append(el('div', { class: 'modal-actions' },
-    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
-  ));
-  openModal(body);
-}
-
-/* Score panel: Overall + grid of color-coded score pills. */
-function buildStatsPanel(agg, titleText) {
-  const panel = el('div', { class: 'lu-stats' });
-  panel.append(el('div', { class: 'lu-stats-head' },
-    el('div', { class: 'lu-stats-title' }, titleText || 'Lineup score'),
-    el('div', { class: `lu-overall ${statClass(agg.overall)}` },
-      el('span', { class: 'lu-overall-lbl' }, 'Overall'),
-      fmt1(agg.overall),
-    ),
-  ));
-  const pills = el('div', { class: 'lu-score-pills' });
-  for (const attr of RATING_ATTRS) {
-    const { avg } = agg.perAttr[attr.key];
-    pills.append(el('div', { class: `lu-score-pill ${statClass(avg)}`, title: attr.label },
-      el('span', { class: 'sp-lbl' }, attr.short),
-      el('span', { class: 'sp-val' }, fmt1(avg)),
-    ));
-  }
-  panel.append(pills);
-  if (agg.fullyUnrated > 0) {
-    panel.append(el('div', { class: 'lu-stat-missing' },
-      `${agg.fullyUnrated} unrated player${agg.fullyUnrated === 1 ? '' : 's'}`));
-  }
-  return panel;
 }
 
 function openAddPlayerModal() {
@@ -3365,8 +2435,6 @@ function toast(msg) {
 $('#brand-home').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
 $('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
-$('#nav-lineup').onclick = () => { state.view = 'lineup'; render(); };
-$('#nav-ratings').onclick = () => { state.view = 'ratings'; render(); };
 
 /* ============ INIT ============ */
 loadWorkout();
