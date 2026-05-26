@@ -369,7 +369,7 @@
   .player-pick {
     background: rgba(255,255,255,0.04); border: 2px solid var(--border);
     border-radius: 10px; padding: 12px 8px; cursor: pointer;
-    text-align: center; transition: all 0.15s; position: relative;
+    text-align: center; transition: all 0.15s;
   }
   .player-pick:hover { border-color: var(--border-strong); }
   .player-pick.active {
@@ -731,6 +731,21 @@
   .lu-slot.armed-target { border-color: var(--gold-2); border-style: solid; }
   .lu-slot .lu-chip { flex: 1; cursor: default; }
   .lu-slot .lu-chip:hover { transform: none; }
+
+  /* ½-pair slot: two stacked half-chips sharing one position */
+  .lu-slot.pair {
+    flex-direction: column; gap: 4px; padding: 4px;
+    border-style: solid; border-color: rgba(212,175,55,0.35);
+    background: rgba(212,175,55,0.04);
+  }
+  .lu-slot.pair .lu-chip { width: 100%; flex: none; padding: 5px 10px 5px 5px; gap: 6px; font-size: 13px; border-radius: 999px; }
+  .lu-slot.pair .lu-chip .lu-num { width: 22px; height: 22px; font-size: 11px; }
+  .lu-chip .lu-half-tag {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.04em;
+    padding: 2px 6px; border-radius: 6px; line-height: 1;
+    background: linear-gradient(135deg, var(--gold), #b8902e); color: #1a1208;
+    border: 1px solid rgba(212,175,55,0.5);
+  }
   .lu-chip .lu-x {
     margin-left: auto; padding: 2px 8px; border-radius: 999px;
     background: rgba(255,255,255,0.06); color: var(--muted); cursor: pointer;
@@ -824,6 +839,16 @@
     background: rgba(240,87,79,0.1); font-weight: 700; cursor: pointer; font-size: 12px;
   }
   .picker-remove:hover { background: rgba(240,87,79,0.18); }
+  .picker-pair-add {
+    margin-left: auto; padding: 6px 12px; border-radius: 8px;
+    border: 1px solid rgba(212,175,55,0.45); color: var(--gold-2);
+    background: rgba(212,175,55,0.14); font-weight: 700; cursor: pointer; font-size: 12px;
+  }
+  .picker-pair-add:hover { background: rgba(212,175,55,0.24); }
+  .picker-current-bar.pair { background: rgba(212,175,55,0.08); border-color: rgba(212,175,55,0.4); }
+  .picker-pair-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .picker-pair-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-2); font-weight: 800; }
+  .picker-pair-names { font-size: 13px; font-weight: 700; color: var(--text); }
 
   /* ---------- Saved lineups ---------- */
   .saved-list { display: grid; gap: 8px; margin-top: 8px; max-height: 60vh; overflow-y: auto; }
@@ -1112,28 +1137,6 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return nu
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
 
-// Half-quarter pair plans: { primary_id, partner_id } stored per game+quarter.
-// Primary starts the quarter, partner is queued to sub in at halftime (each = 0.5 of slot).
-function pairsKey(quarter) { return `pairs-${state.currentGameId}-${quarter}`; }
-function loadPendingPairs(quarter) {
-  try { return JSON.parse(lsGet(pairsKey(quarter)) || '[]'); } catch(e) { return []; }
-}
-function savePendingPairs(quarter, pairs) {
-  lsSet(pairsKey(quarter), JSON.stringify(pairs));
-}
-function removePendingPair(quarter, primaryId) {
-  const pairs = loadPendingPairs(quarter).filter(p => p.primary_id !== primaryId);
-  savePendingPairs(quarter, pairs);
-}
-function getPartnerForPrimary(quarter, primaryId) {
-  const pair = loadPendingPairs(quarter).find(p => p.primary_id === primaryId);
-  return pair ? pair.partner_id : null;
-}
-function getPrimaryForPartner(quarter, partnerId) {
-  const pair = loadPendingPairs(quarter).find(p => p.partner_id === partnerId);
-  return pair ? pair.primary_id : null;
-}
-
 /* Player position 1-5 (PG/SG/SF/PF/C). Stored on the player row and mirrored
    to localStorage so it survives even if the Supabase 'players' table has no
    'position' column yet. */
@@ -1244,26 +1247,31 @@ function playerOverallRating(playerId) {
 /* Aggregate stats for an array of playerIds. Skips unrated values per
    attribute, returns counts so the UI can warn about missing data. */
 function aggregateRatings(playerIds) {
+  return aggregateRatingsWeighted(playerIds.map(id => ({ id, weight: 1 })));
+}
+/* Aggregate ratings across [{ id, weight }] entries. ½-pair members pass
+   weight 0.5 so a paired slot's contribution to the lineup average equals
+   one slot (avg of the two players), not two. */
+function aggregateRatingsWeighted(entries) {
   const map = loadRatings();
   const perAttr = {};
   let overallSum = 0, overallCount = 0;
   for (const a of RATING_ATTRS) {
-    let sum = 0, count = 0;
-    for (const pid of playerIds) {
-      const v = map[pid] && map[pid][a.key];
-      if (v != null) { sum += v; count++; }
+    let sumW = 0, totalW = 0, countRated = 0;
+    for (const e of entries) {
+      const v = map[e.id] && map[e.id][a.key];
+      if (v != null) { sumW += v * e.weight; totalW += e.weight; countRated++; }
     }
-    const avg = count ? sum / count : null;
-    perAttr[a.key] = { avg, count, missing: playerIds.length - count };
+    const avg = totalW > 0 ? sumW / totalW : null;
+    perAttr[a.key] = { avg, count: countRated, missing: entries.length - countRated };
     if (avg != null) { overallSum += avg; overallCount++; }
   }
   const overall = overallCount ? overallSum / overallCount : null;
-  // Players in this set with NO ratings at all
-  const fullyUnrated = playerIds.filter(pid => {
-    const r = map[pid] || {};
+  const fullyUnrated = entries.filter(e => {
+    const r = map[e.id] || {};
     return !RATING_ATTRS.some(a => r[a.key] != null);
   }).length;
-  return { perAttr, overall, totalPlayers: playerIds.length, fullyUnrated };
+  return { perAttr, overall, totalPlayers: entries.length, fullyUnrated };
 }
 
 function saveCache() {
@@ -1382,33 +1390,6 @@ async function endStint(stintId, secsRemaining) {
   stint.ended_seconds_remaining = secsRemaining;
   state.undoStack.push({ type: 'stint-end', id: stintId });
   await sb.from('stints').update({ ended_seconds_remaining: secsRemaining }).eq('id', stintId);
-  render();
-}
-
-// Swap every half-quarter pair whose primary is still on the floor: end primary stint, start partner.
-async function executePairSwaps() {
-  const quarter = state.currentQuarter;
-  const pairs = loadPendingPairs(quarter);
-  if (!pairs.length) return;
-  const t = getCurrentClockSeconds();
-  const onFloorIds = getOnFloorIds(quarter);
-  let swapped = 0;
-  let skipped = 0;
-  for (const pp of pairs) {
-    const primaryOnFloor = onFloorIds.includes(pp.primary_id);
-    const partnerAlreadyOnFloor = onFloorIds.includes(pp.partner_id);
-    if (!primaryOnFloor || partnerAlreadyOnFloor) {
-      skipped++;
-      continue;
-    }
-    const outStint = state.stints.find(s => s.player_id === pp.primary_id && s.quarter === quarter && s.ended_seconds_remaining === null);
-    if (outStint) await endStint(outStint.id, t);
-    await startStint(pp.partner_id, t);
-    swapped++;
-  }
-  savePendingPairs(quarter, []);
-  if (swapped) toast(skipped ? `Swapped ${swapped} · skipped ${skipped}` : `Swapped ${swapped} pair${swapped === 1 ? '' : 's'}`);
-  else toast('No pairs to swap');
   render();
 }
 
@@ -1806,36 +1787,6 @@ function renderQuarter() {
   const right = el('div');
 
   right.append(el('h3', {}, `Q${state.currentQuarter} · On Floor`));
-
-  // Half-quarter pair swap banner
-  const pendingPairs = loadPendingPairs(state.currentQuarter);
-  const onFloorPairs = pendingPairs.filter(pp => onFloorIds.includes(pp.primary_id));
-  if (onFloorPairs.length) {
-    const qLen = getQuarterLengthSec();
-    const curSec = getCurrentClockSeconds();
-    const pastHalf = curSec <= Math.floor(qLen / 2);
-    const banner = el('div', {
-      class: 'panel-section',
-      style: 'display:flex; align-items:center; gap:10px; padding:12px 14px; margin-bottom:10px; border-radius:10px;'
-        + (pastHalf
-          ? ' background:rgba(255,106,31,0.18); border:2px solid var(--accent); box-shadow:0 0 14px rgba(255,106,31,0.25);'
-          : ' background:rgba(212,175,55,0.08); border:1px solid var(--border);'),
-    },
-      el('div', { style: 'flex:1;' },
-        el('div', { style: 'font-size:11px; letter-spacing:0.18em; text-transform:uppercase; font-weight:800; color:' + (pastHalf ? 'var(--accent)' : 'var(--gold-2)') + '; margin-bottom:4px;' },
-          pastHalf ? '½-SLOT SWAP READY' : '½-SLOT PAIRS QUEUED'),
-        el('div', { style: 'font-size:12px; color:var(--ink-2); line-height:1.5;' },
-          onFloorPairs.map(pp => {
-            const a = state.players.find(x => x.id === pp.primary_id);
-            const b = state.players.find(x => x.id === pp.partner_id);
-            return (a && b) ? `${shortName(a.name)} → ${shortName(b.name)}` : '';
-          }).filter(Boolean).join(' · ')),
-      ),
-      el('button', { class: 'btn btn-primary', style: 'padding:8px 14px; font-size:12px;', onclick: executePairSwaps }, 'SWAP NOW'),
-    );
-    right.append(banner);
-  }
-
   const floorGrid = el('div', { class: 'on-floor-grid panel-section' });
   for (let i = 0; i < 5; i++) {
     if (onFloorIds[i]) {
@@ -1893,18 +1844,10 @@ function renderPlayerCard(playerId) {
   const p = state.players.find(p => p.id === playerId);
   if (!p) return el('div');
   const stats = getPlayerStats(playerId, state.currentQuarter);
-  const partnerId = getPartnerForPrimary(state.currentQuarter, playerId);
-  const partner = partnerId ? state.players.find(x => x.id === partnerId) : null;
   const card = el('div', { class: 'player-card', id: `pcard-${playerId}` },
     el('div', { class: 'pc-head' },
       el('div', { class: 'pc-jersey' }, p.jersey_number || (p.name[0])),
-      el('div', { class: 'pc-name', onclick: () => openPlayerDetail(playerId), style: 'cursor:pointer' },
-        shortName(p.name),
-        partner ? el('span', {
-          style: 'margin-left:6px; background:var(--gold-2); color:#000; font-size:9px; font-weight:800; padding:2px 6px; border-radius:8px; letter-spacing:0.06em; vertical-align:middle;',
-          title: `Half-slot pair: subs out for ${shortName(partner.name)} at half`,
-        }, `½ → ${shortName(partner.name).toUpperCase()}`) : null,
-      ),
+      el('div', { class: 'pc-name', onclick: () => openPlayerDetail(playerId), style: 'cursor:pointer' }, shortName(p.name)),
       el('div', { class: 'pc-pts' },
         el('strong', {}, String(stats.pts)), ' pts · ',
         `${stats.fgm}/${stats.fga}`,
@@ -2144,73 +2087,26 @@ function openAddStarterModal() {
   if (!available.length) return toast('No bench players');
   const slotsLeft = 5 - onFloorIds.length;
   const selected = new Set();
-  const pairs = {}; // primary_id -> partner_id (½ shared slot, partner subs in at half)
-  let pairingFor = null;
 
   function update() {
     const root = $('#modal-root');
     root.innerHTML = '';
-    const partneredIds = new Set(Object.values(pairs));
-
-    if (pairingFor) {
-      const primary = state.players.find(p => p.id === pairingFor);
-      const candidates = available.filter(p => !selected.has(p.id) && !partneredIds.has(p.id));
-      let grid;
-      if (!candidates.length) {
-        grid = el('div', { style: 'text-align:center; color:var(--muted); font-size:13px; padding:20px;' }, 'No bench players left to pair with');
-      } else {
-        grid = el('div', { class: 'player-pick-grid' },
-          ...candidates.map(p => el('div', {
-            class: 'player-pick',
-            onclick: () => {
-              pairs[pairingFor] = p.id;
-              pairingFor = null;
-              update();
-            },
-          },
-            el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
-            el('div', { class: 'pp-name' }, shortName(p.name)),
-          ))
-        );
-      }
-      const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
-        el('div', { class: 'modal modal-lg' },
-          el('h3', {}, `Pick ½-Slot Partner For ${shortName(primary.name)}`),
-          el('div', { style: 'text-align:center; margin-bottom:12px; font-size:12px; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase;' },
-            `${shortName(primary.name)} plays 1st half · partner plays 2nd half`),
-          grid,
-          el('div', { class: 'modal-actions' },
-            el('button', { class: 'btn btn-ghost', onclick: () => { pairingFor = null; update(); } }, 'Back'),
-          ),
-        )
-      );
-      root.append(modal);
-      return;
-    }
-
     const grid = el('div', { class: 'player-pick-grid' },
-      ...available.map(p => {
-        const isSelected = selected.has(p.id);
-        const isPartner = partneredIds.has(p.id);
-        return el('div', {
-          class: `player-pick ${isSelected ? 'active' : ''}`,
-          style: isPartner ? 'opacity:0.45; pointer-events:none; border-color: var(--gold-2);' : '',
-          onclick: () => {
-            if (selected.has(p.id)) {
-              selected.delete(p.id);
-              delete pairs[p.id];
-            } else {
-              if (selected.size >= slotsLeft) return toast(`Max ${slotsLeft}`);
-              selected.add(p.id);
-            }
-            update();
-          },
+      ...available.map(p => el('div', {
+        class: `player-pick ${selected.has(p.id) ? 'active' : ''}`,
+        onclick: () => {
+          if (selected.has(p.id)) {
+            selected.delete(p.id);
+          } else {
+            if (selected.size >= slotsLeft) return toast(`Max ${slotsLeft}`);
+            selected.add(p.id);
+          }
+          update();
         },
-          el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
-          el('div', { class: 'pp-name' }, shortName(p.name)),
-          isPartner ? el('div', { style: 'position:absolute; top:4px; right:4px; background:var(--gold-2); color:#000; font-size:9px; font-weight:800; padding:1px 5px; border-radius:8px; letter-spacing:0.08em;' }, '½ PAIRED') : null,
-        );
-      })
+      },
+        el('div', { class: 'pp-num' }, p.jersey_number || p.name[0]),
+        el('div', { class: 'pp-name' }, shortName(p.name)),
+      ))
     );
 
     const counter = el('div', {
@@ -2218,47 +2114,11 @@ function openAddStarterModal() {
         + (selected.size === slotsLeft ? ' color:var(--made);' : ' color:var(--gold-2);'),
     }, `${selected.size} / ${slotsLeft} selected`);
 
-    let pairingSection = null;
-    if (selected.size > 0) {
-      const rows = [];
-      for (const pid of selected) {
-        const p = state.players.find(x => x.id === pid);
-        if (!p) continue;
-        const partnerId = pairs[pid];
-        const partner = partnerId ? state.players.find(x => x.id === partnerId) : null;
-        const row = el('div', {
-          style: 'display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--surface); border-radius:8px; margin-bottom:6px;'
-        },
-          el('span', { style: 'flex:1; font-weight:600; font-size:13px;' }, shortName(p.name)),
-          partner
-            ? el('div', { style: 'display:flex; align-items:center; gap:8px;' },
-                el('span', { style: 'color:var(--gold-2); font-size:12px; font-weight:700;' }, `½ ↔ ${shortName(partner.name)}`),
-                el('button', {
-                  class: 'btn btn-ghost',
-                  style: 'padding:4px 8px; font-size:10px; letter-spacing:0.06em;',
-                  onclick: () => { delete pairs[pid]; update(); }
-                }, 'UNPAIR'),
-              )
-            : el('button', {
-                class: 'btn btn-ghost',
-                style: 'padding:5px 10px; font-size:11px; letter-spacing:0.06em;',
-                onclick: () => { pairingFor = pid; update(); },
-              }, '+ PAIR (½)'),
-        );
-        rows.push(row);
-      }
-      pairingSection = el('div', { style: 'margin-top:14px;' },
-        el('h4', { style: 'font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin:0 0 10px;' }, 'Half-Quarter Pairs (optional)'),
-        ...rows,
-      );
-    }
-
     const modal = el('div', { class: 'modal-bg', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
       el('div', { class: 'modal modal-lg' },
         el('h3', {}, slotsLeft === 5 ? `Pick 5 Starters — Q${state.currentQuarter}` : `Add Up To ${slotsLeft} — Q${state.currentQuarter}`),
         counter,
         grid,
-        pairingSection,
         el('div', { class: 'modal-actions' },
           el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
           el('button', {
@@ -2271,13 +2131,6 @@ function openAddStarterModal() {
               for (const pid of selected) {
                 await startStint(pid, startSec);
               }
-              const existing = loadPendingPairs(state.currentQuarter);
-              const newPairs = Object.entries(pairs).map(([primary_id, partner_id]) => ({ primary_id, partner_id }));
-              const merged = [
-                ...existing.filter(p => !newPairs.find(np => np.primary_id === p.primary_id)),
-                ...newPairs,
-              ];
-              savePendingPairs(state.currentQuarter, merged);
               closeModal();
             },
           }, `Load ${selected.size}`),
@@ -2644,6 +2497,24 @@ function luDefault() {
   for (const q of LU_QUARTERS) out[q] = luDefaultQuarter();
   return out;
 }
+/* Slot value shape:
+   - null            → empty
+   - "<player-id>"   → solo (1.0 weight)
+   - { a, b }        → ½-pair: two players share the slot, each 0.5 weight */
+function luIsPair(v) { return v && typeof v === 'object' && (v.a || v.b); }
+function luSlotIds(v) {
+  if (!v) return [];
+  if (typeof v === 'string') return [v];
+  return [v.a, v.b].filter(Boolean);
+}
+function luSlotEntries(v) {
+  if (!v) return [];
+  if (typeof v === 'string') return [{ id: v, weight: 1, role: 'solo' }];
+  const out = [];
+  if (v.a) out.push({ id: v.a, weight: 0.5, role: 'a' });
+  if (v.b) out.push({ id: v.b, weight: 0.5, role: 'b' });
+  return out;
+}
 function luLoad() {
   try {
     const raw = lsGet(LU_LS_KEY);
@@ -2654,12 +2525,21 @@ function luLoad() {
         const cur = v[q];
         const slotObj = luDefaultQuarter();
         if (Array.isArray(cur)) {
-          // Migrate old shape (array of ids) into PG..C order
           for (let i = 0; i < cur.length && i < LU_SLOTS.length; i++) {
             if (cur[i]) slotObj[LU_SLOTS[i]] = cur[i];
           }
         } else if (cur && typeof cur === 'object') {
-          for (const s of LU_SLOTS) if (cur[s]) slotObj[s] = cur[s];
+          for (const s of LU_SLOTS) {
+            const val = cur[s];
+            if (!val) continue;
+            if (typeof val === 'string') {
+              slotObj[s] = val;
+            } else if (typeof val === 'object' && (val.a || val.b)) {
+              // Normalize: collapse to solo if only one half exists
+              if (val.a && val.b) slotObj[s] = { a: val.a, b: val.b };
+              else slotObj[s] = val.a || val.b;
+            }
+          }
         }
         out[q] = slotObj;
       }
@@ -2670,30 +2550,101 @@ function luLoad() {
 }
 function luSave(lu) { lsSet(LU_LS_KEY, JSON.stringify(lu)); }
 function luPlayerById(id) { return state.players.find(p => p.id === id); }
-function luQuarterIds(lu, q) { return LU_SLOTS.map(s => lu[q][s]).filter(Boolean); }
-function luQuarterFilledCount(lu, q) { return luQuarterIds(lu, q).length; }
-function luUsage(lu, playerId) {
-  return LU_QUARTERS.reduce(
-    (n, q) => n + (LU_SLOTS.some(s => lu[q][s] === playerId) ? 1 : 0),
-    0
-  );
+/* Flat array of all player IDs in a quarter (pair = 2 ids) */
+function luQuarterIds(lu, q) {
+  const out = [];
+  for (const s of LU_SLOTS) out.push(...luSlotIds(lu[q][s]));
+  return out;
 }
+/* Weighted entries for a quarter: pairs contribute 0.5 each, solos 1.0 */
+function luQuarterEntries(lu, q) {
+  const out = [];
+  for (const s of LU_SLOTS) out.push(...luSlotEntries(lu[q][s]));
+  return out;
+}
+/* Slot count filled (each pair counts as 1 slot, max 5) */
+function luQuarterFilledCount(lu, q) {
+  return LU_SLOTS.reduce((n, s) => n + (lu[q][s] ? 1 : 0), 0);
+}
+/* Fractional usage: 1 per solo appearance, 0.5 per pair appearance */
+function luUsage(lu, playerId) {
+  let total = 0;
+  for (const q of LU_QUARTERS) {
+    for (const s of LU_SLOTS) {
+      const v = lu[q][s];
+      if (!v) continue;
+      if (typeof v === 'string') {
+        if (v === playerId) total += 1;
+      } else {
+        if (v.a === playerId) total += 0.5;
+        if (v.b === playerId) total += 0.5;
+      }
+    }
+  }
+  return total;
+}
+/* Find any slot the player is in for this quarter. Returns { slot, role }
+   where role is 'solo' | 'a' | 'b', or null if not present. */
 function luFindSlotInQuarter(lu, q, playerId) {
-  for (const s of LU_SLOTS) if (lu[q][s] === playerId) return s;
+  for (const s of LU_SLOTS) {
+    const v = lu[q][s];
+    if (!v) continue;
+    if (typeof v === 'string') {
+      if (v === playerId) return { slot: s, role: 'solo' };
+    } else {
+      if (v.a === playerId) return { slot: s, role: 'a' };
+      if (v.b === playerId) return { slot: s, role: 'b' };
+    }
+  }
   return null;
 }
 
-/* Place a player in a specific (q, slot). Allows moving within the same
-   quarter (does not double-count usage). Overwrites whoever was in the slot. */
+/* Place a player in a specific (q, slot) as a SOLO (replaces whatever was
+   there — pair or solo). Moves the player within the same quarter if they
+   were already in another slot. */
 function luPlaceInSlot(lu, q, slot, playerId) {
-  const existingSlot = luFindSlotInQuarter(lu, q, playerId);
-  if (existingSlot === slot) return { ok: true };
-  if (existingSlot) {
-    lu[q][existingSlot] = null;
-    lu[q][slot] = playerId;
-    return { ok: true, moved: true };
+  const existing = luFindSlotInQuarter(lu, q, playerId);
+  if (existing && existing.slot === slot && existing.role === 'solo') return { ok: true };
+  if (existing) {
+    // Remove player from their current slot/role
+    const cur = lu[q][existing.slot];
+    if (typeof cur === 'string') {
+      lu[q][existing.slot] = null;
+    } else {
+      // Pair: drop the player's half; collapse remaining half to solo
+      const otherId = existing.role === 'a' ? cur.b : cur.a;
+      lu[q][existing.slot] = otherId || null;
+    }
   }
   lu[q][slot] = playerId;
+  return { ok: true, moved: !!existing };
+}
+/* Add a player as ½-pair partner to an existing solo slot. Fails if slot
+   isn't a solo, partner is already there, or partner is the same player. */
+function luAddPartner(lu, q, slot, partnerId) {
+  const cur = lu[q][slot];
+  if (!cur) return { ok: false, msg: 'Slot is empty — pick a primary first' };
+  if (typeof cur !== 'string') return { ok: false, msg: 'Slot already has a pair' };
+  if (cur === partnerId) return { ok: false, msg: 'Same player as primary' };
+  // If partner is elsewhere in this quarter, remove them from there first
+  const elsewhere = luFindSlotInQuarter(lu, q, partnerId);
+  if (elsewhere) {
+    const ev = lu[q][elsewhere.slot];
+    if (typeof ev === 'string') lu[q][elsewhere.slot] = null;
+    else {
+      const otherId = elsewhere.role === 'a' ? ev.b : ev.a;
+      lu[q][elsewhere.slot] = otherId || null;
+    }
+  }
+  lu[q][slot] = { a: cur, b: partnerId };
+  return { ok: true };
+}
+/* Remove one half of a pair, collapsing to solo. Pass which='a' or 'b'. */
+function luRemoveHalf(lu, q, slot, which) {
+  const cur = lu[q][slot];
+  if (!cur || typeof cur === 'string') return { ok: false };
+  const remaining = which === 'a' ? cur.b : cur.a;
+  lu[q][slot] = remaining || null;
   return { ok: true };
 }
 function luClearSlot(lu, q, slot) { lu[q][slot] = null; }
@@ -2735,10 +2686,10 @@ function renderLineup(root) {
 
   // ----- Per-quarter overall chart -----
   if (!hideRatings) {
-    const anyFilled = LU_QUARTERS.some(q => luQuarterIds(lu, q).length > 0);
+    const anyFilled = LU_QUARTERS.some(q => luQuarterFilledCount(lu, q) > 0);
     if (anyFilled) {
       const totalCard = el('div', { class: 'lu-total-card' });
-      const totalFilled = LU_QUARTERS.reduce((n, q) => n + luQuarterIds(lu, q).length, 0);
+      const totalFilled = LU_QUARTERS.reduce((n, q) => n + luQuarterFilledCount(lu, q), 0);
       totalCard.append(el('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' },
         el('div', { style: 'font-size:12px;letter-spacing:0.18em;color:var(--muted);font-weight:700;text-transform:uppercase' }, 'Quarter overall scores'),
         el('div', { style: 'font-size:11px;color:var(--muted)' },
@@ -2746,14 +2697,15 @@ function renderLineup(root) {
       ));
       const grid = el('div', { class: 'lu-q-overall-grid' });
       for (const q of LU_QUARTERS) {
-        const ids = luQuarterIds(lu, q);
-        const agg = ids.length ? aggregateRatings(ids) : { overall: null };
+        const entries = luQuarterEntries(lu, q);
+        const filledSlots = luQuarterFilledCount(lu, q);
+        const agg = entries.length ? aggregateRatingsWeighted(entries) : { overall: null };
         const ovrText = agg.overall == null ? '—' : (Math.round(agg.overall * 10) / 10).toFixed(1);
         const cls = statClass(agg.overall);
         grid.append(el('div', { class: `lu-q-overall ${cls}` },
           el('div', { class: 'lu-qo-label' }, q),
           el('div', { class: 'lu-qo-val' }, ovrText),
-          el('div', { class: 'lu-qo-sub' }, `${ids.length}/${LU_MAX_PER_Q}`),
+          el('div', { class: 'lu-qo-sub' }, `${filledSlots}/${LU_MAX_PER_Q}`),
         ));
       }
       totalCard.append(grid);
@@ -2775,25 +2727,43 @@ function renderLineup(root) {
 
     const slotsWrap = el('div', { class: 'lu-slots' });
     for (const slotName of LU_SLOTS) {
-      const pid = lu[q][slotName];
-      const slotEl = el('div', { class: `lu-slot${pid ? '' : ' empty'}` });
+      const val = lu[q][slotName];
+      const isPair = luIsPair(val);
+      const slotEl = el('div', { class: `lu-slot${val ? (isPair ? ' pair' : '') : ' empty'}` });
 
-      if (pid) {
-        const p = luPlayerById(pid);
-        if (!p) {
-          luClearSlot(lu, q, slotName);
-          luSave(lu);
-          slotEl.classList.add('empty');
-          slotEl.append('Empty');
+      if (val) {
+        if (isPair) {
+          // Drop missing-player halves
+          const pa = luPlayerById(val.a);
+          const pb = luPlayerById(val.b);
+          if (!pa && !pb) {
+            luClearSlot(lu, q, slotName); luSave(lu);
+            slotEl.classList.add('empty'); slotEl.classList.remove('pair');
+            slotEl.append('Empty');
+          } else if (!pa || !pb) {
+            const surviving = pa || pb;
+            lu[q][slotName] = surviving.id; luSave(lu);
+            slotEl.classList.remove('pair');
+            slotEl.append(buildChip(surviving, luUsage(lu, surviving.id), { source: 'quarter', quarter: q, slot: slotName, role: 'solo' }));
+          } else {
+            slotEl.append(buildChip(pa, luUsage(lu, pa.id), { source: 'quarter', quarter: q, slot: slotName, role: 'a' }));
+            slotEl.append(buildChip(pb, luUsage(lu, pb.id), { source: 'quarter', quarter: q, slot: slotName, role: 'b' }));
+          }
         } else {
-          slotEl.append(buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q, slot: slotName }));
+          const p = luPlayerById(val);
+          if (!p) {
+            luClearSlot(lu, q, slotName); luSave(lu);
+            slotEl.classList.add('empty');
+            slotEl.append('Empty');
+          } else {
+            slotEl.append(buildChip(p, luUsage(lu, p.id), { source: 'quarter', quarter: q, slot: slotName, role: 'solo' }));
+          }
         }
       } else {
         slotEl.append('Tap to pick');
       }
 
       slotEl.addEventListener('click', (e) => {
-        // Don't trigger when tapping the X inside a chip
         if (e.target.closest('.lu-x')) return;
         openPickerModal(q, slotName);
       });
@@ -2805,9 +2775,9 @@ function renderLineup(root) {
     }
     qCard.append(slotsWrap);
 
-    const qIds = luQuarterIds(lu, q);
-    if (!hideRatings && qIds.length > 0) {
-      qCard.append(buildStatsPanel(aggregateRatings(qIds), `${q} score`));
+    const qEntries = luQuarterEntries(lu, q);
+    if (!hideRatings && qEntries.length > 0) {
+      qCard.append(buildStatsPanel(aggregateRatingsWeighted(qEntries), `${q} score`));
     }
 
     grid.append(qCard);
@@ -2819,8 +2789,13 @@ function renderLineup(root) {
 
 function buildChip(p, usage, opts) {
   const hideRating = isLineupRatingsHidden();
+  const role = opts.role || 'solo'; // 'solo' | 'a' | 'b'
+  const isHalf = role !== 'solo';
   const classes = ['lu-chip'];
-  if (usage >= 1) classes.push(`use-${Math.min(usage, 4)}`);
+  if (isHalf) classes.push('half');
+  // Use floor for the heat-tier so 0.5 shows neutral, 1.0+ tiers as before
+  const tier = Math.min(Math.floor(usage), 4);
+  if (tier >= 1) classes.push(`use-${tier}`);
 
   const numNode = (p.jersey_number != null && p.jersey_number !== '')
     ? el('span', { class: 'lu-num' }, String(p.jersey_number))
@@ -2830,16 +2805,20 @@ function buildChip(p, usage, opts) {
   const overall = playerOverallRating(p.id);
   const ovrClass = statClass(overall);
   const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
+  // Fractional usage display: "1.5" but "2" if whole
+  const usageText = (usage % 1 === 0) ? String(usage) : usage.toFixed(1);
   const children = [
     numNode,
     el('span', { class: 'lu-name' }, p.name),
+    isHalf ? el('span', { class: 'lu-half-tag', title: '½ slot — shares with partner' }, '½') : null,
     posTag ? el('span', { class: 'lu-pos' }, posTag) : null,
     hideRating ? null : el('span', { class: `lu-ovr ${ovrClass}`, title: 'Overall rating' }, ovrText),
-    el('span', { class: 'lu-badge', title: 'Quarters used' }, `${usage}/${LU_QUARTERS.length}`),
-    el('button', { class: 'lu-x', title: 'Remove', onclick: (e) => {
+    el('span', { class: 'lu-badge', title: 'Quarters used (½ = pair)' }, `${usageText}/${LU_QUARTERS.length}`),
+    el('button', { class: 'lu-x', title: isHalf ? 'Remove ½' : 'Remove', onclick: (e) => {
       e.stopPropagation();
       const cur = luLoad();
-      luClearSlot(cur, opts.quarter, opts.slot);
+      if (isHalf) luRemoveHalf(cur, opts.quarter, opts.slot, role);
+      else luClearSlot(cur, opts.quarter, opts.slot);
       luSave(cur);
       render();
     }}, '×'),
@@ -3109,26 +3088,62 @@ function openLoadLineupModal() {
 }
 
 /* ============ PLAYER PICKER (slot tap) ============ */
-function openPickerModal(q, slot) {
+function openPickerModal(q, slot, opts) {
+  const mode = (opts && opts.mode) || 'place'; // 'place' | 'pair-partner'
   const lu = luLoad();
-  const currentPid = lu[q][slot];
-  const currentPlayer = currentPid ? luPlayerById(currentPid) : null;
+  const val = lu[q][slot];
+  const isPair = luIsPair(val);
+  const soloId = (!isPair && typeof val === 'string') ? val : null;
+  const soloPlayer = soloId ? luPlayerById(soloId) : null;
 
   const body = el('div', { class: 'modal modal-lg' });
-  body.append(el('h3', {}, `${q} · ${slot}`));
 
-  if (currentPlayer) {
-    body.append(el('div', { class: 'picker-current-bar' },
-      el('span', { class: 'pc-name' }, currentPlayer.name),
-      posLabel(currentPlayer.position) ? el('span', { class: 'picker-pos' }, posLabel(currentPlayer.position)) : null,
-      el('button', { class: 'picker-remove', onclick: () => {
-        const cur = luLoad();
-        luClearSlot(cur, q, slot);
-        luSave(cur);
-        closeModal();
-        render();
-      }}, 'Remove'),
-    ));
+  if (mode === 'pair-partner') {
+    body.append(el('h3', {}, `${q} · ${slot} · Add ½ partner`));
+    body.append(el('div', { class: 'picker-section' },
+      soloPlayer
+        ? `Picking partner for ${soloPlayer.name}. Each plays ½ of ${q} (counts 0.5 each).`
+        : `Pick a partner. Each plays ½ of ${q} (counts 0.5 each).`));
+  } else {
+    body.append(el('h3', {}, `${q} · ${slot}`));
+
+    if (soloPlayer) {
+      body.append(el('div', { class: 'picker-current-bar' },
+        el('span', { class: 'pc-name' }, soloPlayer.name),
+        posLabel(soloPlayer.position) ? el('span', { class: 'picker-pos' }, posLabel(soloPlayer.position)) : null,
+        el('button', { class: 'picker-pair-add', onclick: () => {
+          closeModal();
+          openPickerModal(q, slot, { mode: 'pair-partner' });
+        }}, '+ Add ½ partner'),
+        el('button', { class: 'picker-remove', onclick: () => {
+          const cur = luLoad();
+          luClearSlot(cur, q, slot);
+          luSave(cur);
+          closeModal();
+          render();
+        }}, 'Remove'),
+      ));
+    } else if (isPair) {
+      const pa = luPlayerById(val.a);
+      const pb = luPlayerById(val.b);
+      const pairBar = el('div', { class: 'picker-current-bar pair' },
+        el('div', { class: 'picker-pair-info' },
+          el('div', { class: 'picker-pair-label' }, '½-Pair (each plays half)'),
+          el('div', { class: 'picker-pair-names' },
+            pa ? pa.name : '—', ' · ', pb ? pb.name : '—'),
+        ),
+        el('button', { class: 'picker-remove', onclick: () => {
+          const cur = luLoad();
+          luClearSlot(cur, q, slot);
+          luSave(cur);
+          closeModal();
+          render();
+        }}, 'Clear pair'),
+      );
+      body.append(pairBar);
+      body.append(el('div', { class: 'picker-section', style: 'margin-top:8px' },
+        'Tap a player below to replace this pair with a solo.'));
+    }
   }
 
   const players = [...state.players].filter(p => p.active !== false);
@@ -3138,24 +3153,26 @@ function openPickerModal(q, slot) {
   } else {
     const decorated = players.map(p => {
       const overall = playerOverallRating(p.id);
-      const existingSlot = luFindSlotInQuarter(lu, q, p.id);
-      const sameQ = !!existingSlot && existingSlot !== slot;
+      const existing = luFindSlotInQuarter(lu, q, p.id);
+      const sameQ = !!existing && existing.slot !== slot;
       const usage = luUsage(lu, p.id);
-      return { p, overall, sameQ, existingSlot, usage };
+      return { p, overall, sameQ, existing, usage };
     });
     decorated.sort((a, b) => {
-      // Sort by overall desc, nulls last; tiebreak by jersey
       const ao = a.overall == null ? -Infinity : a.overall;
       const bo = b.overall == null ? -Infinity : b.overall;
       if (bo !== ao) return bo - ao;
       return (a.p.jersey_number || 999) - (b.p.jersey_number || 999);
     });
 
-    body.append(el('div', { class: 'picker-section' }, 'All players · sorted by Overall'));
+    if (mode !== 'pair-partner') {
+      body.append(el('div', { class: 'picker-section' }, 'All players · sorted by Overall'));
+    }
     const listEl = el('div', { class: 'picker-list' });
     for (const d of decorated) {
-      const { p, overall, sameQ, existingSlot, usage } = d;
-      const isCurrent = currentPid === p.id;
+      const { p, overall, sameQ, existing, usage } = d;
+      const isCurrent = soloId === p.id;
+      const isInPair = isPair && (val.a === p.id || val.b === p.id);
       const ovrClass = statClass(overall);
       const ovrText = overall == null ? '—' : (Math.round(overall * 10) / 10).toFixed(1);
 
@@ -3163,12 +3180,23 @@ function openPickerModal(q, slot) {
         ? el('div', { class: 'picker-jersey' }, String(p.jersey_number))
         : el('div', { class: 'picker-jersey no-num' }, '·');
 
-      const note = isCurrent ? 'Currently here'
-        : sameQ ? `Move from ${existingSlot}`
-        : `${usage}/${LU_QUARTERS.length}`;
+      const usageText = (usage % 1 === 0) ? String(usage) : usage.toFixed(1);
+      let note;
+      if (mode === 'pair-partner') {
+        if (p.id === soloId) note = 'Already the primary';
+        else if (isInPair) note = 'Already in this pair';
+        else if (sameQ) note = `Move from ${existing.slot} · ${usageText}/${LU_QUARTERS.length}`;
+        else note = `${usageText}/${LU_QUARTERS.length}`;
+      } else {
+        if (isCurrent) note = 'Currently here (solo)';
+        else if (isInPair) note = 'In this pair';
+        else if (sameQ) note = `Move from ${existing.slot} · ${usageText}/${LU_QUARTERS.length}`;
+        else note = `${usageText}/${LU_QUARTERS.length}`;
+      }
 
       const hideRating = isLineupRatingsHidden();
-      const row = el('div', { class: `picker-row${isCurrent ? ' current' : ''}` },
+      const disabled = mode === 'pair-partner' && (p.id === soloId || isInPair);
+      const row = el('div', { class: `picker-row${isCurrent ? ' current' : ''}${disabled ? ' disabled' : ''}` },
         numNode,
         el('div', {},
           el('div', { class: 'picker-name' }, p.name),
@@ -3180,9 +3208,15 @@ function openPickerModal(q, slot) {
         hideRating ? null : el('div', { class: `picker-ovr ${ovrClass}` }, ovrText),
       );
       row.addEventListener('click', () => {
+        if (disabled) return;
         const cur = luLoad();
-        const r = luPlaceInSlot(cur, q, slot, p.id);
-        if (!r.ok) return toast(r.msg);
+        if (mode === 'pair-partner') {
+          const r = luAddPartner(cur, q, slot, p.id);
+          if (!r.ok) return toast(r.msg);
+        } else {
+          const r = luPlaceInSlot(cur, q, slot, p.id);
+          if (!r.ok) return toast(r.msg);
+        }
         luSave(cur);
         closeModal();
         render();
@@ -3193,7 +3227,12 @@ function openPickerModal(q, slot) {
   }
 
   body.append(el('div', { class: 'modal-actions' },
-    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+    mode === 'pair-partner'
+      ? el('button', { class: 'btn btn-ghost', onclick: () => {
+          closeModal();
+          openPickerModal(q, slot);
+        }}, 'Back')
+      : el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
   ));
   openModal(body);
 }
