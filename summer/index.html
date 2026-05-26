@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Summer">
+<meta name="theme-color" content="#0f172a">
+<title>Summer Schedule</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%98%80%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  html,body{height:100%;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);color:#f1f5f9;min-height:100vh;min-height:100dvh;}
+  .safe-pad{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+  @keyframes pulse-glow {0%,100%{box-shadow:0 0 0 0 rgba(250,204,21,.7),0 0 30px rgba(250,204,21,.3);}50%{box-shadow:0 0 0 14px rgba(250,204,21,0),0 0 30px rgba(250,204,21,.5);}}
+  .pulse-glow{animation:pulse-glow 2s ease-in-out infinite;}
+  @keyframes pop-in {0%{transform:scale(.6);opacity:0;}70%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+  .pop-in{animation:pop-in .35s cubic-bezier(.22,1.4,.36,1) both;}
+  @keyframes confetti-fall {to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+  .confetti{position:fixed;top:-10vh;width:10px;height:14px;animation:confetti-fall 2.4s linear forwards;pointer-events:none;z-index:9999;border-radius:2px;}
+  @keyframes slide-up {from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .slide-up{animation:slide-up .25s ease-out both;}
+  @keyframes bounce-in{0%{transform:scale(.3);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
+  .bounce-in{animation:bounce-in .4s cubic-bezier(.22,1.4,.36,1) both;}
+  @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+  .progress-bar{background:linear-gradient(90deg,#22d3ee,#a78bfa,#f472b6,#22d3ee);background-size:200% 100%;animation:shimmer 3s linear infinite;}
+  .check-btn{transition:all .2s ease;}
+  .check-btn:active{transform:scale(.92);}
+  .face-tile{transition:transform .18s ease,box-shadow .18s ease;}
+  .face-tile:active{transform:scale(.95);}
+  .scrollbar-hide::-webkit-scrollbar{display:none;}
+  .scrollbar-hide{scrollbar-width:none;}
+  input,select,textarea{font-size:16px;}
+  button{user-select:none;-webkit-user-select:none;}
+  .ring-current{box-shadow:0 0 0 4px rgba(250,204,21,.8),0 10px 30px rgba(0,0,0,.4);}
+  .badge-chip{background:linear-gradient(135deg,#fde047,#fb923c);color:#7c2d12;font-weight:700;}
+</style>
+</head>
+<body class="safe-pad">
+<div id="app" class="min-h-screen"></div>
+<div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none"></div>
+<div id="confetti-host"></div>
+
+<script>
+//=========================================================================
+// CONFIG
+//=========================================================================
+const SUPABASE_URL = 'https://ikypiznimyzidmyzzoys.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlreXBpem5pbXl6aWRteXp6b3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzUzODIsImV4cCI6MjA5MzMxMTM4Mn0.Ee0FWPHjLBSOIFXWmdPSjG8oT3QmKyKG14BF8oPGgjk';
+const PARENT_PIN = '4545';
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  realtime: { params: { eventsPerSecond: 10 } }
+});
+
+//=========================================================================
+// CONSTANTS
+//=========================================================================
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAYS_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DURATIONS = [15,30,60,90];
+const KID_COLORS = ['#22d3ee','#f472b6','#a78bfa','#34d399','#fb923c','#facc15','#f87171','#60a5fa'];
+const AVATAR_OPTIONS = ['🦁','🐯','🐻','🐼','🦊','🐵','🐨','🐶','🐺','🐲','🦖','🦕','🐙','🦈','🐳','🦋','🐝','🦄','🚀','🤖','👽','👾','🥷','🦸','🧙','🏄','🏊','🏃','⚽','🏀','⚾','🎮','🏆','⚡','🔥','🌟','🪐','🦅','🐊','🐸'];
+const TIME_SLOTS = (() => {
+  // Generate every 15 min from 8:30 to 19:00
+  const out = [];
+  for(let m = 8*60+30; m <= 19*60; m += 15) out.push(m);
+  return out;
+})();
+const STARTER_ACTIVITIES = [
+  {name:'Breakfast',emoji:'🍳',color:'#fb923c',category:'meal'},
+  {name:'Brush Teeth',emoji:'🪥',color:'#22d3ee',category:'hygiene'},
+  {name:'Get Dressed',emoji:'👕',color:'#a78bfa',category:'hygiene'},
+  {name:'Reading',emoji:'📚',color:'#60a5fa',category:'learning'},
+  {name:'Workout',emoji:'🏋️',color:'#f87171',category:'fitness'},
+  {name:'Outside Play',emoji:'🏀',color:'#34d399',category:'play'},
+  {name:'Pool Time',emoji:'🏊',color:'#22d3ee',category:'play'},
+  {name:'Chores',emoji:'🧹',color:'#facc15',category:'chore'},
+  {name:'Snack',emoji:'🍎',color:'#fb923c',category:'meal'},
+  {name:'Lunch',emoji:'🥪',color:'#fb923c',category:'meal'},
+  {name:'Quiet Time',emoji:'😴',color:'#a78bfa',category:'rest'},
+  {name:'Free Play',emoji:'🎮',color:'#f472b6',category:'play'},
+  {name:'Screen Time',emoji:'📺',color:'#60a5fa',category:'play'},
+  {name:'Art & Craft',emoji:'🎨',color:'#f472b6',category:'learning'},
+  {name:'Brain Game',emoji:'🧠',color:'#a78bfa',category:'learning'},
+  {name:'Learning Time',emoji:'✏️',color:'#60a5fa',category:'learning'},
+  {name:'Dinner',emoji:'🍽️',color:'#fb923c',category:'meal'},
+  {name:'Bedtime Routine',emoji:'🛏️',color:'#a78bfa',category:'rest'},
+];
+const BADGES = [
+  {code:'first_check',label:'First Check',emoji:'✅',desc:'Complete your first activity'},
+  {code:'perfect_day',label:'Perfect Day',emoji:'🌟',desc:'Complete every slot in one day'},
+  {code:'early_bird',label:'Early Bird',emoji:'🐦',desc:'Check off 3 activities before 10am'},
+  {code:'iron_man',label:'Iron Man',emoji:'💪',desc:'Complete 5 workout slots'},
+  {code:'bookworm',label:'Bookworm',emoji:'📚',desc:'Complete 5 reading slots'},
+  {code:'streak_3',label:'3-Day Streak',emoji:'🔥',desc:'Perfect days 3 in a row'},
+  {code:'streak_7',label:'Week Warrior',emoji:'🏆',desc:'Perfect days 7 in a row'},
+  {code:'helper',label:'Helper',emoji:'🧹',desc:'Complete 5 chore slots'},
+];
+
+//=========================================================================
+// STATE
+//=========================================================================
+const state = {
+  view: 'loading',
+  isParent: false,
+  currentKidId: null,
+  kids: [],
+  activities: [],
+  slots: [],       // master schedule (all days)
+  swaps: [],       // today only
+  completions: [], // today only (all kids)
+  badges: [],      // all kids
+  today: ymd(new Date()),
+  editorDay: new Date().getDay(),
+  modal: null,
+  setupNeeded: false,
+  lastAlertedSlotKey: null,
+  lastWarnedSlotKey: null,
+  audioEnabled: false,
+};
+let realtimeChannel = null;
+let tickInterval = null;
+
+//=========================================================================
+// UTILS
+//=========================================================================
+function ymd(d){
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${da}`;
+}
+function minutesNow(){
+  const n=new Date();
+  return n.getHours()*60 + n.getMinutes();
+}
+function parseTime(t){ // 'HH:MM:SS' -> minutes
+  const [h,m] = t.split(':');
+  return parseInt(h)*60 + parseInt(m);
+}
+function formatTime(min, withAmPm = true){
+  const h = Math.floor(min/60), m = min%60;
+  if(!withAmPm) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  const ap = h>=12?'pm':'am';
+  const h12 = h%12===0?12:h%12;
+  return `${h12}:${String(m).padStart(2,'0')}${ap}`;
+}
+function toHMS(min){
+  const h=Math.floor(min/60),m=min%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00`;
+}
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg, kind='ok'){
+  const host = document.getElementById('toast');
+  const colors = {ok:'bg-emerald-500',err:'bg-rose-500',info:'bg-sky-500'};
+  const t = document.createElement('div');
+  t.className = `${colors[kind]||colors.ok} text-white px-5 py-3 rounded-xl shadow-2xl pointer-events-auto slide-up font-semibold mt-2`;
+  t.textContent = msg;
+  host.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300);}, kind==='err'?5000:2200);
+}
+function err(prefix,e){
+  console.error(prefix, e);
+  toast(`${prefix}: ${e?.message||e}`, 'err');
+}
+function confetti(){
+  const host = document.getElementById('confetti-host');
+  const colors = ['#fde047','#22d3ee','#f472b6','#34d399','#fb923c','#a78bfa'];
+  for(let i=0;i<60;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left = Math.random()*100+'vw';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.animationDelay = Math.random()*0.4+'s';
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    host.appendChild(c);
+    setTimeout(()=>c.remove(), 2800);
+  }
+}
+function getActivity(id){ return state.activities.find(a=>a.id===id); }
+function getKid(id){ return state.kids.find(k=>k.id===id); }
+function todaySlotsResolved(){
+  // Returns slots for today, with activity resolved (applying any swaps).
+  const dow = new Date().getDay();
+  return state.slots
+    .filter(s=>s.day_of_week===dow)
+    .slice()
+    .sort((a,b)=>parseTime(a.start_time)-parseTime(b.start_time))
+    .map(s=>{
+      const swap = state.swaps.find(sw=>sw.slot_id===s.id);
+      const aid = swap ? swap.new_activity_id : s.activity_id;
+      return { ...s, resolved_activity_id: aid, activity: getActivity(aid) };
+    });
+}
+function slotForDayResolved(dow, date){
+  return state.slots
+    .filter(s=>s.day_of_week===dow)
+    .slice()
+    .sort((a,b)=>parseTime(a.start_time)-parseTime(b.start_time))
+    .map(s=>{
+      const swap = date===state.today ? state.swaps.find(sw=>sw.slot_id===s.id) : null;
+      const aid = swap ? swap.new_activity_id : s.activity_id;
+      return { ...s, resolved_activity_id: aid, activity: getActivity(aid) };
+    });
+}
+function currentSlotIndex(slots){
+  const now = minutesNow();
+  for(let i=0;i<slots.length;i++){
+    const s = slots[i];
+    const start = parseTime(s.start_time);
+    const end = start + s.duration_min;
+    if(now>=start && now<end) return i;
+  }
+  return -1;
+}
+function nextSlotIndex(slots){
+  const now = minutesNow();
+  for(let i=0;i<slots.length;i++){
+    if(parseTime(slots[i].start_time) > now) return i;
+  }
+  return -1;
+}
+function isCompleted(kid_id, slot_id){
+  return state.completions.some(c=>c.kid_id===kid_id && c.slot_id===slot_id);
+}
+
+//=========================================================================
+// AUDIO + SPEECH
+//=========================================================================
+let audioCtx = null;
+function enableAudio(){
+  if(state.audioEnabled) return;
+  try{
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    state.audioEnabled = true;
+  }catch(e){}
+}
+function playChime(kind='ding'){
+  if(!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const tones = kind==='alert' ? [880, 1320, 880, 1320] : (kind==='warn' ? [660, 880] : [880, 1320]);
+  tones.forEach((freq, i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = 'sine';
+    o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0, now + i*0.18);
+    g.gain.linearRampToValueAtTime(.3, now + i*0.18 + 0.02);
+    g.gain.exponentialRampToValueAtTime(.001, now + i*0.18 + 0.5);
+    o.start(now + i*0.18);
+    o.stop(now + i*0.18 + 0.5);
+  });
+}
+function playCheckSound(){
+  if(!audioCtx) return;
+  const now = audioCtx.currentTime;
+  [523.25, 659.25, 783.99, 1046.5].forEach((freq, i)=>{
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = 'triangle';
+    o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0, now + i*0.06);
+    g.gain.linearRampToValueAtTime(.25, now + i*0.06 + 0.01);
+    g.gain.exponentialRampToValueAtTime(.001, now + i*0.06 + 0.3);
+    o.start(now + i*0.06);
+    o.stop(now + i*0.06 + 0.3);
+  });
+}
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.0; u.pitch = 1.1; u.volume = 1.0;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+//=========================================================================
+// SUPABASE OPERATIONS
+//=========================================================================
+async function loadAll(){
+  try{
+    const today = state.today;
+    const [k,a,sl,sw,co,bd] = await Promise.all([
+      supa.from('summer_kids').select('*').order('sort_order'),
+      supa.from('summer_activities').select('*').order('sort_order'),
+      supa.from('summer_schedule_slots').select('*'),
+      supa.from('summer_swaps').select('*').eq('date', today),
+      supa.from('summer_completions').select('*').eq('date', today),
+      supa.from('summer_badges').select('*'),
+    ]);
+    if(k.error) throw k.error;
+    if(a.error) throw a.error;
+    if(sl.error) throw sl.error;
+    if(sw.error) throw sw.error;
+    if(co.error) throw co.error;
+    if(bd.error) throw bd.error;
+    state.kids = k.data || [];
+    state.activities = a.data || [];
+    state.slots = sl.data || [];
+    state.swaps = sw.data || [];
+    state.completions = co.data || [];
+    state.badges = bd.data || [];
+    state.setupNeeded = state.kids.length === 0 || state.activities.length === 0;
+  }catch(e){
+    err('Load failed', e);
+  }
+}
+
+async function seedActivitiesIfEmpty(){
+  if(state.activities.length>0) return;
+  const rows = STARTER_ACTIVITIES.map((a,i)=>({...a, sort_order:i}));
+  const {data, error} = await supa.from('summer_activities').insert(rows).select();
+  if(error){ err('Seed activities failed', error); return; }
+  state.activities = data || [];
+}
+
+async function addKid(name, color, avatar){
+  const sort_order = state.kids.length;
+  const {data, error} = await supa.from('summer_kids').insert({name, color, avatar, sort_order}).select().single();
+  if(error){ err('Add kid failed', error); return null; }
+  return data;
+}
+async function updateKid(id, patch){
+  const {error} = await supa.from('summer_kids').update(patch).eq('id', id);
+  if(error) err('Update kid failed', error);
+}
+async function deleteKid(id){
+  const {error} = await supa.from('summer_kids').delete().eq('id', id);
+  if(error) err('Delete kid failed', error);
+}
+
+async function addActivity(a){
+  const sort_order = state.activities.length;
+  const {error} = await supa.from('summer_activities').insert({...a, sort_order});
+  if(error) err('Add activity failed', error);
+}
+async function updateActivity(id, patch){
+  const {error} = await supa.from('summer_activities').update(patch).eq('id', id);
+  if(error) err('Update activity failed', error);
+}
+async function deleteActivity(id){
+  const {error} = await supa.from('summer_activities').delete().eq('id', id);
+  if(error) err('Delete activity failed', error);
+}
+
+async function addSlot(slot){
+  const {error} = await supa.from('summer_schedule_slots').insert(slot);
+  if(error) err('Add slot failed', error);
+}
+async function updateSlot(id, patch){
+  const {error} = await supa.from('summer_schedule_slots').update(patch).eq('id', id);
+  if(error) err('Update slot failed', error);
+}
+async function deleteSlot(id){
+  const {error} = await supa.from('summer_schedule_slots').delete().eq('id', id);
+  if(error) err('Delete slot failed', error);
+}
+
+async function setSwap(slot_id, new_activity_id){
+  const existing = state.swaps.find(s=>s.slot_id===slot_id);
+  if(existing){
+    if(new_activity_id === null){
+      const {error} = await supa.from('summer_swaps').delete().eq('id', existing.id);
+      if(error) err('Remove swap failed', error);
+    } else {
+      const {error} = await supa.from('summer_swaps').update({new_activity_id}).eq('id', existing.id);
+      if(error) err('Update swap failed', error);
+    }
+  } else {
+    const {error} = await supa.from('summer_swaps').insert({date: state.today, slot_id, new_activity_id});
+    if(error) err('Add swap failed', error);
+  }
+}
+
+async function toggleCompletion(kid_id, slot_id){
+  const existing = state.completions.find(c=>c.kid_id===kid_id && c.slot_id===slot_id);
+  if(existing){
+    const {error} = await supa.from('summer_completions').delete().eq('id', existing.id);
+    if(error){ err('Uncheck failed', error); return false; }
+    return false;
+  }
+  const {error} = await supa.from('summer_completions').insert({kid_id, slot_id, date: state.today});
+  if(error){ err('Check failed', error); return false; }
+  return true;
+}
+
+async function copyDay(fromDow, toDows){
+  const fromSlots = state.slots.filter(s=>s.day_of_week===fromDow);
+  if(fromSlots.length===0){ toast('Nothing to copy from that day','info'); return; }
+  // Remove existing from target days
+  for(const d of toDows){
+    const existing = state.slots.filter(s=>s.day_of_week===d).map(s=>s.id);
+    if(existing.length){
+      const {error} = await supa.from('summer_schedule_slots').delete().in('id', existing);
+      if(error){ err('Clear day failed', error); return; }
+    }
+  }
+  const inserts = [];
+  for(const d of toDows){
+    for(const s of fromSlots){
+      inserts.push({day_of_week:d, start_time:s.start_time, duration_min:s.duration_min, activity_id:s.activity_id});
+    }
+  }
+  if(inserts.length){
+    const {error} = await supa.from('summer_schedule_slots').insert(inserts);
+    if(error){ err('Copy failed', error); return; }
+  }
+  toast(`Copied to ${toDows.length} day(s)`,'ok');
+}
+
+//=========================================================================
+// BADGE ENGINE
+//=========================================================================
+async function checkAndAwardBadges(kid_id){
+  const earned = state.badges.filter(b=>b.kid_id===kid_id).map(b=>b.badge_code);
+  const award = async (code)=>{
+    if(earned.includes(code)) return;
+    const {error} = await supa.from('summer_badges').insert({kid_id, badge_code:code});
+    if(!error){
+      const b = BADGES.find(x=>x.code===code);
+      toast(`🎉 Badge: ${b.label}!`, 'ok');
+      confetti();
+    }
+  };
+  const kidCompletions = state.completions.filter(c=>c.kid_id===kid_id);
+  // First check
+  if(kidCompletions.length>=1) await award('first_check');
+  // Early bird: 3 checks before 10am today
+  const before10 = kidCompletions.filter(c=>{
+    const slot = state.slots.find(s=>s.id===c.slot_id);
+    return slot && parseTime(slot.start_time) < 600;
+  }).length;
+  if(before10>=3) await award('early_bird');
+  // Perfect day
+  const todaySlots = todaySlotsResolved();
+  if(todaySlots.length>0 && todaySlots.every(s=>isCompleted(kid_id, s.id))){
+    await award('perfect_day');
+  }
+  // Iron Man: 5 workout activities
+  const isCategory = (slot_id, cat) => {
+    const slot = state.slots.find(s=>s.id===slot_id);
+    if(!slot) return false;
+    const swap = state.swaps.find(sw=>sw.slot_id===slot_id);
+    const aid = swap ? swap.new_activity_id : slot.activity_id;
+    const act = getActivity(aid);
+    return act && act.category===cat;
+  };
+  // Across all dates we'd need to query; for now count today's
+  const workouts = kidCompletions.filter(c=>isCategory(c.slot_id,'fitness')).length;
+  if(workouts>=5) await award('iron_man');
+  const reads = kidCompletions.filter(c=>isCategory(c.slot_id,'learning')).length;
+  if(reads>=5) await award('bookworm');
+  const chores = kidCompletions.filter(c=>isCategory(c.slot_id,'chore')).length;
+  if(chores>=5) await award('helper');
+}
+
+//=========================================================================
+// REALTIME
+//=========================================================================
+function subscribeRealtime(){
+  if(realtimeChannel){ supa.removeChannel(realtimeChannel); }
+  realtimeChannel = supa.channel('summer-app-' + Math.random().toString(36).slice(2))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_kids'}, ()=>refresh('kids'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_activities'}, ()=>refresh('activities'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_schedule_slots'}, ()=>refresh('slots'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_swaps'}, ()=>refresh('swaps'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_completions'}, ()=>refresh('completions'))
+    .on('postgres_changes', {event:'*', schema:'public', table:'summer_badges'}, ()=>refresh('badges'))
+    .subscribe(status=>{
+      if(status==='CHANNEL_ERROR' || status==='TIMED_OUT'){
+        console.warn('Realtime status:', status);
+      }
+    });
+}
+async function refresh(which){
+  try{
+    if(which==='kids'){
+      const {data} = await supa.from('summer_kids').select('*').order('sort_order');
+      state.kids = data || [];
+    } else if(which==='activities'){
+      const {data} = await supa.from('summer_activities').select('*').order('sort_order');
+      state.activities = data || [];
+    } else if(which==='slots'){
+      const {data} = await supa.from('summer_schedule_slots').select('*');
+      state.slots = data || [];
+    } else if(which==='swaps'){
+      const {data} = await supa.from('summer_swaps').select('*').eq('date', state.today);
+      state.swaps = data || [];
+    } else if(which==='completions'){
+      const {data} = await supa.from('summer_completions').select('*').eq('date', state.today);
+      state.completions = data || [];
+    } else if(which==='badges'){
+      const {data} = await supa.from('summer_badges').select('*');
+      state.badges = data || [];
+    }
+    render();
+  }catch(e){ err('Refresh failed', e); }
+}
+
+//=========================================================================
+// ALERT TICKER (Phase 1 notifications)
+//=========================================================================
+function tick(){
+  const newToday = ymd(new Date());
+  if(newToday !== state.today){
+    state.today = newToday;
+    state.lastAlertedSlotKey = null;
+    state.lastWarnedSlotKey = null;
+    refresh('swaps');
+    refresh('completions');
+  }
+  if(!state.audioEnabled) return;
+  const slots = todaySlotsResolved();
+  const now = minutesNow();
+  // 1-min warning
+  for(const s of slots){
+    const start = parseTime(s.start_time);
+    if(start - now === 1){
+      const key = `${state.today}-${s.id}-warn`;
+      if(state.lastWarnedSlotKey !== key){
+        state.lastWarnedSlotKey = key;
+        playChime('warn');
+        speak(`One minute until ${s.activity?.name || 'the next activity'}`);
+      }
+    }
+  }
+  // Slot just started
+  for(const s of slots){
+    const start = parseTime(s.start_time);
+    if(start === now){
+      const key = `${state.today}-${s.id}-start`;
+      if(state.lastAlertedSlotKey !== key){
+        state.lastAlertedSlotKey = key;
+        playChime('alert');
+        speak(`Time for ${s.activity?.name || 'the next activity'}`);
+      }
+    }
+  }
+  // Re-render the current view every minute so the "current slot" updates
+  if(state.view==='kid' || state.view==='parent') render();
+}
+
+//=========================================================================
+// RENDER — TOP LEVEL
+//=========================================================================
+function render(){
+  const app = document.getElementById('app');
+  if(state.view==='loading'){
+    app.innerHTML = `<div class="min-h-screen flex items-center justify-center"><div class="text-6xl animate-spin">☀️</div></div>`;
+    return;
+  }
+  if(state.setupNeeded && !state.isParent && state.view!=='setup'){
+    state.view = 'setup';
+  }
+  switch(state.view){
+    case 'login': app.innerHTML = renderLogin(); break;
+    case 'kid': app.innerHTML = renderKid(); break;
+    case 'parent': app.innerHTML = renderParent(); break;
+    case 'editor': app.innerHTML = renderEditor(); break;
+    case 'library': app.innerHTML = renderLibrary(); break;
+    case 'kidsetup': app.innerHTML = renderKidsSetup(); break;
+    case 'setup': app.innerHTML = renderInitialSetup(); break;
+    case 'kidstats': app.innerHTML = renderKidStats(); break;
+    default: app.innerHTML = renderLogin();
+  }
+  attachHandlers();
+  if(state.modal) document.body.insertAdjacentHTML('beforeend', renderModal());
+}
+
+//=========================================================================
+// VIEWS — LOGIN
+//=========================================================================
+function renderLogin(){
+  const kidTiles = state.kids.map(k=>`
+    <button data-act="select-kid" data-id="${k.id}" class="face-tile rounded-3xl p-6 flex flex-col items-center justify-center gap-3 shadow-2xl" style="background:${k.color};min-height:200px;">
+      <div class="text-7xl">${k.avatar || '⭐'}</div>
+      <div class="text-2xl font-black text-white drop-shadow">${escapeHtml(k.name)}</div>
+      <div class="text-sm font-bold text-white/80">${streakFor(k.id)}🔥</div>
+    </button>`).join('');
+  return `
+    <div class="min-h-screen flex flex-col p-6 max-w-4xl mx-auto">
+      <div class="text-center my-6">
+        <div class="text-5xl mb-2">☀️</div>
+        <h1 class="text-4xl font-black tracking-tight">Summer Schedule</h1>
+        <div class="text-slate-400 font-semibold mt-1">${todayHeader()}</div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 flex-1">
+        ${kidTiles}
+        <button data-act="parent-login" class="face-tile rounded-3xl p-6 flex flex-col items-center justify-center gap-3 shadow-xl bg-slate-700 border-2 border-slate-600" style="min-height:200px;">
+          <div class="text-6xl">🔑</div>
+          <div class="text-xl font-black text-white">Parent</div>
+        </button>
+      </div>
+      <div class="text-center mt-6 text-xs text-slate-500">Tap your face to begin</div>
+    </div>`;
+}
+
+function streakFor(kid_id){
+  // simple: count today completions
+  return state.completions.filter(c=>c.kid_id===kid_id).length;
+}
+function todayHeader(){
+  const d = new Date();
+  return `${DAYS_FULL[d.getDay()]}, ${d.toLocaleDateString(undefined,{month:'long',day:'numeric'})}`;
+}
+
+//=========================================================================
+// VIEWS — INITIAL SETUP
+//=========================================================================
+function renderInitialSetup(){
+  return `
+    <div class="min-h-screen flex flex-col items-center justify-center p-8 max-w-md mx-auto text-center">
+      <div class="text-7xl mb-4">☀️</div>
+      <h1 class="text-3xl font-black mb-2">Welcome!</h1>
+      <p class="text-slate-300 mb-8">Let's set up your boys' summer schedule. First, sign in as Parent.</p>
+      <button data-act="parent-login" class="bg-amber-400 hover:bg-amber-300 text-slate-900 px-8 py-4 rounded-2xl font-black text-lg shadow-xl">Parent Setup</button>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — KID
+//=========================================================================
+function renderKid(){
+  const kid = getKid(state.currentKidId);
+  if(!kid) { state.view='login'; return renderLogin(); }
+  const slots = todaySlotsResolved();
+  const curIdx = currentSlotIndex(slots);
+  const completed = slots.filter(s=>isCompleted(kid.id, s.id)).length;
+  const total = slots.length;
+  const pct = total? Math.round(completed/total*100) : 0;
+  const earnedBadges = state.badges.filter(b=>b.kid_id===kid.id).map(b=>BADGES.find(x=>x.code===b.badge_code)).filter(Boolean);
+
+  let avatarPicker = '';
+  if(!kid.avatar || kid.avatar==='⭐'){
+    avatarPicker = `
+      <div class="bg-slate-800 rounded-3xl p-5 mb-4 border-2 border-amber-400 slide-up">
+        <div class="text-center font-black text-lg mb-3">Pick your avatar! 👇</div>
+        <div class="grid grid-cols-8 gap-2">
+          ${AVATAR_OPTIONS.map(e=>`<button data-act="pick-avatar" data-emoji="${e}" class="text-3xl p-2 rounded-xl bg-slate-700 hover:bg-slate-600">${e}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  const slotCards = slots.map((s,i)=>{
+    const done = isCompleted(kid.id, s.id);
+    const start = parseTime(s.start_time);
+    const end = start + s.duration_min;
+    const now = minutesNow();
+    const isCurrent = i===curIdx;
+    const isPast = now>=end;
+    const isFuture = now<start;
+    const act = s.activity;
+    const bg = act?.color || '#475569';
+    const cls = [
+      'rounded-2xl p-4 flex items-center gap-4 transition-all',
+      isCurrent ? 'ring-current pulse-glow scale-[1.02]' : '',
+      isPast && !done ? 'opacity-50' : '',
+      done ? 'opacity-75' : '',
+    ].join(' ');
+    return `
+      <div class="${cls}" style="background:${bg};">
+        <div class="text-5xl">${act?.emoji || '❓'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-bold text-white/80">${formatTime(start)} – ${formatTime(end)} · ${s.duration_min}min</div>
+          <div class="text-xl font-black text-white truncate">${escapeHtml(act?.name || 'No activity')}</div>
+          ${isCurrent?'<div class="text-xs font-bold text-yellow-200 mt-1">⚡ NOW</div>':''}
+        </div>
+        <button data-act="toggle-check" data-slot="${s.id}" class="check-btn w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black ${done?'bg-emerald-500 text-white':'bg-white/20 border-2 border-white text-white'}">
+          ${done?'✓':''}
+        </button>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="min-h-screen max-w-2xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <button data-act="back-to-login" class="text-slate-400 hover:text-white text-sm font-bold flex items-center gap-1">‹ Switch</button>
+        <button data-act="kid-stats" class="text-amber-400 font-bold text-sm">My Badges 🏆</button>
+      </div>
+      <div class="rounded-3xl p-5 flex items-center gap-4 shadow-xl" style="background:${kid.color};">
+        <div class="text-6xl">${kid.avatar || '⭐'}</div>
+        <div class="flex-1">
+          <div class="text-3xl font-black text-white drop-shadow">Hi ${escapeHtml(kid.name)}!</div>
+          <div class="text-sm font-bold text-white/90">${completed}/${total} done today</div>
+        </div>
+      </div>
+      <div class="h-3 rounded-full bg-slate-700 overflow-hidden">
+        <div class="h-full progress-bar transition-all duration-500" style="width:${pct}%"></div>
+      </div>
+      ${avatarPicker}
+      ${earnedBadges.length ? `<div class="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        ${earnedBadges.map(b=>`<div class="badge-chip rounded-full px-3 py-1 text-sm whitespace-nowrap shadow">${b.emoji} ${b.label}</div>`).join('')}
+      </div>` : ''}
+      <div class="flex flex-col gap-3 pb-8">
+        ${slots.length===0 ? `<div class="text-center p-8 text-slate-400">No schedule set up yet for ${DAYS_FULL[new Date().getDay()]}. Ask a parent!</div>` : slotCards}
+      </div>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — PARENT DASHBOARD
+//=========================================================================
+function renderParent(){
+  const slots = todaySlotsResolved();
+  const kidCols = state.kids.map(k=>{
+    const doneCount = slots.filter(s=>isCompleted(k.id, s.id)).length;
+    const cells = slots.map(s=>{
+      const done = isCompleted(k.id, s.id);
+      const act = s.activity;
+      return `<div class="rounded-lg p-2 flex items-center gap-2 ${done?'bg-emerald-600/40':'bg-slate-700/60'}">
+        <div class="text-xl">${act?.emoji||'❓'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[10px] text-slate-300">${formatTime(parseTime(s.start_time))}</div>
+          <div class="text-xs font-bold truncate">${escapeHtml(act?.name||'—')}</div>
+        </div>
+        <div class="text-lg">${done?'✅':'⬜'}</div>
+      </div>`;
+    }).join('');
+    return `
+      <div class="bg-slate-800/70 rounded-2xl p-3 border-2" style="border-color:${k.color};">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="text-3xl">${k.avatar||'⭐'}</div>
+          <div class="flex-1">
+            <div class="font-black">${escapeHtml(k.name)}</div>
+            <div class="text-xs text-slate-400">${doneCount}/${slots.length} done</div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">${cells || '<div class="text-xs text-slate-500 text-center py-2">No slots</div>'}</div>
+      </div>`;
+  }).join('');
+
+  const todayRows = slots.map(s=>{
+    const act = s.activity;
+    const swap = state.swaps.find(sw=>sw.slot_id===s.id);
+    return `
+      <div class="bg-slate-800 rounded-xl p-3 flex items-center gap-3">
+        <div class="text-3xl">${act?.emoji||'❓'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs text-slate-400">${formatTime(parseTime(s.start_time))} – ${formatTime(parseTime(s.start_time)+s.duration_min)} · ${s.duration_min}min ${swap?'<span class="text-amber-400 font-bold">·swapped</span>':''}</div>
+          <div class="font-bold truncate">${escapeHtml(act?.name||'—')}</div>
+        </div>
+        <button data-act="swap-slot" data-slot="${s.id}" class="bg-amber-500 hover:bg-amber-400 text-slate-900 px-3 py-2 rounded-lg text-xs font-black">Swap</button>
+        ${swap?`<button data-act="unswap-slot" data-slot="${s.id}" class="text-slate-400 hover:text-white text-xs">↺</button>`:''}
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="min-h-screen max-w-6xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h1 class="text-2xl font-black">Parent Dashboard</h1>
+          <div class="text-sm text-slate-400">${todayHeader()}</div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button data-act="goto-editor" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg font-bold text-sm">📅 Edit Schedule</button>
+          <button data-act="goto-library" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg font-bold text-sm">🎨 Activities</button>
+          <button data-act="goto-kidsetup" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg font-bold text-sm">👦 Kids</button>
+          <button data-act="back-to-login" class="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg font-bold text-sm">Exit</button>
+        </div>
+      </div>
+
+      ${state.kids.length===0?'<div class="bg-amber-500/20 border border-amber-500 rounded-xl p-4">No kids yet. Tap <b>Kids</b> to add your boys!</div>':''}
+
+      <div class="grid md:grid-cols-${Math.max(1,Math.min(state.kids.length,3))} gap-3">${kidCols}</div>
+
+      <div class="mt-2">
+        <h2 class="text-lg font-black mb-2">Today's Slots — Swap on the fly</h2>
+        <div class="flex flex-col gap-2">${todayRows || '<div class="text-slate-500 text-center p-4 bg-slate-800 rounded-xl">No slots today. Edit the schedule to add some.</div>'}</div>
+      </div>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — KIDS SETUP
+//=========================================================================
+function renderKidsSetup(){
+  const rows = state.kids.map(k=>`
+    <div class="bg-slate-800 rounded-xl p-3 flex items-center gap-3">
+      <button data-act="edit-kid-avatar" data-id="${k.id}" class="text-4xl bg-slate-700 rounded-xl w-16 h-16 flex items-center justify-center">${k.avatar||'⭐'}</button>
+      <div class="flex-1 grid grid-cols-1 gap-2">
+        <input data-act="rename-kid" data-id="${k.id}" value="${escapeHtml(k.name)}" class="bg-slate-700 rounded-lg px-3 py-2 font-bold">
+        <div class="flex gap-1 overflow-x-auto scrollbar-hide">
+          ${KID_COLORS.map(c=>`<button data-act="recolor-kid" data-id="${k.id}" data-color="${c}" class="w-7 h-7 rounded-full flex-shrink-0 ${k.color===c?'ring-2 ring-white':''}" style="background:${c};"></button>`).join('')}
+        </div>
+      </div>
+      <button data-act="delete-kid" data-id="${k.id}" class="text-rose-400 hover:text-rose-300 text-2xl">🗑️</button>
+    </div>
+  `).join('');
+  return `
+    <div class="min-h-screen max-w-2xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-black">Kids</h1>
+        <button data-act="goto-parent" class="bg-slate-700 px-3 py-2 rounded-lg font-bold text-sm">‹ Back</button>
+      </div>
+      <div class="flex flex-col gap-2">${rows}</div>
+      <button data-act="add-kid" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-xl p-4 font-black">+ Add Kid</button>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — SCHEDULE EDITOR
+//=========================================================================
+function renderEditor(){
+  const dow = state.editorDay;
+  const slots = state.slots.filter(s=>s.day_of_week===dow).slice().sort((a,b)=>parseTime(a.start_time)-parseTime(b.start_time));
+  const rows = slots.map(s=>{
+    const act = getActivity(s.activity_id);
+    return `
+      <div class="bg-slate-800 rounded-xl p-3 flex items-center gap-3">
+        <div class="text-3xl">${act?.emoji||'❓'}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs text-slate-400">${formatTime(parseTime(s.start_time))} · ${s.duration_min}min</div>
+          <div class="font-bold truncate">${escapeHtml(act?.name||'—')}</div>
+        </div>
+        <button data-act="edit-slot" data-id="${s.id}" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg text-xs font-bold">Edit</button>
+        <button data-act="delete-slot" data-id="${s.id}" class="text-rose-400 hover:text-rose-300 text-xl">🗑️</button>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="min-h-screen max-w-3xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-black">Schedule Editor</h1>
+        <button data-act="goto-parent" class="bg-slate-700 px-3 py-2 rounded-lg font-bold text-sm">‹ Back</button>
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        ${DAYS.map((d,i)=>`<button data-act="pick-day" data-day="${i}" class="rounded-lg py-2 text-sm font-bold ${i===dow?'bg-amber-400 text-slate-900':'bg-slate-800 text-slate-300'}">${d}</button>`).join('')}
+      </div>
+      <div class="text-sm text-slate-400 -mt-2">Editing: <b class="text-white">${DAYS_FULL[dow]}</b></div>
+      <div class="flex flex-col gap-2">${rows || '<div class="text-center text-slate-500 py-8 bg-slate-800 rounded-xl">No slots yet for this day.</div>'}</div>
+      <div class="flex gap-2 flex-wrap">
+        <button data-act="add-slot" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-xl px-4 py-3 font-black">+ Add Slot</button>
+        <button data-act="copy-day" class="bg-indigo-600 hover:bg-indigo-500 rounded-xl px-4 py-3 font-black">📋 Copy Day to…</button>
+      </div>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — ACTIVITY LIBRARY
+//=========================================================================
+function renderLibrary(){
+  const tiles = state.activities.map(a=>`
+    <button data-act="edit-activity" data-id="${a.id}" class="rounded-xl p-3 flex flex-col items-center gap-1 shadow" style="background:${a.color};">
+      <div class="text-3xl">${a.emoji}</div>
+      <div class="text-xs font-black text-white drop-shadow truncate w-full text-center">${escapeHtml(a.name)}</div>
+    </button>`).join('');
+  return `
+    <div class="min-h-screen max-w-3xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-black">Activities</h1>
+        <button data-act="goto-parent" class="bg-slate-700 px-3 py-2 rounded-lg font-bold text-sm">‹ Back</button>
+      </div>
+      <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">${tiles}</div>
+      <button data-act="add-activity" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-xl p-4 font-black">+ Add Activity</button>
+    </div>`;
+}
+
+//=========================================================================
+// VIEWS — KID STATS
+//=========================================================================
+function renderKidStats(){
+  const kid = getKid(state.currentKidId);
+  if(!kid){ state.view='login'; return renderLogin(); }
+  const earnedCodes = state.badges.filter(b=>b.kid_id===kid.id).map(b=>b.badge_code);
+  const allBadges = BADGES.map(b=>{
+    const earned = earnedCodes.includes(b.code);
+    return `<div class="rounded-2xl p-4 flex flex-col items-center text-center ${earned?'bg-amber-500/30 border-2 border-amber-400':'bg-slate-800 opacity-50'}">
+      <div class="text-5xl mb-2">${b.emoji}</div>
+      <div class="font-black">${b.label}</div>
+      <div class="text-xs text-slate-300 mt-1">${b.desc}</div>
+      ${earned?'<div class="text-xs text-amber-300 font-bold mt-1">EARNED ✨</div>':''}
+    </div>`;
+  }).join('');
+  return `
+    <div class="min-h-screen max-w-2xl mx-auto p-4 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <button data-act="back-kid" class="bg-slate-700 px-3 py-2 rounded-lg font-bold text-sm">‹ Back</button>
+        <div class="text-xl font-black">${kid.avatar} ${escapeHtml(kid.name)}'s Badges</div>
+        <div></div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${allBadges}</div>
+    </div>`;
+}
+
+//=========================================================================
+// MODAL
+//=========================================================================
+function renderModal(){
+  const m = state.modal;
+  if(!m) return '';
+  return `<div data-modal class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" data-act="close-modal-bg">
+    <div class="bg-slate-800 rounded-2xl p-5 w-full max-w-md slide-up" onclick="event.stopPropagation();">
+      ${m.html}
+    </div>
+  </div>`;
+}
+function showModal(html){
+  state.modal = {html};
+  render();
+}
+function closeModal(){
+  state.modal = null;
+  document.querySelectorAll('[data-modal]').forEach(el=>el.remove());
+}
+
+//=========================================================================
+// EVENT HANDLERS
+//=========================================================================
+function attachHandlers(){
+  document.querySelectorAll('[data-act]').forEach(el=>{
+    el.addEventListener('click', handleClick);
+    if(el.tagName==='INPUT') el.addEventListener('change', handleChange);
+  });
+}
+async function handleClick(e){
+  const act = e.currentTarget.dataset.act;
+  const id = e.currentTarget.dataset.id;
+  const slot = e.currentTarget.dataset.slot;
+  enableAudio();
+  switch(act){
+    case 'select-kid':
+      state.currentKidId = id;
+      state.isParent = false;
+      state.view = 'kid';
+      render();
+      break;
+    case 'parent-login':
+      promptPin();
+      break;
+    case 'back-to-login':
+      state.currentKidId = null;
+      state.isParent = false;
+      state.view = 'login';
+      render();
+      break;
+    case 'kid-stats':
+      state.view = 'kidstats'; render(); break;
+    case 'back-kid':
+      state.view = 'kid'; render(); break;
+    case 'pick-avatar': {
+      const emoji = e.currentTarget.dataset.emoji;
+      await updateKid(state.currentKidId, {avatar: emoji});
+      break;
+    }
+    case 'toggle-check': {
+      const wasDone = isCompleted(state.currentKidId, slot);
+      const ok = await toggleCompletion(state.currentKidId, slot);
+      if(!wasDone && ok){
+        playCheckSound();
+        confetti();
+        setTimeout(()=>checkAndAwardBadges(state.currentKidId), 400);
+      }
+      break;
+    }
+    case 'goto-parent': state.view='parent'; render(); break;
+    case 'goto-editor': state.view='editor'; render(); break;
+    case 'goto-library': state.view='library'; render(); break;
+    case 'goto-kidsetup': state.view='kidsetup'; render(); break;
+    case 'pick-day': state.editorDay = parseInt(e.currentTarget.dataset.day); render(); break;
+    case 'add-kid': showAddKidModal(); break;
+    case 'edit-kid-avatar': showAvatarModal(id); break;
+    case 'recolor-kid': await updateKid(id, {color: e.currentTarget.dataset.color}); break;
+    case 'delete-kid':
+      if(confirm('Delete this kid? (Also removes their completions and badges.)')){
+        await deleteKid(id);
+      }
+      break;
+    case 'add-slot': showAddSlotModal(); break;
+    case 'edit-slot': showEditSlotModal(id); break;
+    case 'delete-slot':
+      if(confirm('Delete this slot?')) await deleteSlot(id);
+      break;
+    case 'copy-day': showCopyDayModal(); break;
+    case 'add-activity': showActivityModal(null); break;
+    case 'edit-activity': showActivityModal(id); break;
+    case 'swap-slot': showSwapModal(slot); break;
+    case 'unswap-slot': await setSwap(slot, null); break;
+    case 'close-modal':
+    case 'close-modal-bg':
+      if(act==='close-modal-bg' && e.target!==e.currentTarget) return;
+      closeModal();
+      break;
+  }
+}
+function handleChange(e){
+  const act = e.currentTarget.dataset.act;
+  const id = e.currentTarget.dataset.id;
+  if(act==='rename-kid'){ updateKid(id, {name: e.currentTarget.value}); }
+}
+
+function promptPin(){
+  const html = `
+    <div class="text-center mb-3">
+      <div class="text-4xl mb-2">🔑</div>
+      <h2 class="text-xl font-black">Parent PIN</h2>
+    </div>
+    <input id="pin-input" type="password" inputmode="numeric" maxlength="6" class="w-full bg-slate-700 rounded-xl px-4 py-3 text-center text-2xl font-black tracking-widest mb-3" placeholder="••••">
+    <div class="flex gap-2">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      <button id="pin-submit" class="flex-1 bg-amber-400 text-slate-900 rounded-xl py-3 font-black">Unlock</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    const input = document.getElementById('pin-input');
+    const submit = document.getElementById('pin-submit');
+    const tryUnlock = ()=>{
+      if(input.value === PARENT_PIN){
+        closeModal();
+        state.isParent = true;
+        state.view = 'parent';
+        if(state.activities.length===0) seedActivitiesIfEmpty().then(render);
+        render();
+      } else {
+        input.value=''; input.placeholder='wrong';
+        input.style.animation='shake .4s'; setTimeout(()=>input.style.animation='',500);
+      }
+    };
+    input.focus();
+    input.addEventListener('keydown',e=>{ if(e.key==='Enter') tryUnlock(); });
+    submit.addEventListener('click', tryUnlock);
+  },50);
+}
+
+function showAddKidModal(){
+  const html = `
+    <h2 class="text-xl font-black mb-3">Add a Kid</h2>
+    <input id="kid-name" placeholder="Name" class="w-full bg-slate-700 rounded-xl px-4 py-3 mb-3 font-bold">
+    <div class="text-sm text-slate-300 mb-1">Color</div>
+    <div class="flex gap-2 mb-4 flex-wrap">
+      ${KID_COLORS.map((c,i)=>`<button data-color="${c}" class="kid-color-pick w-9 h-9 rounded-full" style="background:${c};border:${i===0?'3px solid white':'none'};"></button>`).join('')}
+    </div>
+    <div class="flex gap-2">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      <button id="kid-save" class="flex-1 bg-emerald-500 text-slate-900 rounded-xl py-3 font-black">Add</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    let chosen = KID_COLORS[0];
+    document.querySelectorAll('.kid-color-pick').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        chosen = b.dataset.color;
+        document.querySelectorAll('.kid-color-pick').forEach(x=>x.style.border='none');
+        b.style.border = '3px solid white';
+      });
+    });
+    document.getElementById('kid-save').addEventListener('click', async ()=>{
+      const name = document.getElementById('kid-name').value.trim();
+      if(!name){ toast('Name required','err'); return; }
+      await addKid(name, chosen, '⭐');
+      closeModal();
+    });
+  },50);
+}
+
+function showAvatarModal(kidId){
+  const html = `
+    <h2 class="text-xl font-black mb-3">Pick an Avatar</h2>
+    <div class="grid grid-cols-8 gap-2 max-h-96 overflow-y-auto">
+      ${AVATAR_OPTIONS.map(e=>`<button class="avatar-pick text-3xl p-2 rounded-xl bg-slate-700 hover:bg-slate-600" data-emoji="${e}">${e}</button>`).join('')}
+    </div>
+    <button data-act="close-modal" class="w-full bg-slate-700 rounded-xl py-3 font-bold mt-3">Cancel</button>`;
+  showModal(html);
+  setTimeout(()=>{
+    document.querySelectorAll('.avatar-pick').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        await updateKid(kidId, {avatar: b.dataset.emoji});
+        closeModal();
+      });
+    });
+  },50);
+}
+
+function slotFormHtml(s){
+  const timeOpts = TIME_SLOTS.map(m=>`<option value="${toHMS(m)}"${s&&s.start_time===toHMS(m)?' selected':''}>${formatTime(m)}</option>`).join('');
+  const durOpts = DURATIONS.map(d=>`<option value="${d}"${s&&s.duration_min===d?' selected':''}>${d} min</option>`).join('');
+  const actOpts = state.activities.map(a=>`<option value="${a.id}"${s&&s.activity_id===a.id?' selected':''}>${a.emoji} ${a.name}</option>`).join('');
+  return `
+    <div class="grid gap-2">
+      <label class="text-sm text-slate-300">Start time</label>
+      <select id="slot-time" class="bg-slate-700 rounded-xl px-3 py-2 font-bold">${timeOpts}</select>
+      <label class="text-sm text-slate-300">Duration</label>
+      <select id="slot-dur" class="bg-slate-700 rounded-xl px-3 py-2 font-bold">${durOpts}</select>
+      <label class="text-sm text-slate-300">Activity</label>
+      <select id="slot-act" class="bg-slate-700 rounded-xl px-3 py-2 font-bold">${actOpts}</select>
+    </div>`;
+}
+function showAddSlotModal(){
+  if(state.activities.length===0){ toast('Add an activity first','err'); return; }
+  const html = `
+    <h2 class="text-xl font-black mb-3">Add Slot — ${DAYS_FULL[state.editorDay]}</h2>
+    ${slotFormHtml(null)}
+    <div class="flex gap-2 mt-4">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      <button id="slot-save" class="flex-1 bg-emerald-500 text-slate-900 rounded-xl py-3 font-black">Add</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    document.getElementById('slot-save').addEventListener('click', async ()=>{
+      const start_time = document.getElementById('slot-time').value;
+      const duration_min = parseInt(document.getElementById('slot-dur').value);
+      const activity_id = document.getElementById('slot-act').value;
+      await addSlot({day_of_week: state.editorDay, start_time, duration_min, activity_id});
+      closeModal();
+    });
+  },50);
+}
+function showEditSlotModal(slot_id){
+  const s = state.slots.find(x=>x.id===slot_id);
+  if(!s) return;
+  const html = `
+    <h2 class="text-xl font-black mb-3">Edit Slot</h2>
+    ${slotFormHtml(s)}
+    <div class="flex gap-2 mt-4">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      <button id="slot-save" class="flex-1 bg-emerald-500 text-slate-900 rounded-xl py-3 font-black">Save</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    document.getElementById('slot-save').addEventListener('click', async ()=>{
+      const start_time = document.getElementById('slot-time').value;
+      const duration_min = parseInt(document.getElementById('slot-dur').value);
+      const activity_id = document.getElementById('slot-act').value;
+      await updateSlot(slot_id, {start_time, duration_min, activity_id});
+      closeModal();
+    });
+  },50);
+}
+
+function showCopyDayModal(){
+  const fromDow = state.editorDay;
+  const targetCheckboxes = DAYS.map((d,i)=>i===fromDow?'':`<label class="flex items-center gap-2 bg-slate-700 rounded-xl px-3 py-2"><input type="checkbox" class="copy-target" data-day="${i}"><span class="font-bold">${DAYS_FULL[i]}</span></label>`).join('');
+  const html = `
+    <h2 class="text-xl font-black mb-3">Copy ${DAYS_FULL[fromDow]} to…</h2>
+    <div class="text-sm text-slate-400 mb-2">This will replace any existing slots on the target days.</div>
+    <div class="flex flex-col gap-2 max-h-72 overflow-y-auto">${targetCheckboxes}</div>
+    <div class="flex gap-2 mt-4">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      <button id="copy-confirm" class="flex-1 bg-emerald-500 text-slate-900 rounded-xl py-3 font-black">Copy</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    document.getElementById('copy-confirm').addEventListener('click', async ()=>{
+      const targets = Array.from(document.querySelectorAll('.copy-target:checked')).map(c=>parseInt(c.dataset.day));
+      if(targets.length===0){ toast('Pick at least one day','err'); return; }
+      await copyDay(fromDow, targets);
+      closeModal();
+    });
+  },50);
+}
+
+function showActivityModal(activity_id){
+  const isEdit = !!activity_id;
+  const a = isEdit ? state.activities.find(x=>x.id===activity_id) : null;
+  const palette = ['#fb923c','#22d3ee','#a78bfa','#34d399','#facc15','#f87171','#60a5fa','#f472b6','#94a3b8'];
+  const cats = ['meal','hygiene','learning','fitness','play','chore','rest','other'];
+  const html = `
+    <h2 class="text-xl font-black mb-3">${isEdit?'Edit Activity':'Add Activity'}</h2>
+    <input id="act-name" placeholder="Name" value="${a?escapeHtml(a.name):''}" class="w-full bg-slate-700 rounded-xl px-4 py-3 mb-3 font-bold">
+    <input id="act-emoji" placeholder="Emoji (e.g. 🏀)" value="${a?escapeHtml(a.emoji):''}" maxlength="4" class="w-full bg-slate-700 rounded-xl px-4 py-3 mb-3 font-bold text-2xl text-center">
+    <div class="text-sm text-slate-300 mb-1">Color</div>
+    <div class="flex gap-2 mb-3 flex-wrap">
+      ${palette.map((c,i)=>`<button data-color="${c}" class="act-color w-9 h-9 rounded-full" style="background:${c};border:${(a?a.color===c:i===0)?'3px solid white':'none'};"></button>`).join('')}
+    </div>
+    <div class="text-sm text-slate-300 mb-1">Category</div>
+    <select id="act-cat" class="w-full bg-slate-700 rounded-xl px-3 py-2 mb-4 font-bold">
+      ${cats.map(c=>`<option value="${c}"${a&&a.category===c?' selected':''}>${c}</option>`).join('')}
+    </select>
+    <div class="flex gap-2">
+      <button data-act="close-modal" class="flex-1 bg-slate-700 rounded-xl py-3 font-bold">Cancel</button>
+      ${isEdit?'<button id="act-del" class="bg-rose-600 text-white px-4 rounded-xl font-bold">Delete</button>':''}
+      <button id="act-save" class="flex-1 bg-emerald-500 text-slate-900 rounded-xl py-3 font-black">${isEdit?'Save':'Add'}</button>
+    </div>`;
+  showModal(html);
+  setTimeout(()=>{
+    let chosen = a?a.color:palette[0];
+    document.querySelectorAll('.act-color').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        chosen = b.dataset.color;
+        document.querySelectorAll('.act-color').forEach(x=>x.style.border='none');
+        b.style.border = '3px solid white';
+      });
+    });
+    document.getElementById('act-save').addEventListener('click', async ()=>{
+      const name = document.getElementById('act-name').value.trim();
+      const emoji = document.getElementById('act-emoji').value.trim() || '⭐';
+      const category = document.getElementById('act-cat').value;
+      if(!name){ toast('Name required','err'); return; }
+      if(isEdit) await updateActivity(activity_id, {name, emoji, color:chosen, category});
+      else await addActivity({name, emoji, color:chosen, category});
+      closeModal();
+    });
+    if(isEdit){
+      document.getElementById('act-del').addEventListener('click', async ()=>{
+        if(confirm('Delete this activity?')){
+          await deleteActivity(activity_id);
+          closeModal();
+        }
+      });
+    }
+  },50);
+}
+
+function showSwapModal(slot_id){
+  const tiles = state.activities.map(a=>`<button class="swap-pick rounded-xl p-2 flex flex-col items-center gap-1" style="background:${a.color};" data-aid="${a.id}">
+    <div class="text-2xl">${a.emoji}</div>
+    <div class="text-xs font-black text-white truncate w-full text-center">${escapeHtml(a.name)}</div>
+  </button>`).join('');
+  const html = `
+    <h2 class="text-xl font-black mb-3">Swap activity for this slot</h2>
+    <div class="text-sm text-slate-400 mb-2">Only changes today.</div>
+    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-96 overflow-y-auto">${tiles}</div>
+    <button data-act="close-modal" class="w-full bg-slate-700 rounded-xl py-3 font-bold mt-3">Cancel</button>`;
+  showModal(html);
+  setTimeout(()=>{
+    document.querySelectorAll('.swap-pick').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        await setSwap(slot_id, b.dataset.aid);
+        closeModal();
+      });
+    });
+  },50);
+}
+
+//=========================================================================
+// INIT
+//=========================================================================
+async function init(){
+  state.view = 'loading';
+  render();
+  await loadAll();
+  subscribeRealtime();
+  if(state.kids.length>0 && !state.setupNeeded){
+    state.view = 'login';
+  } else if(state.setupNeeded){
+    state.view = 'setup';
+  } else {
+    state.view = 'login';
+  }
+  render();
+  // Tick every 30 seconds for alerts; every minute is enough for slot triggers but 30s ensures we catch the boundary
+  tickInterval = setInterval(tick, 30000);
+  // Also update view periodically so "current slot" stays accurate
+  setInterval(()=>{ if(state.view==='kid'||state.view==='parent') render(); }, 60000);
+  // Wake events for audio
+  document.addEventListener('click', enableAudio, {once:true});
+  document.addEventListener('touchstart', enableAudio, {once:true});
+}
+
+init();
+</script>
+</body>
+</html>
