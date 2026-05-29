@@ -71,14 +71,6 @@
   .whoami .av{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;flex:none}
   .whoami small{color:var(--muted);font-size:11px;font-weight:600}
 
-  .topbar-admin{
-    display:none;align-items:center;justify-content:center;
-    width:38px;height:38px;border-radius:10px;flex:none;padding:0;
-    background:var(--surface-2);border:1px solid var(--border);color:var(--muted);
-    cursor:pointer;font-size:16px;line-height:1;transition:.15s;
-  }
-  .topbar-admin:hover,.topbar-admin:active{border-color:var(--border-2);color:var(--text);background:var(--card-hi)}
-
   /* ---------- Layout ---------- */
   .shell{display:flex;max-width:var(--maxw);margin:0 auto;width:100%}
   .side{
@@ -115,7 +107,6 @@
     .main{padding:16px 14px calc(86px + var(--safe-b))}
     .topbar{padding:calc(10px + var(--safe-t)) 14px 10px;gap:10px}
     .brand-txt span{display:none}
-    .topbar-admin{display:inline-flex}
     .botnav{
       display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
       background:rgba(10,10,11,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -506,6 +497,16 @@
   .ms .pchip:hover{border-color:var(--accent-2)}
   .ms .pchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 
+  /* Admin bulk-assign bar + overlay */
+  .assign-bar{
+    position:sticky;bottom:calc(12px + var(--safe-b));z-index:40;display:none;align-items:center;gap:12px;
+    background:var(--card-hi);border:1px solid var(--accent);border-radius:14px;padding:12px 16px;margin-top:16px;
+    box-shadow:0 12px 32px -12px rgba(0,0,0,.7);
+  }
+  .assign-overlay{position:fixed;inset:0;z-index:160;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:20px;backdrop-filter:blur(4px)}
+  .assign-panel{background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-lg);padding:22px;max-width:460px;width:100%;max-height:88vh;overflow:auto}
+  .assign-panel h3{font-size:17px;font-weight:800}
+
   /* ---------- Doc reader ---------- */
   .doc{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;line-height:1.7}
   .doc h1{font-size:22px;font-weight:900;margin-bottom:6px;letter-spacing:-.01em}
@@ -557,7 +558,6 @@
     <span id="whoami-name">—</span>
     <small id="whoami-swap">switch</small>
   </div>
-  <button class="topbar-admin" id="topbar-admin" title="Admin" aria-label="Admin">⚙️</button>
 </div>
 
 <div class="shell">
@@ -565,6 +565,7 @@
     <h6>Training Path</h6>
     <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
     <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
+    <div class="navlink" data-route="#picks"><span class="ic">📌</span> Coach's Picks <span class="badge" id="picks-badge-side" style="display:none"></span></div>
     <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Videos with me</div>
     <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Warriors Playbook</div>
     <h6>Library</h6>
@@ -583,9 +584,9 @@
 <nav class="botnav">
   <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
   <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
+  <div class="navlink" data-route="#picks"><span class="ic">📌</span> Picks</div>
   <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Playbook</div>
   <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
-  <div class="navlink" data-route="#mine"><span class="ic">⭐</span> Mine</div>
 </nav>
 
 <!-- Player picker overlay -->
@@ -756,6 +757,8 @@ const state = {
   recordedThisPlay: false,
   route: '',
   query: {},
+  assignMode: false,        // admin bulk-assign toggle
+  assignSel: new Set(),     // selected video IDs in assign mode
 };
 
 // ---------- Data loaders ----------
@@ -797,6 +800,7 @@ async function recordWatch(videoId, pct, finished) {
   if (error) { console.error(error); return null; }
   state.watches.unshift(data);
   state.allWatches = null; // invalidate admin cache so dashboard reflects this finish on next open
+  updatePicksBadge();
   return data;
 }
 async function toggleStar(videoId) {
@@ -823,6 +827,9 @@ const ytThumb = (v) => v.custom_thumb || (v.youtube_id ? `https://i.ytimg.com/vi
 const levelTitleFor = (n) => (state.settings.level_titles || {})[String(n)] || '';
 const isTaggedMe = (v) => state.player && (v.tagged_player_ids || []).includes(state.player.id);
 const myTaggedVids = () => state.videos.filter(isTaggedMe);
+const isAssignedMe = (v) => state.player && (v.assigned_player_ids || []).includes(state.player.id);
+const myAssignedVids = () => state.videos.filter(isAssignedMe);
+const myUnwatchedAssigned = () => { const fin = finishedSetForPlayer(); return myAssignedVids().filter(v => !fin.has(v.id)); };
 // Group leveled videos: { 1: [v,v,v], 2: [...], ... }
 function groupByLevel() {
   const groups = new Map();
@@ -893,7 +900,13 @@ async function selectPlayer(p) {
   let av = $('#whoami .av'); if (!av) { av = el('div', { class: 'av' }); $('#whoami').prepend(av); }
   av.style.background = colorFor(p.name); av.textContent = initials(p.name);
   await loadPlayerData();
+  updatePicksBadge();
   render();
+}
+function updatePicksBadge() {
+  const n = state.player ? myUnwatchedAssigned().length : 0;
+  const b = document.getElementById('picks-badge-side');
+  if (b) { b.textContent = n; b.style.display = n ? '' : 'none'; }
 }
 function switchPlayer() {
   state.player = null;
@@ -933,6 +946,7 @@ function render() {
   if (parts[0] === 'home' || parts[0] === '') return renderHome(v);
   if (parts[0] === 'lessons') return renderLessons(v, parts[1]);
   if (parts[0] === 'mine') return renderMine(v);
+  if (parts[0] === 'picks') return renderPicks(v);
   if (parts[0] === 'playbook') return renderPlaybook(v, parts[1]);
   if (parts[0] === 'practice') return renderPractice(v, parts[1]);
   if (parts[0] === 'bball101') return renderCategory(v, '101', sectionLabel('101'));
@@ -991,6 +1005,20 @@ function renderHome(v) {
       <div class="stat"><div class="lbl">Last Watched</div><div class="v" style="font-size:18px">${lastBit}</div></div>
     `;
     v.append(ps);
+  }
+  // Coach's Picks card — assignments the player hasn't watched yet
+  const unwatchedPicks = myUnwatchedAssigned();
+  if (unwatchedPicks.length) {
+    const card = el('div', { class: 'continue-card' });
+    card.innerHTML = `
+      <div class="cc-ic">📌</div>
+      <div class="cc-t">
+        <div class="l">Coach's Picks for you</div>
+        <div class="b">${unwatchedPicks.length} video${unwatchedPicks.length === 1 ? '' : 's'} Coach Dale wants you to watch</div>
+      </div>
+      <div class="cc-arr">→</div>`;
+    card.addEventListener('click', () => go('#picks'));
+    v.append(card);
   }
   // Continue training (Lessons CTA)
   const nu = nextUpLesson();
@@ -1388,6 +1416,31 @@ function closeWarriorsPlay() {
   playView.play = null;
 }
 
+function renderPicks(v) {
+  const fin = finishedSetForPlayer();
+  const all = myAssignedVids();
+  v.append(buildSectionHeader('📌', "Coach's Picks for you", all.length));
+  const sub = el('div', { style: 'color:var(--muted);font-size:13.5px;margin-bottom:18px;max-width:60ch' });
+  sub.textContent = 'Videos Coach Dale picked specifically for you to watch. Knock them out — new ones first.';
+  v.append(sub);
+  if (!all.length) { v.append(emptyState("No picks yet — Coach Dale will assign videos here when he wants you to watch something specific.")); return; }
+  // Unwatched first, then watched
+  const unwatched = all.filter(x => !fin.has(x.id));
+  const watched = all.filter(x => fin.has(x.id));
+  if (unwatched.length) {
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>🆕 To Watch <span class="count">${unwatched.length}</span></h2>`;
+    sec.append(buildVidGrid(unwatched));
+    v.append(sec);
+  }
+  if (watched.length) {
+    const sec = el('div', { class: 'section' });
+    sec.innerHTML = `<h2>✓ Done <span class="count">${watched.length}</span></h2>`;
+    sec.append(buildVidGrid(watched));
+    v.append(sec);
+  }
+}
+
 function renderMine(v) {
   v.append(buildSectionHeader('⭐', 'Videos with me', myTaggedVids().length));
   const sub = el('div', { class: 'empty', style: 'padding:14px 4px;text-align:left;color:var(--muted);font-size:13.5px' });
@@ -1538,7 +1591,8 @@ function buildVidGrid(videos) {
     if (v.youtube_id || v.custom_thumb) thumb.innerHTML = `<img src="${esc(ytThumb(v))}" alt="" loading="lazy" />`;
     else thumb.innerHTML = `<div style="display:grid;place-items:center;width:100%;height:100%;color:var(--faint);font-size:30px">📼</div>`;
     if (v.featured) thumb.append(el('div', { class: 'feat' }, 'Top Pick'));
-    if (isTaggedMe(v)) thumb.append(el('div', { class: 'me-badge' }, "🎯 You're in this"));
+    if (isAssignedMe(v)) thumb.append(el('div', { class: 'me-badge', style: 'background:rgba(255,106,31,.85)' }, "📌 Coach's Pick"));
+    else if (isTaggedMe(v)) thumb.append(el('div', { class: 'me-badge' }, "🎯 You're in this"));
     if (finished.has(v.id)) thumb.append(el('div', { class: 'ok', 'aria-label':'Finished' }, '✓'));
     thumb.append(el('div', { class: 'play' }, `<svg viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>`));
     if (v.duration_min) thumb.append(el('div', { class: 'dur' }, `${v.duration_min}m`));
@@ -1985,10 +2039,23 @@ async function renderAdminPlayer(v, playerId) {
 function renderAdminVideos(v, vidId) {
   if (vidId === 'new') return renderVideoForm(v, null);
   if (vidId) { const vd = state.videos.find(x => x.id === vidId); if (vd) return renderVideoForm(v, vd); }
-  const addBtn = el('button', { class: 'btn primary', style: 'margin-bottom:14px' });
+
+  // Top action row: Add Video + Assign-mode toggle
+  const actionRow = el('div', { style: 'display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center' });
+  const addBtn = el('button', { class: 'btn primary' });
   addBtn.innerHTML = '+ Add Video';
   addBtn.addEventListener('click', () => go('#admin/videos/new'));
-  v.append(addBtn);
+  const assignToggle = el('button', { class: 'btn' + (state.assignMode ? ' primary' : '') });
+  assignToggle.innerHTML = state.assignMode ? '✓ Done selecting' : "📌 Assign to players";
+  assignToggle.addEventListener('click', () => { state.assignMode = !state.assignMode; state.assignSel.clear(); render(); });
+  actionRow.append(addBtn, assignToggle);
+  v.append(actionRow);
+  if (state.assignMode) {
+    const hint = el('div', { class: 'hint', style: 'margin:-6px 0 14px;font-size:12.5px;color:var(--muted)' });
+    hint.textContent = 'Tick the videos you want to assign, then tap "Assign selected" at the bottom. Pick one player, several, or everyone.';
+    v.append(hint);
+  }
+
   if (!state.videos.length) { v.append(emptyState('No videos yet. Tap "Add Video" to paste your first YouTube URL.')); return; }
   const cats = ['practice','101','nba','welcome'];
   for (const c of cats) {
@@ -1999,30 +2066,137 @@ function renderAdminVideos(v, vidId) {
     for (const vd of list) {
       const row = el('div', { class: 'admin-row' });
       const taggedN = (vd.tagged_player_ids||[]).length;
+      const assignedN = (vd.assigned_player_ids||[]).length;
       const bits = [
         esc(vd.youtube_id || 'no video'),
         vd.sub_cat ? esc(subcatLabel(vd.sub_cat)) : null,
         vd.level ? `L${vd.level}` : null,
         taggedN ? `🎯 ${taggedN}` : null,
+        assignedN ? `📌 ${assignedN}` : null,
         (vd.tags||[]).length ? esc((vd.tags||[]).join(', ')) : null,
       ].filter(Boolean).join(' · ');
-      row.innerHTML = `<div class="t"><b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${bits}</small></div><div class="actions"></div>`;
-      const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
-      editBtn.addEventListener('click', () => go(`#admin/videos/${vd.id}`));
-      const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
-      delBtn.addEventListener('click', async () => {
-        if (!confirm(`Delete "${vd.title}"? This also clears watches/stars for it.`)) return;
-        const { error } = await sb.from('training_videos').delete().eq('id', vd.id);
-        if (error) return toast('Delete failed', 'err');
-        state.videos = state.videos.filter(x => x.id !== vd.id);
-        state.allWatches = null;
-        toast('Deleted'); render();
-      });
-      row.querySelector('.actions').append(editBtn, delBtn);
+
+      if (state.assignMode) {
+        const cb = el('input', { type: 'checkbox', style: 'width:20px;height:20px;flex:none;accent-color:var(--accent);cursor:pointer' });
+        cb.checked = state.assignSel.has(vd.id);
+        cb.addEventListener('change', () => {
+          if (cb.checked) state.assignSel.add(vd.id); else state.assignSel.delete(vd.id);
+          updateAssignBar();
+        });
+        row.append(cb);
+        row.style.cursor = 'pointer';
+        row.addEventListener('click', (e) => { if (e.target !== cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); } });
+      }
+
+      row.append(el('div', { class: 't' }, `<b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${bits}</small>`));
+      if (!state.assignMode) {
+        const actions = el('div', { class: 'actions' });
+        const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
+        editBtn.addEventListener('click', () => go(`#admin/videos/${vd.id}`));
+        const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
+        delBtn.addEventListener('click', async () => {
+          if (!confirm(`Delete "${vd.title}"? This also clears watches/stars for it.`)) return;
+          const { error } = await sb.from('training_videos').delete().eq('id', vd.id);
+          if (error) return toast('Delete failed', 'err');
+          state.videos = state.videos.filter(x => x.id !== vd.id);
+          state.allWatches = null;
+          toast('Deleted'); render();
+        });
+        actions.append(editBtn, delBtn);
+        row.append(actions);
+      }
       sec.append(row);
     }
     v.append(sec);
   }
+
+  if (state.assignMode) {
+    // Floating action bar
+    const bar = el('div', { id: 'assignBar', class: 'assign-bar' });
+    v.append(bar);
+    updateAssignBar();
+  }
+}
+
+function updateAssignBar() {
+  const bar = document.getElementById('assignBar');
+  if (!bar) return;
+  const n = state.assignSel.size;
+  bar.innerHTML = '';
+  const count = el('div', { style: 'font-weight:700;font-size:14px' }, `${n} video${n === 1 ? '' : 's'} selected`);
+  bar.append(count);
+  const spacer = el('div', { style: 'flex:1' }); bar.append(spacer);
+  if (n) {
+    const assignBtn = el('button', { class: 'btn primary' }); assignBtn.textContent = 'Assign selected →';
+    assignBtn.addEventListener('click', openAssignPanel);
+    bar.append(assignBtn);
+  }
+  bar.style.display = n ? 'flex' : 'none';
+}
+
+function openAssignPanel() {
+  // Build a modal-ish overlay with player chips + All + Assign/Remove
+  const existing = document.getElementById('assignOverlay');
+  if (existing) existing.remove();
+  const chosen = new Set();
+  const overlay = el('div', { id: 'assignOverlay', class: 'assign-overlay' });
+  const panel = el('div', { class: 'assign-panel' });
+  panel.innerHTML = `<h3 style="margin-bottom:4px">Assign ${state.assignSel.size} video${state.assignSel.size===1?'':'s'} to…</h3>
+    <div style="color:var(--muted);font-size:12.5px;margin-bottom:12px">Tap players (or All), then Assign. Remove un-assigns them from the selected videos.</div>`;
+  const chipWrap = el('div', { class: 'ms', style: 'margin-bottom:12px' });
+  const allChip = el('button', { type: 'button', class: 'pchip', style: 'font-weight:800' });
+  allChip.textContent = '⭐ All players';
+  allChip.addEventListener('click', () => {
+    const allOn = chosen.size === state.players.length;
+    chosen.clear();
+    if (!allOn) state.players.forEach(p => chosen.add(p.id));
+    [...chipWrap.querySelectorAll('.pchip')].forEach(c => { if (c !== allChip) c.classList.toggle('on', chosen.has(c.dataset.pid)); });
+    allChip.classList.toggle('on', chosen.size === state.players.length);
+  });
+  chipWrap.append(allChip);
+  for (const p of state.players) {
+    const chip = el('button', { type: 'button', class: 'pchip' });
+    chip.textContent = p.name; chip.dataset.pid = p.id;
+    chip.addEventListener('click', () => {
+      if (chosen.has(p.id)) chosen.delete(p.id); else chosen.add(p.id);
+      chip.classList.toggle('on', chosen.has(p.id));
+      allChip.classList.toggle('on', chosen.size === state.players.length);
+    });
+    chipWrap.append(chip);
+  }
+  panel.append(chipWrap);
+  const btnRow = el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap' });
+  const assignBtn = el('button', { class: 'btn primary' }); assignBtn.textContent = 'Assign';
+  assignBtn.addEventListener('click', () => applyAssign([...chosen], 'add', overlay));
+  const removeBtn = el('button', { class: 'btn danger' }); removeBtn.textContent = 'Remove';
+  removeBtn.addEventListener('click', () => applyAssign([...chosen], 'remove', overlay));
+  const cancelBtn = el('button', { class: 'btn ghost' }); cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', () => overlay.remove());
+  btnRow.append(assignBtn, removeBtn, cancelBtn);
+  panel.append(btnRow);
+  overlay.append(panel);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  document.body.append(overlay);
+}
+
+async function applyAssign(playerIds, mode, overlay) {
+  if (!playerIds.length) { toast('Pick at least one player', 'err'); return; }
+  const vidIds = [...state.assignSel];
+  let changed = 0;
+  for (const vid of vidIds) {
+    const vd = state.videos.find(x => x.id === vid);
+    if (!vd) continue;
+    const cur = new Set(vd.assigned_player_ids || []);
+    if (mode === 'add') playerIds.forEach(pid => cur.add(pid));
+    else playerIds.forEach(pid => cur.delete(pid));
+    const next = [...cur];
+    const { error } = await sb.from('training_videos').update({ assigned_player_ids: next, updated_at: new Date().toISOString() }).eq('id', vid);
+    if (!error) { vd.assigned_player_ids = next; changed++; }
+  }
+  if (overlay) overlay.remove();
+  toast(`${mode === 'add' ? 'Assigned' : 'Removed'} ${changed} video${changed === 1 ? '' : 's'}`);
+  updatePicksBadge();
+  render();
 }
 function renderVideoForm(v, vd) {
   const isNew = !vd;
@@ -2266,7 +2440,6 @@ async function boot() {
   $('#brand-btn').addEventListener('click', () => { if (state.player) go('#home'); });
   $('#whoami').addEventListener('click', switchPlayer);
   $('#admin-entry').addEventListener('click', () => go('#admin'));
-  document.getElementById('topbar-admin')?.addEventListener('click', () => go('#admin'));
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
