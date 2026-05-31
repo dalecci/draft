@@ -585,8 +585,8 @@
   <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
   <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
   <div class="navlink" data-route="#picks"><span class="ic">📌</span> Picks</div>
-  <div class="navlink" data-route="#playbook"><span class="ic">📋</span> Playbook</div>
   <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
+  <div class="navlink" id="botnav-admin-btn"><span class="ic">⚙️</span> Admin</div>
 </nav>
 
 <!-- Player picker overlay -->
@@ -1770,15 +1770,30 @@ function togglePlay() {
 }
 function toggleFullscreen() {
   const f = $('#vm-frame');
-  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-    (f.requestFullscreen || f.webkitRequestFullscreen)?.call(f).catch(()=>{});
-  } else {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const inFS = document.fullscreenElement || document.webkitFullscreenElement;
+  if (inFS) {
     (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
+    return;
   }
+  if (isIOS) {
+    // iOS Safari: requestFullscreen on a div is unsupported.
+    // Try the inner iframe (YouTube iframe inside #ytplayer). Safari supports this for media iframes.
+    const iframe = $('#ytplayer iframe') || $('#ytplayer-inner iframe') || document.querySelector('#vm-ytwrap iframe');
+    if (iframe) {
+      try { (iframe.webkitRequestFullscreen || iframe.requestFullscreen)?.call(iframe); return; } catch {}
+    }
+    // Ultimate fallback: go to the YouTube video directly in a new tab
+    if (state.currentVideo?.youtube_id) {
+      window.open(`https://www.youtube.com/watch?v=${state.currentVideo.youtube_id}`, '_blank');
+    }
+    return;
+  }
+  (f.requestFullscreen || f.webkitRequestFullscreen)?.call(f).catch(()=>{});
 }
 function closeVideo() {
-  if (document.fullscreenElement || document.webkitFullscreenElement) {
-    (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
+  if (document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement) {
+    (document.exitFullscreen || document.webkitExitFullscreen || document.webkitCancelFullScreen)?.call(document).catch(()=>{});
   }
   hideUpnext();
   $('#vmodal').classList.remove('on');
@@ -2440,6 +2455,7 @@ async function boot() {
   $('#brand-btn').addEventListener('click', () => { if (state.player) go('#home'); });
   $('#whoami').addEventListener('click', switchPlayer);
   $('#admin-entry').addEventListener('click', () => go('#admin'));
+  document.getElementById('botnav-admin-btn').addEventListener('click', () => go('#admin'));
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
