@@ -239,6 +239,11 @@
   .modal .frame:fullscreen,.modal .frame:-webkit-full-screen{display:flex;flex-direction:column;background:#000}
   .modal .frame:fullscreen .yt-wrap{flex:1;aspect-ratio:auto;height:auto}
   .modal .frame:fullscreen .head,.modal .frame:fullscreen .body{display:none}
+  /* iPhone Safari doesn't support the Fullscreen API on divs or iframes — use a CSS pseudo-fullscreen. */
+  .modal .frame.pseudo-fs{position:fixed!important;inset:0!important;z-index:99999;background:#000;display:flex;flex-direction:column;border-radius:0;width:100vw!important;max-width:none!important;height:100vh!important;height:100dvh!important;margin:0!important}
+  .modal .frame.pseudo-fs .yt-wrap{flex:1;aspect-ratio:auto;height:auto}
+  .modal .frame.pseudo-fs .head,.modal .frame.pseudo-fs .body{display:none}
+  body.pseudo-fs-on{overflow:hidden;position:fixed;width:100%}
 
   /* ---------- Custom video controls ---------- */
   .vctrl{
@@ -1768,33 +1773,45 @@ function togglePlay() {
   if (s === YT.PlayerState.PLAYING) p.pauseVideo();
   else p.playVideo();
 }
+function enterPseudoFs(f) {
+  f.classList.add('pseudo-fs');
+  document.body.classList.add('pseudo-fs-on');
+  try { screen.orientation?.lock?.('landscape').catch(()=>{}); } catch {}
+}
+function exitPseudoFs(f) {
+  f.classList.remove('pseudo-fs');
+  document.body.classList.remove('pseudo-fs-on');
+  try { screen.orientation?.unlock?.(); } catch {}
+}
 function toggleFullscreen() {
   const f = $('#vm-frame');
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const inFS = document.fullscreenElement || document.webkitFullscreenElement;
-  if (inFS) {
+  const ua = navigator.userAgent;
+  const isIPhone = /iPhone|iPod/.test(ua);
+  // iPadOS 13+ reports as Mac in the UA — detect via touch points instead.
+  const isIPad = /iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const inRealFS = document.fullscreenElement || document.webkitFullscreenElement;
+  const inPseudo = f.classList.contains('pseudo-fs');
+  if (inRealFS) {
     (document.exitFullscreen || document.webkitExitFullscreen)?.call(document).catch(()=>{});
     return;
   }
-  if (isIOS) {
-    // iOS Safari: requestFullscreen on a div is unsupported.
-    // Try the inner iframe (YouTube iframe inside #ytplayer). Safari supports this for media iframes.
-    const iframe = $('#ytplayer iframe') || $('#ytplayer-inner iframe') || document.querySelector('#vm-ytwrap iframe');
-    if (iframe) {
-      try { (iframe.webkitRequestFullscreen || iframe.requestFullscreen)?.call(iframe); return; } catch {}
-    }
-    // Ultimate fallback: go to the YouTube video directly in a new tab
-    if (state.currentVideo?.youtube_id) {
-      window.open(`https://www.youtube.com/watch?v=${state.currentVideo.youtube_id}`, '_blank');
-    }
-    return;
-  }
-  (f.requestFullscreen || f.webkitRequestFullscreen)?.call(f).catch(()=>{});
+  if (inPseudo) { exitPseudoFs(f); return; }
+  // iPhone Safari: Fullscreen API on a div/iframe rejects silently. Use CSS pseudo-fullscreen.
+  if (isIPhone) { enterPseudoFs(f); return; }
+  // iPad + desktop: real Fullscreen API works on the frame div.
+  const req = f.requestFullscreen || f.webkitRequestFullscreen;
+  if (!req) { enterPseudoFs(f); return; }
+  try {
+    const p = req.call(f);
+    if (p && typeof p.catch === 'function') p.catch(() => enterPseudoFs(f));
+  } catch { enterPseudoFs(f); }
 }
 function closeVideo() {
   if (document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement) {
     (document.exitFullscreen || document.webkitExitFullscreen || document.webkitCancelFullScreen)?.call(document).catch(()=>{});
   }
+  const f = $('#vm-frame');
+  if (f.classList.contains('pseudo-fs')) exitPseudoFs(f);
   hideUpnext();
   $('#vmodal').classList.remove('on');
   document.body.style.overflow = '';
@@ -2460,7 +2477,10 @@ async function boot() {
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
     if ($('#vmodal').classList.contains('on')) {
-      if (e.key === 'Escape') closeVideo();
+      if (e.key === 'Escape') {
+        if ($('#vm-frame').classList.contains('pseudo-fs')) exitPseudoFs($('#vm-frame'));
+        else closeVideo();
+      }
       else if (e.key === ' ' || e.key === 'k') { e.preventDefault(); togglePlay(); }
       else if (e.key === 'f') { e.preventDefault(); toggleFullscreen(); }
     } else if ($('#play-modal').classList.contains('on')) {
