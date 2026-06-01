@@ -1001,6 +1001,69 @@
     border-radius: 6px; font-size: 11px; padding: 4px 6px; cursor: pointer;
   }
   .rating-row .rclr:hover { color: var(--text); border-color: var(--border-strong); }
+
+  /* ---------- Print (Lineup tool) ---------- */
+  @media print {
+    @page { size: letter portrait; margin: 0.4in; }
+    html, body {
+      background: #fff !important; color: #000 !important;
+      -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+    }
+    body * { visibility: hidden; }
+    body.printing-lineup #view-root, body.printing-lineup #view-root * { visibility: visible; }
+    body.printing-lineup #view-root { position: absolute; left: 0; top: 0; width: 100%; padding: 0; }
+    /* Hide UI chrome */
+    body.printing-lineup .app-header,
+    body.printing-lineup .lu-actions,
+    body.printing-lineup .lu-hint,
+    body.printing-lineup .game-header .iconbtn,
+    body.printing-lineup .lu-x,
+    body.printing-lineup .lu-slot-add,
+    body.printing-lineup .modal-backdrop { display: none !important; }
+    body.printing-lineup .game-header { border: none !important; padding: 0 0 8px 0 !important; margin: 0 0 8px 0 !important; }
+    body.printing-lineup .game-header h2 { color: #000 !important; font-size: 18pt !important; }
+    /* Light theme over dark vars */
+    body.printing-lineup .lu-total-card,
+    body.printing-lineup .lu-q,
+    body.printing-lineup .lu-slot,
+    body.printing-lineup .lu-q-overall {
+      background: #fff !important; color: #000 !important;
+      border: 1px solid #888 !important; box-shadow: none !important;
+    }
+    body.printing-lineup .lu-quarters {
+      display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important;
+    }
+    body.printing-lineup .lu-q { page-break-inside: avoid; padding: 8px !important; }
+    body.printing-lineup .lu-q-head,
+    body.printing-lineup .lu-q-title,
+    body.printing-lineup .lu-q-count,
+    body.printing-lineup .lu-slot-label,
+    body.printing-lineup .lu-qo-label,
+    body.printing-lineup .lu-qo-val,
+    body.printing-lineup .lu-qo-sub,
+    body.printing-lineup .saved-name,
+    body.printing-lineup .lu-stat-label,
+    body.printing-lineup .lu-stat-val { color: #000 !important; }
+    body.printing-lineup .lu-q-count.full { background: #000 !important; color: #fff !important; }
+    body.printing-lineup .lu-slot { min-height: 30px !important; padding: 4px 6px !important; }
+    body.printing-lineup .lu-slot.empty { color: #888 !important; }
+    body.printing-lineup .lu-chip {
+      background: #fff !important; color: #000 !important; border: 1px solid #888 !important;
+      box-shadow: none !important;
+    }
+    body.printing-lineup .lu-chip .lu-num {
+      background: #000 !important; color: #fff !important; border: 1px solid #000 !important;
+    }
+    body.printing-lineup .lu-chip .lu-name { color: #000 !important; }
+    body.printing-lineup .lu-chip .lu-rating,
+    body.printing-lineup .lu-chip .lu-badge { display: none !important; }
+    body.printing-lineup .lu-stats,
+    body.printing-lineup .lu-stat-bar,
+    body.printing-lineup .lu-stat-fill { display: none !important; }
+    body.printing-lineup .lu-total-card { padding: 8px !important; margin-bottom: 10px !important; }
+    body.printing-lineup .lu-q-overall-grid { gap: 6px !important; }
+    body.printing-lineup .lu-q-overall { padding: 6px !important; }
+  }
 </style>
 </head>
 <body>
@@ -2678,6 +2741,7 @@ function renderLineup(root) {
   wrap.append(el('div', { class: 'lu-actions' },
     el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
     el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
+    el('button', { class: 'nav-btn', onclick: printLineup }, '🖨 Print'),
     el('button', { class: 'nav-btn', onclick: () => {
       setLineupRatingsHidden(!hideRatings);
       render();
@@ -3049,6 +3113,16 @@ function applySavedLineup(id) {
   }
   luSave(out);
   return true;
+}
+
+function printLineup() {
+  document.body.classList.add('printing-lineup');
+  const cleanup = () => {
+    document.body.classList.remove('printing-lineup');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => { window.print(); }, 50);
 }
 
 function openSaveLineupModal() {
