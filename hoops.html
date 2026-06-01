@@ -863,6 +863,11 @@
   .saved-load:hover { background: var(--gold); color: #1a1208; }
   .saved-del { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); color: var(--muted); background: transparent; cursor: pointer; font-size: 14px; }
   .saved-del:hover { color: #f0746c; border-color: rgba(240,87,79,0.45); }
+  .sv-divider {
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted); text-align: center;
+    margin: 14px 0 8px; padding-top: 14px; border-top: 1px solid var(--border);
+  }
   .lu-stat-row {
     display: grid; grid-template-columns: 26px 1fr 32px; gap: 8px; align-items: center;
     font-size: 11px; letter-spacing: 0.06em; color: var(--muted);
@@ -2985,6 +2990,26 @@ function addSavedLineup(name) {
   sb.from('saved_lineups').insert({
     id: row.id, name: row.name, saved_at: row.savedAt, lineup: row.lu,
   }).then(() => {}, () => {});
+  return row;
+}
+function updateSavedLineup(id, newName) {
+  const arr = loadSavedLineups();
+  const idx = arr.findIndex(s => s.id === id);
+  if (idx === -1) return false;
+  arr[idx].lu = luLoad();
+  arr[idx].savedAt = new Date().toISOString();
+  if (newName) arr[idx].name = newName;
+  const [row] = arr.splice(idx, 1);
+  arr.unshift(row);
+  saveSavedLineups(arr);
+  sb.from('saved_lineups').update({
+    name: row.name, saved_at: row.savedAt, lineup: row.lu,
+  }).eq('id', id).then(() => {}, () => {});
+  return true;
+}
+function findSavedLineupByName(name) {
+  const norm = name.trim().toLowerCase();
+  return loadSavedLineups().find(s => s.name.trim().toLowerCase() === norm) || null;
 }
 function deleteSavedLineup(id) {
   saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
@@ -3027,25 +3052,63 @@ function applySavedLineup(id) {
 }
 
 function openSaveLineupModal() {
-  openModal(
-    el('div', { class: 'modal' },
-      el('h3', {}, 'Save Lineup'),
-      el('div', { class: 'field' },
-        el('label', {}, 'Name'),
-        el('input', { type: 'text', id: 'sv-name', placeholder: 'e.g. Starters, Defensive set' }),
-      ),
-      el('div', { class: 'modal-actions' },
-        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
-        el('button', { class: 'btn btn-primary', onclick: () => {
-          const name = $('#sv-name').value.trim();
-          if (!name) return toast('Name required');
-          addSavedLineup(name);
+  const existing = loadSavedLineups();
+  const body = el('div', { class: 'modal modal-lg' }, el('h3', {}, 'Save Lineup'));
+
+  body.append(el('div', { class: 'field' },
+    el('label', {}, 'Save as new'),
+    el('input', { type: 'text', id: 'sv-name', placeholder: 'e.g. Starters, Defensive set' }),
+  ));
+  body.append(el('div', { class: 'modal-actions', style: 'justify-content:flex-end;margin-bottom:8px' },
+    el('button', { class: 'btn btn-primary', onclick: () => {
+      const name = $('#sv-name').value.trim();
+      if (!name) return toast('Name required');
+      const dup = findSavedLineupByName(name);
+      if (dup) {
+        if (!confirm(`A lineup named "${dup.name}" already exists. Overwrite it?`)) return;
+        updateSavedLineup(dup.id);
+        closeModal();
+        toast(`Overwrote: ${dup.name}`);
+      } else {
+        addSavedLineup(name);
+        closeModal();
+        toast('Lineup saved');
+      }
+    }}, 'Save as new'),
+  ));
+
+  if (existing.length) {
+    body.append(el('div', { class: 'sv-divider' }, 'OR overwrite existing'));
+    const listEl = el('div', { class: 'saved-list' });
+    for (const s of existing) {
+      const when = new Date(s.savedAt).toLocaleString();
+      listEl.append(el('div', { class: 'saved-row' },
+        el('div', {},
+          el('div', { class: 'saved-name' }, s.name),
+          el('div', { class: 'saved-meta' }, `saved ${when}`),
+        ),
+        el('button', { class: 'saved-load', onclick: () => {
+          if (!confirm(`Overwrite "${s.name}" with current lineup?`)) return;
+          updateSavedLineup(s.id);
           closeModal();
-          toast('Lineup saved');
-        }}, 'Save'),
-      ),
-    )
-  );
+          toast(`Overwrote: ${s.name}`);
+        }}, 'Overwrite'),
+        el('button', { class: 'saved-del', title: 'Delete', onclick: () => {
+          if (!confirm(`Delete saved lineup "${s.name}"?`)) return;
+          deleteSavedLineup(s.id);
+          closeModal();
+          openSaveLineupModal();
+        }}, '×'),
+      ));
+    }
+    body.append(listEl);
+  }
+
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+  ));
+
+  openModal(body);
   setTimeout(() => $('#sv-name')?.focus(), 50);
 }
 
