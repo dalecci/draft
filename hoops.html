@@ -1085,6 +1085,7 @@
       </div>
     </div>
     <div class="header-spacer"></div>
+    <button class="nav-btn" id="nav-games">Games</button>
     <button class="nav-btn" id="nav-workout">Workout</button>
     <button class="nav-btn" id="nav-roster">Roster</button>
     <button class="nav-btn" id="nav-ratings">Ratings</button>
@@ -1887,7 +1888,15 @@ function renderQuarter() {
   // RIGHT: on-floor + bench + opponent
   const right = el('div');
 
-  right.append(el('h3', {}, `Q${state.currentQuarter} · On Floor`));
+  const lu = luLoad();
+  const luQ = lu['Q' + state.currentQuarter];
+  const luHasData = luQ && LU_SLOTS.some(s => luQ[s]);
+  right.append(el('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px' },
+    el('h3', { style: 'margin:0' }, `Q${state.currentQuarter} · On Floor`),
+    luHasData
+      ? el('button', { class: 'nav-btn', onclick: pullLineupForCurrentQuarter }, '↓ Pull from Lineup')
+      : null,
+  ));
   const floorGrid = el('div', { class: 'on-floor-grid panel-section' });
   for (let i = 0; i < 5; i++) {
     if (onFloorIds[i]) {
@@ -2812,6 +2821,7 @@ function renderLineup(root) {
   wrap.append(el('div', { class: 'lu-actions' },
     el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
     el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
+    el('button', { class: 'nav-btn', onclick: openPushLineupModal }, '→ Push to Game'),
     el('button', { class: 'nav-btn', onclick: printLineup }, '🖨 Print'),
     el('button', { class: 'nav-btn', onclick: () => {
       setLineupRatingsHidden(!hideRatings);
@@ -3149,6 +3159,173 @@ function findSavedLineupByName(name) {
 function deleteSavedLineup(id) {
   saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
   sb.from('saved_lineups').delete().eq('id', id).then(() => {}, () => {});
+}
+
+/* Convert current Lineup tool into stints for a target game.
+   Solo slot → 1 stint covering the whole quarter (started=quarterLen, ended=null).
+   Pair slot → 2 stints, each half (A: start→half closed, B: half→null open).
+   By default, quarters that ALREADY have stints are skipped to avoid clobbering;
+   pass { overwrite: true } to delete existing stints in those quarters first. */
+async function pushLineupToGame(gameId, opts = {}) {
+  const overwrite = !!opts.overwrite;
+  const g = state.games.find(g => g.id === gameId);
+  if (!g) return { ok: false, msg: 'Game not found' };
+  const lu = luLoad();
+  // Load stints for the target game (use cache if it's the current game)
+  let existing;
+  if (state.currentGameId === gameId) {
+    existing = state.stints.slice();
+  } else {
+    const { data, error } = await sb.from('stints').select('*').eq('game_id', gameId);
+    if (error) return { ok: false, msg: error.message };
+    existing = data || [];
+  }
+  const quarterLen = g.quarter_length_seconds || 480;
+  const pushed = [], skipped = [];
+  const stintsToDelete = [];
+  const newStints = [];
+  for (const q of [1,2,3,4]) {
+    const luQ = lu['Q' + q];
+    if (!luQ) continue;
+    const hasFilled = LU_SLOTS.some(s => luQ[s]);
+    if (!hasFilled) continue;
+    const existingForQ = existing.filter(s => s.quarter === q);
+    if (existingForQ.length) {
+      if (overwrite) {
+        for (const s of existingForQ) stintsToDelete.push(s.id);
+      } else {
+        skipped.push(q); continue;
+      }
+    }
+    for (const slot of LU_SLOTS) {
+      const v = luQ[slot];
+      if (!v) continue;
+      if (typeof v === 'string') {
+        newStints.push({
+          id: uuid(), game_id: gameId, quarter: q, player_id: v,
+          started_seconds_remaining: quarterLen, ended_seconds_remaining: null,
+          created_at: new Date().toISOString(),
+        });
+      } else if (v && v.a && v.b) {
+        const half = Math.floor(quarterLen / 2);
+        newStints.push({
+          id: uuid(), game_id: gameId, quarter: q, player_id: v.a,
+          started_seconds_remaining: quarterLen, ended_seconds_remaining: half,
+          created_at: new Date().toISOString(),
+        });
+        newStints.push({
+          id: uuid(), game_id: gameId, quarter: q, player_id: v.b,
+          started_seconds_remaining: half, ended_seconds_remaining: null,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+    pushed.push(q);
+  }
+  if (stintsToDelete.length) {
+    if (state.currentGameId === gameId) {
+      state.stints = state.stints.filter(s => !stintsToDelete.includes(s.id));
+    }
+    await sb.from('stints').delete().in('id', stintsToDelete);
+  }
+  if (newStints.length) {
+    const { error } = await sb.from('stints').insert(newStints);
+    if (error) return { ok: false, msg: error.message };
+    if (state.currentGameId === gameId) state.stints.push(...newStints);
+  }
+  return { ok: true, pushed, skipped, inserted: newStints.length };
+}
+
+function openPushLineupModal() {
+  if (!state.games.length) return toast('No games yet — create one first');
+  const games = [...state.games].sort((a,b) => (b.game_date || '').localeCompare(a.game_date || ''));
+  const lu = luLoad();
+  const filledQs = [1,2,3,4].filter(q => LU_SLOTS.some(s => lu['Q'+q]?.[s]));
+  if (!filledQs.length) return toast('Lineup is empty');
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, 'Push Lineup to Game'));
+  body.append(el('p', { style: 'color:var(--ink-2);font-size:13px;margin-bottom:12px;letter-spacing:0.04em' },
+    `Filled quarters: Q${filledQs.join(', Q')}. Quarters that already have stints are skipped — tick "Overwrite" to replace them.`));
+  let overwrite = false;
+  const overChk = el('label', { style: 'display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2);margin-bottom:12px' },
+    el('input', { type: 'checkbox', id: 'push-overwrite' }),
+    el('span', {}, 'Overwrite quarters that already have stints'),
+  );
+  body.append(overChk);
+  const listEl = el('div', { class: 'saved-list' });
+  for (const g of games) {
+    const dateLbl = new Date((g.game_date||'') + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    listEl.append(el('div', { class: 'saved-row' },
+      el('div', {},
+        el('div', { class: 'saved-name' }, `Warriors vs ${g.opponent || 'TBD'}`),
+        el('div', { class: 'saved-meta' }, dateLbl + (g.location ? ` · ${g.location}` : '')),
+      ),
+      el('button', { class: 'saved-load', onclick: async () => {
+        overwrite = $('#push-overwrite')?.checked;
+        const res = await pushLineupToGame(g.id, { overwrite });
+        if (!res.ok) return toast('Push failed: ' + res.msg);
+        closeModal();
+        const parts = [];
+        if (res.pushed.length) parts.push(`Pushed Q${res.pushed.join(', Q')}`);
+        if (res.skipped.length) parts.push(`Skipped Q${res.skipped.join(', Q')}`);
+        toast(parts.join(' · ') || 'Nothing to push');
+        if (state.currentGameId === g.id) render();
+      }}, 'Push'),
+    ));
+  }
+  body.append(listEl);
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+  ));
+  openModal(body);
+}
+
+/* Pull lineup data into the CURRENT game's CURRENT quarter only.
+   Skips players that already have an open stint in this quarter. */
+async function pullLineupForCurrentQuarter() {
+  const gameId = state.currentGameId;
+  const q = state.currentQuarter;
+  const g = getCurrentGame();
+  if (!g) return;
+  const lu = luLoad();
+  const luQ = lu['Q' + q];
+  if (!luQ) return toast('Lineup is empty for this quarter');
+  const quarterLen = g.quarter_length_seconds || 480;
+  const newStints = [];
+  for (const slot of LU_SLOTS) {
+    const v = luQ[slot];
+    if (!v) continue;
+    if (typeof v === 'string') {
+      if (state.stints.some(s => s.player_id === v && s.quarter === q)) continue;
+      newStints.push({
+        id: uuid(), game_id: gameId, quarter: q, player_id: v,
+        started_seconds_remaining: quarterLen, ended_seconds_remaining: null,
+        created_at: new Date().toISOString(),
+      });
+    } else if (v && v.a && v.b) {
+      const half = Math.floor(quarterLen / 2);
+      if (!state.stints.some(s => s.player_id === v.a && s.quarter === q)) {
+        newStints.push({
+          id: uuid(), game_id: gameId, quarter: q, player_id: v.a,
+          started_seconds_remaining: quarterLen, ended_seconds_remaining: half,
+          created_at: new Date().toISOString(),
+        });
+      }
+      if (!state.stints.some(s => s.player_id === v.b && s.quarter === q)) {
+        newStints.push({
+          id: uuid(), game_id: gameId, quarter: q, player_id: v.b,
+          started_seconds_remaining: half, ended_seconds_remaining: null,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+  }
+  if (!newStints.length) return toast('Nothing to pull (already filled)');
+  state.stints.push(...newStints);
+  const { error } = await sb.from('stints').insert(newStints);
+  if (error) toast('Save failed (will retry)');
+  render();
+  toast(`Pulled Q${q} from lineup`);
 }
 /* Pull saved lineups from Supabase. Pushes any local-only entries up first,
    then overwrites localStorage with the merged source-of-truth list. If the
@@ -3787,6 +3964,7 @@ function toast(msg) {
 
 /* ============ NAV ============ */
 $('#brand-home').onclick = () => { state.view = 'home'; render(); };
+$('#nav-games').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
 $('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
 $('#nav-lineup').onclick = () => { state.view = 'lineup'; render(); };
