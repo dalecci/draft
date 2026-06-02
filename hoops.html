@@ -235,7 +235,8 @@
     border: 1px solid var(--border-strong); pointer-events: none;
     text-align: center; max-width: 80%;
   }
-  .shot-dot { transition: r 0.15s; }
+  .shot-dot { transition: r 0.15s; cursor: pointer; }
+  .shot-dot:hover { r: 11; }
   .shot-dot.made { fill: var(--made); stroke: white; stroke-width: 1.5; }
   .shot-dot.missed { fill: none; stroke: var(--missed); stroke-width: 3.5; }
   .shot-dot.them.made { fill: var(--missed); stroke: rgba(0,0,0,0.4); }
@@ -266,6 +267,12 @@
     text-transform: uppercase; font-weight: 600;
   }
   .pc-sub-btn:hover { background: rgba(212,175,55,0.1); border-color: var(--gold); color: var(--gold-2); }
+  .pc-remove-btn {
+    background: transparent; border: 1px solid var(--border-strong); color: var(--muted);
+    padding: 2px 8px; border-radius: 6px; font-size: 14px; line-height: 1;
+    cursor: pointer; margin-left: 4px;
+  }
+  .pc-remove-btn:hover { background: rgba(240,87,79,0.12); border-color: rgba(240,87,79,0.55); color: #f0746c; }
   .pc-stats {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
   }
@@ -350,6 +357,8 @@
   .btn-missed { background: linear-gradient(180deg, #ff6b6b, #c92020); color: white; border-color: var(--missed); }
   .btn-big { padding: 22px 18px; font-size: 18px; letter-spacing: 0.2em; }
   .btn-ghost { background: transparent; border-color: var(--border); color: var(--ink-2); }
+  .btn-danger { background: linear-gradient(180deg, #c14d44, #8a2a23); color: #fff; border-color: rgba(240,87,79,0.6); }
+  .btn-danger:hover { background: linear-gradient(180deg, #d05b52, #a03028); }
 
   /* Shot modal */
   .team-toggle {
@@ -1437,6 +1446,11 @@ async function adjustOpponentStat(eventType, delta) {
 }
 
 async function startStint(playerId, secsRemaining, quarter = state.currentQuarter) {
+  // Guard: don't open a second stint if this player already has an open one in this quarter
+  const existing = state.stints.find(s =>
+    s.player_id === playerId && s.quarter === quarter && s.ended_seconds_remaining === null
+  );
+  if (existing) { render(); return; }
   const id = uuid();
   const row = {
     id, game_id: state.currentGameId, quarter,
@@ -1450,6 +1464,19 @@ async function startStint(playerId, secsRemaining, quarter = state.currentQuarte
   const { error } = await sb.from('stints').insert(row);
   if (error) toast('Save failed');
   render();
+}
+
+// Remove player from floor without subbing in a replacement
+async function removeFromFloor(playerId) {
+  const q = state.currentQuarter;
+  const t = getCurrentClockSeconds();
+  const open = state.stints.filter(s =>
+    s.player_id === playerId && s.quarter === q && s.ended_seconds_remaining === null
+  );
+  if (!open.length) return;
+  for (const stint of open) {
+    await endStint(stint.id, t);
+  }
 }
 
 async function endStint(stintId, secsRemaining) {
@@ -1528,11 +1555,17 @@ function setCurrentClockSeconds(secs) {
   lsSet(key, String(Math.max(0, Math.min(getQuarterLengthSec(), secs))));
 }
 
-// Returns array of player_ids currently on floor for given quarter
+// Returns array of player_ids currently on floor for given quarter (deduped)
 function getOnFloorIds(quarter) {
-  return state.stints
-    .filter(s => s.quarter === quarter && s.ended_seconds_remaining === null)
-    .map(s => s.player_id);
+  const seen = new Set();
+  const out = [];
+  for (const s of state.stints) {
+    if (s.quarter !== quarter || s.ended_seconds_remaining !== null) continue;
+    if (seen.has(s.player_id)) continue;
+    seen.add(s.player_id);
+    out.push(s.player_id);
+  }
+  return out;
 }
 
 function pointsForEvent(e) {
@@ -1921,6 +1954,11 @@ function renderPlayerCard(playerId) {
         `${stats.fgm}/${stats.fga}`,
       ),
       el('button', { class: 'pc-sub-btn', onclick: () => openSubOutModal(playerId) }, 'Sub'),
+      el('button', { class: 'pc-remove-btn', title: 'Remove from floor', onclick: async () => {
+        const p = state.players.find(x => x.id === playerId);
+        if (!confirm(`Remove ${shortName(p.name)} from the floor?`)) return;
+        await removeFromFloor(playerId);
+      }}, '×'),
     ),
     el('div', { class: 'pc-stats' },
       statBtn(playerId, 'AST', 'assist', stats.ast),
@@ -2012,8 +2050,14 @@ function buildCourtSvg() {
     const shape = document.createElementNS(ns, 'circle');
     shape.setAttribute('cx', String(e.court_x));
     shape.setAttribute('cy', String(e.court_y));
-    shape.setAttribute('r', '7');
+    shape.setAttribute('r', '8');
     shape.setAttribute('class', `shot-dot ${teamCls} ${made ? 'made' : 'missed'}`);
+    shape.setAttribute('data-event-id', e.id);
+    shape.style.cursor = 'pointer';
+    shape.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openShotEditModal(e);
+    });
     svg.appendChild(shape);
   }
 
@@ -2031,6 +2075,33 @@ function svgPoint(svg, ev) {
   const x = (ev.clientX - rect.left) / rect.width * 500;
   const y = (ev.clientY - rect.top) / rect.height * 470;
   return { x: Math.round(x), y: Math.round(y) };
+}
+
+/* ----- SHOT EDIT MODAL (delete an already-recorded shot) ----- */
+function openShotEditModal(evt) {
+  const p = evt.player_id ? state.players.find(x => x.id === evt.player_id) : null;
+  const made = evt.event_type.includes('made');
+  const pts = evt.event_type.includes('_3') ? 3 : 2;
+  const teamLbl = evt.team === 'them' ? (getCurrentGame()?.opponent || 'Other team') : (p ? shortName(p.name) : 'Warriors');
+  const desc = `${teamLbl} · ${pts}PT ${made ? 'MADE' : 'MISS'}`;
+  openModal(
+    el('div', { class: 'modal' },
+      el('h3', {}, 'Edit Shot'),
+      el('p', { style: 'color:var(--ink-2);font-size:13px;margin-bottom:14px;letter-spacing:0.06em' }, desc),
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Cancel'),
+        el('button', { class: 'btn btn-danger', onclick: async () => {
+          await deleteEvent(evt.id);
+          // pop from undo stack if it was the most recent
+          const top = state.undoStack[state.undoStack.length - 1];
+          if (top && top.type === 'event' && top.id === evt.id) state.undoStack.pop();
+          closeModal();
+          render();
+          toast('Shot deleted');
+        }}, 'Delete shot'),
+      ),
+    )
+  );
 }
 
 /* ----- SHOT MODAL ----- */
