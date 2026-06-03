@@ -2967,7 +2967,7 @@ function renderLineup(root) {
     el('button', { class: 'nav-btn', onclick: openSaveLineupModal }, 'Save'),
     el('button', { class: 'nav-btn', onclick: openLoadLineupModal }, 'Load'),
     el('button', { class: 'nav-btn', onclick: openPushLineupModal }, '→ Push to Game'),
-    el('button', { class: 'nav-btn', onclick: printLineup }, '🖨 Print'),
+    el('button', { class: 'nav-btn', onclick: printLineup }, '📄 PDF'),
     el('button', { class: 'nav-btn', onclick: () => {
       setLineupRatingsHidden(!hideRatings);
       render();
@@ -3530,14 +3530,144 @@ function applySavedLineup(id) {
   return true;
 }
 
-function printLineup() {
-  document.body.classList.add('printing-lineup');
-  const cleanup = () => {
-    document.body.classList.remove('printing-lineup');
-    window.removeEventListener('afterprint', cleanup);
-  };
-  window.addEventListener('afterprint', cleanup);
-  setTimeout(() => { window.print(); }, 50);
+// Lazy-load jsPDF (CDN UMD build)
+async function ensureJsPdf() {
+  if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('Could not load jsPDF'));
+    document.head.appendChild(s);
+  });
+  return window.jspdf.jsPDF;
+}
+
+function playerLabelFromId(id) {
+  const p = state.players.find(p => p.id === id);
+  if (!p) return '— Missing —';
+  return (p.jersey_number ? `#${p.jersey_number} ` : '') + p.name;
+}
+
+async function printLineup() {
+  let jsPDF;
+  try {
+    jsPDF = await ensureJsPdf();
+  } catch (e) {
+    toast('Could not load PDF library — check connection');
+    return;
+  }
+  const lu = luLoad();
+  const doc = new jsPDF({ unit: 'pt', format: 'letter', orientation: 'portrait' });
+
+  // Letter portrait = 612 x 792 pt
+  const W = 612, H = 792, M = 40;
+
+  // Title
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.text('LINEUP', W / 2, M + 18, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(110, 110, 110);
+  const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  doc.text(`Warriors  ·  ${dateStr}`, W / 2, M + 36, { align: 'center' });
+  doc.setTextColor(0, 0, 0);
+
+  // 2x2 grid of quarters
+  const gridTop = M + 58;
+  const gridBottom = H - M;
+  const gridW = W - 2 * M;
+  const gridH = gridBottom - gridTop;
+  const gap = 14;
+  const cellW = (gridW - gap) / 2;
+  const cellH = (gridH - gap) / 2;
+
+  for (let i = 0; i < LU_QUARTERS.length; i++) {
+    const q = LU_QUARTERS[i];
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = M + col * (cellW + gap);
+    const y = gridTop + row * (cellH + gap);
+
+    // Card border
+    doc.setDrawColor(120, 120, 120);
+    doc.setLineWidth(1);
+    doc.roundedRect(x, y, cellW, cellH, 8, 8);
+
+    // Quarter header bar
+    doc.setFillColor(28, 28, 28);
+    doc.roundedRect(x, y, cellW, 30, 8, 8, 'F');
+    // Square off bottom of header
+    doc.setFillColor(28, 28, 28);
+    doc.rect(x, y + 16, cellW, 14, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(255, 255, 255);
+    doc.text(q, x + 14, y + 20);
+    // Filled count
+    const filled = LU_SLOTS.filter(s => lu[q]?.[s]).length;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(200, 200, 200);
+    doc.text(`${filled} / 5`, x + cellW - 14, y + 20, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+
+    // Slots
+    const slotStart = y + 38;
+    const slotArea = cellH - 46;
+    const lineH = slotArea / LU_SLOTS.length;
+    for (let j = 0; j < LU_SLOTS.length; j++) {
+      const sl = LU_SLOTS[j];
+      const v = lu[q]?.[sl];
+      const rowY = slotStart + j * lineH;
+      const textY = rowY + lineH / 2 + 3;
+
+      // Position pill
+      doc.setFillColor(245, 245, 245);
+      doc.setDrawColor(210, 210, 210);
+      doc.roundedRect(x + 10, rowY + lineH / 2 - 10, 32, 20, 4, 4, 'FD');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      doc.text(sl, x + 26, textY - 1, { align: 'center' });
+
+      // Player name(s)
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      if (!v) {
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(170, 170, 170);
+        doc.text('—', x + 52, textY);
+      } else if (typeof v === 'string') {
+        doc.setFont('helvetica', 'normal');
+        doc.text(playerLabelFromId(v), x + 52, textY, { maxWidth: cellW - 66 });
+      } else if (v.a && v.b) {
+        doc.setFont('helvetica', 'normal');
+        const aLbl = playerLabelFromId(v.a) + '  ½';
+        const bLbl = playerLabelFromId(v.b) + '  ½';
+        doc.text(aLbl, x + 52, textY - 6, { maxWidth: cellW - 66 });
+        doc.setTextColor(110, 110, 110);
+        doc.text(bLbl, x + 52, textY + 7, { maxWidth: cellW - 66 });
+      }
+
+      // Row separator
+      if (j < LU_SLOTS.length - 1) {
+        doc.setDrawColor(230, 230, 230);
+        doc.setLineWidth(0.5);
+        doc.line(x + 10, rowY + lineH, x + cellW - 10, rowY + lineH);
+      }
+    }
+  }
+
+  // Footer
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Generated by Playmaker · hoops.j3taviation.com', W / 2, H - 18, { align: 'center' });
+
+  const fname = `lineup_${new Date().toISOString().slice(0,10)}.pdf`;
+  doc.save(fname);
 }
 
 function openSaveLineupModal() {
