@@ -241,6 +241,19 @@
   .shot-dot.missed { fill: none; stroke: var(--missed); stroke-width: 3.5; }
   .shot-dot.them.made { fill: var(--missed); stroke: rgba(0,0,0,0.4); }
   .shot-dot.them.missed { fill: none; stroke: rgba(255,255,255,0.5); }
+  .summary-court { cursor: default; max-width: 560px; margin: 0 auto; }
+  .shot-legend {
+    display: flex; flex-wrap: wrap; gap: 14px; justify-content: center;
+    font-size: 11px; letter-spacing: 0.08em; color: var(--ink-2);
+    margin: 8px 0 12px; padding: 8px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .shot-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+  .lg-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+  .lg-dot.lg-us-made { background: var(--made); border: 1.5px solid #fff; }
+  .lg-dot.lg-us-miss { background: transparent; border: 2.5px solid var(--missed); }
+  .lg-dot.lg-them-made { background: var(--missed); border: 1.5px solid rgba(0,0,0,0.4); }
+  .lg-dot.lg-them-miss { background: transparent; border: 2.5px solid rgba(255,255,255,0.5); }
 
   /* Right panel */
   .panel-section { margin-bottom: 14px; }
@@ -2444,6 +2457,29 @@ function renderSummary() {
   qbWrap.append(qbTable);
   wrap.append(qbWrap);
 
+  // Full-game shot chart (all 4 quarters)
+  const shotEvents = state.events.filter(e =>
+    ['shot_made_2','shot_missed_2','shot_made_3','shot_missed_3'].includes(e.event_type)
+    && e.court_x != null && e.court_y != null
+  );
+  if (shotEvents.length) {
+    const usM = shotEvents.filter(e => e.team !== 'them' && e.event_type.includes('made')).length;
+    const usA = shotEvents.filter(e => e.team !== 'them').length;
+    const themM = shotEvents.filter(e => e.team === 'them' && e.event_type.includes('made')).length;
+    const themA = shotEvents.filter(e => e.team === 'them').length;
+    const oppName = getCurrentGame()?.opponent || 'Opponent';
+    const chartWrap = el('div', { class: 'card', style: 'margin-top: 16px;' });
+    chartWrap.append(el('h3', {}, 'Shot Chart — Full Game'));
+    chartWrap.append(el('div', { class: 'shot-legend' },
+      el('span', {}, el('span', { class: 'lg-dot lg-us-made' }), `Warriors made (${usM}/${usA})`),
+      el('span', {}, el('span', { class: 'lg-dot lg-us-miss' }), `Warriors miss`),
+      el('span', {}, el('span', { class: 'lg-dot lg-them-made' }), `${oppName} made (${themM}/${themA})`),
+      el('span', {}, el('span', { class: 'lg-dot lg-them-miss' }), `${oppName} miss`),
+    ));
+    chartWrap.append(buildSummaryCourtSvg(shotEvents));
+    wrap.append(chartWrap);
+  }
+
   // Team shooting zones
   const zoneWrap = el('div', { class: 'card', style: 'margin-top: 16px;' });
   zoneWrap.append(el('h3', {}, 'Shot Zones — Warriors'));
@@ -2451,6 +2487,60 @@ function renderSummary() {
   wrap.append(zoneWrap);
 
   return wrap;
+}
+
+// Court SVG showing all shots across all quarters. Tap a dot to delete the shot.
+function buildSummaryCourtSvg(shotEvents) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 500 470');
+  svg.setAttribute('class', 'court-svg summary-court');
+
+  const bg = document.createElementNS(ns, 'rect');
+  bg.setAttribute('width', '500'); bg.setAttribute('height', '470');
+  bg.setAttribute('fill', 'transparent');
+  svg.appendChild(bg);
+
+  const line = (d, w = 2.5) => {
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('stroke', 'rgba(15,12,6,0.78)');
+    p.setAttribute('stroke-width', String(w));
+    p.setAttribute('fill', 'none');
+    return p;
+  };
+  svg.appendChild(line('M 5 5 L 495 5 L 495 465 L 5 465 Z', 3));
+  svg.appendChild(line('M 30 5 L 30 142 A 237.5 237.5 0 0 0 470 142 L 470 5'));
+  svg.appendChild(line('M 190 5 L 190 195 L 310 195 L 310 5'));
+  svg.appendChild(line('M 190 195 A 60 60 0 0 1 310 195'));
+  const ftBack = line('M 190 195 A 60 60 0 0 0 310 195');
+  ftBack.setAttribute('stroke-dasharray', '6 6');
+  svg.appendChild(ftBack);
+  svg.appendChild(line('M 210 53 A 40 40 0 0 0 290 53'));
+  svg.appendChild(line('M 220 45 L 280 45', 4));
+  const hoop = document.createElementNS(ns, 'circle');
+  hoop.setAttribute('cx', '250'); hoop.setAttribute('cy', '53');
+  hoop.setAttribute('r', '9'); hoop.setAttribute('fill', 'none');
+  hoop.setAttribute('stroke', '#d83a2c'); hoop.setAttribute('stroke-width', '2.5');
+  svg.appendChild(hoop);
+  svg.appendChild(line('M 190 465 A 60 60 0 0 1 310 465'));
+
+  for (const e of shotEvents) {
+    const made = e.event_type.includes('made');
+    const teamCls = e.team === 'them' ? 'them' : 'us';
+    const shape = document.createElementNS(ns, 'circle');
+    shape.setAttribute('cx', String(e.court_x));
+    shape.setAttribute('cy', String(e.court_y));
+    shape.setAttribute('r', '8');
+    shape.setAttribute('class', `shot-dot ${teamCls} ${made ? 'made' : 'missed'}`);
+    shape.setAttribute('data-event-id', e.id);
+    shape.style.cursor = 'pointer';
+    // Tap a shot to delete (with confirmation)
+    shape.addEventListener('click', () => openShotEditModal(e));
+    svg.appendChild(shape);
+  }
+
+  return svg;
 }
 
 function buildZoneTable(evts) {
