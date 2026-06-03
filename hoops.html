@@ -3291,36 +3291,58 @@ async function pullLineupForCurrentQuarter() {
   const luQ = lu['Q' + q];
   if (!luQ) return toast('Lineup is empty for this quarter');
   const quarterLen = g.quarter_length_seconds || 480;
+  const hasOpenStint = (pid) => state.stints.some(s =>
+    s.player_id === pid && s.quarter === q && s.ended_seconds_remaining === null
+  );
+  // Anchor time: where to start a freshly-pulled stint. If the quarter has
+  // any activity (closed stints), pick up from the current clock; otherwise
+  // start from the top of the quarter.
+  const quarterHasActivity = state.stints.some(s => s.quarter === q);
+  const startSec = quarterHasActivity ? getCurrentClockSeconds() : quarterLen;
   const newStints = [];
   for (const slot of LU_SLOTS) {
     const v = luQ[slot];
     if (!v) continue;
     if (typeof v === 'string') {
-      if (state.stints.some(s => s.player_id === v && s.quarter === q)) continue;
+      if (hasOpenStint(v)) continue;
       newStints.push({
         id: uuid(), game_id: gameId, quarter: q, player_id: v,
-        started_seconds_remaining: quarterLen, ended_seconds_remaining: null,
+        started_seconds_remaining: startSec, ended_seconds_remaining: null,
         created_at: new Date().toISOString(),
       });
     } else if (v && v.a && v.b) {
-      const half = Math.floor(quarterLen / 2);
-      if (!state.stints.some(s => s.player_id === v.a && s.quarter === q)) {
-        newStints.push({
-          id: uuid(), game_id: gameId, quarter: q, player_id: v.a,
-          started_seconds_remaining: quarterLen, ended_seconds_remaining: half,
-          created_at: new Date().toISOString(),
-        });
-      }
-      if (!state.stints.some(s => s.player_id === v.b && s.quarter === q)) {
-        newStints.push({
-          id: uuid(), game_id: gameId, quarter: q, player_id: v.b,
-          started_seconds_remaining: half, ended_seconds_remaining: null,
-          created_at: new Date().toISOString(),
-        });
+      // For pairs: if we're starting fresh, split the quarter in half (A then B).
+      // If we're resuming mid-quarter, just put A on the floor now.
+      if (!quarterHasActivity) {
+        const half = Math.floor(quarterLen / 2);
+        if (!hasOpenStint(v.a)) {
+          newStints.push({
+            id: uuid(), game_id: gameId, quarter: q, player_id: v.a,
+            started_seconds_remaining: quarterLen, ended_seconds_remaining: half,
+            created_at: new Date().toISOString(),
+          });
+        }
+        if (!hasOpenStint(v.b)) {
+          newStints.push({
+            id: uuid(), game_id: gameId, quarter: q, player_id: v.b,
+            started_seconds_remaining: half, ended_seconds_remaining: null,
+            created_at: new Date().toISOString(),
+          });
+        }
+      } else {
+        // Resume: just put one of them on (prefer A if neither is open)
+        const target = hasOpenStint(v.a) || hasOpenStint(v.b) ? null : v.a;
+        if (target) {
+          newStints.push({
+            id: uuid(), game_id: gameId, quarter: q, player_id: target,
+            started_seconds_remaining: startSec, ended_seconds_remaining: null,
+            created_at: new Date().toISOString(),
+          });
+        }
       }
     }
   }
-  if (!newStints.length) return toast('Nothing to pull (already filled)');
+  if (!newStints.length) return toast('Floor already has the lineup players');
   state.stints.push(...newStints);
   const { error } = await sb.from('stints').insert(newStints);
   if (error) toast('Save failed (will retry)');
