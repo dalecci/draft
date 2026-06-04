@@ -826,8 +826,8 @@ const finishedSetForPlayer = () => new Set(state.watches.filter(w => w.finished)
 const viewsCountForVideo = (videoId) => state.watches.filter(w => w.video_id === videoId && w.finished).length;
 const watchedVids = () => state.videos.filter(v => state.watches.some(w => w.video_id === v.id && w.finished));
 const featuredVids = () => state.videos.filter(v => v.featured).slice(0, state.settings.top_picks_count || 6);
-const vidsByCat = (cat) => state.videos.filter(v => v.category === cat);
-const vidsBySub = (sub) => state.videos.filter(v => v.category === 'practice' && v.sub_cat === sub);
+const vidsByCat = (cat) => state.videos.filter(v => v.category === cat).sort((a,b) => (a.order_idx||0) - (b.order_idx||0) || String(a.id||'').localeCompare(String(b.id||'')));
+const vidsBySub = (sub) => state.videos.filter(v => v.category === 'practice' && v.sub_cat === sub).sort((a,b) => (a.order_idx||0) - (b.order_idx||0) || String(a.id||'').localeCompare(String(b.id||'')));
 const SECTION_DEFAULTS = { practice: 'Practice Breakdown', '101': 'Basketball 101', nba: 'NBA Breakdown', fullgame: 'Full Game', gamebreakdown: 'Game Breakdown', documents: "Coach's Notes", welcome: 'Welcome' };
 const sectionLabel = (k) => (state.settings.section_labels || {})[k] || SECTION_DEFAULTS[k] || k;
 const subcatLabel = (k) => (state.settings.subcat_labels || {})[k] || k;
