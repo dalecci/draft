@@ -120,7 +120,44 @@
     .botnav .navlink .ic{font-size:18px;width:auto;margin:0 auto}
     .botnav .navlink.active{background:transparent;color:var(--accent);box-shadow:none}
     .botnav .navlink.active .ic{transform:scale(1.1)}
+    .botnav .more-btn .ic{
+      display:grid;place-items:center;width:38px;height:38px;border-radius:11px;
+      background:var(--accent-soft);color:var(--accent);font-size:17px;margin:0 auto 2px;
+      transition:transform .15s;
+    }
+    .botnav .more-btn:active .ic{transform:scale(.92)}
+    .botnav .more-btn.open .ic{background:var(--accent);color:#fff}
   }
+
+  /* ---------- Menu sheet (mobile "More") ---------- */
+  .menu-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:80}
+  .menu-sheet-bg.open{opacity:1;pointer-events:auto}
+  .menu-sheet{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,#15151a,#0e0e12);border-radius:24px 24px 0 0;border-top:1px solid var(--border-2);transform:translateY(100%);transition:transform .32s cubic-bezier(.16,1,.3,1);z-index:81;max-height:88dvh;display:flex;flex-direction:column;box-shadow:0 -20px 50px rgba(0,0,0,.5);padding-bottom:env(safe-area-inset-bottom)}
+  .menu-sheet.open{transform:translateY(0)}
+  .menu-sheet .handle{width:42px;height:5px;background:#3a3a42;border-radius:3px;margin:10px auto 4px;flex:none}
+  .menu-sheet .head{text-align:center;padding:10px 16px 6px;position:relative;flex:none}
+  .menu-sheet .head .tag{color:var(--accent);font-size:11px;font-weight:900;letter-spacing:1.4px}
+  .menu-sheet .head h2{margin:6px 0 4px;font-size:24px;font-weight:900;line-height:1.05}
+  .menu-sheet .head p{margin:0;color:var(--muted);font-size:13px}
+  .menu-sheet .close{position:absolute;top:6px;right:14px;width:34px;height:34px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:grid;place-items:center;font-size:18px;color:var(--text);cursor:pointer;font-family:inherit}
+  .menu-sheet .grid{padding:16px 14px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;overflow:auto;flex:1}
+  @media(min-width:520px){.menu-sheet .grid{grid-template-columns:repeat(4,1fr)}}
+  .mtile{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px 8px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .12s,border-color .12s,background .15s;color:var(--text);min-height:120px;text-align:center}
+  .mtile:active{transform:scale(.96);border-color:var(--border-2);background:var(--surface)}
+  .mtile .mav{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:24px;line-height:1;color:#fff;font-weight:900;box-shadow:0 4px 10px rgba(0,0,0,.4)}
+  .mtile .mlbl{font-size:13px;font-weight:800;line-height:1.15;letter-spacing:.1px}
+  .mav-home{background:#FF6A1F}
+  .mav-less{background:#ec4899}
+  .mav-pick{background:#fb7185}
+  .mav-mine{background:#fbbf24;color:#1a1a1f}
+  .mav-play{background:#a78bfa}
+  .mav-prac{background:#fb923c}
+  .mav-full{background:#8b5cf6}
+  .mav-brk{background:#6366f1}
+  .mav-101{background:#3b82f6}
+  .mav-nba{background:#f59e0b}
+  .mav-notes{background:#34d399;color:#0b0b0d}
+  .mav-admin{background:#94a3b8;color:#0b0b0d}
 
   /* ---------- Cards & video tiles ---------- */
   .h-hero{
@@ -591,10 +628,22 @@
 <nav class="botnav">
   <div class="navlink" data-route="#home"><span class="ic">🏠</span> Home</div>
   <div class="navlink" data-route="#lessons"><span class="ic">🎯</span> Lessons</div>
+  <div class="navlink more-btn" id="botnav-more-btn"><span class="ic">⊞</span> More</div>
   <div class="navlink" data-route="#picks"><span class="ic">📌</span> Picks</div>
   <div class="navlink" data-route="#practice"><span class="ic">🏀</span> Practice</div>
-  <div class="navlink" id="botnav-admin-btn"><span class="ic">⚙️</span> Admin</div>
 </nav>
+
+<div class="menu-sheet-bg" id="menuSheetBg"></div>
+<div class="menu-sheet" id="menuSheet" role="dialog" aria-modal="true" aria-labelledby="menuSheetTitle">
+  <div class="handle"></div>
+  <div class="head">
+    <div class="tag">MENU</div>
+    <h2 id="menuSheetTitle">Where to?</h2>
+    <p>Tap a tile to jump there.</p>
+    <button class="close" id="menuSheetClose" aria-label="Close menu">✕</button>
+  </div>
+  <div class="grid" id="menuSheetGrid"></div>
+</div>
 
 <!-- Player picker overlay -->
 <div class="picker" id="picker">
@@ -2520,7 +2569,49 @@ async function boot() {
   $('#brand-btn').addEventListener('click', () => { if (state.player) go('#home'); });
   $('#whoami').addEventListener('click', switchPlayer);
   $('#admin-entry').addEventListener('click', () => go('#admin'));
-  document.getElementById('botnav-admin-btn').addEventListener('click', () => go('#admin'));
+  // Mobile "More" sheet
+  const MENU_TILES = [
+    { route: '#home',          icon: '🏠', label: 'Home',                color: 'home' },
+    { route: '#lessons',       icon: '🎯', label: 'Lessons',             color: 'less' },
+    { route: '#picks',         icon: '📌', label: "Coach's Picks",       color: 'pick' },
+    { route: '#mine',          icon: '⭐', label: 'Videos with me',      color: 'mine' },
+    { route: '#playbook',      icon: '📋', label: 'Warriors Playbook',   color: 'play' },
+    { route: '#practice',      icon: '🏀', label: 'Practice Breakdown',  color: 'prac' },
+    { route: '#fullgame',      icon: '🎥', label: 'Full Game',           color: 'full',  cat: 'fullgame' },
+    { route: '#gamebreakdown', icon: '🎬', label: 'Game Breakdown',      color: 'brk',   cat: 'gamebreakdown' },
+    { route: '#bball101',      icon: '📘', label: 'Basketball 101',      color: '101',   cat: '101' },
+    { route: '#nba',           icon: '🏆', label: 'NBA Breakdown',       color: 'nba',   cat: 'nba' },
+    { route: '#notes',         icon: '📝', label: "Coach's Notes",       color: 'notes' },
+    { route: '#admin',         icon: '⚙️', label: 'Admin',               color: 'admin' },
+  ];
+  function buildMenuSheetTiles() {
+    const grid = document.getElementById('menuSheetGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const vis = (state.settings && state.settings.category_visibility) || {};
+    for (const t of MENU_TILES) {
+      if (t.cat && vis[t.cat] === false) continue;
+      const tile = el('button', { class: 'mtile', type: 'button', 'data-route': t.route });
+      tile.innerHTML = `<div class="mav mav-${t.color}">${t.icon}</div><div class="mlbl">${esc(t.label)}</div>`;
+      tile.addEventListener('click', () => { closeMenuSheet(); go(t.route); });
+      grid.append(tile);
+    }
+  }
+  function openMenuSheet() {
+    buildMenuSheetTiles();
+    document.getElementById('menuSheet').classList.add('open');
+    document.getElementById('menuSheetBg').classList.add('open');
+    document.getElementById('botnav-more-btn').classList.add('open');
+  }
+  function closeMenuSheet() {
+    document.getElementById('menuSheet').classList.remove('open');
+    document.getElementById('menuSheetBg').classList.remove('open');
+    document.getElementById('botnav-more-btn').classList.remove('open');
+  }
+  document.getElementById('botnav-more-btn').addEventListener('click', openMenuSheet);
+  document.getElementById('menuSheetClose').addEventListener('click', closeMenuSheet);
+  document.getElementById('menuSheetBg').addEventListener('click', closeMenuSheet);
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenuSheet(); });
   $('#vm-close').addEventListener('click', closeVideo);
   $('#vmodal').addEventListener('click', (e) => { if (e.target === $('#vmodal')) closeVideo(); });
   document.addEventListener('keydown', e => {
