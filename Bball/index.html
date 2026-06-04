@@ -2074,10 +2074,13 @@ async function renderAdminPlayer(v, playerId) {
   }
 }
 
+const adminVidCmp = (a, b) =>
+  (a.order_idx||0) - (b.order_idx||0) ||
+  String(a.created_at||'').localeCompare(String(b.created_at||'')) ||
+  String(a.id||'').localeCompare(String(b.id||''));
+
 async function moveVideoInCategory(vd, dir) {
-  const list = state.videos
-    .filter(x => x.category === vd.category)
-    .sort((a, b) => (a.order_idx||0) - (b.order_idx||0) || String(a.title).localeCompare(String(b.title)));
+  const list = state.videos.filter(x => x.category === vd.category).sort(adminVidCmp);
   const i = list.findIndex(x => x.id === vd.id);
   if (i < 0) return;
   const j = i + dir;
@@ -2091,7 +2094,6 @@ async function moveVideoInCategory(vd, dir) {
       updates.push({ id: list[k].id, order_idx: newOrder });
     }
   }
-  state.videos.sort((a, b) => String(a.category).localeCompare(String(b.category)) || (a.order_idx||0) - (b.order_idx||0));
   render();
   const results = await Promise.all(updates.map(u => sb.from('training_videos').update({ order_idx: u.order_idx }).eq('id', u.id)));
   const fail = results.find(r => r.error);
@@ -2121,7 +2123,7 @@ function renderAdminVideos(v, vidId) {
   if (!state.videos.length) { v.append(emptyState('No videos yet. Tap "Add Video" to paste your first YouTube URL.')); return; }
   const cats = ['practice','fullgame','gamebreakdown','101','nba','welcome'];
   for (const c of cats) {
-    const list = state.videos.filter(x => x.category === c);
+    const list = state.videos.filter(x => x.category === c).sort(adminVidCmp);
     if (!list.length) continue;
     const sec = el('div', { class: 'section' });
     sec.innerHTML = `<h2>${esc(sectionLabel(c))} <span class="count">${list.length}</span></h2>`;
