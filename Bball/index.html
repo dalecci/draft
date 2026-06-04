@@ -2074,6 +2074,30 @@ async function renderAdminPlayer(v, playerId) {
   }
 }
 
+async function moveVideoInCategory(vd, dir) {
+  const list = state.videos
+    .filter(x => x.category === vd.category)
+    .sort((a, b) => (a.order_idx||0) - (b.order_idx||0) || String(a.title).localeCompare(String(b.title)));
+  const i = list.findIndex(x => x.id === vd.id);
+  if (i < 0) return;
+  const j = i + dir;
+  if (j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  const updates = [];
+  for (let k = 0; k < list.length; k++) {
+    const newOrder = (k + 1) * 10;
+    if ((list[k].order_idx || 0) !== newOrder) {
+      list[k].order_idx = newOrder;
+      updates.push({ id: list[k].id, order_idx: newOrder });
+    }
+  }
+  state.videos.sort((a, b) => String(a.category).localeCompare(String(b.category)) || (a.order_idx||0) - (b.order_idx||0));
+  render();
+  const results = await Promise.all(updates.map(u => sb.from('training_videos').update({ order_idx: u.order_idx }).eq('id', u.id)));
+  const fail = results.find(r => r.error);
+  if (fail) toast('Reorder save failed', 'err');
+}
+
 function renderAdminVideos(v, vidId) {
   if (vidId === 'new') return renderVideoForm(v, null);
   if (vidId) { const vd = state.videos.find(x => x.id === vidId); if (vd) return renderVideoForm(v, vd); }
@@ -2101,7 +2125,7 @@ function renderAdminVideos(v, vidId) {
     if (!list.length) continue;
     const sec = el('div', { class: 'section' });
     sec.innerHTML = `<h2>${esc(sectionLabel(c))} <span class="count">${list.length}</span></h2>`;
-    for (const vd of list) {
+    list.forEach((vd, idx) => {
       const row = el('div', { class: 'admin-row' });
       const taggedN = (vd.tagged_player_ids||[]).length;
       const assignedN = (vd.assigned_player_ids||[]).length;
@@ -2129,6 +2153,14 @@ function renderAdminVideos(v, vidId) {
       row.append(el('div', { class: 't' }, `<b>${vd.featured ? '⭐ ' : ''}${esc(vd.title)}</b><small>${bits}</small>`));
       if (!state.assignMode) {
         const actions = el('div', { class: 'actions' });
+        const upBtn = el('button', { class: 'btn sm', title: 'Move up' }); upBtn.textContent = '▲';
+        upBtn.disabled = idx === 0;
+        if (idx === 0) upBtn.style.opacity = '0.3';
+        upBtn.addEventListener('click', () => moveVideoInCategory(vd, -1));
+        const downBtn = el('button', { class: 'btn sm', title: 'Move down' }); downBtn.textContent = '▼';
+        downBtn.disabled = idx === list.length - 1;
+        if (idx === list.length - 1) downBtn.style.opacity = '0.3';
+        downBtn.addEventListener('click', () => moveVideoInCategory(vd, 1));
         const editBtn = el('button', { class: 'btn sm' }); editBtn.textContent = 'Edit';
         editBtn.addEventListener('click', () => go(`#admin/videos/${vd.id}`));
         const delBtn = el('button', { class: 'btn sm danger' }); delBtn.textContent = '×';
@@ -2140,11 +2172,11 @@ function renderAdminVideos(v, vidId) {
           state.allWatches = null;
           toast('Deleted'); render();
         });
-        actions.append(editBtn, delBtn);
+        actions.append(upBtn, downBtn, editBtn, delBtn);
         row.append(actions);
       }
       sec.append(row);
-    }
+    });
     v.append(sec);
   }
 
