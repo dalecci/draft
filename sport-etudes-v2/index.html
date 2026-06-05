@@ -57,6 +57,26 @@
   </div>
 </section>
 
+<!-- STATS TICKER -->
+<section class="stats-ticker" aria-label="Program by the numbers">
+  <div class="ticker-track">
+    <span class="ticker-item"><strong>+8.2 pts</strong>Boys' CEGEP first-session edge</span>
+    <span class="ticker-item"><strong>100%</strong>HS graduation at Mont-Bleu</span>
+    <span class="ticker-item"><strong>+17.6</strong>Grad-rate delta vs Quebec baseline</span>
+    <span class="ticker-item"><strong>50 yrs</strong>Quebec Sport-Études track record</span>
+    <span class="ticker-item"><strong>600+</strong>Programs across the network</span>
+    <span class="ticker-item"><strong>66</strong>Sport disciplines covered</span>
+    <span class="ticker-item"><strong>15+ hrs</strong>Elite training each week</span>
+    <span class="ticker-item"><strong>+8.2 pts</strong>Boys' CEGEP first-session edge</span>
+    <span class="ticker-item"><strong>100%</strong>HS graduation at Mont-Bleu</span>
+    <span class="ticker-item"><strong>+17.6</strong>Grad-rate delta vs Quebec baseline</span>
+    <span class="ticker-item"><strong>50 yrs</strong>Quebec Sport-Études track record</span>
+    <span class="ticker-item"><strong>600+</strong>Programs across the network</span>
+    <span class="ticker-item"><strong>66</strong>Sport disciplines covered</span>
+    <span class="ticker-item"><strong>15+ hrs</strong>Elite training each week</span>
+  </div>
+</section>
+
 <!-- WHAT THIS IS -->
 <section style="padding: 5rem 0;">
   <div class="wrap">
@@ -246,6 +266,8 @@
 
 </main>
 
+<div class="grain" aria-hidden="true"></div>
+
 <footer class="site-footer">
   <div class="footer-grid">
     <div>
@@ -293,6 +315,53 @@ document.getElementById('year').textContent = new Date().getFullYear();
     });
   }, { threshold: 0.08 });
   targets.forEach(t => obs.observe(t));
+})();
+
+// Hero cursor spotlight
+(function(){
+  const hero = document.querySelector('.hero');
+  if (!hero || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let raf = null;
+  hero.addEventListener('pointermove', (e) => {
+    const r = hero.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width)  * 100;
+    const y = ((e.clientY - r.top)  / r.height) * 100;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      hero.style.setProperty('--mx', x + '%');
+      hero.style.setProperty('--my', y + '%');
+    });
+  });
+  hero.addEventListener('pointerleave', () => {
+    hero.style.setProperty('--mx', '50%');
+    hero.style.setProperty('--my', '35%');
+  });
+})();
+
+// Parallax for the ghost SÉ monogram
+(function(){
+  const el = document.querySelector('.hero-ghost-numeral');
+  if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      el.style.setProperty('--py', (window.scrollY * 0.25) + 'px');
+      ticking = false;
+    });
+  }, { passive: true });
+})();
+
+// Flame button cursor highlight
+(function(){
+  document.querySelectorAll('.btn-flame').forEach(btn => {
+    btn.addEventListener('pointermove', (e) => {
+      const r = btn.getBoundingClientRect();
+      btn.style.setProperty('--bx', ((e.clientX - r.left) / r.width  * 100) + '%');
+      btn.style.setProperty('--by', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+  });
 })();
 
 // Animated count-up for stat numbers with data-count
