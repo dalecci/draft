@@ -1,0 +1,1646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Vibrant BioScan — Find the Root Cause | Dr. Kassandra Francis, DC</title>
+<meta name="description" content="The Qest4 BioScan reads 47+ systems in 20 minutes. Dr. Kassandra Francis, DC builds you a 90-day root-cause protocol. Cape Coral, FL." />
+<meta name="theme-color" content="#065C8C" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23065C8C'/><path d='M16 6v20M6 16h20M10 10l12 12M22 10L10 22' stroke='%23E8D833' stroke-width='1.5' opacity='.55'/><circle cx='16' cy='16' r='4' fill='%23E8D833'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --blue: #065C8C;
+  --blue-dark: #03405F;
+  --blue-soft: #E6F1F7;
+  --blue-tint: #F4FAFD;
+  --blue-deep: #0A2540;
+  --gold: #E8D833;
+  --gold-dark: #C9B92A;
+  --gold-soft: #FBF6CC;
+  --bg: #FFFFFF;
+  --bg-2: #F9FAFB;
+  --bg-dark: #0A2540;
+  --ink: #101828;
+  --ink-soft: #475467;
+  --ink-mute: #98A2B3;
+  --line: #E5E7EB;
+  --line-2: #EEF0F3;
+  --green: #16a34a;
+  --red: #dc2626;
+  --shadow: 0 10px 30px rgba(16,24,40,.06);
+  --shadow-lg: 0 24px 60px rgba(16,24,40,.1);
+  --shadow-blue: 0 8px 24px rgba(6,92,140,.25);
+  --shadow-gold: 0 8px 24px rgba(232,216,51,.4);
+  --radius: 18px;
+  --maxw: 1200px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0 0 .5em;
+}
+h1 { font-size: clamp(2.6rem, 6vw, 4.8rem); font-weight: 400; }
+h2 { font-size: clamp(2rem, 4vw, 3.1rem); font-weight: 400; }
+h3 { font-size: 1.4rem; font-weight: 500; }
+h4 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0 0 1em; color: var(--ink-soft); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { color: var(--blue-dark); }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+.eyebrow {
+  display: inline-block;
+  font-size: .78rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--blue);
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.italic-accent { font-style: italic; color: var(--blue); }
+.gold-accent { color: var(--gold-dark); font-weight: 600; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: 1rem 1.8rem; border-radius: 999px;
+  font-weight: 600; font-size: 1rem;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s, color .2s;
+  cursor: pointer; border: none; white-space: nowrap; font-family: inherit;
+}
+.btn-primary { background: var(--blue); color: white; box-shadow: var(--shadow-blue); }
+.btn-primary:hover { background: var(--blue-dark); color: white; transform: translateY(-2px); }
+.btn-gold { background: var(--gold); color: var(--ink); box-shadow: var(--shadow-gold); }
+.btn-gold:hover { background: var(--gold-dark); color: var(--ink); transform: translateY(-2px); }
+.btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--bg-2); }
+.btn-lg { padding: 1.15rem 2.2rem; font-size: 1.05rem; }
+
+/* Tab switcher (top) */
+.viewbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.viewbar-inner {
+  max-width: var(--maxw); margin: 0 auto; padding: .8rem 24px;
+  display:flex; align-items:center; justify-content:space-between; gap: 1rem;
+}
+.brand {
+  display:flex; align-items:center; gap:.65rem;
+  font-family: 'Fraunces', serif; font-weight: 500; color: var(--ink);
+  font-size: 1.05rem;
+}
+.brand .mark {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--blue); display:grid; place-items:center;
+  position: relative;
+}
+.brand .mark::before, .brand .mark::after {
+  content:''; position:absolute; inset:8px;
+  border-radius: 50%; border: 1.5px solid rgba(232,216,51,.55);
+}
+.brand .mark::after { inset: 12px; border-color: var(--gold); }
+.brand small { display:block; font-family: 'Inter', sans-serif; font-size:.72rem; color:var(--ink-mute); letter-spacing:.1em; text-transform:uppercase; }
+.tabs {
+  display:inline-flex; background: var(--bg-2); border-radius: 999px;
+  padding: 4px; border: 1px solid var(--line);
+}
+.tab {
+  padding: .55rem 1.1rem; border-radius: 999px; font-weight: 600;
+  font-size: .88rem; color: var(--ink-soft); cursor:pointer;
+  border: none; background: transparent; font-family: inherit;
+  transition: all .2s ease;
+  display:inline-flex; align-items:center; gap:.4rem;
+}
+.tab.active { background: var(--blue); color: white; box-shadow: var(--shadow-blue); }
+.tab.active.op { background: var(--gold); color: var(--ink); box-shadow: var(--shadow-gold); }
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* =========================
+   PATIENT VIEW
+   ========================= */
+.hero {
+  padding: 5rem 0 6rem; position: relative; overflow: hidden;
+  background: linear-gradient(180deg, var(--bg) 0%, var(--blue-tint) 100%);
+}
+.hero::before { content:''; position:absolute; top:-200px; right:-220px; width: 650px; height: 650px; border-radius: 50%; background: radial-gradient(circle, rgba(232,216,51,.2) 0%, rgba(232,216,51,0) 70%); pointer-events:none; }
+.hero::after { content:''; position:absolute; bottom:-300px; left:-200px; width: 750px; height: 750px; border-radius: 50%; background: radial-gradient(circle, rgba(6,92,140,.1) 0%, rgba(6,92,140,0) 70%); pointer-events:none; }
+.hero-grid { display:grid; grid-template-columns: 1.05fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1; }
+.hero h1 { margin-bottom: 1.3rem; }
+.hero-sub { font-size: 1.18rem; max-width: 34rem; color: var(--ink-soft); margin-bottom: 2rem; }
+.hero-cta { display:flex; gap: .8rem; flex-wrap:wrap; margin-bottom: 2.4rem; }
+.hero-trust { display:flex; gap: 1.6rem; align-items:center; color: var(--ink-soft); font-size:.88rem; flex-wrap:wrap; }
+.hero-trust span { display:inline-flex; align-items:center; gap:.4rem; }
+.hero-trust .check { width:18px; height:18px; border-radius:50%; background: var(--blue-soft); color: var(--blue); display:inline-grid; place-items:center; font-size: .7rem; font-weight: 700; }
+
+/* Animated scan visual */
+.scan-card {
+  position: relative; aspect-ratio: 4/5;
+  border-radius: 28px; overflow: hidden;
+  background: linear-gradient(180deg, var(--blue-deep) 0%, #061a30 100%);
+  box-shadow: var(--shadow-lg), inset 0 0 80px rgba(232,216,51,.06);
+  padding: 2rem;
+  display:flex; flex-direction:column;
+  color: white;
+}
+.scan-card .scan-head {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-bottom: 1.5rem;
+}
+.scan-card .scan-label {
+  font-size: .68rem; letter-spacing:.18em; text-transform:uppercase;
+  color: rgba(232,216,51,.85); font-weight: 600;
+}
+.scan-card .scan-live {
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.7rem; color:rgba(255,255,255,.7);
+}
+.scan-card .scan-live::before {
+  content:''; width:8px; height:8px; border-radius:50%; background:#22B07A;
+  box-shadow: 0 0 0 4px rgba(34,176,122,.25);
+  animation: pulse 1.6s ease-out infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,176,122,.5); }
+  70% { box-shadow: 0 0 0 8px rgba(34,176,122,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,176,122,0); }
+}
+.scan-rings {
+  position: relative; height: 180px; margin: 0 auto 1.4rem;
+  width: 180px;
+}
+.scan-rings .ring {
+  position: absolute; inset:0; border-radius:50%;
+  border: 1.5px solid rgba(232,216,51,.3);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+.scan-rings .ring:nth-child(2) { inset:18px; border-color: rgba(232,216,51,.4); animation-delay: .5s; }
+.scan-rings .ring:nth-child(3) { inset:36px; border-color: rgba(232,216,51,.55); animation-delay: 1s; }
+.scan-rings .core {
+  position:absolute; inset:54px; border-radius:50%;
+  background: radial-gradient(circle, var(--gold) 0%, var(--gold-dark) 100%);
+  box-shadow: 0 0 40px rgba(232,216,51,.5);
+  display:grid; place-items:center;
+  font-family:'Fraunces', serif; color: var(--blue-deep); font-weight: 600;
+  font-size: 1.1rem;
+}
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity:.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+.scan-bars { display:flex; flex-direction:column; gap: .7rem; margin-top: auto; }
+.scan-bar {
+  display:flex; align-items:center; gap: .8rem;
+  font-size: .78rem; color: rgba(255,255,255,.85);
+}
+.scan-bar .lbl { width: 90px; opacity:.85; }
+.scan-bar .tr {
+  flex: 1; height: 6px; border-radius: 3px;
+  background: rgba(255,255,255,.08); overflow:hidden;
+}
+.scan-bar .fl {
+  height:100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-dark) 100%);
+  animation: fillBar 1.5s ease-out forwards;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.scan-bar.stress .fl { background: linear-gradient(90deg, #f59e0b 0%, #dc2626 100%); }
+.scan-bar.warn .fl { background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%); }
+.scan-bar .pct { font-variant-numeric: tabular-nums; font-weight: 600; color: white; min-width: 36px; text-align: right; }
+@keyframes fillBar {
+  to { transform: scaleX(var(--w, .7)); }
+}
+
+@media (max-width: 900px) {
+  .hero { padding: 3rem 0 4rem; }
+  .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .scan-card { aspect-ratio: auto; padding: 1.5rem; max-width: 460px; margin: 0 auto; }
+}
+
+/* Pain hook section */
+.pain {
+  background: var(--bg-dark); color: white; padding: 5rem 0;
+  position: relative; overflow: hidden;
+}
+.pain::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(800px circle at 20% 20%, rgba(232,216,51,.08), transparent 50%),
+    radial-gradient(800px circle at 80% 80%, rgba(6,92,140,.4), transparent 50%);
+  pointer-events:none;
+}
+.pain .wrap { position: relative; }
+.pain h2 { color: white; max-width: 28ch; margin-bottom: 1.3rem; }
+.pain h2 .italic-accent { color: var(--gold); }
+.pain p { color: rgba(255,255,255,.75); font-size: 1.1rem; max-width: 48ch; }
+.pain-symptoms {
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: .8rem; margin-top: 2.4rem;
+}
+.symptom {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  padding: 1rem 1.3rem; border-radius: 14px;
+  display:flex; align-items:center; gap: .8rem;
+  color: rgba(255,255,255,.85); font-size: .92rem;
+}
+.symptom .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Section base */
+section.sec { padding: 5rem 0; }
+.sec-head { text-align:center; max-width: 42rem; margin: 0 auto 3.5rem; }
+.sec-head .eyebrow { display: block; }
+
+/* What we scan grid */
+.scan-grid {
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.scan-tile {
+  background: var(--bg-2); border: 1px solid var(--line);
+  padding: 1.6rem; border-radius: var(--radius);
+  transition: all .2s ease;
+  position: relative; overflow: hidden;
+}
+.scan-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--blue-soft); }
+.scan-tile .ic {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--blue-soft); color: var(--blue);
+  display:grid; place-items:center; margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+.scan-tile h4 { margin-bottom: .3rem; color: var(--ink); }
+.scan-tile p { margin: 0; font-size: .9rem; }
+
+/* Signature offer — 90 day reset */
+.reset {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%);
+  color: white; padding: 5rem 0; position: relative; overflow: hidden;
+}
+.reset::before {
+  content:''; position:absolute; top:-200px; right:-100px; width:500px; height:500px;
+  border-radius:50%; background: radial-gradient(circle, rgba(232,216,51,.15), transparent 70%);
+}
+.reset .wrap { position: relative; }
+.reset h2 { color: white; text-align: center; margin-bottom: 1rem; }
+.reset h2 .italic-accent { color: var(--gold); }
+.reset .reset-sub { text-align: center; color: rgba(255,255,255,.75); max-width: 38rem; margin: 0 auto 3.5rem; font-size: 1.1rem; }
+.phases {
+  display:grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem;
+}
+.phase {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(232,216,51,.25);
+  padding: 2rem; border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+.phase .phase-num {
+  font-family:'Fraunces', serif; font-size: 2.4rem; font-weight: 400;
+  color: var(--gold); line-height: 1; margin-bottom: .3rem;
+}
+.phase h3 { color: white; margin-bottom: .8rem; }
+.phase p { color: rgba(255,255,255,.7); font-size: .92rem; margin-bottom: 1.2rem; }
+.phase ul { list-style: none; padding: 0; margin: 0; }
+.phase li {
+  font-size: .88rem; color: rgba(255,255,255,.85); padding: .4rem 0;
+  display: flex; gap:.6rem; align-items: flex-start;
+}
+.phase li::before {
+  content:'✓'; color: var(--gold); font-weight: 700; flex-shrink: 0;
+}
+@media (max-width: 800px) { .phases { grid-template-columns: 1fr; } }
+
+/* Pricing tiles */
+.pricing { background: var(--bg-2); }
+.pricing-grid {
+  display:grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem;
+  align-items: stretch;
+}
+.tier {
+  background: white; border: 1px solid var(--line); border-radius: 20px;
+  padding: 2.4rem 2rem; position: relative;
+  display:flex; flex-direction:column;
+  transition: all .2s ease;
+}
+.tier:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.tier.featured {
+  border: 2px solid var(--gold);
+  box-shadow: 0 16px 50px rgba(232,216,51,.18);
+  transform: scale(1.03);
+}
+.tier.featured:hover { transform: scale(1.03) translateY(-4px); }
+.tier-badge {
+  position:absolute; top: -14px; left:50%; transform: translateX(-50%);
+  background: var(--gold); color: var(--ink); padding: .35rem 1rem;
+  border-radius: 999px; font-size: .72rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  box-shadow: var(--shadow-gold);
+}
+.tier h3 {
+  font-family:'Inter', sans-serif; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  font-size: .82rem; color: var(--ink-soft); margin-bottom: .4rem;
+}
+.tier .tier-name {
+  font-family:'Fraunces', serif; font-size: 1.6rem; color: var(--ink);
+  margin-bottom: 1.2rem; line-height: 1.2;
+}
+.tier .price {
+  font-family:'Fraunces', serif; font-size: 3.3rem; font-weight: 400;
+  color: var(--blue); line-height: 1; margin-bottom: .2rem;
+}
+.tier .price .currency { font-size: 1.5rem; vertical-align: top; margin-right: 4px; color: var(--ink-mute); }
+.tier .price-note { font-size: .85rem; color: var(--ink-soft); margin-bottom: 1.8rem; }
+.tier ul { list-style: none; padding: 0; margin: 0 0 2rem; flex: 1; }
+.tier li {
+  padding: .55rem 0; font-size: .92rem; color: var(--ink);
+  display: flex; gap: .65rem; align-items: flex-start;
+}
+.tier li::before {
+  content:'✓'; color: var(--blue); font-weight: 700; flex-shrink: 0;
+}
+.tier.featured li::before { color: var(--gold-dark); }
+.tier .btn { width: 100%; justify-content: center; }
+@media (max-width: 900px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+  .tier.featured { transform: none; }
+  .tier.featured:hover { transform: translateY(-4px); }
+}
+
+/* Meet Dr. Kassie */
+.meet { padding: 5rem 0; }
+.meet-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: center; }
+.meet-photo {
+  aspect-ratio: 4/5; border-radius: 24px; overflow: hidden;
+  box-shadow: var(--shadow-lg); position: relative;
+  background: linear-gradient(135deg, var(--blue-soft), var(--gold-soft));
+}
+.meet-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.meet-photo::after {
+  content:''; position:absolute; top: 20px; right: 20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--gold); opacity: .92;
+  display:grid; place-items:center;
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 28%, var(--blue-deep) 28%, var(--blue-deep) 30%, transparent 30%),
+    radial-gradient(circle at 50% 50%, transparent 38%, var(--blue-deep) 38%, var(--blue-deep) 40%, transparent 40%);
+}
+.meet .creds {
+  display:flex; gap: .6rem; flex-wrap: wrap; margin: 1.5rem 0;
+}
+.meet .creds span {
+  background: var(--blue-soft); color: var(--blue);
+  padding: .4rem .9rem; border-radius: 999px;
+  font-size: .82rem; font-weight: 600;
+}
+.signature {
+  font-family:'Fraunces', serif; font-style: italic;
+  font-size: 1.5rem; color: var(--blue); margin-top: 1.2rem;
+}
+@media (max-width: 900px) {
+  .meet-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .meet-photo { max-width: 440px; margin: 0 auto; }
+}
+
+/* How it works steps */
+.steps { background: var(--bg-2); }
+.steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.step {
+  background: white; padding: 2.2rem 1.8rem; border-radius: var(--radius);
+  border: 1px solid var(--line); text-align: left;
+  position: relative;
+}
+.step .num {
+  font-family:'Fraunces', serif; font-size: 1rem;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--blue); color: white;
+  display: grid; place-items: center; font-weight: 600;
+  margin-bottom: 1.2rem;
+}
+.step h3 { margin-bottom: .5rem; }
+.step p { font-size: .94rem; margin-bottom: 0; }
+@media (max-width: 800px) { .steps-grid { grid-template-columns: 1fr; } }
+
+/* FAQ */
+.faq-list {
+  max-width: 760px; margin: 0 auto;
+}
+.faq-item {
+  border-bottom: 1px solid var(--line);
+  padding: 1.4rem 0;
+}
+.faq-q {
+  font-family:'Fraunces', serif; font-size: 1.18rem;
+  font-weight: 500; color: var(--ink);
+  cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; gap: 1rem;
+  list-style: none;
+}
+.faq-q::-webkit-details-marker { display: none; }
+.faq-q::after {
+  content: '+'; font-size: 1.6rem; color: var(--blue);
+  font-family: 'Inter', sans-serif; font-weight: 300; transition: transform .2s ease;
+}
+.faq-item[open] .faq-q::after { content: '−'; transform: rotate(180deg); }
+.faq-a { padding-top: .8rem; color: var(--ink-soft); font-size: .98rem; }
+.faq-a p { margin: 0 0 .8rem; }
+.faq-a p:last-child { margin-bottom: 0; }
+
+/* Final CTA */
+.cta-final {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  padding: 5rem 0; text-align: center; position: relative; overflow: hidden;
+}
+.cta-final::before {
+  content:''; position:absolute; top:-150px; right:-150px;
+  width: 400px; height: 400px; border-radius:50%;
+  background: radial-gradient(circle, rgba(6,92,140,.18), transparent 70%);
+}
+.cta-final h2 { color: var(--blue-deep); margin-bottom: 1rem; max-width: 22ch; margin-left: auto; margin-right: auto; }
+.cta-final p { color: var(--blue-deep); opacity: .82; font-size: 1.1rem; max-width: 32rem; margin: 0 auto 2.2rem; }
+.cta-final .btn-primary { background: var(--blue-deep); }
+
+/* Footer */
+.foot {
+  background: var(--bg-dark); color: rgba(255,255,255,.7);
+  padding: 3rem 0 2rem; font-size: .88rem;
+}
+.foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 3rem; margin-bottom: 2rem; }
+.foot h4 { color: white; font-family:'Inter', sans-serif; font-size: .85rem; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 1rem; }
+.foot a { color: rgba(255,255,255,.7); display: block; padding: .25rem 0; }
+.foot a:hover { color: var(--gold); }
+.disclaimer {
+  border-top: 1px solid rgba(255,255,255,.1);
+  padding-top: 1.4rem; font-size: .76rem; line-height: 1.6;
+  color: rgba(255,255,255,.5);
+}
+.disclaimer strong { color: rgba(255,255,255,.75); }
+@media (max-width: 700px) { .foot-grid { grid-template-columns: 1fr; gap: 2rem; } }
+
+/* =========================
+   OPERATOR VIEW
+   ========================= */
+.op-hero {
+  background: linear-gradient(135deg, #0A2540 0%, #1a3858 100%);
+  color: white; padding: 4rem 0 3rem; position: relative; overflow: hidden;
+}
+.op-hero::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(800px circle at 80% 0%, rgba(232,216,51,.12), transparent 50%);
+}
+.op-hero .wrap { position: relative; }
+.op-eyebrow {
+  display:inline-block; background: rgba(232,216,51,.15); color: var(--gold);
+  font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; font-weight:700;
+  padding:.4rem .9rem; border-radius: 999px; margin-bottom: 1rem;
+}
+.op-hero h1 { color: white; font-size: clamp(2rem, 4.5vw, 3.6rem); margin-bottom: 1rem; }
+.op-hero h1 .italic-accent { color: var(--gold); }
+.op-hero p { color: rgba(255,255,255,.75); max-width: 50rem; font-size: 1.05rem; }
+
+/* Headline stats */
+.headstats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+  margin-top: 2.5rem;
+}
+.headstat {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px; padding: 1.3rem 1.4rem;
+}
+.headstat .lbl { font-size: .7rem; letter-spacing:.14em; text-transform:uppercase; color: rgba(255,255,255,.6); font-weight:600; margin-bottom:.4rem; }
+.headstat .val { font-family:'Fraunces', serif; font-size: 2rem; color: white; line-height: 1; }
+.headstat .val .currency { font-size: 1.1rem; color: rgba(255,255,255,.6); margin-right: 2px; }
+.headstat .sub { font-size: .78rem; color: rgba(232,216,51,.85); margin-top: .3rem; }
+@media (max-width: 800px) { .headstats { grid-template-columns: repeat(2, 1fr); } }
+
+/* Calculator */
+.calc { padding: 4rem 0; background: var(--bg-2); }
+.calc-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 3rem; }
+.calc-box {
+  background: white; border: 1px solid var(--line); border-radius: 20px;
+  padding: 2rem; box-shadow: var(--shadow);
+}
+.calc-box h3 {
+  font-family:'Inter', sans-serif; font-size: .85rem; letter-spacing:.14em;
+  text-transform: uppercase; color: var(--ink-soft); font-weight: 700;
+  margin-bottom: 1.4rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line);
+}
+.input-row {
+  display:grid; grid-template-columns: 1fr auto; gap: 1rem;
+  align-items: center; margin-bottom: 1.2rem;
+}
+.input-row label {
+  font-size: .9rem; color: var(--ink); font-weight: 500;
+  display: flex; flex-direction: column; gap: .15rem;
+}
+.input-row label small { font-size: .75rem; color: var(--ink-mute); font-weight: 400; }
+.input-row .num-value {
+  font-family:'Fraunces', serif; font-size: 1.4rem; color: var(--blue);
+  font-weight: 500; min-width: 80px; text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.input-row input[type="range"] {
+  grid-column: 1 / -1;
+  width: 100%; height: 6px;
+  -webkit-appearance: none; appearance: none;
+  background: var(--line); border-radius: 999px; outline: none;
+  cursor: pointer;
+}
+.input-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--blue); cursor: pointer;
+  box-shadow: var(--shadow-blue);
+  transition: transform .15s ease;
+}
+.input-row input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.input-row input[type="range"]::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--blue); cursor: pointer; border: none;
+  box-shadow: var(--shadow-blue);
+}
+
+.calc-out h3 { color: var(--ink-soft); }
+.bigout {
+  display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;
+}
+.bigout-card {
+  background: var(--blue-tint); border-radius: 14px; padding: 1.2rem 1.3rem;
+}
+.bigout-card.gross { background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%); color: white; }
+.bigout-card.net { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); color: var(--blue-deep); }
+.bigout-card .lbl { font-size: .72rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700; opacity:.75; margin-bottom: .4rem; }
+.bigout-card .val { font-family:'Fraunces', serif; font-size: 2.1rem; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
+.bigout-card .val .currency { font-size: 1.1rem; opacity: .65; margin-right: 2px; vertical-align: top; }
+.bigout-card .sub { font-size: .76rem; opacity:.75; margin-top: .4rem; }
+
+.breakdown { margin-top: 1.2rem; }
+.brk {
+  display:flex; justify-content:space-between; align-items:center;
+  padding: .65rem 0; border-bottom: 1px dashed var(--line-2);
+  font-size: .92rem;
+}
+.brk:last-child { border-bottom: none; }
+.brk .name { color: var(--ink); }
+.brk .name small { color: var(--ink-mute); display: block; font-size: .72rem; }
+.brk .amt { font-family:'Fraunces', serif; color: var(--blue); font-weight: 500; font-variant-numeric: tabular-nums; }
+.brk.cost .amt { color: var(--red); }
+.brk.total {
+  border-top: 2px solid var(--ink); border-bottom: none; margin-top: .6rem; padding-top: 1rem;
+  font-weight: 600; font-size: 1rem;
+}
+.brk.total .amt { color: var(--blue-deep); font-size: 1.2rem; }
+.brk.netline {
+  background: var(--gold-soft); padding: 1rem; border-radius: 12px;
+  margin-top: 1rem; border: none;
+}
+.brk.netline .name { font-weight: 700; }
+.brk.netline .amt { color: var(--blue-deep); font-size: 1.3rem; font-weight: 700; }
+
+@media (max-width: 900px) {
+  .calc-grid { grid-template-columns: 1fr; }
+}
+
+/* Scenario cards */
+.scenarios { padding: 4rem 0; }
+.scen-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+.scen {
+  background: white; border: 1px solid var(--line);
+  border-radius: 20px; padding: 2rem;
+  position: relative;
+}
+.scen.real { border: 2px solid var(--blue); box-shadow: var(--shadow-blue); }
+.scen .scen-tag {
+  display:inline-block; padding:.3rem .8rem; border-radius: 999px;
+  font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; font-weight: 700;
+  background: var(--bg-2); color: var(--ink-soft);
+  margin-bottom: 1rem;
+}
+.scen.real .scen-tag { background: var(--blue); color: white; }
+.scen.agg .scen-tag { background: var(--gold); color: var(--blue-deep); }
+.scen h3 { font-family:'Fraunces', serif; font-size: 1.5rem; margin-bottom: .3rem; }
+.scen .assumption { font-size: .82rem; color: var(--ink-mute); margin-bottom: 1.5rem; }
+.scen .scen-big {
+  font-family:'Fraunces', serif; font-size: 2.4rem;
+  color: var(--blue); margin-bottom: .2rem; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.scen .scen-big .currency { font-size: 1.2rem; color: var(--ink-mute); }
+.scen .scen-label { font-size: .8rem; color: var(--ink-soft); margin-bottom: 1.5rem; }
+.scen-rows { font-size: .88rem; }
+.scen-rows .row {
+  display:flex; justify-content:space-between;
+  padding: .35rem 0; color: var(--ink-soft);
+}
+.scen-rows .row strong { color: var(--ink); font-weight: 500; }
+.scen-net {
+  margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.scen-net .lbl { font-size: .8rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+.scen-net .v { font-family:'Fraunces', serif; font-size: 1.6rem; color: var(--green); font-weight: 500; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .scen-grid { grid-template-columns: 1fr; } }
+
+/* Expense breakdown */
+.expense { background: var(--bg-2); padding: 4rem 0; }
+.expense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.expense-box {
+  background: white; border-radius: 18px; padding: 2rem;
+  border: 1px solid var(--line);
+}
+.expense-box h3 {
+  font-family:'Inter', sans-serif; text-transform: uppercase;
+  font-size: .85rem; letter-spacing: .14em; color: var(--ink-soft);
+  margin-bottom: 1.4rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line);
+}
+.exp-row {
+  display:flex; justify-content:space-between; padding: .7rem 0;
+  font-size: .94rem; border-bottom: 1px dashed var(--line-2);
+}
+.exp-row:last-child { border-bottom: none; }
+.exp-row .label small { color: var(--ink-mute); display: block; font-size: .76rem; }
+.exp-row .amt { font-family:'Fraunces', serif; color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+.exp-row.total {
+  border-top: 2px solid var(--ink); margin-top: .6rem; padding-top: 1rem;
+  font-weight: 700;
+}
+.exp-row.total .amt { color: var(--blue-deep); font-size: 1.1rem; }
+@media (max-width: 800px) { .expense-grid { grid-template-columns: 1fr; } }
+
+/* Rollout timeline */
+.rollout { padding: 4rem 0; }
+.timeline {
+  position: relative; padding-left: 2rem;
+}
+.timeline::before {
+  content:''; position:absolute; left: 9px; top: 0; bottom: 0;
+  width: 2px; background: linear-gradient(180deg, var(--blue), var(--gold));
+}
+.tl-item { position: relative; margin-bottom: 2.2rem; }
+.tl-item::before {
+  content:''; position:absolute; left: -2rem; top: 6px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--gold); border: 3px solid white;
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.tl-item .tl-head {
+  font-family:'Fraunces', serif; font-size: 1.3rem;
+  color: var(--blue); margin-bottom: .4rem;
+}
+.tl-item .tl-head .day { color: var(--ink-mute); font-size: .9rem; margin-right: .6rem; font-family: 'Inter', sans-serif; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.tl-item ul { padding-left: 1.2rem; margin: 0; color: var(--ink-soft); }
+.tl-item li { padding: .25rem 0; font-size: .94rem; }
+
+/* Risks band */
+.risks {
+  background: var(--blue-deep); color: white; padding: 4rem 0;
+}
+.risks h2 { color: white; }
+.risks h2 .italic-accent { color: var(--gold); }
+.risk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin-top: 2rem; }
+.risk {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  padding: 1.6rem; border-radius: 16px;
+}
+.risk h4 { color: var(--gold); margin-bottom: .5rem; }
+.risk p { color: rgba(255,255,255,.75); font-size: .92rem; margin: 0; }
+@media (max-width: 800px) { .risk-grid { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+
+<!-- ===== Top Switch Bar ===== -->
+<div class="viewbar">
+  <div class="viewbar-inner">
+    <a href="#" class="brand">
+      <span class="mark"></span>
+      <span>Vibrant BioScan<br><small>Find the Root Cause</small></span>
+    </a>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-view="patient" role="tab">For Patients</button>
+      <button class="tab op" data-view="operator" role="tab">Operator Model</button>
+    </div>
+  </div>
+</div>
+
+<!-- =================================================
+     PATIENT VIEW
+     ================================================= -->
+<div class="view active" id="view-patient">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Introducing — Vibrant BioScan · Cape Coral, FL</span>
+        <h1>Your labs say <span class="italic-accent">you're fine.</span><br>Your body says otherwise.</h1>
+        <p class="hero-sub">
+          The Qest4 BioScan reads <strong>47+ body systems in 20 minutes</strong> — toxins, hormones, gut, food sensitivities, organ stress, emotional load — then Dr. Kassandra Francis, DC builds you a 90-day root-cause protocol from the truth your bloodwork can't see.
+        </p>
+        <div class="hero-cta">
+          <a href="https://drkassandrafrancis.janeapp.com" class="btn btn-primary btn-lg" target="_blank" rel="noopener">Book Your BioScan — $197</a>
+          <a href="#how" class="btn btn-ghost">See how it works</a>
+        </div>
+        <div class="hero-trust">
+          <span><span class="check">✓</span> 20-minute non-invasive scan</span>
+          <span><span class="check">✓</span> Same-day protocol</span>
+          <span><span class="check">✓</span> Dr. Kassie, DC</span>
+        </div>
+      </div>
+
+      <!-- Animated scan card -->
+      <div class="scan-card" aria-hidden="true">
+        <div class="scan-head">
+          <span class="scan-label">Qest4 · Bioenergetic Scan</span>
+          <span class="scan-live">Live</span>
+        </div>
+        <div class="scan-rings">
+          <div class="ring"></div>
+          <div class="ring"></div>
+          <div class="ring"></div>
+          <div class="core">47</div>
+        </div>
+        <div style="text-align:center; color: rgba(255,255,255,.7); font-size:.8rem; margin-bottom: 1rem; letter-spacing:.08em;">SYSTEMS · SCANNING</div>
+        <div class="scan-bars">
+          <div class="scan-bar stress"><span class="lbl">Gut</span><span class="tr"><span class="fl" style="--w:.82"></span></span><span class="pct">82%</span></div>
+          <div class="scan-bar warn"><span class="lbl">Hormones</span><span class="tr"><span class="fl" style="--w:.64"></span></span><span class="pct">64%</span></div>
+          <div class="scan-bar"><span class="lbl">Detox</span><span class="tr"><span class="fl" style="--w:.41"></span></span><span class="pct">41%</span></div>
+          <div class="scan-bar"><span class="lbl">Minerals</span><span class="tr"><span class="fl" style="--w:.55"></span></span><span class="pct">55%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAIN HOOK -->
+  <section class="pain">
+    <div class="wrap">
+      <span class="eyebrow" style="color: var(--gold);">If this sounds like you</span>
+      <h2>You've done <span class="italic-accent">everything right.</span><br>You still feel terrible.</h2>
+      <p>You eat clean. You sleep. You see your doctor. Your labs come back "normal." But you know something isn't right — and nobody's giving you a real answer. The BioScan picks up what bloodwork can't: <em>stress patterns the body is holding before they become diagnosable conditions.</em></p>
+
+      <div class="pain-symptoms">
+        <div class="symptom"><span class="dot"></span>Chronic fatigue</div>
+        <div class="symptom"><span class="dot"></span>Brain fog</div>
+        <div class="symptom"><span class="dot"></span>Bloating & gut issues</div>
+        <div class="symptom"><span class="dot"></span>Stubborn weight</div>
+        <div class="symptom"><span class="dot"></span>Hormone swings</div>
+        <div class="symptom"><span class="dot"></span>Sleep problems</div>
+        <div class="symptom"><span class="dot"></span>Anxiety & mood</div>
+        <div class="symptom"><span class="dot"></span>Skin & inflammation</div>
+        <div class="symptom"><span class="dot"></span>Food sensitivities</div>
+        <div class="symptom"><span class="dot"></span>Low immunity</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT WE SCAN -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">What the BioScan sees</span>
+        <h2>47+ systems. <span class="italic-accent">20 minutes.</span> One clear picture.</h2>
+        <p>The Qest4 sends gentle, low-frequency digital signatures through brass handpieces you simply hold. Your body's galvanic skin response is measured against thousands of energetic signatures — revealing where stress is held before it becomes disease.</p>
+      </div>
+      <div class="scan-grid">
+        <div class="scan-tile">
+          <div class="ic">🦠</div>
+          <h4>Toxins & Heavy Metals</h4>
+          <p>Environmental load, mold, pesticide exposure, heavy-metal patterns.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">🌿</div>
+          <h4>Hormones & Adrenals</h4>
+          <p>Stress on the HPA axis, thyroid signals, sex-hormone patterns.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">🍽️</div>
+          <h4>Gut & Digestion</h4>
+          <p>Bacterial, viral, parasitic, and fungal stress signatures.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">🥦</div>
+          <h4>Food Sensitivities</h4>
+          <p>500+ food signatures tested for energetic reactivity.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">💊</div>
+          <h4>Nutritional Deficiencies</h4>
+          <p>Vitamins, minerals, fatty acids, amino-acid patterns.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">❤️</div>
+          <h4>Organ & System Stress</h4>
+          <p>Liver, kidney, lymph, cardiovascular, neuro, immune.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">🧠</div>
+          <h4>Emotional & Stress Load</h4>
+          <p>Limbic and stress patterns the body is holding.</p>
+        </div>
+        <div class="scan-tile">
+          <div class="ic">⚡</div>
+          <h4>Custom Remedy Imprint</h4>
+          <p>Personalized energetic remedy bottle, made on-site.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 90 DAY RESET -->
+  <section class="reset" id="reset">
+    <div class="wrap">
+      <span class="eyebrow" style="color: var(--gold); display:block; text-align:center;">Our Signature Program</span>
+      <h2>The <span class="italic-accent">90-Day Root Cause Reset</span></h2>
+      <p class="reset-sub">A guided three-phase journey from "something is off" to "I feel like myself again." Includes 3 scans, a personalized supplement protocol, and direct access to Dr. Kassie.</p>
+
+      <div class="phases">
+        <div class="phase">
+          <div class="phase-num">01</div>
+          <h3>Discover · Day 1</h3>
+          <p>Initial scan + 60-minute review. We find what's actually driving how you feel.</p>
+          <ul>
+            <li>Full 47-system Qest4 scan</li>
+            <li>Personalized supplement protocol</li>
+            <li>Custom remedy bottle imprinted on-site</li>
+            <li>Written summary you keep</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="phase-num">02</div>
+          <h3>Recalibrate · Day 30</h3>
+          <p>Mid-point re-scan. We see what's already shifting and tune the protocol.</p>
+          <ul>
+            <li>Follow-up Qest4 scan</li>
+            <li>Protocol adjustment based on progress</li>
+            <li>Direct DM access to Dr. Kassie</li>
+            <li>15% dispensary discount</li>
+          </ul>
+        </div>
+        <div class="phase">
+          <div class="phase-num">03</div>
+          <h3>Graduate · Day 90</h3>
+          <p>Final re-scan + maintenance plan. Stress patterns down, capacity up.</p>
+          <ul>
+            <li>Final Qest4 scan + side-by-side comparison</li>
+            <li>Long-term maintenance protocol</li>
+            <li>Priority Inner Circle invite</li>
+            <li>One complimentary footbath detox</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top: 3rem;">
+        <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener" class="btn btn-gold btn-lg">Start Your 90-Day Reset — $897</a>
+        <div style="color: rgba(255,255,255,.6); font-size:.85rem; margin-top:.8rem;">Save $144 vs paying per scan · Limited Founding 25 cohort: $797</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="sec pricing">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Transparent Pricing</span>
+        <h2>Pick the path that <span class="italic-accent">fits where you are.</span></h2>
+        <p>Most clinics won't show you prices. We will. Every tier delivered by Dr. Kassandra Francis, DC.</p>
+      </div>
+
+      <div class="pricing-grid">
+
+        <div class="tier">
+          <h3>Try It</h3>
+          <div class="tier-name">Single BioScan</div>
+          <div class="price"><span class="currency">$</span>197</div>
+          <div class="price-note">One-time · ~75 minutes</div>
+          <ul>
+            <li>Full 47-system Qest4 scan</li>
+            <li>20-min results consultation</li>
+            <li>Written summary report</li>
+            <li>Personalized supplement protocol</li>
+            <li>Dispensary access at 10% off</li>
+          </ul>
+          <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener" class="btn btn-ghost">Book Single Scan</a>
+        </div>
+
+        <div class="tier featured">
+          <div class="tier-badge">Most chosen</div>
+          <h3>Transform</h3>
+          <div class="tier-name">90-Day Root Cause Reset</div>
+          <div class="price"><span class="currency">$</span>897</div>
+          <div class="price-note">Paid in full · Save $144 vs à la carte</div>
+          <ul>
+            <li><strong>3 scans</strong> over 90 days (Day 1, 30, 90)</li>
+            <li>Personalized protocol that evolves with you</li>
+            <li>Custom remedy bottle imprinted on-site</li>
+            <li>Direct DM access to Dr. Kassie</li>
+            <li>15% dispensary discount throughout</li>
+            <li>One complimentary footbath detox</li>
+          </ul>
+          <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener" class="btn btn-gold">Start the 90-Day Reset</a>
+        </div>
+
+        <div class="tier">
+          <h3>Maintain</h3>
+          <div class="tier-name">Vibrant Inner Circle</div>
+          <div class="price"><span class="currency">$</span>197<span style="font-size: 1rem; color: var(--ink-mute);">/mo</span></div>
+          <div class="price-note">$1,997 if paid annually · save $367</div>
+          <ul>
+            <li>Quarterly BioScans (4 per year)</li>
+            <li>20% dispensary discount on every order</li>
+            <li>Priority booking & member-only hours</li>
+            <li>Member pricing on Softwave, HBOT, cryo</li>
+            <li>Bring-a-friend free 15-min consult</li>
+            <li>Cancel anytime after first quarter</li>
+          </ul>
+          <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener" class="btn btn-ghost">Join Inner Circle</a>
+        </div>
+
+      </div>
+
+      <div style="text-align:center; margin-top: 2rem; color: var(--ink-soft); font-size: .9rem;">
+        Existing Vibrant patients get a <strong style="color: var(--blue);">$50 founding-patient credit</strong> on any tier. Mention it at booking.
+      </div>
+    </div>
+  </section>
+
+  <!-- MEET DR KASSIE -->
+  <section class="meet">
+    <div class="wrap meet-grid">
+      <div class="meet-photo">
+        <img src="https://i0.wp.com/vibranthealthswfl.com/wp-content/uploads/2024/11/Dr.-Kassie-Chiropractor.webp" alt="Dr. Kassandra Francis, DC" onerror="this.style.display='none'" />
+      </div>
+      <div>
+        <span class="eyebrow">Your practitioner</span>
+        <h2>Dr. Kassandra <span class="italic-accent">"Kassie"</span> Francis, DC</h2>
+        <p style="font-size: 1.08rem;">Owner of Vibrant Health & Wellness in Cape Coral. Doctor of Chiropractic with specialized focus in pediatric and prenatal care — and the only practitioner in Cape Coral building 90-day, scan-guided root-cause protocols with the Qest4 bioenergetic system.</p>
+        <div class="creds">
+          <span>Doctor of Chiropractic</span>
+          <span>Pediatric & Prenatal</span>
+          <span>Qest4 Certified</span>
+          <span>Owner · Vibrant Health</span>
+        </div>
+        <p>Dr. Kassie spent years watching patients walk in with "normal" labs and abnormal lives. The BioScan changed that. It reveals what's stressing the body before symptoms become disease — and gives her the map to actually fix it.</p>
+        <div class="signature">"I built this program for the people my normal exam couldn't fully answer. Now I can."</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="sec steps" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Three simple steps. <span class="italic-accent">Real answers.</span></h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Book your scan</h3>
+          <p>Online booking through our Jane portal. Choose Single Scan or 90-Day Reset. Pre-scan intake form takes 5 minutes.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Get scanned</h3>
+          <p>Hold the brass handpieces. Relax. 20-minute non-invasive scan reads 47+ systems. Then Dr. Kassie walks you through every finding.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Follow the protocol</h3>
+          <p>You leave with a written summary, a personalized supplement protocol, and (for Reset members) a custom remedy bottle imprinted on-site.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Common questions</span>
+        <h2>Everything you want to know <span class="italic-accent">before booking.</span></h2>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary class="faq-q">Is the BioScan a medical diagnosis?</summary>
+          <div class="faq-a">
+            <p>No. The Qest4 is a <strong>biofeedback assessment</strong> — it measures your body's galvanic skin response to energetic signatures and identifies stress patterns. It is not intended to diagnose, treat, cure, or prevent any disease, and it is not a substitute for medical care from your primary provider. It's a complementary wellness tool that gives Dr. Kassie a clearer map of where your body is asking for support.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">Does it hurt? Are there any needles?</summary>
+          <div class="faq-a">
+            <p>No needles, no pain, no preparation. You sit comfortably and hold two brass handpieces. The device sends gentle low-frequency signals and reads your response. The entire scan takes about 20 minutes.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">How is this different from regular bloodwork?</summary>
+          <div class="faq-a">
+            <p>Bloodwork is excellent at detecting structural change <em>after</em> it has happened. The BioScan picks up <strong>energetic stress patterns before they become diagnosable conditions</strong> — patterns your bloodwork can miss entirely. We recommend you continue working with your primary provider on labs. The BioScan is what fills in the gap when labs come back "normal" but you still don't feel right.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">Do I have to buy supplements?</summary>
+          <div class="faq-a">
+            <p>No. Your protocol is given to you in writing — you're free to source any supplements you want, anywhere. We carry practitioner-grade lines in-clinic and offer Fullscript ordering for convenience, but you're never required to purchase through us.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">Will I see results in 90 days?</summary>
+          <div class="faq-a">
+            <p>Most patients in the 90-Day Reset see meaningful shifts by Day 30 in energy, digestion, and sleep, with the biggest changes between Day 30 and Day 90 as the protocol does its work. The Day 90 re-scan shows the change visually — we put your Day-1 and Day-90 scans side by side. Results vary by patient, severity, and consistency with the protocol.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">Does insurance cover this?</summary>
+          <div class="faq-a">
+            <p>No. The BioScan is a cash-pay wellness service. HSA/FSA cards are accepted at our discretion (check with your plan administrator first). Payment plans are available for the 90-Day Reset and Inner Circle membership.</p>
+          </div>
+        </details>
+        <details class="faq-item">
+          <summary class="faq-q">Can I add this to my existing care at Vibrant?</summary>
+          <div class="faq-a">
+            <p>Yes — and that's where it really shines. Pair the BioScan with chiropractic, Softwave therapy, HBOT, cryotherapy, footbath detox, and our nutrition team for a full root-cause approach. Inner Circle members receive discounts on all of these.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="cta-final">
+    <div class="wrap">
+      <h2>Stop guessing. <span class="italic-accent">Start knowing.</span></h2>
+      <p>Book your BioScan with Dr. Kassie today. 20 minutes is all it takes to see what your body has been trying to tell you.</p>
+      <div style="display:flex; gap:.8rem; justify-content:center; flex-wrap: wrap;">
+        <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener" class="btn btn-primary btn-lg">Book Your BioScan — $197</a>
+        <a href="tel:+12397896959" class="btn btn-ghost btn-lg">📞 Call (239) 789-6959</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <h4>Vibrant BioScan</h4>
+          <p style="color: rgba(255,255,255,.75); margin: 0;">A signature program of Vibrant Health & Wellness — Cape Coral, FL. Delivered by Dr. Kassandra Francis, DC, owner and lead practitioner.</p>
+        </div>
+        <div>
+          <h4>Visit</h4>
+          <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6+Cape+Coral+FL+33991" target="_blank" rel="noopener">1216 SW 4th St, Suite 6<br>Cape Coral, FL 33991</a>
+          <a href="tel:+12397896959">(239) 789-6959</a>
+          <a href="mailto:info@vibranthealthswfl.com">info@vibranthealthswfl.com</a>
+        </div>
+        <div>
+          <h4>Book & Learn</h4>
+          <a href="https://drkassandrafrancis.janeapp.com" target="_blank" rel="noopener">Book online</a>
+          <a href="https://vibranthealthswfl.com" target="_blank" rel="noopener">Vibrant Health main site</a>
+          <a href="#" id="op-link">Operator / model view</a>
+        </div>
+      </div>
+      <div class="disclaimer">
+        <strong>Medical Disclaimer.</strong> The Vibrant BioScan is a non-invasive biofeedback assessment that measures the body's galvanic skin response to energetic signatures using the Qest4 device. It is not a medical diagnostic tool. This scan and any associated wellness recommendations are not intended to diagnose, treat, cure, or prevent any disease, illness, or medical condition, and are not a substitute for professional medical advice, diagnosis, or treatment from a licensed healthcare provider. Results reflect energetic stress patterns only and are provided for educational and wellness-support purposes. These statements have not been evaluated by the Food and Drug Administration. Always consult your primary healthcare provider regarding any medical concerns or before making changes to medications, supplements, or treatment plans. Bioresonance and bioenergetic testing are categorized within Complementary and Alternative Medicine (CAM) and are not recognized by conventional Western medicine as diagnostic procedures. © Vibrant Health & Wellness.
+      </div>
+    </div>
+  </footer>
+</div>
+
+
+<!-- =================================================
+     OPERATOR VIEW
+     ================================================= -->
+<div class="view" id="view-operator">
+
+  <section class="op-hero">
+    <div class="wrap">
+      <span class="op-eyebrow">Internal · Operator Model · Not for patient distribution</span>
+      <h1>BioScan <span class="italic-accent">Business Model</span></h1>
+      <p>Live revenue & expense model for the Vibrant BioScan line. Adjust the assumptions on the calculator below and watch the math move. Numbers reflect first-year operation with Dr. Kassandra Francis, DC as sole practitioner & administrator.</p>
+
+      <div class="headstats" id="hs">
+        <div class="headstat">
+          <div class="lbl">Annual Gross</div>
+          <div class="val"><span class="currency">$</span><span id="hs-gross">216,800</span></div>
+          <div class="sub" id="hs-monthly">≈ $18,067 / month</div>
+        </div>
+        <div class="headstat">
+          <div class="lbl">Annual Net</div>
+          <div class="val"><span class="currency">$</span><span id="hs-net">140,000</span></div>
+          <div class="sub" id="hs-roi">≈ 182% Year-1 ROI</div>
+        </div>
+        <div class="headstat">
+          <div class="lbl">Patients / Year</div>
+          <div class="val"><span id="hs-pts">350</span></div>
+          <div class="sub" id="hs-perweek">≈ 7 scans / week</div>
+        </div>
+        <div class="headstat">
+          <div class="lbl">Recurring (Inner Circle)</div>
+          <div class="val"><span class="currency">$</span><span id="hs-rec">28,400</span></div>
+          <div class="sub" id="hs-members">12 avg active members</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE CALCULATOR -->
+  <section class="calc">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:left; margin: 0 0 2.5rem;">
+        <span class="eyebrow">Live calculator</span>
+        <h2 style="font-size: clamp(1.6rem, 3vw, 2.4rem);">Move the levers. <span class="italic-accent">Watch the numbers respond.</span></h2>
+        <p>These defaults match the Realistic scenario. Adjust any assumption — calculator updates everything live.</p>
+      </div>
+
+      <div class="calc-grid">
+
+        <!-- INPUTS -->
+        <div class="calc-box">
+          <h3>Assumptions</h3>
+
+          <div class="input-row">
+            <label>Scans per week<small>New initial BioScans booked</small></label>
+            <span class="num-value" id="v-scans">7</span>
+            <input type="range" id="i-scans" min="1" max="20" step="1" value="7">
+          </div>
+
+          <div class="input-row">
+            <label>Single scan price<small>À la carte initial scan</small></label>
+            <span class="num-value">$<span id="v-price">197</span></span>
+            <input type="range" id="i-price" min="100" max="300" step="10" value="197">
+          </div>
+
+          <div class="input-row">
+            <label>90-Day Reset upgrade rate<small>% of scanners who upgrade to package</small></label>
+            <span class="num-value"><span id="v-up">20</span>%</span>
+            <input type="range" id="i-up" min="0" max="50" step="2" value="20">
+          </div>
+
+          <div class="input-row">
+            <label>Reset package price<small>Paid in full</small></label>
+            <span class="num-value">$<span id="v-reset">897</span></span>
+            <input type="range" id="i-reset" min="600" max="1500" step="50" value="897">
+          </div>
+
+          <div class="input-row">
+            <label>Follow-up scan rate<small>% of single-scan patients who return at 90 days</small></label>
+            <span class="num-value"><span id="v-fu">50</span>%</span>
+            <input type="range" id="i-fu" min="0" max="80" step="5" value="50">
+          </div>
+
+          <div class="input-row">
+            <label>Follow-up scan price</label>
+            <span class="num-value">$<span id="v-fup">150</span></span>
+            <input type="range" id="i-fup" min="75" max="225" step="5" value="150">
+          </div>
+
+          <div class="input-row">
+            <label>Supplement attach rate<small>% of scanners on a monthly protocol</small></label>
+            <span class="num-value"><span id="v-sup">60</span>%</span>
+            <input type="range" id="i-sup" min="0" max="90" step="5" value="60">
+          </div>
+
+          <div class="input-row">
+            <label>Monthly supplement spend<small>Per active patient, avg</small></label>
+            <span class="num-value">$<span id="v-supm">70</span></span>
+            <input type="range" id="i-supm" min="30" max="150" step="5" value="70">
+          </div>
+
+          <div class="input-row">
+            <label>Supplement duration<small>Average months on protocol</small></label>
+            <span class="num-value"><span id="v-supd">5</span> mo</span>
+            <input type="range" id="i-supd" min="1" max="12" step="1" value="5">
+          </div>
+
+          <div class="input-row">
+            <label>Supplement margin<small>Blended (physical + Fullscript)</small></label>
+            <span class="num-value"><span id="v-supmg">50</span>%</span>
+            <input type="range" id="i-supmg" min="25" max="70" step="5" value="50">
+          </div>
+
+          <div class="input-row">
+            <label>Footbath attach (same-day)<small>% of scanners adding $35 footbath</small></label>
+            <span class="num-value"><span id="v-fb">50</span>%</span>
+            <input type="range" id="i-fb" min="0" max="80" step="5" value="50">
+          </div>
+
+          <div class="input-row">
+            <label>Inner Circle avg members<small>Average active across the year</small></label>
+            <span class="num-value"><span id="v-ic">12</span></span>
+            <input type="range" id="i-ic" min="0" max="50" step="1" value="12">
+          </div>
+
+        </div>
+
+        <!-- OUTPUTS -->
+        <div class="calc-box calc-out">
+          <h3>Annual P&amp;L</h3>
+
+          <div class="bigout">
+            <div class="bigout-card gross">
+              <div class="lbl">Gross Revenue</div>
+              <div class="val"><span class="currency">$</span><span id="o-gross">216,800</span></div>
+              <div class="sub" id="o-grossmonth">~$18,067/mo</div>
+            </div>
+            <div class="bigout-card net">
+              <div class="lbl">Net Contribution</div>
+              <div class="val"><span class="currency">$</span><span id="o-net">140,000</span></div>
+              <div class="sub" id="o-roi">After ~$77k Y1 spend</div>
+            </div>
+          </div>
+
+          <div class="breakdown">
+            <div class="brk"><div class="name">Initial scans (à la carte) <small><span id="o-scansN">245</span> × $<span id="o-scansP">197</span></small></div><div class="amt">$<span id="o-scans">48,265</span></div></div>
+            <div class="brk"><div class="name">90-Day Reset packages <small><span id="o-resetN">70</span> × $<span id="o-resetP">897</span></small></div><div class="amt">$<span id="o-reset">62,790</span></div></div>
+            <div class="brk"><div class="name">Follow-up scans <small><span id="o-fuN">123</span> × $<span id="o-fuP">150</span></small></div><div class="amt">$<span id="o-fu">18,375</span></div></div>
+            <div class="brk"><div class="name">Supplement margin <small><span id="o-supN">210</span> patients × $<span id="o-supM">175</span> avg margin</small></div><div class="amt">$<span id="o-sup">36,750</span></div></div>
+            <div class="brk"><div class="name">Footbath add-ons <small><span id="o-fbN">175</span> × $35</small></div><div class="amt">$<span id="o-fb">6,125</span></div></div>
+            <div class="brk"><div class="name">Inner Circle dues <small><span id="o-icN">12</span> × $197 × 12 mo</small></div><div class="amt">$<span id="o-ic">28,400</span></div></div>
+            <div class="brk"><div class="name">Custom remedy bottles <small>1.5/protocol × $25</small></div><div class="amt">$<span id="o-bot">16,095</span></div></div>
+
+            <div class="brk total"><div class="name">Annual gross revenue</div><div class="amt">$<span id="o-totalg">216,800</span></div></div>
+
+            <div class="brk cost"><div class="name">Annual operating costs <small>Marketing, content, comp uplift, COGS</small></div><div class="amt">−$<span id="o-opex">54,000</span></div></div>
+            <div class="brk cost"><div class="name">Year-1 setup amortized <small>Device + landing + photo + initial inventory</small></div><div class="amt">−<span id="o-setupline">$23,000</span></div></div>
+
+            <div class="brk netline"><div class="name">Year-1 net contribution</div><div class="amt">$<span id="o-netline">140,000</span></div></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCENARIOS -->
+  <section class="scenarios">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:left;">
+        <span class="eyebrow">Three scenarios</span>
+        <h2>How big can this <span class="italic-accent">realistically</span> get?</h2>
+        <p>All numbers Year-1. Year 2 typically grows 30–50% as content compounds and Inner Circle stacks.</p>
+      </div>
+
+      <div class="scen-grid">
+        <div class="scen">
+          <span class="scen-tag">Conservative</span>
+          <h3>Just publish & let it find traffic</h3>
+          <div class="assumption">3 scans/wk · no real marketing · light supplement attach</div>
+          <div class="scen-big"><span class="currency">$</span>67,400</div>
+          <div class="scen-label">Annual gross revenue</div>
+          <div class="scen-rows">
+            <div class="row"><span>Initial scans (150)</span><strong>$33,000</strong></div>
+            <div class="row"><span>90-Day Resets (15)</span><strong>$13,455</strong></div>
+            <div class="row"><span>Follow-ups (60)</span><strong>$9,000</strong></div>
+            <div class="row"><span>Supplements (margin)</span><strong>$10,500</strong></div>
+            <div class="row"><span>Add-ons</span><strong>$1,440</strong></div>
+          </div>
+          <div class="scen-net"><span class="lbl">Net Y1</span><span class="v">~$30,000</span></div>
+        </div>
+
+        <div class="scen real">
+          <span class="scen-tag">Realistic</span>
+          <h3>Publish prices, active IG, name the program</h3>
+          <div class="assumption">7 scans/wk · 2–3 IG/wk · Dr. Kassie on stage · light boost</div>
+          <div class="scen-big"><span class="currency">$</span>216,800</div>
+          <div class="scen-label">Annual gross revenue</div>
+          <div class="scen-rows">
+            <div class="row"><span>Initial scans (245)</span><strong>$48,265</strong></div>
+            <div class="row"><span>90-Day Resets (70)</span><strong>$62,790</strong></div>
+            <div class="row"><span>Follow-ups (123)</span><strong>$18,375</strong></div>
+            <div class="row"><span>Supplements (margin)</span><strong>$36,750</strong></div>
+            <div class="row"><span>Inner Circle (12)</span><strong>$28,400</strong></div>
+            <div class="row"><span>Add-ons + bottles</span><strong>$22,220</strong></div>
+          </div>
+          <div class="scen-net"><span class="lbl">Net Y1</span><span class="v">~$140,000</span></div>
+        </div>
+
+        <div class="scen agg">
+          <span class="scen-tag">Aggressive</span>
+          <h3>Content engine works · category-owner</h3>
+          <div class="assumption">14 scans/wk · scan-reveal Reels traction · Kassie = the BioScan Lady</div>
+          <div class="scen-big"><span class="currency">$</span>438,000</div>
+          <div class="scen-label">Annual gross revenue</div>
+          <div class="scen-rows">
+            <div class="row"><span>Initial scans (490)</span><strong>$96,530</strong></div>
+            <div class="row"><span>90-Day Resets (175)</span><strong>$156,975</strong></div>
+            <div class="row"><span>Follow-ups (245)</span><strong>$36,750</strong></div>
+            <div class="row"><span>Supplements (margin)</span><strong>$78,400</strong></div>
+            <div class="row"><span>Inner Circle (28)</span><strong>$66,200</strong></div>
+            <div class="row"><span>Add-ons + bottles</span><strong>$3,145+</strong></div>
+          </div>
+          <div class="scen-net"><span class="lbl">Net Y1</span><span class="v">~$310,000</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPENSES -->
+  <section class="expense">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:left;">
+        <span class="eyebrow">Cost structure</span>
+        <h2>What it <span class="italic-accent">actually costs</span> to run this.</h2>
+      </div>
+
+      <div class="expense-grid">
+        <div class="expense-box">
+          <h3>One-time setup (Year 1)</h3>
+          <div class="exp-row"><div class="label">Qest4 device + training<small>Skip if already owned</small></div><div class="amt">$12,500</div></div>
+          <div class="exp-row"><div class="label">Landing page + intake forms + lead magnet PDF<small>Already partially built</small></div><div class="amt">$1,500</div></div>
+          <div class="exp-row"><div class="label">Photo / video shoot (Kassie, room, B-roll)<small>2-hour session, edited assets</small></div><div class="amt">$1,500</div></div>
+          <div class="exp-row"><div class="label">Initial physical dispensary inventory<small>Standard Process / Energetix starter</small></div><div class="amt">$6,000</div></div>
+          <div class="exp-row"><div class="label">Branded packaging, intake clipboards, signage</div><div class="amt">$1,500</div></div>
+          <div class="exp-row total"><div class="label">Total Year-1 setup</div><div class="amt">$23,000</div></div>
+        </div>
+
+        <div class="expense-box">
+          <h3>Monthly operating (Year 1)</h3>
+          <div class="exp-row"><div class="label">Content creator / photographer<small>1× weekly shoot, IG-ready</small></div><div class="amt">$1,200</div></div>
+          <div class="exp-row"><div class="label">Boosted IG / Meta ads<small>Light local geofence</small></div><div class="amt">$1,000</div></div>
+          <div class="exp-row"><div class="label">Fullscript dispensary subscription</div><div class="amt">$0</div></div>
+          <div class="exp-row"><div class="label">Physical dispensary COGS replenish<small>~30% of physical gross</small></div><div class="amt">$1,200</div></div>
+          <div class="exp-row"><div class="label">Imprinted bottle + dropper supplies</div><div class="amt">$100</div></div>
+          <div class="exp-row"><div class="label">Comp uplift for Dr. Kassie<small>Or shared with Alana if delegated later</small></div><div class="amt">$1,000</div></div>
+          <div class="exp-row total"><div class="label">Total monthly ops</div><div class="amt">$4,500</div></div>
+          <div style="margin-top: .8rem; padding-top: .8rem; border-top: 1px dashed var(--line); display:flex; justify-content:space-between; font-weight: 600;"><span>Annualized:</span><span style="color: var(--blue-deep);">$54,000</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLLOUT -->
+  <section class="rollout">
+    <div class="wrap">
+      <div class="sec-head" style="text-align:left;">
+        <span class="eyebrow">90-day rollout</span>
+        <h2>From "we should do this" to <span class="italic-accent">first paying cohort.</span></h2>
+      </div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-head"><span class="day">Days 1–30</span>Build the storefront</div>
+          <ul>
+            <li>Ship this landing page to draft.j3taviation.com/BioScan/ ✓</li>
+            <li>Migrate to vibranthealthswfl.com/bioscan when ready</li>
+            <li>Photo/video shoot with Dr. Kassie + scan room</li>
+            <li>Open Fullscript account, opt into 35% practitioner margin tier</li>
+            <li>Build 8 BioScan protocol templates by symptom category</li>
+            <li>Draft + lawyer-light-review the intake / disclaimer form</li>
+            <li>Order Standard Process or Energetix starter inventory</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="day">Days 31–60</span>Soft launch</div>
+          <ul>
+            <li>Email Vibrant patient list with founding offer (warm-list = lowest CAC)</li>
+            <li>Publish 2 scan-reveal Reels/week + 1 educational carousel/week</li>
+            <li>Pin a "Start Here" Reel + 3 highlight tiles (Single / Reset / Inner Circle)</li>
+            <li>Google Business Profile weekly posts targeting "bioresonance Cape Coral"</li>
+            <li>Run the <strong>Founding 25 cohort</strong> at $797 (vs $897) to seed testimonials</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-head"><span class="day">Days 61–90</span>Open the spigot</div>
+          <ul>
+            <li>$300–$500 boosted-reach test on top-performing Reel</li>
+            <li>Launch Inner Circle to first 90-Day graduates (already trust earned)</li>
+            <li>"Comment SCAN" DM auto-funnel on every Reel</li>
+            <li>Weekly testimonial reels from real Founding 25 patients</li>
+            <li>Measure: scan volume · supplement attach % · package upgrade % · follow-up return %</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RISKS -->
+  <section class="risks">
+    <div class="wrap">
+      <span class="eyebrow" style="color: var(--gold);">Honest assessment</span>
+      <h2>What could <span class="italic-accent">break this model</span>.</h2>
+      <div class="risk-grid">
+        <div class="risk">
+          <h4>Practitioner bandwidth</h4>
+          <p>Dr. Kassie already runs a busy chiro practice. Realistic = 7 scans/wk = ~9 hrs/wk. Aggressive needs 18+ hrs/wk which likely means training Alana or another delivery practitioner by month 4.</p>
+        </div>
+        <div class="risk">
+          <h4>FDA / FTC claims risk</h4>
+          <p>ZYTO has been warned twice; RoyalVibe got a warning letter in 2022. Stay clear of "detects / diagnoses / treats." Use "stress patterns / energetic information / supports the body." Signed intake form is the firewall.</p>
+        </div>
+        <div class="risk">
+          <h4>Content engine flakiness</h4>
+          <p>If nobody posts the scan-reveal Reels weekly, Realistic collapses to Conservative. Hire the content creator before the scanner arrives, not after.</p>
+        </div>
+        <div class="risk">
+          <h4>Supplement dependency</h4>
+          <p>~$36k of Realistic net comes from the supplement spine. If patients buy on Amazon instead, that line halves. The in-clinic dispensary + member-discount perk is what keeps spend at Vibrant.</p>
+        </div>
+        <div class="risk">
+          <h4>Competitor wakes up</h4>
+          <p>Quiet Waters (Bonita) and OMNI (Naples) could mirror this within 6 months. First-mover moat in Cape Coral is 25 miles — own SEO + IG share-of-voice before they notice.</p>
+        </div>
+        <div class="risk">
+          <h4>Cape Coral patient mix</h4>
+          <p>Seasonal — snowbird ramp Nov–Apr, dip May–Oct. Plan ad spend and Reset cohorts to lean into the season.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER (internal) -->
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <h4>Internal — Vibrant BioScan Operator Model</h4>
+          <p style="color: rgba(255,255,255,.75); margin: 0;">All projections illustrative. Defaults reflect the Realistic scenario. Calculator updates live — share this URL with Dr. Kassie to walk through the math together.</p>
+        </div>
+        <div>
+          <h4>Stack assumed</h4>
+          <p style="color: rgba(255,255,255,.7); margin: 0;">Qest4 (Maestro Wellness)<br>Fullscript (35% margin tier)<br>Standard Process / Energetix in-clinic<br>Jane App booking</p>
+        </div>
+        <div>
+          <h4>Switch view</h4>
+          <a href="#" id="patient-link">← Back to Patient view</a>
+          <a href="https://vibranthealthswfl.com" target="_blank" rel="noopener">Vibrant main site</a>
+        </div>
+      </div>
+      <div class="disclaimer">
+        Internal planning document. Revenue projections are illustrative and depend on execution, market conditions, practitioner availability, and patient response. Not a guarantee. Compliance language for all patient-facing materials must follow the Medical Disclaimer on the patient view. © Vibrant Health & Wellness.
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ===== Tab switching ===== */
+const tabs = document.querySelectorAll('.tab');
+const views = { patient: document.getElementById('view-patient'), operator: document.getElementById('view-operator') };
+
+function setView(name) {
+  tabs.forEach(t => t.classList.toggle('active', t.dataset.view === name));
+  Object.entries(views).forEach(([k,v]) => v.classList.toggle('active', k === name));
+  window.scrollTo({ top: 0, behavior: 'instant' });
+  history.replaceState(null, '', name === 'operator' ? '#operator' : '#');
+}
+tabs.forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
+document.getElementById('op-link')?.addEventListener('click', e => { e.preventDefault(); setView('operator'); });
+document.getElementById('patient-link')?.addEventListener('click', e => { e.preventDefault(); setView('patient'); });
+if (location.hash === '#operator') setView('operator');
+
+/* ===== Live calculator ===== */
+const inputs = {
+  scans: document.getElementById('i-scans'),
+  price: document.getElementById('i-price'),
+  up: document.getElementById('i-up'),
+  reset: document.getElementById('i-reset'),
+  fu: document.getElementById('i-fu'),
+  fup: document.getElementById('i-fup'),
+  sup: document.getElementById('i-sup'),
+  supm: document.getElementById('i-supm'),
+  supd: document.getElementById('i-supd'),
+  supmg: document.getElementById('i-supmg'),
+  fb: document.getElementById('i-fb'),
+  ic: document.getElementById('i-ic'),
+};
+
+const fmt = n => Math.round(n).toLocaleString('en-US');
+
+function recalc() {
+  // Read inputs
+  const scansPerWeek = +inputs.scans.value;
+  const price = +inputs.price.value;
+  const upPct = +inputs.up.value / 100;
+  const resetPrice = +inputs.reset.value;
+  const fuPct = +inputs.fu.value / 100;
+  const fuPrice = +inputs.fup.value;
+  const supPct = +inputs.sup.value / 100;
+  const supMonthly = +inputs.supm.value;
+  const supDuration = +inputs.supd.value;
+  const supMargin = +inputs.supmg.value / 100;
+  const fbPct = +inputs.fb.value / 100;
+  const icCount = +inputs.ic.value;
+
+  // Volumes
+  const annualScans = scansPerWeek * 50; // 50 working weeks
+  const resetCount = Math.round(annualScans * upPct);
+  const singleCount = annualScans - resetCount;
+
+  // Revenue streams
+  const revSingle = singleCount * price;
+  const revReset = resetCount * resetPrice;
+  // Follow-ups: only single-scan cohort (resets include their own scans) returns
+  const fuCount = Math.round(singleCount * fuPct);
+  const revFu = fuCount * fuPrice;
+  // Supplements: % of all scanners, $/mo * months * margin
+  const supPatients = Math.round(annualScans * supPct);
+  const supMarginPerPatient = supMonthly * supDuration * supMargin;
+  const revSup = supPatients * supMarginPerPatient;
+  // Footbath at scan day
+  const fbCount = Math.round(annualScans * fbPct);
+  const revFb = fbCount * 35;
+  // Inner circle annual
+  const revIc = icCount * 197 * 12;
+  // Custom remedy bottles: 1.5 per Reset/Single scan @ $25
+  const bottleCount = Math.round(annualScans * 1.5);
+  const revBottles = bottleCount * 25;
+
+  const gross = revSingle + revReset + revFu + revSup + revFb + revIc + revBottles;
+
+  // Costs (Realistic-ish constants, scaled lightly with scan volume)
+  // Setup amortized year 1 = $23k, but if scans>0 assume they already own Qest4? Show full $23k.
+  const setupY1 = 23000;
+  // Variable opex: scale modestly with volume
+  const baseOpex = 36000; // content + ads + supplies baseline
+  const variableOpex = (annualScans / 350) * 18000; // scales with volume; $18k at Realistic
+  const opex = Math.round(baseOpex + variableOpex);
+
+  const net = Math.round(gross - opex - setupY1);
+  const roi = setupY1 + opex > 0 ? Math.round((net / (setupY1 + opex)) * 100) : 0;
+
+  // Patch DOM
+  // Header
+  document.getElementById('hs-gross').textContent = fmt(gross);
+  document.getElementById('hs-monthly').textContent = '≈ $' + fmt(gross/12) + ' / month';
+  document.getElementById('hs-net').textContent = fmt(net);
+  document.getElementById('hs-roi').textContent = '≈ ' + roi + '% Year-1 ROI';
+  document.getElementById('hs-pts').textContent = fmt(annualScans);
+  document.getElementById('hs-perweek').textContent = '≈ ' + scansPerWeek + ' scans / week';
+  document.getElementById('hs-rec').textContent = fmt(revIc);
+  document.getElementById('hs-members').textContent = icCount + ' avg active members';
+
+  // Input value mirrors
+  document.getElementById('v-scans').textContent = scansPerWeek;
+  document.getElementById('v-price').textContent = price;
+  document.getElementById('v-up').textContent = +inputs.up.value;
+  document.getElementById('v-reset').textContent = resetPrice;
+  document.getElementById('v-fu').textContent = +inputs.fu.value;
+  document.getElementById('v-fup').textContent = fuPrice;
+  document.getElementById('v-sup').textContent = +inputs.sup.value;
+  document.getElementById('v-supm').textContent = supMonthly;
+  document.getElementById('v-supd').textContent = supDuration;
+  document.getElementById('v-supmg').textContent = +inputs.supmg.value;
+  document.getElementById('v-fb').textContent = +inputs.fb.value;
+  document.getElementById('v-ic').textContent = icCount;
+
+  // Output cards
+  document.getElementById('o-gross').textContent = fmt(gross);
+  document.getElementById('o-grossmonth').textContent = '~$' + fmt(gross/12) + '/mo';
+  document.getElementById('o-net').textContent = fmt(net);
+  document.getElementById('o-roi').textContent = 'After $' + fmt(opex + setupY1).slice(0,-3) + 'k Y1 spend · ' + roi + '% ROI';
+
+  // Breakdown rows
+  document.getElementById('o-scansN').textContent = fmt(singleCount);
+  document.getElementById('o-scansP').textContent = price;
+  document.getElementById('o-scans').textContent = fmt(revSingle);
+  document.getElementById('o-resetN').textContent = fmt(resetCount);
+  document.getElementById('o-resetP').textContent = fmt(resetPrice);
+  document.getElementById('o-reset').textContent = fmt(revReset);
+  document.getElementById('o-fuN').textContent = fmt(fuCount);
+  document.getElementById('o-fuP').textContent = fuPrice;
+  document.getElementById('o-fu').textContent = fmt(revFu);
+  document.getElementById('o-supN').textContent = fmt(supPatients);
+  document.getElementById('o-supM').textContent = fmt(supMarginPerPatient);
+  document.getElementById('o-sup').textContent = fmt(revSup);
+  document.getElementById('o-fbN').textContent = fmt(fbCount);
+  document.getElementById('o-fb').textContent = fmt(revFb);
+  document.getElementById('o-icN').textContent = icCount;
+  document.getElementById('o-ic').textContent = fmt(revIc);
+  document.getElementById('o-bot').textContent = fmt(revBottles);
+  document.getElementById('o-totalg').textContent = fmt(gross);
+  document.getElementById('o-opex').textContent = fmt(opex);
+  document.getElementById('o-setupline').textContent = '$' + fmt(setupY1);
+  document.getElementById('o-netline').textContent = fmt(net);
+}
+
+Object.values(inputs).forEach(el => el?.addEventListener('input', recalc));
+recalc();
+</script>
+</body>
+</html>
