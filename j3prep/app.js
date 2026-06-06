@@ -316,7 +316,8 @@
 
     renderSessionStats();
 
-    if (res.is_correct || res.should_retry === false || state.hintLevel >= 2) {
+    // Two-level flow: hint_level=0 → hint, hint_level=1 → full explanation w/ answer, move on
+    if (res.is_correct || res.should_retry === false || state.hintLevel >= 1) {
       // Move on
       $("#submitAnswerBtn").style.display = "none";
       $("#skipBtn").style.display = "none";
