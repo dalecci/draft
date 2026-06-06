@@ -114,7 +114,7 @@
     const sel = $("#loginName");
     sel.innerHTML = `<option value="">— select —</option>`;
     if (!state.supa) return;
-    const { data, error } = await state.supa.from("students").select("id, name").order("name");
+    const { data, error } = await state.supa.from("j3prep_students").select("id, name").order("name");
     if (error) {
       toast("Couldn't load students: " + error.message, true);
       return;
@@ -143,7 +143,7 @@
     if (!id || !pin) { showLoginError("Pick your name and enter your PIN."); return; }
 
     const { data, error } = await state.supa
-      .from("students").select("*").eq("id", id).single();
+      .from("j3prep_students").select("*").eq("id", id).single();
     if (error || !data) { showLoginError("Couldn't find that student."); return; }
     if (data.pin !== pin) { showLoginError("Wrong PIN."); return; }
 
@@ -215,7 +215,7 @@
     $("#startSessionBtn").innerHTML = '<span class="spinner"></span> Planning your session...';
 
     // Create session row in DB
-    const { data: sess, error: sErr } = await state.supa.from("sessions").insert({
+    const { data: sess, error: sErr } = await state.supa.from("j3prep_sessions").insert({
       student_id: state.me.id,
       subject: "math",
     }).select().single();
@@ -235,7 +235,7 @@
     $("#coachMsg").textContent = greeting.message_to_student || "Let's go.";
 
     // Persist greeting on session
-    await state.supa.from("sessions").update({ greeting_md: greeting.message_to_student }).eq("id", sess.id);
+    await state.supa.from("j3prep_sessions").update({ greeting_md: greeting.message_to_student }).eq("id", sess.id);
 
     // Auto-load first question
     await nextQuestion();
@@ -378,8 +378,8 @@
     root.innerHTML = '<p class="muted"><span class="spinner"></span> Loading...</p>';
 
     const [skillsResp, masteryResp] = await Promise.all([
-      state.supa.from("skills").select("*").eq("subject", "math").order("grade").order("strand").order("id"),
-      state.supa.from("mastery").select("*").eq("student_id", state.me.id),
+      state.supa.from("j3prep_skills").select("*").eq("subject", "math").order("grade").order("strand").order("id"),
+      state.supa.from("j3prep_mastery").select("*").eq("student_id", state.me.id),
     ]);
     if (skillsResp.error) { root.innerHTML = `<p class="bad">${skillsResp.error.message}</p>`; return; }
 
@@ -429,9 +429,9 @@
     root.innerHTML = '<p class="muted"><span class="spinner"></span> Loading...</p>';
 
     const [studentsResp, masteryResp, sessionsResp] = await Promise.all([
-      state.supa.from("students").select("*").order("name"),
-      state.supa.from("mastery").select("*"),
-      state.supa.from("sessions").select("*").order("started_at", { ascending: false }).limit(50),
+      state.supa.from("j3prep_students").select("*").order("name"),
+      state.supa.from("j3prep_mastery").select("*"),
+      state.supa.from("j3prep_sessions").select("*").order("started_at", { ascending: false }).limit(50),
     ]);
     if (studentsResp.error) { root.innerHTML = `<p class="bad">${studentsResp.error.message}</p>`; return; }
 
@@ -496,7 +496,7 @@
     $("#adminUnlocked").classList.remove("hidden");
     const root = $("#rosterList");
     root.innerHTML = '<p class="muted"><span class="spinner"></span> Loading...</p>';
-    const { data, error } = await state.supa.from("students").select("*").order("name");
+    const { data, error } = await state.supa.from("j3prep_students").select("*").order("name");
     if (error) { root.innerHTML = `<p class="bad">${error.message}</p>`; return; }
     if (!data || data.length === 0) { root.innerHTML = '<p class="muted">No students yet. Add one below.</p>'; return; }
 
@@ -512,7 +512,7 @@
     root.querySelectorAll("[data-del]").forEach((b) => {
       b.onclick = async () => {
         if (!confirm("Delete this student? All their attempts and mastery will be removed.")) return;
-        const { error } = await state.supa.from("students").delete().eq("id", b.dataset.del);
+        const { error } = await state.supa.from("j3prep_students").delete().eq("id", b.dataset.del);
         if (error) { toast(error.message, true); return; }
         toast("Deleted");
         renderAdmin();
@@ -530,7 +530,7 @@
 
     if (!name || !pin) { toast("Name and PIN required", true); return; }
 
-    const { error } = await state.supa.from("students").insert({
+    const { error } = await state.supa.from("j3prep_students").insert({
       name, pin, grade_math: grade, interests, parent_email: email,
     });
     if (error) { toast(error.message, true); return; }
