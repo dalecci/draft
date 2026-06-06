@@ -67,6 +67,7 @@
     // Session
     $("#startSessionBtn").onclick = startSession;
     $("#submitAnswerBtn").onclick = submitAnswer;
+    $("#skipBtn").onclick = submitForfeit;
     $("#nextQBtn").onclick = nextQuestion;
     $("#endSessionBtn").onclick = endSession;
     $("#newSessionBtn").onclick = () => { resetSessionUI(); startSession(); };
@@ -250,6 +251,7 @@
     $("#answerInput").value = "";
     $("#answerInput").disabled = false;
     $("#submitAnswerBtn").style.display = "";
+    $("#skipBtn").style.display = "";
     $("#nextQBtn").style.display = "none";
     state.hintLevel = 0;
 
@@ -270,14 +272,21 @@
     $("#answerInput").focus();
   }
 
+  // Phrases that mean "I don't get it — just explain and move on"
+  const FORFEIT_RE = /^\s*(i\s*(don'?t|do not)\s*(understand|know|get(\s*it)?)|idk|no\s*idea|i'?m\s*lost|i'?m\s*stuck|help|explain|skip|pass|forfeit|forgo|i\s*give\s*up|\?+)\s*\.?\s*$/i;
+
   async function submitAnswer() {
     const ans = $("#answerInput").value.trim();
     if (!ans) return;
     if (!state.currentQuestion) return;
 
+    // Treat "I don't understand" (and variants) as a forfeit, not a wrong answer.
+    if (FORFEIT_RE.test(ans)) { return submitForfeit(ans); }
+
     $("#submitAnswerBtn").disabled = true;
     $("#submitAnswerBtn").innerHTML = '<span class="spinner"></span> Checking...';
     $("#answerInput").disabled = true;
+    $("#skipBtn").disabled = true;
 
     const res = await callTutor({
       phase: "evaluate",
@@ -292,6 +301,7 @@
 
     $("#submitAnswerBtn").disabled = false;
     $("#submitAnswerBtn").textContent = "Submit";
+    $("#skipBtn").disabled = false;
 
     if (res.error) { toast("Tutor error: " + res.error, true); $("#answerInput").disabled = false; return; }
 
@@ -309,6 +319,7 @@
     if (res.is_correct || res.should_retry === false || state.hintLevel >= 2) {
       // Move on
       $("#submitAnswerBtn").style.display = "none";
+      $("#skipBtn").style.display = "none";
       $("#nextQBtn").style.display = "";
       $("#nextQBtn").focus();
       // Advance skill rotation: if mastered enough, jump to next skill
@@ -320,6 +331,47 @@
       $("#answerInput").value = "";
       $("#answerInput").focus();
     }
+  }
+
+  async function submitForfeit(rawAnswer) {
+    if (!state.currentQuestion) return;
+    const ans = (rawAnswer ?? $("#answerInput").value.trim()) || "(skipped)";
+
+    $("#submitAnswerBtn").disabled = true;
+    $("#skipBtn").disabled = true;
+    $("#skipBtn").innerHTML = '<span class="spinner"></span> Explaining...';
+    $("#answerInput").disabled = true;
+
+    const res = await callTutor({
+      phase: "evaluate",
+      student_id: state.me.id,
+      session_id: state.session?.id,
+      skill_id: state.currentQuestion.skill_id,
+      question_text: state.currentQuestion.question,
+      expected_answer: state.currentQuestion.expected_answer,
+      given_answer: ans,
+      hint_level: state.hintLevel,
+      forfeit: true,
+    });
+
+    $("#submitAnswerBtn").disabled = false;
+    $("#skipBtn").disabled = false;
+    $("#skipBtn").textContent = "Skip — Explain it";
+
+    if (res.error) { toast("Tutor error: " + res.error, true); $("#answerInput").disabled = false; return; }
+
+    const fb = $("#feedbackBox");
+    fb.classList.remove("hidden", "correct", "incorrect");
+    fb.classList.add("feedback", "incorrect");
+    fb.textContent = res.feedback || "Here's the idea:";
+    renderMath(fb);
+
+    // No stats penalty for an honest "I don't get it" — just move on.
+    $("#submitAnswerBtn").style.display = "none";
+    $("#skipBtn").style.display = "none";
+    $("#nextQBtn").style.display = "";
+    $("#nextQBtn").focus();
+    state.currentSkillIdx++;
   }
 
   async function endSession() {

@@ -90,7 +90,11 @@
 
     .login-wrap { display: grid; place-items: center; min-height: calc(100vh - 64px); padding: 24px; }
     .login-card { width: min(420px, 100%); }
-    .pin-input { letter-spacing: 12px; text-align: center; font-size: 22px; font-weight: 700; }
+    .pin-input {
+      letter-spacing: 12px; text-align: center; font-size: 22px; font-weight: 700;
+      -webkit-text-security: disc;  /* mask digits without using type=password */
+      text-security: disc;
+    }
 
     .coach-msg {
       background: linear-gradient(135deg, #1e1308, #0f0d0a);
@@ -183,7 +187,7 @@
       </select>
 
       <label for="loginPin">PIN</label>
-      <input type="password" id="loginPin" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="off" />
+      <input type="text" id="loginPin" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="one-time-code" name="otp" data-lpignore="true" data-1p-ignore="true" />
 
       <div style="margin-top: 18px; display: flex; gap: 10px;">
         <button class="btn" id="loginBtn">Sign in</button>
@@ -232,9 +236,10 @@
         <div id="questionWrap" class="hidden">
           <div class="question-box" id="questionBox"></div>
           <p class="muted" id="answerHint" style="margin: 4px 0 8px;"></p>
-          <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off" />
-          <div style="margin-top: 12px; display: flex; gap: 10px;">
+          <input type="text" id="answerInput" class="answer-input" placeholder="Your answer (or type &quot;I don't understand&quot;)..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="ans" data-lpignore="true" data-1p-ignore="true" />
+          <div style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn" id="submitAnswerBtn">Submit</button>
+            <button class="btn ghost" id="skipBtn">Skip — Explain it</button>
             <button class="btn ghost" id="nextQBtn" style="display:none;">Next question</button>
           </div>
           <div id="feedbackBox" class="hidden feedback"></div>
@@ -270,7 +275,7 @@
         <h1>Parent / Coach</h1>
         <p class="muted">Enter the admin PIN to view student progress.</p>
         <label for="parentPin">Admin PIN</label>
-        <input type="password" id="parentPin" class="pin-input" inputmode="numeric" maxlength="6" />
+        <input type="text" id="parentPin" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="one-time-code" name="otp-parent" data-lpignore="true" data-1p-ignore="true" />
         <button class="btn" id="parentPinBtn" style="margin-top: 14px;">Unlock</button>
         <p id="parentPinError" class="bad hidden" style="margin-top: 10px;"></p>
       </div>
@@ -289,7 +294,7 @@
         <h1>Admin</h1>
         <p class="muted">Enter the admin PIN to manage students.</p>
         <label for="adminPin">Admin PIN</label>
-        <input type="password" id="adminPin" class="pin-input" inputmode="numeric" maxlength="6" />
+        <input type="text" id="adminPin" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="one-time-code" name="otp-admin" data-lpignore="true" data-1p-ignore="true" />
         <button class="btn" id="adminPinBtn" style="margin-top: 14px;">Unlock</button>
         <p id="adminPinError" class="bad hidden" style="margin-top: 10px;"></p>
       </div>
