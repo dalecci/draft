@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>J3Prep — Student Portal</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <style>
+    :root {
+      --bg:        #0b0e14;
+      --panel:     #131823;
+      --panel-2:   #1a2030;
+      --line:      #232a3b;
+      --text:      #e6e9f0;
+      --muted:     #8993a8;
+      --accent:    #ff7a18;
+      --accent-2:  #ffb168;
+      --good:      #4ade80;
+      --bad:       #f87171;
+      --link:      #7aa2ff;
+      --radius:    14px;
+      --shadow:    0 8px 28px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+      font-size: 16px; -webkit-font-smoothing: antialiased; }
+    body { min-height: 100vh; }
+
+    .topbar {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 22px; background: var(--panel); border-bottom: 1px solid var(--line);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { font-weight: 800; letter-spacing: .5px; font-size: 18px;
+      display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center; color: #1a0c00; font-weight: 900;
+    }
+    .tabs { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+    .tab {
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      color: var(--muted); font-size: 14px; font-weight: 500;
+      background: transparent; border: 0;
+    }
+    .tab:hover { color: var(--text); background: var(--panel-2); }
+    .tab.active { color: var(--text); background: var(--panel-2); }
+    .who { color: var(--muted); font-size: 13px; padding: 6px 10px; }
+    .logout { background: transparent; border: 1px solid var(--line); color: var(--muted);
+      padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .logout:hover { color: var(--text); border-color: var(--muted); }
+
+    .container { max-width: 880px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 24px; box-shadow: var(--shadow); }
+    .card + .card { margin-top: 18px; }
+
+    h1 { font-size: 24px; margin: 0 0 14px; letter-spacing: -.3px; }
+    h2 { font-size: 18px; margin: 0 0 12px; }
+    h3 { font-size: 13px; margin: 14px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; }
+    p { line-height: 1.55; margin: 8px 0; }
+
+    label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 6px; }
+    input[type=text], input[type=password], input[type=number], input[type=email], select, textarea {
+      width: 100%; background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+      padding: 11px 14px; border-radius: 10px; font-size: 15px; font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+
+    .btn {
+      background: linear-gradient(180deg, var(--accent), #e6620a);
+      color: #1a0c00; border: 0; padding: 12px 22px; border-radius: 10px;
+      font-weight: 700; font-size: 15px; cursor: pointer; letter-spacing: .2px;
+    }
+    .btn:hover { filter: brightness(1.08); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > * { flex: 1 1 200px; }
+
+    .muted { color: var(--muted); }
+    .good  { color: var(--good); }
+    .bad   { color: var(--bad); }
+
+    .login-wrap { display: grid; place-items: center; min-height: calc(100vh - 64px); padding: 24px; }
+    .login-card { width: min(420px, 100%); }
+    .pin-input { letter-spacing: 12px; text-align: center; font-size: 22px; font-weight: 700; }
+
+    .coach-msg {
+      background: linear-gradient(135deg, #1e1308, #0f0d0a);
+      border: 1px solid #3a2616; padding: 18px 20px; border-radius: 12px;
+      font-size: 16px; line-height: 1.55; white-space: pre-wrap;
+    }
+    .coach-msg::before {
+      content: "Coach J"; display: block;
+      color: var(--accent); font-size: 11px; letter-spacing: 2px;
+      font-weight: 800; margin-bottom: 6px;
+    }
+    .question-box {
+      background: var(--panel-2); border: 1px solid var(--line);
+      border-radius: 12px; padding: 22px; margin: 18px 0;
+      font-size: 19px; line-height: 1.5;
+    }
+    .answer-input { font-size: 18px; padding: 14px 16px; }
+    .feedback { margin-top: 14px; padding: 14px 16px; border-radius: 10px;
+      font-size: 15px; line-height: 1.5; }
+    .feedback.correct { background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.3); }
+    .feedback.incorrect { background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.3); }
+    .session-stats {
+      display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 0;
+      color: var(--muted); font-size: 13px;
+    }
+    .stat { background: var(--panel-2); padding: 8px 14px; border-radius: 8px; }
+    .stat b { color: var(--text); }
+
+    .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 4px; margin: 10px 0; }
+    .mastery-cell { aspect-ratio: 1; border-radius: 4px; background: #1f2433; position: relative; cursor: help; }
+    .mc-0 { background: #1f2433; }
+    .mc-1 { background: #533327; }
+    .mc-2 { background: #7a4422; }
+    .mc-3 { background: #b85d1d; }
+    .mc-4 { background: var(--accent); }
+    .mc-5 { background: var(--good); }
+
+    .student-row {
+      display: flex; align-items: center; gap: 14px; padding: 14px;
+      background: var(--panel-2); border-radius: 10px; margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .student-row .name { flex: 1; font-weight: 600; min-width: 120px; }
+    .student-row .meta { color: var(--muted); font-size: 13px; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+      padding: 12px 20px; border-radius: 10px; box-shadow: var(--shadow);
+      z-index: 100; opacity: 0; transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+    .toast.bad { border-color: var(--bad); }
+
+    .hidden { display: none !important; }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--muted);
+      border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite;
+      vertical-align: middle; margin-right: 8px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    code { background: var(--panel-2); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    a { color: var(--link); }
+  </style>
+</head>
+<body>
+  <div id="topbar" class="topbar hidden">
+    <div class="brand"><span class="brand-mark">J3</span> J3Prep</div>
+    <div class="tabs" id="tabs">
+      <button class="tab" data-view="session">Today's Session</button>
+      <button class="tab" data-view="progress">My Progress</button>
+      <button class="tab" data-view="parent">Parent/Coach</button>
+      <button class="tab" data-view="admin">Admin</button>
+    </div>
+    <span class="who" id="whoLabel"></span>
+    <button class="logout" id="logoutBtn">Sign out</button>
+  </div>
+
+  <div id="loginView" class="login-wrap">
+    <div class="card login-card">
+      <div class="brand" style="margin-bottom: 18px;">
+        <span class="brand-mark">J3</span> J3Prep
+      </div>
+      <h1>Student Portal</h1>
+      <p class="muted">Pick your name and enter your PIN to start today's session.</p>
+
+      <label for="loginName">Name</label>
+      <select id="loginName">
+        <option value="">— select —</option>
+      </select>
+
+      <label for="loginPin">PIN</label>
+      <input type="password" id="loginPin" class="pin-input" inputmode="numeric" maxlength="6" autocomplete="off" />
+
+      <div style="margin-top: 18px; display: flex; gap: 10px;">
+        <button class="btn" id="loginBtn">Sign in</button>
+        <button class="btn ghost" id="settingsBtn">⚙ Setup</button>
+      </div>
+
+      <p id="loginError" class="bad hidden" style="margin-top: 12px;"></p>
+    </div>
+  </div>
+
+  <div id="setupView" class="container hidden">
+    <div class="card">
+      <h1>Setup</h1>
+      <p class="muted">One-time config. Paste your Supabase project URL and anon key (Dashboard → Project Settings → API).</p>
+
+      <label for="cfgUrl">Supabase URL</label>
+      <input type="text" id="cfgUrl" placeholder="https://xxxxx.supabase.co" />
+
+      <label for="cfgAnon">Supabase anon key</label>
+      <input type="text" id="cfgAnon" placeholder="eyJhbGc..." />
+
+      <label for="cfgAdminPin">Admin PIN (for Parent/Coach + Admin tabs)</label>
+      <input type="text" id="cfgAdminPin" placeholder="e.g. 4545" inputmode="numeric" maxlength="6" />
+
+      <div style="margin-top: 18px; display: flex; gap: 10px;">
+        <button class="btn" id="saveCfgBtn">Save & continue</button>
+        <button class="btn ghost" id="cancelCfgBtn">Cancel</button>
+      </div>
+      <p class="muted" style="margin-top: 14px; font-size: 13px;">
+        Stored in your browser's localStorage. Not synced anywhere else.
+      </p>
+    </div>
+  </div>
+
+  <div id="sessionView" class="container hidden">
+    <div class="card" id="sessionCard">
+      <div id="sessionStart">
+        <h1>Today's Session</h1>
+        <p class="muted">Coach J will plan your work for today based on what you've already learned.</p>
+        <button class="btn" id="startSessionBtn">Start session</button>
+      </div>
+
+      <div id="sessionActive" class="hidden">
+        <div class="coach-msg" id="coachMsg"></div>
+
+        <div id="questionWrap" class="hidden">
+          <div class="question-box" id="questionBox"></div>
+          <p class="muted" id="answerHint" style="margin: 4px 0 8px;"></p>
+          <input type="text" id="answerInput" class="answer-input" placeholder="Your answer..." autocomplete="off" />
+          <div style="margin-top: 12px; display: flex; gap: 10px;">
+            <button class="btn" id="submitAnswerBtn">Submit</button>
+            <button class="btn ghost" id="nextQBtn" style="display:none;">Next question</button>
+          </div>
+          <div id="feedbackBox" class="hidden feedback"></div>
+        </div>
+
+        <div class="session-stats" id="sessionStats"></div>
+
+        <div style="margin-top: 18px;">
+          <button class="btn ghost" id="endSessionBtn">End session</button>
+        </div>
+      </div>
+
+      <div id="sessionWrapup" class="hidden">
+        <div class="coach-msg" id="wrapupMsg"></div>
+        <div style="margin-top: 16px;">
+          <button class="btn" id="newSessionBtn">Start another session</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="progressView" class="container hidden">
+    <div class="card">
+      <h1>My Progress</h1>
+      <p class="muted">How you're doing across every skill.</p>
+      <div id="progressContent"></div>
+    </div>
+  </div>
+
+  <div id="parentView" class="container hidden">
+    <div id="parentLocked">
+      <div class="card login-card" style="margin: 40px auto;">
+        <h1>Parent / Coach</h1>
+        <p class="muted">Enter the admin PIN to view student progress.</p>
+        <label for="parentPin">Admin PIN</label>
+        <input type="password" id="parentPin" class="pin-input" inputmode="numeric" maxlength="6" />
+        <button class="btn" id="parentPinBtn" style="margin-top: 14px;">Unlock</button>
+        <p id="parentPinError" class="bad hidden" style="margin-top: 10px;"></p>
+      </div>
+    </div>
+    <div id="parentUnlocked" class="hidden">
+      <div class="card">
+        <h1>All Students</h1>
+        <div id="parentContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminView" class="container hidden">
+    <div id="adminLocked">
+      <div class="card login-card" style="margin: 40px auto;">
+        <h1>Admin</h1>
+        <p class="muted">Enter the admin PIN to manage students.</p>
+        <label for="adminPin">Admin PIN</label>
+        <input type="password" id="adminPin" class="pin-input" inputmode="numeric" maxlength="6" />
+        <button class="btn" id="adminPinBtn" style="margin-top: 14px;">Unlock</button>
+        <p id="adminPinError" class="bad hidden" style="margin-top: 10px;"></p>
+      </div>
+    </div>
+    <div id="adminUnlocked" class="hidden">
+      <div class="card">
+        <h1>Roster</h1>
+        <div id="rosterList"></div>
+      </div>
+      <div class="card">
+        <h2>Add student</h2>
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input type="text" id="newName" />
+          </div>
+          <div>
+            <label>PIN (4-6 digits)</label>
+            <input type="text" id="newPin" inputmode="numeric" maxlength="6" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Math grade</label>
+            <input type="number" id="newGradeMath" min="1" max="12" value="5" />
+          </div>
+          <div>
+            <label>Interests (comma-separated)</label>
+            <input type="text" id="newInterests" placeholder="basketball, minecraft, dogs" />
+          </div>
+        </div>
+        <div>
+          <label>Parent email (optional)</label>
+          <input type="email" id="newParentEmail" />
+        </div>
+        <button class="btn" id="addStudentBtn" style="margin-top: 14px;">Add student</button>
+        <p id="addStudentMsg" class="muted hidden" style="margin-top: 10px;"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <script src="./app.js"></script>
+</body>
+</html>
