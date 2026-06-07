@@ -13,6 +13,9 @@
     session: null,             // active session row { id, ... }
     sessionPlan: [],           // array of skill_ids for this session
     currentSkillIdx: 0,
+    currentSkillId: null,      // active skill (drives topic picker + lesson_intro gating)
+    introducedSkills: new Set(),  // skills we've shown a lesson for this session
+    allSkills: [],             // full skills list (loaded once for picker)
     currentQuestion: null,     // { question, expected_answer, skill_id, ... }
     hintLevel: 0,
     sessionStats: { asked: 0, correct: 0 },
@@ -72,6 +75,8 @@
     $("#endSessionBtn").onclick = endSession;
     $("#newSessionBtn").onclick = () => { resetSessionUI(); startSession(); };
     $("#answerInput").addEventListener("keydown", (e) => { if (e.key === "Enter") submitAnswer(); });
+    $("#topicPicker").addEventListener("change", onTopicPicked);
+    $("#startQuestionsBtn").onclick = startQuestionsFromLesson;
 
     // Parent/Admin gates
     $("#parentPinBtn").onclick = () => unlockGate("parent");
@@ -202,9 +207,12 @@
     $("#sessionWrapup").classList.add("hidden");
     $("#questionWrap").classList.add("hidden");
     $("#feedbackBox").classList.add("hidden");
+    $("#lessonBox").classList.add("hidden");
     state.session = null;
     state.sessionPlan = [];
     state.currentSkillIdx = 0;
+    state.currentSkillId = null;
+    state.introducedSkills = new Set();
     state.currentQuestion = null;
     state.hintLevel = 0;
     state.sessionStats = { asked: 0, correct: 0 };
@@ -214,6 +222,9 @@
   async function startSession() {
     $("#startSessionBtn").disabled = true;
     $("#startSessionBtn").innerHTML = '<span class="spinner"></span> Planning your session...';
+
+    // Load all skills (once per session) for the topic picker
+    await loadAllSkills();
 
     // Create session row in DB
     const { data: sess, error: sErr } = await state.supa.from("j3prep_sessions").insert({
@@ -230,21 +241,127 @@
     state.sessionPlan = greeting.session_plan || [];
     state.currentSkillIdx = 0;
 
-    // UI: show coach msg, hide start
+    // UI: show coach msg, hide start, populate picker
     $("#sessionStart").classList.add("hidden");
     $("#sessionActive").classList.remove("hidden");
     $("#coachMsg").textContent = greeting.message_to_student || "Let's go.";
+    await populateTopicPicker();
 
     // Persist greeting on session
     await state.supa.from("j3prep_sessions").update({ greeting_md: greeting.message_to_student }).eq("id", sess.id);
 
-    // Auto-load first question
+    // Start with a lesson on the first skill, then questions
+    const firstSkill = greeting.first_skill_id || state.sessionPlan[0];
+    if (firstSkill) {
+      await showLessonForSkill(firstSkill);
+    } else {
+      await nextQuestion();
+    }
+  }
+
+  async function loadAllSkills() {
+    if (state.allSkills.length) return;
+    const { data, error } = await state.supa
+      .from("j3prep_skills")
+      .select("id, name, summary, strand, grade, difficulty")
+      .eq("subject", "math")
+      .order("grade").order("strand").order("id");
+    if (error) { toast("Skills load failed: " + error.message, true); return; }
+    state.allSkills = data || [];
+  }
+
+  async function populateTopicPicker() {
+    const sel = $("#topicPicker");
+    sel.innerHTML = "";
+
+    // Pull mastery so we can annotate
+    const { data: mastery } = await state.supa
+      .from("j3prep_mastery").select("skill_id, score, status")
+      .eq("student_id", state.me.id);
+    const mMap = new Map((mastery || []).map((m) => [m.skill_id, m]));
+
+    // Group by strand (within the student's grade ± 1 so cross-grade picking works too)
+    const grade = state.me.grade_math ?? 5;
+    const inRange = state.allSkills.filter((s) => Math.abs(s.grade - grade) <= 1);
+    const byStrand = {};
+    inRange.forEach((s) => { (byStrand[`Grade ${s.grade} — ${s.strand}`] ||= []).push(s); });
+
+    Object.keys(byStrand).sort().forEach((strand) => {
+      const og = document.createElement("optgroup");
+      og.label = strand;
+      byStrand[strand].forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        const m = mMap.get(s.id);
+        const mark = m?.status === "mastered" ? " ✓"
+                   : m?.score >= 0.5            ? ` (${Math.round(m.score*100)}%)`
+                   : m                          ? " (learning)"
+                                                : "";
+        opt.textContent = s.name + mark;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+
+    if (state.currentSkillId) sel.value = state.currentSkillId;
+  }
+
+  async function onTopicPicked(e) {
+    const skillId = e.target.value;
+    if (!skillId || skillId === state.currentSkillId) return;
+    // Insert at the front of the plan and update index so nextQuestion will pick it next
+    state.sessionPlan = [skillId, ...state.sessionPlan.filter((id) => id !== skillId)];
+    state.currentSkillIdx = 0;
+    await showLessonForSkill(skillId);
+  }
+
+  async function showLessonForSkill(skillId) {
+    state.currentSkillId = skillId;
+    $("#topicPicker").value = skillId;
+    $("#questionWrap").classList.add("hidden");
+    $("#feedbackBox").classList.add("hidden");
+
+    const lessonBox = $("#lessonBox");
+    const lessonMsg = $("#lessonMsg");
+    lessonBox.classList.remove("hidden");
+    lessonMsg.innerHTML = '<span class="spinner"></span> Coach J is preparing the lesson...';
+    $("#startQuestionsBtn").disabled = true;
+
+    const res = await callTutor({
+      phase: "lesson_intro",
+      student_id: state.me.id,
+      session_id: state.session?.id,
+      skill_id: skillId,
+    });
+    if (res.error) {
+      toast("Lesson error: " + res.error, true);
+      lessonBox.classList.add("hidden");
+      return nextQuestion();
+    }
+
+    lessonMsg.textContent = res.message_to_student || res.lesson || "Let's get into it.";
+    renderMath(lessonMsg);
+    state.introducedSkills.add(skillId);
+    $("#startQuestionsBtn").disabled = false;
+    $("#startQuestionsBtn").focus();
+  }
+
+  async function startQuestionsFromLesson() {
+    $("#lessonBox").classList.add("hidden");
     await nextQuestion();
   }
 
   async function nextQuestion() {
     if (state.sessionPlan.length === 0) { return endSession(); }
     const skillId = state.sessionPlan[state.currentSkillIdx % state.sessionPlan.length];
+
+    // If we're transitioning to a NEW skill this session, show the lesson first.
+    if (skillId !== state.currentSkillId && !state.introducedSkills.has(skillId)) {
+      return showLessonForSkill(skillId);
+    }
+    state.currentSkillId = skillId;
+    $("#topicPicker").value = skillId;
+
     $("#questionBox").innerHTML = '<span class="spinner"></span> Loading question...';
     $("#questionWrap").classList.remove("hidden");
     $("#feedbackBox").classList.add("hidden");
