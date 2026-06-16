@@ -584,8 +584,68 @@
     .navlink{padding:13px 12px}
   }
 </style>
+<style id="war-gate-css">
+  .war-gate{position:fixed;inset:0;z-index:9999;background:radial-gradient(120% 80% at 50% 0%, rgba(255,106,31,.14), #0A0A0B 60%);display:grid;place-items:center;padding:24px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+  .war-gate-box{background:#101012;border:1px solid rgba(255,106,31,.32);border-radius:18px;padding:32px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 22px 60px -20px rgba(0,0,0,.7)}
+  .war-gate-logo{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#FF6A1F,#C24700);display:grid;place-items:center;margin:0 auto 14px;color:#fff;font-weight:900;font-size:22px;box-shadow:0 8px 20px -10px #FF6A1F}
+  .war-gate-pre{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#FF8A4D;font-weight:800;margin-bottom:4px}
+  .war-gate h1{font-size:24px;margin:0 0 6px;color:#F4F4F5;font-weight:800;letter-spacing:-.01em}
+  .war-gate p{color:#9A9AA2;font-size:13.5px;margin:0 0 20px}
+  .war-gate input{width:100%;background:#16161A;border:1px solid rgba(255,106,31,.22);border-radius:12px;padding:14px;font-size:22px;letter-spacing:10px;text-align:center;color:#F4F4F5;font-family:inherit;-webkit-appearance:none;box-sizing:border-box}
+  .war-gate input:focus{outline:none;border-color:#FF6A1F}
+  .war-gate button{width:100%;margin-top:12px;background:#FF6A1F;color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;letter-spacing:.04em;cursor:pointer;transition:.13s;font-family:inherit}
+  .war-gate button:hover{background:#FF8A4D}
+  .war-gate button:disabled{opacity:.6;cursor:default}
+  .war-gate .err{color:#F0584F;font-size:12.5px;margin-top:10px;font-weight:600;min-height:18px}
+  body.war-locked{overflow:hidden}
+  body.war-locked > *:not(.war-gate){visibility:hidden;pointer-events:none}
+</style>
 </head>
-<body>
+<body class="war-locked">
+
+<div class="war-gate" id="warGate" role="dialog" aria-modal="true" aria-label="Warriors Training sign in">
+  <div class="war-gate-box">
+    <div class="war-gate-logo">W</div>
+    <div class="war-gate-pre">Warriors Training</div>
+    <h1>Sign in</h1>
+    <p>Enter the team PIN to continue.</p>
+    <input id="warPin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••" />
+    <div class="err" id="warErr"></div>
+    <button id="warGo" type="button">Unlock</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var PIN='0626';
+  var KEY='warriors_unlocked_v1';
+  var gate=document.getElementById('warGate');
+  if (localStorage.getItem(KEY)==='1') {
+    document.body.classList.remove('war-locked');
+    if(gate) gate.style.display='none';
+    return;
+  }
+  var pin=document.getElementById('warPin');
+  var err=document.getElementById('warErr');
+  var go=document.getElementById('warGo');
+  setTimeout(function(){ try{pin.focus();}catch(e){} }, 80);
+  function tryUnlock(){
+    var v=(pin.value||'').trim();
+    if(!v) return;
+    err.textContent='';
+    if(v===PIN){
+      localStorage.setItem(KEY,'1');
+      gate.style.display='none';
+      document.body.classList.remove('war-locked');
+    } else {
+      err.textContent='Wrong PIN — try again.';
+      pin.value=''; pin.focus();
+    }
+  }
+  go.addEventListener('click', tryUnlock);
+  pin.addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+})();
+</script>
 
 <div class="topbar">
   <div class="brand" id="brand-btn">
