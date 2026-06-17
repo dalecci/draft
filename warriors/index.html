@@ -1018,19 +1018,11 @@ function render() {
 
 function welcomeHero() {
   const copy = state.settings.welcome_copy || 'Welcome to your training portal.';
-  const wid = state.settings.welcome_video_youtube_id;
   const hero = el('div', { class: 'h-hero' });
   hero.innerHTML = `<h1>Welcome, ${esc(state.player.name.split(/\s+/)[0])}.</h1><p>${esc(copy)}</p>`;
-  if (wid) {
-    const w = el('div', { class: 'yt-wrap welcome-hero-vid', style: 'aspect-ratio:16/9;margin-top:18px;border-radius:14px;overflow:hidden;background:#000;position:relative;box-shadow:0 12px 36px -12px rgba(0,0,0,.6)' });
-    const params = 'autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1&fs=0&loop=1&playlist=' + esc(wid);
-    w.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(wid)}?${params}" allow="autoplay;encrypted-media;picture-in-picture" frameborder="0" style="position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none"></iframe><div style="position:absolute;inset:0;pointer-events:none"></div>`;
-    hero.append(w);
-  } else {
-    const ph = el('div', { class: 'empty', style: 'margin-top:16px;border:1px dashed var(--border);border-radius:12px;padding:24px' });
-    ph.innerHTML = '<div class="ic">📹</div><h3>Welcome video coming soon</h3><p>Coach Dale is filming the kickoff message. Check back shortly.</p>';
-    hero.append(ph);
-  }
+  const w = el('div', { class: 'welcome-hero-vid', style: 'aspect-ratio:16/9;margin-top:18px;border-radius:14px;overflow:hidden;background:#000;position:relative;box-shadow:0 12px 36px -12px rgba(0,0,0,.6)' });
+  w.innerHTML = `<video autoplay muted loop playsinline preload="auto" disablepictureinpicture x-webkit-airplay="deny" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0;display:block;pointer-events:none" src="welcome.mp4"></video>`;
+  hero.append(w);
   return hero;
 }
 
