@@ -1022,8 +1022,9 @@ function welcomeHero() {
   const hero = el('div', { class: 'h-hero' });
   hero.innerHTML = `<h1>Welcome, ${esc(state.player.name.split(/\s+/)[0])}.</h1><p>${esc(copy)}</p>`;
   if (wid) {
-    const w = el('div', { class: 'yt-wrap', style: 'aspect-ratio:16/9;margin-top:18px;border-radius:12px;overflow:hidden;background:#000;position:relative' });
-    w.innerHTML = `<iframe src="https://www.youtube.com/embed/${esc(wid)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`;
+    const w = el('div', { class: 'yt-wrap welcome-hero-vid', style: 'aspect-ratio:16/9;margin-top:18px;border-radius:14px;overflow:hidden;background:#000;position:relative;box-shadow:0 12px 36px -12px rgba(0,0,0,.6)' });
+    const params = 'autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&disablekb=1&fs=0&loop=1&playlist=' + esc(wid);
+    w.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${esc(wid)}?${params}" allow="autoplay;encrypted-media;picture-in-picture" frameborder="0" style="position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none"></iframe><div style="position:absolute;inset:0;pointer-events:none"></div>`;
     hero.append(w);
   } else {
     const ph = el('div', { class: 'empty', style: 'margin-top:16px;border:1px dashed var(--border);border-radius:12px;padding:24px' });
