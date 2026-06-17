@@ -1657,6 +1657,24 @@
     if (!dragId) return;
     const el = renderedEls[dragId];
     if (el) el.classList.remove('dragging');
+
+    // TAP detected (no path recorded = finger didn't move) on a player → instant pass
+    if (!recordingPath && dragId !== 'ball') {
+      const ent = state.entities[dragId];
+      if (ent && ent.type !== 'ball' && state.ballHolder !== dragId) {
+        state.ballHolder = dragId;
+        const ball = state.entities.ball;
+        if (ball) { ball.x = ent.x; ball.y = ent.y; }
+        delete state.pendingPaths.ball;
+        renderAll();
+        const displayName = (state.showNames && state.playerNames[dragId]) ? state.playerNames[dragId] : dragId;
+        toast(`Ball → ${displayName}`);
+      }
+      dragId = null; dragOffset = null; dragStartPos = null;
+      recordingPath = null; ballFollowOffset = null; ballFollowStartPos = null; ballFollowPath = null;
+      return;
+    }
+
     if (recordingPath && recordingPath.length >= 2) {
       const ent = state.entities[dragId];
       const last = recordingPath[recordingPath.length - 1];
