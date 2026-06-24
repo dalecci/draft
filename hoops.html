@@ -3584,7 +3584,17 @@ const SMART_RULES = { minFullQ: 2, minSitQ: 1 };
 function smartLuLoad() {
   try {
     const raw = lsGet(SMART_LU_LS_KEY);
-    if (!raw) return luDefault();
+    // No saved Smart Lineup yet → seed from the main Lineup Tool so the rules
+    // engine has something to chew on immediately. Once the user edits, edits
+    // get saved under SMART_LU_LS_KEY and the two lineups diverge.
+    if (!raw) {
+      const seed = luLoad();
+      const out = luDefault();
+      for (const q of LU_QUARTERS) {
+        if (seed && seed[q]) for (const s of LU_SLOTS) if (seed[q][s]) out[q][s] = seed[q][s];
+      }
+      return out;
+    }
     const parsed = JSON.parse(raw);
     const out = luDefault();
     for (const q of LU_QUARTERS) {
