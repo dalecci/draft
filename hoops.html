@@ -3908,14 +3908,18 @@ async function printLineup() {
   doc.text(`Warriors  ·  ${dateStr}`, W / 2, M + 36, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
-  // 2x2 grid of quarters
+  // 2x2 grid of quarters, with room reserved at the bottom for the usage summary
+  const usageHeight = 110;
   const gridTop = M + 58;
-  const gridBottom = H - M;
+  const gridBottom = H - M - usageHeight;
   const gridW = W - 2 * M;
   const gridH = gridBottom - gridTop;
   const gap = 14;
   const cellW = (gridW - gap) / 2;
   const cellH = (gridH - gap) / 2;
+
+  // Pre-compute the quarter-count for each player (1.0 per solo slot, 0.5 per pair half)
+  const fmtQ = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(1)) + 'Q';
 
   for (let i = 0; i < LU_QUARTERS.length; i++) {
     const q = LU_QUARTERS[i];
@@ -3966,23 +3970,33 @@ async function printLineup() {
       doc.setTextColor(80, 80, 80);
       doc.text(sl, x + 26, textY - 1, { align: 'center' });
 
-      // Player name(s)
+      // Player name(s) + quarter-count suffix
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
+      const renderNameWithCount = (pid, baseY, isHalfA, isHalfB) => {
+        const label = playerLabelFromId(pid) + (isHalfA || isHalfB ? '  ½' : '');
+        const totalQ = luUsage(lu, pid);
+        const suffix = `  ·  ${fmtQ(totalQ)}`;
+        doc.setFont('helvetica', 'normal');
+        doc.text(label, x + 52, baseY, { maxWidth: cellW - 120 });
+        // Quarter count tag on the right side of the row
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(110, 110, 110);
+        doc.text(fmtQ(totalQ), x + cellW - 14, baseY, { align: 'right' });
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+      };
       if (!v) {
         doc.setFont('helvetica', 'italic');
         doc.setTextColor(170, 170, 170);
         doc.text('—', x + 52, textY);
       } else if (typeof v === 'string') {
-        doc.setFont('helvetica', 'normal');
-        doc.text(playerLabelFromId(v), x + 52, textY, { maxWidth: cellW - 66 });
+        renderNameWithCount(v, textY, false, false);
       } else if (v.a && v.b) {
-        doc.setFont('helvetica', 'normal');
-        const aLbl = playerLabelFromId(v.a) + '  ½';
-        const bLbl = playerLabelFromId(v.b) + '  ½';
-        doc.text(aLbl, x + 52, textY - 6, { maxWidth: cellW - 66 });
+        renderNameWithCount(v.a, textY - 6, true, false);
         doc.setTextColor(110, 110, 110);
-        doc.text(bLbl, x + 52, textY + 7, { maxWidth: cellW - 66 });
+        renderNameWithCount(v.b, textY + 7, false, true);
       }
 
       // Row separator
@@ -3991,6 +4005,66 @@ async function printLineup() {
         doc.setLineWidth(0.5);
         doc.line(x + 10, rowY + lineH, x + cellW - 10, rowY + lineH);
       }
+    }
+  }
+
+  // Player Usage summary (sorted by quarter count desc)
+  const usageRows = state.players
+    .map(p => ({ p, q: luUsage(lu, p.id) }))
+    .filter(r => r.q > 0)
+    .sort((a, b) => b.q - a.q || a.p.name.localeCompare(b.p.name));
+
+  const uTop = gridBottom + gap;
+  const uH = usageHeight - 8;
+  doc.setDrawColor(120, 120, 120);
+  doc.setLineWidth(1);
+  doc.roundedRect(M, uTop, gridW, uH, 8, 8);
+  doc.setFillColor(28, 28, 28);
+  doc.roundedRect(M, uTop, gridW, 22, 8, 8, 'F');
+  doc.rect(M, uTop + 8, gridW, 14, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text('PLAYER USAGE', M + 14, uTop + 15);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(200, 200, 200);
+  doc.text(`${usageRows.length} player${usageRows.length === 1 ? '' : 's'} in rotation`, M + gridW - 14, uTop + 15, { align: 'right' });
+  doc.setTextColor(0, 0, 0);
+
+  if (usageRows.length === 0) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text('No players assigned yet.', M + 14, uTop + 50);
+  } else {
+    // 4-column layout
+    const cols = 4;
+    const colW = (gridW - 20) / cols;
+    const rowH = 14;
+    const startX = M + 10;
+    const startY = uTop + 36;
+    for (let i = 0; i < usageRows.length; i++) {
+      const { p, q } = usageRows[i];
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx = startX + col * colW;
+      const cy = startY + row * rowH;
+      // Highlight outliers in subtle color (too many or too few)
+      const isHigh = q >= 4;
+      const isLow = q <= 1;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      if (isHigh) doc.setTextColor(180, 100, 40);
+      else if (isLow) doc.setTextColor(150, 150, 150);
+      else doc.setTextColor(40, 40, 40);
+      const qLbl = fmtQ(q).padStart(4, ' ');
+      doc.text(qLbl, cx, cy);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const nm = (p.jersey_number ? `#${p.jersey_number} ` : '') + p.name.split(' ')[0];
+      doc.text(nm, cx + 26, cy, { maxWidth: colW - 32 });
     }
   }
 
