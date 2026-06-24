@@ -764,6 +764,72 @@
 
   /* ---------- Lineup tool ---------- */
   .lu-hint { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin: 4px 0 14px; }
+
+  /* ----- Smart Lineup ----- */
+  .smart-section {
+    background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px; margin: 0 0 14px;
+  }
+  .smart-section-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .smart-section-head.good { border-bottom-color: rgba(95,224,134,0.4); }
+  .smart-section-head.warn { border-bottom-color: rgba(212,175,55,0.4); }
+  .smart-section-head.bad  { border-bottom-color: rgba(240,87,79,0.45); }
+  .smart-section-title { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-2); }
+  .smart-section-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .smart-section-head.good .smart-section-sub { color: #6bd49a; }
+  .smart-section-head.warn .smart-section-sub { color: var(--gold-2); }
+  .smart-section-head.bad  .smart-section-sub { color: #f0746c; }
+
+  .smart-avail-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .smart-avail-chip {
+    padding: 6px 10px; border-radius: 16px; font-size: 11px; letter-spacing: 0.06em; font-weight: 600;
+    border: 1px solid var(--border-strong); background: rgba(95,224,134,0.08); color: #6bd49a;
+    cursor: pointer; transition: all 0.12s;
+  }
+  .smart-avail-chip.in:hover { background: rgba(95,224,134,0.18); border-color: rgba(95,224,134,0.5); }
+  .smart-avail-chip.out {
+    background: rgba(60,60,60,0.4); color: var(--muted-2); text-decoration: line-through;
+    border-color: var(--border);
+  }
+  .smart-avail-chip.out:hover { background: rgba(80,80,80,0.5); color: var(--muted); }
+
+  .smart-top-alert {
+    background: rgba(240,87,79,0.10); border: 1px solid rgba(240,87,79,0.4);
+    color: #f0746c; padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; margin-bottom: 8px; letter-spacing: 0.04em;
+  }
+
+  .smart-player-list { display: grid; gap: 5px; }
+  .smart-player-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 12px;
+    padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02); font-size: 12px;
+  }
+  .smart-player-row.ok       { border-color: rgba(95,224,134,0.28); }
+  .smart-player-row.warning  { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.05); }
+  .smart-player-row.violation{ border-color: rgba(240,87,79,0.5);   background: rgba(240,87,79,0.07); }
+  .smart-player-row .spr-name { font-weight: 700; color: var(--ink); }
+  .smart-player-row.violation .spr-name { color: #f0746c; }
+  .smart-player-row.warning .spr-name { color: var(--gold-2); }
+  .smart-player-row.ok .spr-name { color: #6bd49a; }
+  .smart-player-row .spr-counts { display: flex; gap: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+  .smart-player-row .spr-counts span { font-variant-numeric: tabular-nums; }
+  .smart-player-row .spr-pair { color: var(--gold-2); }
+  .smart-player-row .spr-msg {
+    grid-column: 1 / -1; font-size: 11px; color: var(--muted-2); letter-spacing: 0.04em;
+  }
+  .smart-player-row.violation .spr-msg { color: #f0746c; }
+  .smart-player-row.warning .spr-msg { color: var(--gold-2); }
+
+  .lu-slot.smart-bad,
+  .lu-chip.smart-bad {
+    border-color: rgba(240,87,79,0.55) !important;
+    background: rgba(240,87,79,0.10) !important;
+    color: #f0746c !important;
+  }
   .lu-bench-card { padding: 14px 14px 10px; margin-bottom: 16px; }
   .lu-bench-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
   .lu-bench-head h3 { margin: 0; }
@@ -1212,6 +1278,7 @@
     <button class="nav-btn" id="nav-ratings">Ratings</button>
     <a class="nav-btn" href="/">Plays</a>
     <button class="nav-btn" id="nav-lineup">Lineup Tool</button>
+    <button class="nav-btn" id="nav-smart">Smart Lineup</button>
   </header>
 
   <div id="toast-root"></div>
@@ -2049,6 +2116,7 @@ function render() {
   else if (state.view === 'roster') renderRoster(root);
   else if (state.view === 'workout') renderWorkout(root);
   else if (state.view === 'lineup') renderLineup(root);
+  else if (state.view === 'smart-lineup') renderSmartLineup(root);
   else if (state.view === 'ratings') renderRatings(root);
 }
 
@@ -3505,6 +3573,393 @@ function tryUnlockRatings() {
   }
 }
 
+/* ============================================================
+   SMART LINEUP — separate tool with rules-engine validation.
+   Stores its own lineup data + an "unavailable today" set.
+   ============================================================ */
+const SMART_LU_LS_KEY = 'hoops-smart-lineup-v1';
+const SMART_AVAIL_LS_KEY = 'hoops-smart-availability-v1';
+const SMART_RULES = { minFullQ: 2, minSitQ: 1 };
+
+function smartLuLoad() {
+  try {
+    const raw = lsGet(SMART_LU_LS_KEY);
+    if (!raw) return luDefault();
+    const parsed = JSON.parse(raw);
+    const out = luDefault();
+    for (const q of LU_QUARTERS) {
+      if (parsed && parsed[q]) for (const s of LU_SLOTS) if (parsed[q][s]) out[q][s] = parsed[q][s];
+    }
+    return out;
+  } catch (e) { return luDefault(); }
+}
+function smartLuSave(lu) { lsSet(SMART_LU_LS_KEY, JSON.stringify(lu)); }
+function smartAvailLoad() {
+  try {
+    const raw = lsGet(SMART_AVAIL_LS_KEY);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw));
+  } catch (e) { return new Set(); }
+}
+function smartAvailSave(set) { lsSet(SMART_AVAIL_LS_KEY, JSON.stringify([...set])); }
+
+/* For each available player, compute their counts + reachability:
+   fullQ        - full solo quarters (counts toward MIN_FULL_Q)
+   pairCount    - pair halves
+   presentIn    - Set of quarters with any presence
+   absentCount  - 4 - presentIn.size
+   status       - 'ok' | 'warning' | 'violation'
+   msgs         - human-readable messages
+
+   Plus top-level: capacityOk, unavailablePlaced, quarterOverfilled. */
+function validateSmartLineup(lu, availablePlayers) {
+  const MIN = SMART_RULES.minFullQ;
+  const SIT = SMART_RULES.minSitQ;
+  const TOTAL = LU_QUARTERS.length;
+  const perPlayer = {};
+  for (const p of availablePlayers) {
+    perPlayer[p.id] = { fullQ: 0, pairCount: 0, presentIn: new Set(), msgs: [], status: 'ok' };
+  }
+
+  for (const q of LU_QUARTERS) {
+    for (const s of LU_SLOTS) {
+      const v = lu[q][s];
+      if (!v) continue;
+      if (typeof v === 'string') {
+        if (perPlayer[v]) { perPlayer[v].fullQ++; perPlayer[v].presentIn.add(q); }
+      } else if (v.a && v.b) {
+        if (perPlayer[v.a]) { perPlayer[v.a].pairCount++; perPlayer[v.a].presentIn.add(q); }
+        if (perPlayer[v.b]) { perPlayer[v.b].pairCount++; perPlayer[v.b].presentIn.add(q); }
+      }
+    }
+  }
+
+  // Count empty solo slots in quarters where this player is not present
+  const emptySolosLeft = (playerId) => {
+    let n = 0;
+    for (const q of LU_QUARTERS) {
+      const present = LU_SLOTS.some(s => {
+        const v = lu[q][s];
+        if (!v) return false;
+        if (typeof v === 'string') return v === playerId;
+        return v.a === playerId || v.b === playerId;
+      });
+      if (present) continue;
+      n += LU_SLOTS.filter(s => !lu[q][s]).length;
+    }
+    return n;
+  };
+
+  for (const p of availablePlayers) {
+    const ps = perPlayer[p.id];
+    ps.absentCount = TOTAL - ps.presentIn.size;
+
+    if (ps.fullQ < MIN) {
+      const reach = emptySolosLeft(p.id);
+      if (ps.fullQ + reach < MIN) {
+        ps.msgs.push(`Only ${ps.fullQ}/${MIN} full Q — no empty solo slots remain in their open quarters`);
+        ps.status = 'violation';
+      } else {
+        ps.msgs.push(`${ps.fullQ}/${MIN} full Q`);
+        if (ps.status === 'ok') ps.status = 'warning';
+      }
+    }
+
+    if (ps.absentCount < SIT) {
+      ps.msgs.push(`Sits ${ps.absentCount} Q — needs to sit ≥ ${SIT}`);
+      ps.status = 'violation';
+    }
+  }
+
+  // Top-level: capacity check
+  const N = availablePlayers.length;
+  const capacityOk = N * MIN <= TOTAL * LU_SLOTS.length;
+
+  // Top-level: unavailable players placed in slots
+  const availIds = new Set(availablePlayers.map(p => p.id));
+  const unavailablePlaced = [];
+  for (const q of LU_QUARTERS) {
+    for (const s of LU_SLOTS) {
+      const v = lu[q][s];
+      if (!v) continue;
+      const ids = typeof v === 'string' ? [v] : [v.a, v.b];
+      for (const id of ids) {
+        if (!availIds.has(id)) unavailablePlaced.push({ q, s, id });
+      }
+    }
+  }
+
+  // Top-level: quarter overfilled (shouldn't happen via UI but just in case)
+  const quarterOverfilled = LU_QUARTERS.filter(q => LU_SLOTS.filter(s => lu[q][s]).length > 5);
+
+  return { perPlayer, capacityOk, unavailablePlaced, quarterOverfilled, N, MIN };
+}
+
+function renderSmartLineup(root) {
+  const lu = smartLuLoad();
+  const unavailSet = smartAvailLoad();
+  const allActive = state.players.filter(p => p.active !== false);
+  const available = allActive.filter(p => !unavailSet.has(p.id));
+  const v = validateSmartLineup(lu, available);
+
+  const wrap = el('div');
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
+    el('h2', { style: 'margin:0' }, 'Smart Lineup'),
+  ));
+
+  wrap.append(el('div', { class: 'lu-hint' },
+    `Rules: each available player must have ≥ ${v.MIN} full solo quarters and sit at least 1 full quarter. Pair halves don't count toward the full-Q minimum.`
+  ));
+
+  wrap.append(el('div', { class: 'lu-actions' },
+    el('button', { class: 'nav-btn', onclick: () => {
+      const cur = luLoad();
+      smartLuSave(cur);
+      toast('Copied from Lineup Tool');
+      render();
+    }}, '↓ From Lineup Tool'),
+    el('button', { class: 'nav-btn', onclick: () => {
+      if (!confirm('Replace your Lineup Tool with this Smart Lineup?')) return;
+      luSave(smartLuLoad());
+      toast('Pushed to Lineup Tool');
+    }}, '↑ To Lineup Tool'),
+    el('button', { class: 'nav-btn', onclick: () => {
+      if (!confirm('Reset all quarters?')) return;
+      smartLuSave(luDefault());
+      render();
+    }}, 'Reset'),
+  ));
+
+  // Availability chips
+  const avSection = el('div', { class: 'smart-section' });
+  const inN = available.length;
+  avSection.append(el('div', { class: 'smart-section-head' },
+    el('div', { class: 'smart-section-title' }, 'Availability today'),
+    el('div', { class: 'smart-section-sub' }, `${inN} of ${allActive.length} available`),
+  ));
+  const chips = el('div', { class: 'smart-avail-chips' });
+  for (const p of allActive) {
+    const isOut = unavailSet.has(p.id);
+    chips.append(el('button', {
+      class: `smart-avail-chip ${isOut ? 'out' : 'in'}`,
+      title: isOut ? 'Tap to mark available' : 'Tap to mark unavailable',
+      onclick: () => {
+        const s = smartAvailLoad();
+        if (s.has(p.id)) s.delete(p.id); else s.add(p.id);
+        smartAvailSave(s);
+        render();
+      },
+    }, isOut ? '✕ ' : '', (p.jersey_number ? `#${p.jersey_number} ` : ''), shortName(p.name)));
+  }
+  avSection.append(chips);
+  wrap.append(avSection);
+
+  // Top-level alerts
+  const topAlerts = [];
+  if (!v.capacityOk) {
+    topAlerts.push(`${v.N} available players × ${v.MIN} full quarters = ${v.N * v.MIN} solo slots, but the game only has ${LU_QUARTERS.length * LU_SLOTS.length}. Impossible to satisfy.`);
+  }
+  if (v.unavailablePlaced.length) {
+    const names = v.unavailablePlaced.map(x => {
+      const p = state.players.find(pp => pp.id === x.id);
+      return p ? shortName(p.name) : 'Unknown';
+    });
+    topAlerts.push(`Unavailable players are placed: ${[...new Set(names)].join(', ')}`);
+  }
+  if (v.quarterOverfilled.length) topAlerts.push(`${v.quarterOverfilled.join(', ')} over capacity`);
+
+  // Validation panel
+  const valWrap = el('div', { class: 'smart-section' });
+  const okCount = available.filter(p => v.perPlayer[p.id].status === 'ok').length;
+  const headStatusCls = topAlerts.length ? 'bad' : (okCount === inN && inN > 0 ? 'good' : 'warn');
+  valWrap.append(el('div', { class: `smart-section-head ${headStatusCls}` },
+    el('div', { class: 'smart-section-title' }, 'Rules check'),
+    el('div', { class: 'smart-section-sub' },
+      topAlerts.length ? '✕ Violations' : (inN === 0 ? '— No players' : (okCount === inN ? '✓ All players OK' : `${okCount}/${inN} players OK`))),
+  ));
+  if (topAlerts.length) {
+    for (const a of topAlerts) valWrap.append(el('div', { class: 'smart-top-alert' }, a));
+  }
+  if (inN > 0) {
+    const playerList = el('div', { class: 'smart-player-list' });
+    // Sort: violations first, then warnings, then ok, then alphabetically
+    const order = { violation: 0, warning: 1, ok: 2 };
+    const rows = available.map(p => ({ p, ps: v.perPlayer[p.id] }));
+    rows.sort((a, b) => order[a.ps.status] - order[b.ps.status] || a.p.name.localeCompare(b.p.name));
+    for (const { p, ps } of rows) {
+      playerList.append(el('div', { class: `smart-player-row ${ps.status}` },
+        el('div', { class: 'spr-name' }, (p.jersey_number ? `#${p.jersey_number} ` : '') + shortName(p.name)),
+        el('div', { class: 'spr-counts' },
+          el('span', {}, `${ps.fullQ} full`),
+          ps.pairCount ? el('span', { class: 'spr-pair' }, `${ps.pairCount}× ½`) : null,
+          el('span', {}, `sits ${ps.absentCount}`),
+        ),
+        ps.msgs.length ? el('div', { class: 'spr-msg' }, ps.msgs.join(' · ')) : null,
+      ));
+    }
+    valWrap.append(playerList);
+  }
+  wrap.append(valWrap);
+
+  // 2x2 grid of quarters
+  const grid = el('div', { class: 'lu-quarters' });
+  for (const q of LU_QUARTERS) {
+    const filled = LU_SLOTS.filter(s => lu[q][s]).length;
+    const isFull = filled >= LU_SLOTS.length;
+    const qCard = el('div', { class: `lu-q${isFull ? ' full' : ''}` });
+    qCard.append(el('div', { class: 'lu-q-head' },
+      el('div', { class: 'lu-q-title' }, q),
+      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${filled} / ${LU_SLOTS.length}`),
+    ));
+    const slotsWrap = el('div', { class: 'lu-slots' });
+    for (const sl of LU_SLOTS) {
+      const val = lu[q][sl];
+      const isPair = val && typeof val === 'object' && val.a && val.b;
+      // Slot turns red if it contains an unavailable player
+      const ids = !val ? [] : (typeof val === 'string' ? [val] : [val.a, val.b]);
+      const hasUnavail = ids.some(id => unavailSet.has(id));
+      const slotEl = el('div', { class: `lu-slot${val ? (isPair ? ' pair' : '') : ' empty'}${hasUnavail ? ' smart-bad' : ''}` });
+      if (!val) {
+        slotEl.append('Tap to pick');
+      } else if (typeof val === 'string') {
+        const p = state.players.find(x => x.id === val);
+        slotEl.append(buildSmartChip(p, q, sl, false, unavailSet));
+      } else {
+        slotEl.append(buildSmartChip(state.players.find(x => x.id === val.a), q, sl, true, unavailSet));
+        slotEl.append(buildSmartChip(state.players.find(x => x.id === val.b), q, sl, true, unavailSet));
+      }
+      slotEl.addEventListener('click', () => openSmartPickerModal(q, sl));
+      slotsWrap.append(el('div', { class: 'lu-slot-row' },
+        el('div', { class: 'lu-slot-label' }, sl),
+        slotEl,
+      ));
+    }
+    qCard.append(slotsWrap);
+    grid.append(qCard);
+  }
+  wrap.append(grid);
+
+  root.append(wrap);
+}
+
+function buildSmartChip(p, q, sl, isHalf, unavailSet) {
+  if (!p) return el('div', { class: 'lu-chip smart-bad' }, '— missing —');
+  const cls = unavailSet.has(p.id) ? 'lu-chip smart-bad' : 'lu-chip';
+  return el('div', { class: cls },
+    el('div', { class: 'lu-num' }, p.jersey_number || '·'),
+    el('div', { class: 'lu-name' }, shortName(p.name) + (isHalf ? ' ½' : '')),
+  );
+}
+
+function openSmartPickerModal(q, slot) {
+  const lu = smartLuLoad();
+  const unavailSet = smartAvailLoad();
+  const all = state.players.filter(p => p.active !== false);
+  const cur = lu[q][slot];
+
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, `${q} · ${slot}`));
+
+  if (cur) {
+    body.append(el('div', { class: 'modal-actions', style: 'justify-content:flex-start' },
+      el('button', { class: 'nav-btn', onclick: () => {
+        const u = smartLuLoad();
+        u[q][slot] = null;
+        smartLuSave(u);
+        closeModal();
+        render();
+      }}, 'Clear slot'),
+      typeof cur === 'string' ? el('button', { class: 'nav-btn', onclick: () => {
+        closeModal();
+        openSmartPartnerModal(q, slot);
+      }}, '+ Add ½ partner') : null,
+    ));
+  }
+
+  const list = el('div', { class: 'picker-list' });
+  const sorted = [...all].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
+  for (const p of sorted) {
+    const isUnavail = unavailSet.has(p.id);
+    const usage = luUsage(lu, p.id);
+    const usageText = (usage % 1 === 0) ? String(usage) : usage.toFixed(1);
+    const note = isUnavail ? 'Not available today' : `${usageText}/4 Q used`;
+    const row = el('div', { class: `picker-row${isUnavail ? ' disabled' : ''}` },
+      el('div', { class: 'picker-jersey' + (p.jersey_number ? '' : ' no-num') }, p.jersey_number || '·'),
+      el('div', {},
+        el('div', { class: 'picker-name' }, p.name),
+        el('div', { class: 'picker-note' }, note),
+      ),
+    );
+    if (!isUnavail) {
+      row.addEventListener('click', () => {
+        const u = smartLuLoad();
+        // Remove this player from any other slot in the same quarter
+        for (const s of LU_SLOTS) {
+          if (s === slot) continue;
+          const v = u[q][s];
+          if (!v) continue;
+          if (typeof v === 'string') { if (v === p.id) u[q][s] = null; }
+          else {
+            if (v.a === p.id && v.b === p.id) u[q][s] = null;
+            else if (v.a === p.id) u[q][s] = v.b;
+            else if (v.b === p.id) u[q][s] = v.a;
+          }
+        }
+        u[q][slot] = p.id;
+        smartLuSave(u);
+        closeModal();
+        render();
+      });
+    }
+    list.append(row);
+  }
+  body.append(list);
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+  ));
+  openModal(body);
+}
+
+function openSmartPartnerModal(q, slot) {
+  const lu = smartLuLoad();
+  const cur = lu[q][slot];
+  if (!cur || typeof cur !== 'string') return;
+  const unavailSet = smartAvailLoad();
+  const all = state.players.filter(p => p.active !== false && p.id !== cur);
+
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, `${q} · ${slot} · Add ½ partner`));
+  body.append(el('div', { class: 'picker-section' }, 'Each plays half of this quarter (counts 0.5 each).'));
+
+  const list = el('div', { class: 'picker-list' });
+  for (const p of all) {
+    const isUnavail = unavailSet.has(p.id);
+    const row = el('div', { class: `picker-row${isUnavail ? ' disabled' : ''}` },
+      el('div', { class: 'picker-jersey' + (p.jersey_number ? '' : ' no-num') }, p.jersey_number || '·'),
+      el('div', {},
+        el('div', { class: 'picker-name' }, p.name),
+        el('div', { class: 'picker-note' }, isUnavail ? 'Not available today' : ''),
+      ),
+    );
+    if (!isUnavail) {
+      row.addEventListener('click', () => {
+        const u = smartLuLoad();
+        u[q][slot] = { a: cur, b: p.id };
+        smartLuSave(u);
+        closeModal();
+        render();
+      });
+    }
+    list.append(row);
+  }
+  body.append(list);
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: () => { closeModal(); openSmartPickerModal(q, slot); } }, 'Back'),
+  ));
+  openModal(body);
+}
+
 function renderRatings(root) {
   const wrap = el('div');
   wrap.append(el('div', { class: 'game-header' },
@@ -4894,6 +5349,7 @@ $('#nav-games').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
 $('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
 $('#nav-lineup').onclick = () => { state.view = 'lineup'; render(); };
+$('#nav-smart').onclick = () => { state.view = 'smart-lineup'; render(); };
 $('#nav-ratings').onclick = () => { state.view = 'ratings'; render(); };
 $('#sync-pill').onclick = () => openSyncCenter();
 
