@@ -310,7 +310,7 @@
     </div>
     <div class="goal" id="goalCard">
       <div class="row">
-        <div><div class="big" id="goalSpent">$0</div><div class="lbl">spent of $<span id="goalTarget">4,000</span> goal</div></div>
+        <div><div class="big" id="goalSpent">$0</div><div class="lbl">spent of $<span id="goalTarget">2,435</span> budget</div></div>
         <div class="meta" id="goalMeta"></div>
       </div>
       <div class="bar"><i id="goalBar" style="width:0%"></i></div>
@@ -336,7 +336,7 @@
     <section id="vTrends" class="view hide">
       <div class="tcard">
         <h3>Total spend by month</h3>
-        <div class="sub">vs $<span class="goalref">4,000</span> goal line</div>
+        <div class="sub">vs $<span class="goalref">2,435</span> budget line</div>
         <div class="mbar" id="trendBars"></div>
       </div>
       <div class="tcard">
@@ -502,6 +502,9 @@ function celebrate(cols){
     s.style.animationDelay=(n*7)+'ms'; s.style.animationDuration=(950+Math.random()*500)+'ms';
     wrap.appendChild(s); const node=s; setTimeout(()=>node.remove(),1700+n*7); }
 }
+// Monthly variable budget = sum of all spending envelopes (excludes funds & fixed bills)
+function totalBudget(){ return STATE.envelopes.filter(e=>e.kind!=='fund'&&e.kind!=='bill')
+  .reduce((s,e)=>s+Number(e.monthly_budget||0),0); }
 
 /* ===================== PIN GATE ===================== */
 (function pin(){
@@ -528,8 +531,6 @@ function celebrate(cols){
 /* ===================== BOOT / DATA ===================== */
 async function boot(){
   if(STATE.ready) return; STATE.ready=true;
-  $('#goalTarget').textContent = CONFIG.GOAL.toLocaleString();
-  $$('.goalref').forEach(e=>e.textContent=CONFIG.GOAL.toLocaleString());
   $('#ver').textContent = 'J3 Budget '+CONFIG.VERSION;
   $('#addDate').value = todayISO();
   // cache-first paint
@@ -586,15 +587,16 @@ function renderAll(){ renderHeader(); renderHome(); renderTrends(); renderSettin
 
 function renderHeader(){
   $('#mLabel').textContent = monthName(STATE.month);
+  const GOAL = totalBudget() || CONFIG.GOAL;
+  $('#goalTarget').textContent = GOAL.toLocaleString();
   const total = txnsInMonth(STATE.month).reduce((s,t)=>s+Number(t.amount),0);
   animateValue($('#goalSpent'), total);
-  const p = Math.min(1, total/CONFIG.GOAL);
+  const p = Math.min(1, total/GOAL);
   $('#goalBar').style.width = (p*100)+'%';
-  $('#goalBar').style.background = barColor(total/CONFIG.GOAL);
-  const remain = CONFIG.GOAL-total;
+  const remain = GOAL-total;
   $('#goalMeta').innerHTML = remain>=0
-    ? `<b style="color:var(--grn)">${money(remain)}</b><br>under goal`
-    : `<b style="color:var(--red)">${money(-remain)}</b><br>over goal`;
+    ? `<b style="color:var(--grn)">${money(remain)}</b><br>under budget`
+    : `<b style="color:var(--red)">${money(-remain)}</b><br>over budget`;
   // days remaining — only meaningful for the current month
   const now=new Date();
   const isCur = now.getMonth()===STATE.month.getMonth() && now.getFullYear()===STATE.month.getFullYear();
@@ -672,11 +674,13 @@ function txnRow(t){
 function monthsBack(n){ const arr=[]; const base=new Date(STATE.month.getFullYear(),STATE.month.getMonth(),1);
   for(let i=n-1;i>=0;i--){ arr.push(new Date(base.getFullYear(),base.getMonth()-i,1)); } return arr; }
 function renderTrends(){
+  const GOAL = totalBudget() || CONFIG.GOAL;
+  $$('.goalref').forEach(e=>e.textContent=GOAL.toLocaleString());
   const months=monthsBack(6);
   const totals=months.map(m=>txnsInMonth(m).reduce((s,t)=>s+Number(t.amount),0));
-  const max=Math.max(CONFIG.GOAL, ...totals, 1);
+  const max=Math.max(GOAL, ...totals, 1);
   $('#trendBars').innerHTML = months.map((m,i)=>{
-    const h=(totals[i]/max)*100; const over=totals[i]>CONFIG.GOAL;
+    const h=(totals[i]/max)*100; const over=totals[i]>GOAL;
     return `<div class="col ${over?'over':''}"><div class="v">${totals[i]?money(totals[i]):''}</div>
       <div class="b" style="height:${Math.max(3,h)}%"></div><div class="m">${m.toLocaleDateString(undefined,{month:'short'})}</div></div>`;
   }).join('');
