@@ -308,6 +308,8 @@
     <div class="meta" id="detMeta"></div></div>
     <div class="bar"><i id="detBar" style="width:0%"></i></div>
   </div>
+  <button class="primary" id="detAdd" style="margin-top:0">+ Add a purchase</button>
+  <div class="sectlabel" style="margin:18px 4px 4px">This month</div>
   <div id="detTxns"></div>
 </div>
 
@@ -511,6 +513,7 @@ function openDetail(id){
   $('#detMeta').innerHTML = `${money(spent)} spent<br>of ${money(e.monthly_budget)}`;
   $('#detBar').style.width=Math.min(100,p*100)+'%';
   $('#detBar').style.background=fund?'linear-gradient(90deg,var(--acc),var(--acc2))':barColor(p);
+  $('#detAdd').textContent = '+ Add a purchase to '+e.name;
   const list = txnsInMonth(STATE.month).filter(t=>t.envelope_id===e.id);
   $('#detTxns').innerHTML = list.length ? list.map(txnRow).join('') : '<div class="empty">No expenses logged this month.</div>';
   $$('#detTxns .txn').forEach(el=>el.onclick=()=>{ closeSheet('det'); openEdit(el.dataset.id); });
@@ -713,6 +716,7 @@ function wireUI(){
   });
   $('#addScrim').onclick=()=>closeSheet('add');
   $('#detScrim').onclick=()=>closeSheet('det');
+  $('#detAdd').onclick=()=>{ const env=STATE.selectedEnv; closeSheet('det'); openAdd(); buildChips(env); validate(); };
   $('#addAmt').oninput=validate;
   $$('#whoRow .chip').forEach(c=>c.onclick=()=>setWho(c.dataset.who));
   $('#saveTxn').onclick=saveTxn;
