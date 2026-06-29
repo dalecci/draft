@@ -58,6 +58,8 @@
   .goal .meta{font-size:12px;color:var(--mut);text-align:right}
   .bar{height:9px;border-radius:6px;background:var(--bg2);margin-top:10px;overflow:hidden}
   .bar > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--grn),var(--grn-d));transition:width .4s}
+  .daysleft{text-align:center;font-size:12px;color:var(--mut2);margin-top:9px;font-weight:600}
+  .daysleft b{color:var(--mut)}
 
   /* ---------- Envelopes ---------- */
   main{padding:8px 14px 20px}
@@ -210,6 +212,7 @@
         <div class="meta" id="goalMeta"></div>
       </div>
       <div class="bar"><i id="goalBar" style="width:0%"></i></div>
+      <div class="daysleft" id="daysLeft"></div>
     </div>
   </header>
 
@@ -296,6 +299,7 @@
   </div>
   <button class="primary dis" id="saveTxn">Save</button>
   <button class="ghost hide" id="delTxn">Delete this expense</button>
+  <div id="addRecent"></div>
 </div>
 
 <!-- ENVELOPE DETAIL SHEET -->
@@ -464,6 +468,14 @@ function renderHeader(){
   $('#goalMeta').innerHTML = remain>=0
     ? `<b style="color:var(--grn)">${money(remain)}</b><br>under goal`
     : `<b style="color:var(--red)">${money(-remain)}</b><br>over goal`;
+  // days remaining — only meaningful for the current month
+  const now=new Date();
+  const isCur = now.getMonth()===STATE.month.getMonth() && now.getFullYear()===STATE.month.getFullYear();
+  const lastDay=new Date(STATE.month.getFullYear(),STATE.month.getMonth()+1,0).getDate();
+  const dleft = isCur ? (lastDay-now.getDate()) : null;
+  $('#daysLeft').innerHTML = isCur
+    ? `<b>${dleft}</b> day${dleft===1?'':'s'} left in ${STATE.month.toLocaleDateString(undefined,{month:'long'})}`
+    : '';
 }
 
 function renderHome(){
@@ -475,17 +487,15 @@ function renderHome(){
   $('#fundGrid').innerHTML = funds.map(fundCard).join('');
   $('#billsWrap').classList.toggle('hide', bills.length===0);
   $('#billsList').innerHTML = bills.map(b=>`<div class="b"><span>${b.emoji||'•'} ${b.name}</span><span>${money2(b.monthly_budget)}</span></div>`).join('');
-  $$('#envGrid .env,#fundGrid .env').forEach(el=>el.onclick=()=>openDetail(el.dataset.id));
+  $$('#envGrid .env,#fundGrid .env').forEach(el=>el.onclick=()=>{ STATE.selectedEnv=el.dataset.id; openAdd(); });
 }
 function envCard(e){
   const spent=spentForEnv(e.id,STATE.month), left=e.monthly_budget-spent, p=e.monthly_budget?spent/e.monthly_budget:0;
-  const perDay = left>0 ? left/daysLeftInMonth(STATE.month) : 0;
   return `<div class="env ${left<0?'over':''}" data-id="${e.id}">
     <div class="top"><span class="emoji">${e.emoji||'•'}</span><span class="name">${e.name}</span></div>
     <div class="left">${money(left)}</div>
-    <div class="of">${money(spent)} of ${money(e.monthly_budget)}</div>
+    <div class="of">${left<0?'over by '+money(-left):'left'} · ${money(spent)} of ${money(e.monthly_budget)}</div>
     <div class="ebar"><i style="width:${Math.min(100,p*100)}%;background:${barColor(p)}"></i></div>
-    <div class="day">${left>=0?money(perDay)+'/day left':'over budget'}</div>
   </div>`;
 }
 function fundCard(e){
@@ -496,7 +506,6 @@ function fundCard(e){
     <div class="left" style="color:var(--acc2)">${money(saved)}</div>
     <div class="of">of ${money(e.monthly_budget)} goal this month</div>
     <div class="ebar"><i style="width:${Math.min(100,p*100)}%"></i></div>
-    <div class="day">sinking fund</div>
   </div>`;
 }
 
@@ -648,7 +657,18 @@ function buildChips(sel){
   $('#addChips').innerHTML=STATE.envelopes.filter(e=>e.kind!=='bill').map(e=>
     `<div class="chip ${String(e.id)===String(sel)?'on':''}" data-id="${e.id}">${e.emoji||'•'} ${e.name}</div>`).join('');
   $$('#addChips .chip').forEach(c=>c.onclick=()=>{ STATE.selectedEnv=c.dataset.id;
-    $$('#addChips .chip').forEach(x=>x.classList.toggle('on',x===c)); validate(); });
+    $$('#addChips .chip').forEach(x=>x.classList.toggle('on',x===c)); validate(); renderAddRecent(); });
+  renderAddRecent();
+}
+function renderAddRecent(){
+  const box=$('#addRecent'); const id=STATE.selectedEnv;
+  const e=STATE.envelopes.find(x=>String(x.id)===String(id));
+  const editId=STATE.editing&&STATE.editing.id;
+  const list = e ? txnsInMonth(STATE.month).filter(t=>t.envelope_id===e.id && String(t.id)!==String(editId)) : [];
+  if(!e || !list.length){ box.innerHTML=''; return; }
+  box.innerHTML = `<div class="sectlabel" style="margin:20px 4px 4px">Recent in ${e.name} — tap to edit</div>`
+    + list.slice(0,12).map(txnRow).join('');
+  $$('#addRecent .txn').forEach(el=>el.onclick=()=>openEdit(el.dataset.id));
 }
 function setWho(w){ STATE.who=w; localStorage.setItem('j3b_who',w);
   $$('#whoRow .chip').forEach(c=>c.classList.toggle('on',c.dataset.who===w)); }
