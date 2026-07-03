@@ -10,8 +10,8 @@ const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 if (CLOUD) sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 
-const LS_KEY = 'ascend_state_v1';
-const LS_MIRROR = 'ascend_mirror_v1'; // the "double save" — a second local copy
+const LS_KEY = 'ascend_state_v2';
+const LS_MIRROR = 'ascend_mirror_v2'; // the "double save" — a second local copy
 
 /* ----------------------------- TIME HELPERS ------------------------------ */
 const DAY = 86400000;
@@ -35,7 +35,7 @@ function blankStudent(id, name, avatar) {
     progress: {},   // skillId -> {score, attempts, correct, masteredAt}
     log: [],        // {ts, skillId, unitId, correct, seconds}
     writing: [],    // {ts, promptId, text, result}
-    games: { sprintBest: 0, xp: 0 },
+    games: { sprintBest: 0, xp: 0, coins: 0, streak: { count: 0, last: null }, badges: [], ownedAvatars: [avatar], theme: null, dailies: null, bossCleared: {} },
   };
 }
 
@@ -62,7 +62,13 @@ function seedDemo() {
       }
     });
     stu.log.sort((a, b) => a.ts - b.ts);
-    stu.games = { sprintBest: Math.round(frac * 500) + randInt(20, 90), xp: Math.round(frac * 1800) };
+    stu.games = { sprintBest: Math.round(frac * 500) + randInt(20, 90), xp: Math.round(frac * 1800), coins: Math.round(frac * 200) + 40,
+      streak: { count: Math.max(1, Math.round(frac * 9)), last: dayKey(now()) }, badges: [], ownedAvatars: [stu.avatar], theme: null,
+      dailies: null, bossCleared: frac > 0.6 ? { nso: true } : {} };
+    ensureDailies(stu);
+    // give a couple of demo quests some progress
+    stu.games.dailies.quests.forEach((q, i) => { if (i === 0) { q.progress = q.goal; q.done = true; } });
+    refreshBadges(stu);
   });
   // seed one writing draft for the first student so the Write tab has history
   const sampleText = 'Every 7th grader should learn how to manage their time. First, it helps you finish homework without stress. For example, when I plan my week, I finish earlier and still have time for basketball.\n\nIn addition, this skill builds responsibility. Because students who plan ahead do better, teachers notice their effort.\n\nIn conclusion, learning to manage time helps you in school and in life.';
@@ -144,9 +150,34 @@ function recordAnswer(stu, skill, correct, seconds) {
   const p = stu.progress[skill.id] || (stu.progress[skill.id] = { score: 0, attempts: 0, correct: 0, masteredAt: null });
   p.attempts++; if (correct) p.correct++;
   p.score = Math.max(0, Math.min(100, p.score + (correct ? 14 : -10)));
-  if (p.score >= 100 && !p.masteredAt) p.masteredAt = now();
+  let newlyMastered = false;
+  if (p.score >= 100 && !p.masteredAt) { p.masteredAt = now(); newlyMastered = true; }
   stu.log.push({ ts: now(), skillId: skill.id, unitId: skill.unitId, correct, seconds });
+  return newlyMastered;
 }
+
+// central hook: records the answer AND all engagement (xp, coins, quests, streak, badges)
+function handleAnswer(stu, skill, correct, seconds) {
+  const beforeLvl = levelInfo(stu.games.xp).level;
+  const mastered = recordAnswer(stu, skill, correct, seconds);
+  ensureDailies(stu);
+  awardXP(stu, correct ? 10 : 2); awardCoins(stu, correct ? 2 : 0);
+  bumpQuest(stu, 'answer', 1); if (correct) bumpQuest(stu, 'correct', 1);
+  if (mastered) { awardXP(stu, 50); awardCoins(stu, 25); bumpQuest(stu, 'master', 1); }
+  touchStreak(stu);
+  const newBadges = refreshBadges(stu);
+  const leveledUp = levelInfo(stu.games.xp).level > beforeLvl;
+  return { mastered, newBadges, leveledUp };
+}
+
+// celebration: confetti + a short toast for level-ups / new badges / mastery
+function celebrate(cel) {
+  if (!cel) return;
+  if (cel.leveledUp) { confetti(); toast(`⬆️ Level up! You're now a ${levelInfo(STATE.students[STATE.currentUserId].games.xp).title}!`); }
+  else if (cel.newBadges && cel.newBadges.length) { confetti(); toast(`${cel.newBadges[0].emoji} Badge unlocked: ${cel.newBadges[0].name}!`); }
+  else if (cel.mastered) { confetti(['⭐', '🏀', '✨']); toast('⭐ Skill mastered!'); }
+}
+function toast(msg) { const t = $('#celebrateToast'); if (!t) return; t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200); }
 
 /* --------------------------- ANSWER CHECKING ----------------------------- */
 function checkAnswer(item, raw) {
@@ -245,10 +276,20 @@ function renderStudentHome() {
   else mission.append(el('p', {}, '🏆 Every skill mastered — amazing!'));
   wrap.append(mission);
 
+  // daily strip
+  ensureDailies(stu);
+  const done = stu.games.dailies.quests.filter(q => q.done).length;
+  if (dailyGoalMet(stu)) wrap.append(el('div', { class: 'card afternoon' }, '🏀 Daily goal complete — afternoon unlocked! Go train.'));
+  const strip = el('div', { class: 'card daily-strip', onclick: () => go('profile') });
+  strip.append(el('div', { class: 'ds-flame' }, `🔥 ${stu.games.streak?.count || 0}`));
+  strip.append(el('div', { class: 'ds-mid' }, [el('div', { class: 'ds-txt' }, `Daily quests ${done}/3`), el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * done / 3}%;background:var(--good)` }))]));
+  strip.append(el('div', { class: 'ds-coin' }, `🪙 ${stu.games.coins || 0}`));
+  wrap.append(strip);
+
   // play card
-  const play = el('div', { class: 'card play-card', onclick: () => { SPRINT = { phase: 'ready' }; go('sprint'); } });
-  play.append(el('div', { class: 'play-emoji' }, '⚡'));
-  play.append(el('div', {}, [el('div', { class: 'play-title' }, 'Math Sprint'), el('div', { class: 'play-sub' }, `Best ${stu.games?.sprintBest || 0} · ${stu.games?.xp || 0} XP · tap to play`)]));
+  const play = el('div', { class: 'card play-card', onclick: () => go('play-hub') });
+  play.append(el('div', { class: 'play-emoji' }, '🎮'));
+  play.append(el('div', {}, [el('div', { class: 'play-title' }, 'Game zone'), el('div', { class: 'play-sub' }, `Sprint · Boss Battle · Lv ${levelInfo(stu.games.xp).level}`)]));
   wrap.append(play);
 
   // unit map
@@ -295,8 +336,9 @@ function renderPractice() {
     PRACTICE.locked = true;
     const secs = Math.max(2, Math.round((now() - PRACTICE.start) / 1000));
     const ok = checkAnswer(item, val);
-    recordAnswer(stu, skill, ok, secs);
+    const cel = handleAnswer(stu, skill, ok, secs);
     persist();
+    celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
     const next = el('button', { class: 'btn primary', onclick: () => { PRACTICE = null; go('practice', { skill: stu.progress[skill.id].masteredAt ? undefined : skill.id }); } }, stu.progress[skill.id]?.masteredAt ? '🎉 Skill mastered — continue' : 'Next question ▶');
@@ -377,7 +419,9 @@ function renderWriting() {
   const evalBtn = el('button', { class: 'btn primary', onclick: () => {
     const r = evaluateWriting(ta.value);
     stu.writing.push({ ts: now(), promptId, text: ta.value, result: r });
-    persist();
+    ensureDailies(stu); bumpQuest(stu, 'write', 1); awardXP(stu, 20 + r.total * 3); awardCoins(stu, 10); touchStreak(stu);
+    const cel = { newBadges: refreshBadges(stu) };
+    persist(); celebrate(cel);
     result.innerHTML = ''; result.append(scorecard(r));
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   } }, '✓ Get feedback');
@@ -421,9 +465,10 @@ let SPRINT_TIMER = null;
 function stopSprintTimer() { if (SPRINT_TIMER) { clearInterval(SPRINT_TIMER); SPRINT_TIMER = null; } }
 
 // turn any generated item into a fast tap-to-answer multiple-choice item
-function gameItem() {
+function gameItem(pool) {
+  pool = pool || ALL_SKILLS;
   let skill, it, guard = 0;
-  do { skill = pick(ALL_SKILLS); it = generateItem(skill.gen); guard++; }
+  do { skill = pick(pool); it = generateItem(skill.gen); guard++; }
   while (it.type === 'text' && guard < 12); // avoid free-text (fractions) in the arcade
   let choices;
   if (it.type === 'mc') { choices = it.choices; }
@@ -451,7 +496,8 @@ function sprintAnswer(choice, btn) {
   const stu = STATE.students[STATE.currentUserId];
   const ok = choice === SPRINT.item.answer;
   SPRINT.answered++; if (ok) SPRINT.correct++;
-  recordAnswer(stu, SPRINT.item.skill, ok, 3); // sprint still counts toward mastery + reports
+  const cel = handleAnswer(stu, SPRINT.item.skill, ok, 3); // counts toward mastery, xp, quests, reports
+  if (cel.newBadges && cel.newBadges.length) SPRINT.newBadges = (SPRINT.newBadges || []).concat(cel.newBadges);
   if (ok) { SPRINT.streak++; const mult = 1 + Math.floor(SPRINT.streak / 3); SPRINT.score += 10 * mult; if (btn) btn.classList.add('right'); }
   else { SPRINT.streak = 0; if (btn) btn.classList.add('wrong'); }
   if (SPRINT.dom) { SPRINT.dom.score.textContent = SPRINT.score; SPRINT.dom.streak.textContent = '🔥' + SPRINT.streak; }
@@ -472,9 +518,12 @@ function endSprint() {
   SPRINT.best = Math.max(stu.games.sprintBest || 0, SPRINT.score);
   SPRINT.isRecord = SPRINT.score > (stu.games.sprintBest || 0);
   stu.games.sprintBest = SPRINT.best;
-  stu.games.xp = (stu.games.xp || 0) + SPRINT.score;
+  ensureDailies(stu); bumpQuest(stu, 'sprint', 1); awardCoins(stu, 15 + Math.floor(SPRINT.score / 20));
+  SPRINT.newBadges = (SPRINT.newBadges || []).concat(refreshBadges(stu));
   SPRINT.phase = 'over';
-  persist(); go('sprint');
+  persist();
+  if (SPRINT.isRecord || (SPRINT.newBadges && SPRINT.newBadges.length)) setTimeout(confetti, 200);
+  go('sprint');
 }
 function renderSprint() {
   const stu = STATE.students[STATE.currentUserId];
@@ -498,7 +547,8 @@ function renderSprint() {
       el('div', { class: 'game-logo' }, SPRINT.isRecord ? '🏆' : '🎉'),
       el('h2', {}, SPRINT.isRecord ? 'New personal best!' : 'Time!'),
       el('div', { class: 'game-score' }, SPRINT.score),
-      el('div', { class: 'muted' }, `${SPRINT.correct}/${SPRINT.answered} correct · ${acc}% · +${SPRINT.score} XP`),
+      el('div', { class: 'muted' }, `${SPRINT.correct}/${SPRINT.answered} correct · ${acc}%`),
+      (SPRINT.newBadges && SPRINT.newBadges.length) ? el('div', { class: 'game-best' }, SPRINT.newBadges.map(b => `${b.emoji} ${b.name}`).join('  ')) : el('div', { class: 'muted', style: 'margin-top:6px' }, '🪙 coins earned!'),
       el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
         el('button', { class: 'btn primary', onclick: startSprint }, '↻ Play again'),
         el('button', { class: 'btn ghost', onclick: () => { SPRINT = { phase: 'ready' }; go('student-home'); } }, 'Done'),
@@ -520,6 +570,254 @@ function renderSprint() {
   paintSprintQuestion();
   stopSprintTimer();
   SPRINT_TIMER = setInterval(sprintTick, 1000);
+  return wrap;
+}
+
+/* ---------------------------- BOSS BATTLE (game) ------------------------- */
+let BOSS = { phase: 'lobby' };
+const BOSS_EMOJI = { nso: '🐉', ar: '👹', pr: '🦑', gr: '🗿', dp: '👻' };
+function unitSkills(unitId) { return ALL_SKILLS.filter(s => s.unitId === unitId); }
+function startBoss(unit) {
+  const stu = STATE.students[STATE.currentUserId];
+  BOSS = { phase: 'fight', unitId: unit.id, hp: 6, maxHp: 6, hearts: 3, item: gameItem(unitSkills(unit.id)), asked: 0, hit: 0 };
+  ensureDailies(stu); bumpQuest(stu, 'boss', 1); persist();
+  go('boss');
+}
+function answerBoss(choice, btn) {
+  if (BOSS.locked) return; BOSS.locked = true;
+  const stu = STATE.students[STATE.currentUserId];
+  const ok = choice === BOSS.item.answer;
+  BOSS.asked++; if (ok) BOSS.hit++;
+  const cel = handleAnswer(stu, BOSS.item.skill, ok, 4);
+  if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = (BOSS.newBadges || []).concat(cel.newBadges);
+  if (ok) { BOSS.hp = Math.max(0, BOSS.hp - 1); if (btn) btn.classList.add('right'); }
+  else { BOSS.hearts = Math.max(0, BOSS.hearts - 1); if (btn) btn.classList.add('wrong'); }
+  persist();
+  setTimeout(() => {
+    BOSS.locked = false;
+    if (BOSS.hp <= 0) { winBoss(); return; }
+    if (BOSS.hearts <= 0) { BOSS.phase = 'lose'; go('boss'); return; }
+    BOSS.item = gameItem(unitSkills(BOSS.unitId)); go('boss');
+  }, ok ? 350 : 700);
+}
+function winBoss() {
+  const stu = STATE.students[STATE.currentUserId];
+  const firstTime = !stu.games.bossCleared[BOSS.unitId];
+  stu.games.bossCleared[BOSS.unitId] = true;
+  awardXP(stu, 60); awardCoins(stu, firstTime ? 50 : 20);
+  BOSS.newBadges = (BOSS.newBadges || []).concat(refreshBadges(stu));
+  BOSS.phase = 'win'; persist(); setTimeout(() => confetti(['⚔️', '🏆', '💥', '⭐']), 150); go('boss');
+}
+function renderBoss() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+
+  if (BOSS.phase === 'lobby') {
+    wrap.append(el('div', { class: 'card' }, [el('h2', {}, '⚔️ Boss Battle'), el('p', { class: 'muted' }, 'Beat a topic boss with 3 hearts. Wrong answers cost a heart — get 6 hits to win!')]));
+    const grid = el('div', { class: 'boss-grid' });
+    CURRICULUM.units.forEach(u => {
+      const cleared = stu.games.bossCleared[u.id];
+      grid.append(el('button', { class: 'card boss-pick', style: `border:2px solid ${u.color}`, onclick: () => startBoss(u) }, [
+        el('div', { class: 'boss-face' }, BOSS_EMOJI[u.id] || '👾'),
+        el('div', { class: 'boss-nm' }, u.name),
+        cleared ? el('span', { class: 'badge good' }, '⭐ Cleared') : el('span', { class: 'chip', style: `background:${u.color}22;color:${u.color}` }, 'Fight'),
+      ]));
+    });
+    wrap.append(grid);
+    wrap.append(navbar('play'));
+    return wrap;
+  }
+  if (BOSS.phase === 'win' || BOSS.phase === 'lose') {
+    const win = BOSS.phase === 'win';
+    wrap.append(el('div', { class: 'card game-splash' }, [
+      el('div', { class: 'game-logo' }, win ? '🏆' : '💀'),
+      el('h2', {}, win ? 'Boss defeated!' : 'Defeated…'),
+      el('div', { class: 'muted' }, win ? `${BOSS.hit}/${BOSS.asked} hits landed · +XP & coins` : 'The boss won this round — try again!'),
+      (win && BOSS.newBadges && BOSS.newBadges.length) ? el('div', { class: 'game-best' }, BOSS.newBadges.map(b => `${b.emoji} ${b.name}`).join('  ')) : null,
+      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
+        el('button', { class: 'btn primary', onclick: () => { const u = CURRICULUM.units.find(x => x.id === BOSS.unitId); startBoss(u); } }, win ? '⚔️ Fight again' : '↻ Retry'),
+        el('button', { class: 'btn ghost', onclick: () => { BOSS = { phase: 'lobby' }; go('boss'); } }, 'Back'),
+      ]),
+    ]));
+    wrap.append(navbar('play'));
+    return wrap;
+  }
+
+  // fight
+  const unit = CURRICULUM.units.find(u => u.id === BOSS.unitId);
+  const hpbar = el('div', { class: 'boss-hpwrap' }, [
+    el('div', { class: 'boss-face big' }, BOSS_EMOJI[unit.id] || '👾'),
+    el('div', { class: 'boss-mid' }, [
+      el('div', { class: 'boss-title' }, `${unit.name} Boss`),
+      el('div', { class: 'hpbar' }, el('div', { class: 'hpbar-fill', style: `width:${100 * BOSS.hp / BOSS.maxHp}%` })),
+      el('div', { class: 'hearts' }, '❤️'.repeat(BOSS.hearts) + '🤍'.repeat(3 - BOSS.hearts)),
+    ]),
+  ]);
+  wrap.append(el('div', { class: 'card boss-fightcard' }, [hpbar]));
+  const q = el('div', { class: 'card game-card' });
+  q.append(el('div', { class: 'q game-q', html: BOSS.item.prompt }));
+  const opts = el('div', { class: 'options game-opts' });
+  BOSS.item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: (e) => answerBoss(c, e.currentTarget) }, c)));
+  q.append(opts);
+  wrap.append(q);
+  wrap.append(navbar('play'));
+  return wrap;
+}
+
+/* ------------------------------ PLAY HUB --------------------------------- */
+function renderPlayHub() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, false));
+  const lv = levelInfo(stu.games.xp);
+  wrap.append(el('div', { class: 'card hubbar' }, [
+    el('div', { class: 'hub-lv' }, [el('b', {}, 'Lv ' + lv.level), el('span', {}, lv.title)]),
+    el('div', { class: 'hub-coin' }, '🪙 ' + (stu.games.coins || 0)),
+    el('div', { class: 'hub-streak' }, '🔥 ' + (stu.games.streak?.count || 0)),
+  ]));
+  wrap.append(el('h2', { class: 'ph' }, '🎮 Game zone'));
+  const modes = el('div', { class: 'mode-grid' });
+  modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#7048e8,#f76707)', onclick: () => { SPRINT = { phase: 'ready' }; go('sprint'); } },
+    [el('div', { class: 'mode-emoji' }, '⚡'), el('div', { class: 'mode-nm' }, 'Math Sprint'), el('div', { class: 'mode-sub' }, `60-second combo rush · best ${stu.games.sprintBest || 0}`)]));
+  modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#e64980,#7048e8)', onclick: () => { BOSS = { phase: 'lobby' }; go('boss'); } },
+    [el('div', { class: 'mode-emoji' }, '⚔️'), el('div', { class: 'mode-nm' }, 'Boss Battle'), el('div', { class: 'mode-sub' }, `Beat topic bosses · ${Object.keys(stu.games.bossCleared || {}).length}/${CURRICULUM.units.length} cleared`)]));
+  modes.append(el('div', { class: 'card mode-card locked' },
+    [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Unlocks with cloud sync — coming soon')]));
+  wrap.append(modes);
+  wrap.append(navbar('play'));
+  return wrap;
+}
+
+/* ------------------------------- PROFILE --------------------------------- */
+function renderProfile() {
+  const stu = STATE.students[STATE.currentUserId];
+  ensureDailies(stu);
+  const lv = levelInfo(stu.games.xp);
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+
+  wrap.append(el('div', { class: 'card profile-hero' }, [
+    el('div', { class: 'profile-av' }, stu.avatar),
+    el('div', { class: 'profile-mid' }, [
+      el('div', { class: 'profile-nm' }, stu.name),
+      el('div', { class: 'profile-title' }, `Lv ${lv.level} · ${lv.title}`),
+      el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${lv.pct}%;background:var(--primary)` })),
+      el('div', { class: 'muted' }, `${lv.into}/${lv.span} XP to next level`),
+    ]),
+  ]));
+  const chips = el('div', { class: 'stat-row' });
+  chips.append(stat('Streak', `🔥${stu.games.streak?.count || 0}`, 'days'));
+  chips.append(stat('Coins', `🪙${stu.games.coins || 0}`, 'to spend'));
+  chips.append(stat('Badges', `${(stu.games.badges || []).length}`, `of ${BADGES.length}`));
+  chips.append(stat('XP', `${stu.games.xp || 0}`, 'total'));
+  wrap.append(el('div', { class: 'card' }, [chips, el('div', { class: 'answer-row', style: 'margin-top:12px' }, [
+    el('button', { class: 'btn primary', onclick: () => go('shop') }, '🛍️ Shop'),
+    el('button', { class: 'btn ghost', onclick: () => go('leaderboard') }, '🏆 Leaderboard'),
+  ])]));
+
+  // daily quests
+  const dq = el('div', { class: 'card' });
+  dq.append(el('h3', {}, `📅 Daily quests ${dailyGoalMet(stu) ? '✅' : ''}`));
+  stu.games.dailies.quests.forEach(q => {
+    const claimable = q.done && !q.claimed;
+    dq.append(el('div', { class: 'quest-row' }, [
+      el('div', { class: 'quest-mid' }, [
+        el('div', { class: 'quest-txt' }, `${q.text} ${q.claimed ? '✓' : ''}`),
+        el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * q.progress / q.goal}%;background:var(--good)` })),
+      ]),
+      claimable
+        ? el('button', { class: 'mini claim', onclick: () => { awardCoins(stu, q.reward); q.claimed = true; persist(); confetti(['🪙']); toast(`🪙 +${q.reward} coins!`); go('profile'); } }, `🪙${q.reward}`)
+        : el('span', { class: 'quest-r' }, q.claimed ? '🪙✓' : `🪙${q.reward}`),
+    ]));
+  });
+  wrap.append(dq);
+
+  // badges
+  const bg = el('div', { class: 'card' });
+  bg.append(el('h3', {}, '🏅 Badges'));
+  const grid = el('div', { class: 'badge-grid' });
+  BADGES.forEach(b => {
+    const owned = (stu.games.badges || []).includes(b.id);
+    grid.append(el('div', { class: 'badge-cell ' + (owned ? 'have' : 'locked'), title: b.desc }, [
+      el('div', { class: 'badge-em' }, owned ? b.emoji : '🔒'),
+      el('div', { class: 'badge-nm' }, b.name),
+    ]));
+  });
+  bg.append(grid);
+  wrap.append(bg);
+  wrap.append(navbar('home'));
+  return wrap;
+}
+
+/* --------------------------------- SHOP ---------------------------------- */
+function renderShop() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  wrap.append(el('div', { class: 'card shopbar' }, [el('h2', {}, '🛍️ Shop'), el('div', { class: 'hub-coin big' }, '🪙 ' + (stu.games.coins || 0))]));
+
+  const av = el('div', { class: 'card' });
+  av.append(el('h3', {}, '😎 Avatars'));
+  const ag = el('div', { class: 'shop-grid' });
+  SHOP_AVATARS.forEach(item => {
+    const owned = (stu.games.ownedAvatars || []).includes(item.e);
+    const equipped = stu.avatar === item.e;
+    ag.append(el('button', { class: 'shop-cell ' + (equipped ? 'equipped' : ''), onclick: () => {
+      if (owned) { stu.avatar = item.e; }
+      else if ((stu.games.coins || 0) >= item.cost) { stu.games.coins -= item.cost; stu.games.ownedAvatars.push(item.e); stu.avatar = item.e; confetti(['🎉']); }
+      else { toast('Not enough coins yet!'); return; }
+      persist(); go('shop');
+    } }, [
+      el('div', { class: 'shop-em' }, item.e),
+      el('div', { class: 'shop-tag' }, equipped ? 'Equipped' : owned ? 'Wear' : `🪙${item.cost}`),
+    ]));
+  });
+  av.append(ag);
+  wrap.append(av);
+
+  const th = el('div', { class: 'card' });
+  th.append(el('h3', {}, '🎨 Themes'));
+  const tg = el('div', { class: 'shop-grid' });
+  SHOP_THEMES.forEach(t => {
+    const owned = t.cost === 0 || (stu.games.ownedThemes || []).includes(t.name);
+    const equipped = (stu.games.theme && stu.games.theme.p === t.p) || (!stu.games.theme && t.cost === 0);
+    tg.append(el('button', { class: 'shop-cell ' + (equipped ? 'equipped' : ''), onclick: () => {
+      if (owned) { stu.games.theme = { p: t.p, d: t.d }; }
+      else if ((stu.games.coins || 0) >= t.cost) { stu.games.coins -= t.cost; (stu.games.ownedThemes || (stu.games.ownedThemes = [])).push(t.name); stu.games.theme = { p: t.p, d: t.d }; confetti(['🎨']); }
+      else { toast('Not enough coins yet!'); return; }
+      applyTheme(stu); persist(); go('shop');
+    } }, [
+      el('div', { class: 'theme-swatch', style: `background:${t.p}` }),
+      el('div', { class: 'shop-tag' }, equipped ? 'On' : owned ? 'Use' : `🪙${t.cost}`),
+      el('div', { class: 'theme-nm' }, t.name),
+    ]));
+  });
+  th.append(tg);
+  wrap.append(th);
+  wrap.append(el('button', { class: 'btn ghost wide', onclick: () => go('profile') }, '← Back'));
+  return wrap;
+}
+
+/* ----------------------------- LEADERBOARD ------------------------------- */
+function renderLeaderboard() {
+  const me = STATE.currentUserId;
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(STATE.students[me], true));
+  wrap.append(el('div', { class: 'card' }, [el('h2', {}, '🏆 Class leaderboard'), el('p', { class: 'muted' }, 'This week, by XP')]));
+  const rows = Object.values(STATE.students).slice().sort((a, b) => (b.games.xp || 0) - (a.games.xp || 0));
+  const board = el('div', { class: 'card' });
+  rows.forEach((s, i) => {
+    const medal = ['🥇', '🥈', '🥉'][i] || `${i + 1}`;
+    board.append(el('div', { class: 'lb-row ' + (s.id === me ? 'me' : '') }, [
+      el('div', { class: 'lb-rank' }, medal),
+      el('div', { class: 'lb-av' }, s.avatar),
+      el('div', { class: 'lb-nm' }, s.name + (s.id === me ? ' (you)' : '')),
+      el('div', { class: 'lb-xp' }, `${s.games.xp || 0} XP`),
+    ]));
+  });
+  wrap.append(board);
+  wrap.append(el('button', { class: 'btn ghost wide', onclick: () => go('profile') }, '← Back'));
   return wrap;
 }
 
@@ -625,16 +923,17 @@ function renderParentChild() {
 function stat(label, big, sub) { return el('div', { class: 'stat' }, [el('div', { class: 'stat-big' }, big), el('div', { class: 'stat-lbl' }, label), el('div', { class: 'stat-sub' }, sub)]); }
 function topbar(user, back, parent) {
   return el('div', { class: 'topbar' }, [
-    back ? el('button', { class: 'icon-btn', onclick: () => history.length && go(parent ? 'parent-home' : 'student-home') }, '←') : el('span', { class: 'brand' }, '⛰️ Ascend'),
+    back ? el('button', { class: 'icon-btn', onclick: () => go(parent ? 'parent-home' : 'student-home') }, '←') : el('span', { class: 'brand' }, '⛰️ Ascend'),
+    (!parent && user && user.games) ? el('button', { class: 'me-chip', onclick: () => go('profile') }, [el('span', { class: 'me-av' }, user.avatar), el('b', {}, 'Lv ' + levelInfo(user.games.xp).level), el('span', { class: 'me-coin' }, '🪙' + (user.games.coins || 0))]) : null,
     el('div', { class: 'grow' }),
-    el('button', { class: 'chip-btn', onclick: exportBackup, title: 'Download a backup copy' }, '⬇ Backup'),
+    el('button', { class: 'chip-btn', onclick: exportBackup, title: 'Download a backup copy' }, '⬇'),
     el('button', { class: 'chip-btn', onclick: logout }, 'Switch'),
   ]);
 }
 function navbar(active, parent) {
   const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['play', '🎮', 'Play'], ['write', '✍️', 'Write'], ['progress', '📈', 'Progress']];
-  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', play: 'sprint', write: 'writing', progress: 'progress' };
-  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => { if (k === 'play') SPRINT = { phase: 'ready' }; go(map[k]); } }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
+  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', play: 'play-hub', write: 'writing', progress: 'progress' };
+  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => go(map[k]) }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
 }
 
 /* ------------------------------- ACTIONS --------------------------------- */
@@ -651,21 +950,34 @@ function render() {
   const root = $('#app'); root.innerHTML = '';
   if (!STATE.currentUserId) return void root.append(renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
+  if (!isParent) applyTheme(STATE.students[STATE.currentUserId]); else applyTheme(null);
   const views = {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
-    'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'parent-home': renderParentHome,
-    'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
+    'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
+    'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
+    'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
   };
+  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard'];
   let name = VIEW.name;
-  if (isParent && ['student-home', 'practice', 'progress', 'writing', 'sprint'].includes(name)) name = 'parent-home';
+  if (isParent && studentOnly.includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
   root.append((views[name] || renderStudentHome)());
 }
 
 /* -------------------------------- BOOT ----------------------------------- */
+function ensureStudentShape(stu) {
+  stu.writing = stu.writing || [];
+  const g = stu.games = stu.games || {};
+  g.sprintBest = g.sprintBest || 0; g.xp = g.xp || 0; g.coins = g.coins || 0;
+  g.streak = g.streak || { count: 0, last: null };
+  g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
+  g.bossCleared = g.bossCleared || {}; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
+}
+
 (async function boot() {
   STATE = await Store.load();
   if (!STATE || !STATE.students) STATE = seedDemo();
+  Object.values(STATE.students || {}).forEach(ensureStudentShape);
   if (CLOUD && sb) { const { data: { user } } = await sb.auth.getUser(); if (!user) STATE.currentUserId = null; }
   VIEW = { name: STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login' };
   render();
