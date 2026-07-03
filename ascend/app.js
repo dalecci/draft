@@ -35,6 +35,7 @@ function blankStudent(id, name, avatar) {
     progress: {},   // skillId -> {score, attempts, correct, masteredAt}
     log: [],        // {ts, skillId, unitId, correct, seconds}
     writing: [],    // {ts, promptId, text, result}
+    games: { sprintBest: 0, xp: 0 },
   };
 }
 
@@ -61,6 +62,7 @@ function seedDemo() {
       }
     });
     stu.log.sort((a, b) => a.ts - b.ts);
+    stu.games = { sprintBest: Math.round(frac * 500) + randInt(20, 90), xp: Math.round(frac * 1800) };
   });
   // seed one writing draft for the first student so the Write tab has history
   const sampleText = 'Every 7th grader should learn how to manage their time. First, it helps you finish homework without stress. For example, when I plan my week, I finish earlier and still have time for basketball.\n\nIn addition, this skill builds responsibility. Because students who plan ahead do better, teachers notice their effort.\n\nIn conclusion, learning to manage time helps you in school and in life.';
@@ -243,6 +245,12 @@ function renderStudentHome() {
   else mission.append(el('p', {}, '🏆 Every skill mastered — amazing!'));
   wrap.append(mission);
 
+  // play card
+  const play = el('div', { class: 'card play-card', onclick: () => { SPRINT = { phase: 'ready' }; go('sprint'); } });
+  play.append(el('div', { class: 'play-emoji' }, '⚡'));
+  play.append(el('div', {}, [el('div', { class: 'play-title' }, 'Math Sprint'), el('div', { class: 'play-sub' }, `Best ${stu.games?.sprintBest || 0} · ${stu.games?.xp || 0} XP · tap to play`)]));
+  wrap.append(play);
+
   // unit map
   const map = el('div', { class: 'card' });
   map.append(el('h3', {}, '🗺️ Your map'));
@@ -406,6 +414,115 @@ function scorecard(r) {
   return box;
 }
 
+/* ---------------------------- MATH SPRINT (game) ------------------------- */
+const SPRINT_SECONDS = 60;
+let SPRINT = { phase: 'ready' };
+let SPRINT_TIMER = null;
+function stopSprintTimer() { if (SPRINT_TIMER) { clearInterval(SPRINT_TIMER); SPRINT_TIMER = null; } }
+
+// turn any generated item into a fast tap-to-answer multiple-choice item
+function gameItem() {
+  let skill, it, guard = 0;
+  do { skill = pick(ALL_SKILLS); it = generateItem(skill.gen); guard++; }
+  while (it.type === 'text' && guard < 12); // avoid free-text (fractions) in the arcade
+  let choices;
+  if (it.type === 'mc') { choices = it.choices; }
+  else {
+    const ans = Number(it.answer), set = new Set([String(it.answer)]);
+    let t = 0;
+    while (set.size < 4 && t < 30) { const off = pick([-3, -2, -1, 1, 2, 3, 5, -5, 10, -10]); const d = Number.isInteger(ans) ? ans + off : round(ans + off, 2); if (String(d) !== String(it.answer)) set.add(String(d)); t++; }
+    while (set.size < 4) set.add(String(round(ans + set.size + 1, 2)));
+    choices = shuffle([...set]);
+  }
+  return { skill, prompt: it.prompt, answer: String(it.answer), choices, explanation: it.explanation };
+}
+function startSprint() {
+  SPRINT = { phase: 'playing', timeLeft: SPRINT_SECONDS, score: 0, streak: 0, best: 0, answered: 0, correct: 0, item: gameItem() };
+  go('sprint');
+}
+function sprintTick() {
+  SPRINT.timeLeft--;
+  if (SPRINT.dom) SPRINT.dom.timer.textContent = SPRINT.timeLeft;
+  if (SPRINT.dom && SPRINT.timeLeft <= 10) SPRINT.dom.timer.parentElement.classList.add('low');
+  if (SPRINT.timeLeft <= 0) endSprint();
+}
+function sprintAnswer(choice, btn) {
+  if (SPRINT.locked) return; SPRINT.locked = true;
+  const stu = STATE.students[STATE.currentUserId];
+  const ok = choice === SPRINT.item.answer;
+  SPRINT.answered++; if (ok) SPRINT.correct++;
+  recordAnswer(stu, SPRINT.item.skill, ok, 3); // sprint still counts toward mastery + reports
+  if (ok) { SPRINT.streak++; const mult = 1 + Math.floor(SPRINT.streak / 3); SPRINT.score += 10 * mult; if (btn) btn.classList.add('right'); }
+  else { SPRINT.streak = 0; if (btn) btn.classList.add('wrong'); }
+  if (SPRINT.dom) { SPRINT.dom.score.textContent = SPRINT.score; SPRINT.dom.streak.textContent = '🔥' + SPRINT.streak; }
+  setTimeout(() => { SPRINT.locked = false; SPRINT.item = gameItem(); paintSprintQuestion(); }, ok ? 220 : 650);
+}
+function paintSprintQuestion() {
+  if (!SPRINT.dom) return;
+  const box = SPRINT.dom.qbox; box.innerHTML = '';
+  box.append(el('div', { class: 'chip', style: `background:${SPRINT.item.skill.color}22;color:${SPRINT.item.skill.color}` }, SPRINT.item.skill.unitName));
+  box.append(el('div', { class: 'q game-q', html: SPRINT.item.prompt }));
+  const opts = el('div', { class: 'options game-opts' });
+  SPRINT.item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: (e) => sprintAnswer(c, e.currentTarget) }, c)));
+  box.append(opts);
+}
+function endSprint() {
+  stopSprintTimer();
+  const stu = STATE.students[STATE.currentUserId];
+  SPRINT.best = Math.max(stu.games.sprintBest || 0, SPRINT.score);
+  SPRINT.isRecord = SPRINT.score > (stu.games.sprintBest || 0);
+  stu.games.sprintBest = SPRINT.best;
+  stu.games.xp = (stu.games.xp || 0) + SPRINT.score;
+  SPRINT.phase = 'over';
+  persist(); go('sprint');
+}
+function renderSprint() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+
+  if (SPRINT.phase === 'ready') {
+    wrap.append(el('div', { class: 'card game-splash' }, [
+      el('div', { class: 'game-logo' }, '⚡'),
+      el('h2', {}, 'Math Sprint'),
+      el('p', { class: 'muted' }, `How many can you nail in ${SPRINT_SECONDS} seconds? Build a streak for bonus points!`),
+      el('div', { class: 'game-best' }, `🏆 Your best: ${stu.games.sprintBest || 0} · ⭐ ${stu.games.xp || 0} XP`),
+      el('button', { class: 'btn primary big', onclick: startSprint }, '▶ Start'),
+    ]));
+    wrap.append(navbar('play'));
+    return wrap;
+  }
+  if (SPRINT.phase === 'over') {
+    const acc = SPRINT.answered ? Math.round(100 * SPRINT.correct / SPRINT.answered) : 0;
+    wrap.append(el('div', { class: 'card game-splash' }, [
+      el('div', { class: 'game-logo' }, SPRINT.isRecord ? '🏆' : '🎉'),
+      el('h2', {}, SPRINT.isRecord ? 'New personal best!' : 'Time!'),
+      el('div', { class: 'game-score' }, SPRINT.score),
+      el('div', { class: 'muted' }, `${SPRINT.correct}/${SPRINT.answered} correct · ${acc}% · +${SPRINT.score} XP`),
+      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
+        el('button', { class: 'btn primary', onclick: startSprint }, '↻ Play again'),
+        el('button', { class: 'btn ghost', onclick: () => { SPRINT = { phase: 'ready' }; go('student-home'); } }, 'Done'),
+      ]),
+    ]));
+    wrap.append(navbar('play'));
+    return wrap;
+  }
+
+  // playing
+  const hud = el('div', { class: 'game-hud' }, [
+    el('div', { class: 'hud-timer' }, [el('b', {}, String(SPRINT.timeLeft)), el('span', {}, 's')]),
+    el('div', { class: 'hud-score' }, [el('span', {}, 'score'), el('b', {}, String(SPRINT.score))]),
+    el('div', { class: 'hud-streak' }, '🔥' + SPRINT.streak),
+  ]);
+  const qbox = el('div', { class: 'card game-card' });
+  SPRINT.dom = { timer: hud.querySelector('.hud-timer b'), score: hud.querySelector('.hud-score b'), streak: hud.querySelector('.hud-streak'), qbox };
+  wrap.append(hud, qbox);
+  paintSprintQuestion();
+  stopSprintTimer();
+  SPRINT_TIMER = setInterval(sprintTick, 1000);
+  return wrap;
+}
+
 /* --------------------------- PARENT: PLAN EDITOR ------------------------- */
 function renderPlanEditor() {
   const stu = STATE.students[VIEW.child];
@@ -515,9 +632,9 @@ function topbar(user, back, parent) {
   ]);
 }
 function navbar(active, parent) {
-  const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['write', '✍️', 'Write'], ['progress', '📈', 'Progress']];
-  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', write: 'writing', progress: 'progress' };
-  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => go(map[k]) }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
+  const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['play', '🎮', 'Play'], ['write', '✍️', 'Write'], ['progress', '📈', 'Progress']];
+  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', play: 'sprint', write: 'writing', progress: 'progress' };
+  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => { if (k === 'play') SPRINT = { phase: 'ready' }; go(map[k]); } }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
 }
 
 /* ------------------------------- ACTIONS --------------------------------- */
@@ -530,16 +647,17 @@ async function logout() { if (CLOUD && sb) await sb.auth.signOut(); STATE.curren
 
 /* -------------------------------- ROUTER --------------------------------- */
 function render() {
+  stopSprintTimer();
   const root = $('#app'); root.innerHTML = '';
   if (!STATE.currentUserId) return void root.append(renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
   const views = {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
-    'progress': renderProgress, 'writing': renderWriting, 'parent-home': renderParentHome,
+    'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'parent-home': renderParentHome,
     'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
   };
   let name = VIEW.name;
-  if (isParent && ['student-home', 'practice', 'progress', 'writing'].includes(name)) name = 'parent-home';
+  if (isParent && ['student-home', 'practice', 'progress', 'writing', 'sprint'].includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
   root.append((views[name] || renderStudentHome)());
 }
