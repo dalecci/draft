@@ -127,6 +127,33 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .unit-report { margin: 10px 0; }
 .ur-top { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 5px; gap: 8px; }
 
+/* writing */
+.wide-seg { display: flex; width: 100%; overflow-x: auto; }
+.wide-seg .seg-btn { white-space: nowrap; }
+.wprompt { font-size: 16px; font-weight: 600; margin: 8px 0 12px; }
+.writing-area { width: 100%; resize: vertical; line-height: 1.5; font-size: 15px; min-height: 180px; }
+.tiny-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.wresult { margin-top: 8px; }
+.scorecard { margin-top: 14px; }
+.sc-total { display: flex; align-items: baseline; gap: 8px; background: #f6f3fe; border-radius: 16px; padding: 14px 16px; margin-bottom: 12px; }
+.sc-num { font-size: 34px; font-weight: 800; color: var(--primary-d); }
+.sc-den { font-weight: 700; color: var(--muted); }
+.sc-ov { margin-left: auto; font-weight: 800; }
+.sc-dim { margin: 12px 0; }
+.sc-dim-top { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+.sc-notes { margin: 8px 0 0; padding-left: 18px; }
+.sc-notes li { font-size: 13px; color: var(--ink); margin: 3px 0; }
+.sc-good { font-size: 13px; color: var(--good); font-weight: 700; margin-top: 6px; }
+.draft-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #f0ecf9; }
+.draft-mid { flex: 1; min-width: 0; }
+.draft-date { font-weight: 700; font-size: 13px; }
+.draft-prev { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.draft-score { font-weight: 800; border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+
+/* plan editor */
+.flabel { display: block; font-weight: 700; font-size: 13px; margin: 12px 0 2px; }
+.edit-plan { display: inline-block; margin: 6px 0; }
+
 /* save toast */
 #saveToast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff;
   padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: .25s; z-index: 50; }

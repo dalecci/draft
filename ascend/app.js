@@ -34,6 +34,7 @@ function blankStudent(id, name, avatar) {
     plan: { start: startOfDay(now() - 28 * DAY), target: startOfDay(now() + 84 * DAY), daysPerWeek: 5, hoursPerDay: 1 },
     progress: {},   // skillId -> {score, attempts, correct, masteredAt}
     log: [],        // {ts, skillId, unitId, correct, seconds}
+    writing: [],    // {ts, promptId, text, result}
   };
 }
 
@@ -61,6 +62,9 @@ function seedDemo() {
     });
     stu.log.sort((a, b) => a.ts - b.ts);
   });
+  // seed one writing draft for the first student so the Write tab has history
+  const sampleText = 'Every 7th grader should learn how to manage their time. First, it helps you finish homework without stress. For example, when I plan my week, I finish earlier and still have time for basketball.\n\nIn addition, this skill builds responsibility. Because students who plan ahead do better, teachers notice their effort.\n\nIn conclusion, learning to manage time helps you in school and in life.';
+  students[0].writing.push({ ts: now() - 3 * DAY, promptId: 'w1', text: sampleText, result: evaluateWriting(sampleText) });
   const parent = { id: 'par_alex', name: 'Alex (Parent)', avatar: '👤', role: 'parent', childIds: students.map(s => s.id) };
   return { students: Object.fromEntries(students.map(s => [s.id, s])), parents: { par_alex: parent }, currentUserId: null };
 }
@@ -337,6 +341,99 @@ function renderProgress() {
   return wrap;
 }
 
+/* --------------------------- STUDENT: WRITING ---------------------------- */
+let WRITING = null;
+function renderWriting() {
+  const stu = STATE.students[STATE.currentUserId];
+  const promptId = (WRITING && WRITING.promptId) || WRITING_PROMPTS[0].id;
+  const prompt = WRITING_PROMPTS.find(p => p.id === promptId);
+  if (!WRITING) WRITING = { promptId, text: '' };
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, false));
+
+  // prompt picker
+  const picker = el('div', { class: 'seg wide-seg' });
+  WRITING_PROMPTS.forEach(p => picker.append(el('button', { class: 'seg-btn ' + (p.id === promptId ? 'on' : ''), onclick: () => { WRITING = { promptId: p.id, text: '' }; go('writing'); } }, p.title)));
+
+  const card = el('div', { class: 'card' });
+  card.append(el('h3', {}, '✍️ Writing'));
+  card.append(picker);
+  card.append(el('div', { class: 'chip', style: 'background:#efe9fd;color:#5a37c9' }, prompt.mode));
+  card.append(el('p', { class: 'wprompt' }, prompt.prompt));
+  const ta = el('textarea', { class: 'inp writing-area', placeholder: 'Start writing here…', rows: '10' });
+  ta.value = WRITING.text || '';
+  ta.addEventListener('input', () => { WRITING.text = ta.value; });
+  card.append(ta);
+
+  const result = el('div', { class: 'wresult' });
+  const evalBtn = el('button', { class: 'btn primary', onclick: () => {
+    const r = evaluateWriting(ta.value);
+    stu.writing.push({ ts: now(), promptId, text: ta.value, result: r });
+    persist();
+    result.innerHTML = ''; result.append(scorecard(r));
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } }, '✓ Get feedback');
+  card.append(el('div', { class: 'answer-row' }, [evalBtn]));
+  card.append(el('div', { class: 'tiny-note' }, 'Rubric-based practice feedback (Florida B.E.S.T. Writing). A teacher can always review and adjust.'));
+  card.append(result);
+  wrap.append(card);
+
+  // past drafts (revision history — supports the anti-ghostwriting design)
+  const drafts = stu.writing.filter(w => w.promptId === promptId).slice().reverse();
+  if (drafts.length) {
+    const hist = el('div', { class: 'card' });
+    hist.append(el('h3', {}, '📝 Your drafts'));
+    drafts.forEach(d => hist.append(el('div', { class: 'draft-row' }, [
+      el('div', { class: 'draft-mid' }, [el('div', { class: 'draft-date' }, fmtDate(d.ts)), el('div', { class: 'draft-prev' }, (d.text || '').slice(0, 80) + '…')]),
+      el('div', { class: 'draft-score', style: `background:${d.result.total >= 10 ? '#e6fcf5' : d.result.total >= 7 ? '#fff9db' : '#fff4e6'}` }, `${d.result.total}/12`),
+    ])));
+    wrap.append(hist);
+  }
+  wrap.append(navbar('write'));
+  return wrap;
+}
+function scorecard(r) {
+  const box = el('div', { class: 'scorecard' });
+  box.append(el('div', { class: 'sc-total' }, [el('div', { class: 'sc-num' }, `${r.total}`), el('div', { class: 'sc-den' }, '/ 12'), el('div', { class: 'sc-ov' }, r.overall)]));
+  Object.entries(r.dims).forEach(([k, v]) => {
+    const dim = BEST_RUBRIC[k];
+    box.append(el('div', { class: 'sc-dim' }, [
+      el('div', { class: 'sc-dim-top' }, [el('span', { class: 'sc-dim-nm' }, dim.name), el('span', { class: 'sc-dim-sc' }, `${v.score}/4`)]),
+      el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${25 * v.score}%;background:${v.score >= 3 ? '#12b886' : v.score >= 2 ? '#f59f00' : '#f76707'}` })),
+      ...(v.notes.length ? [el('ul', { class: 'sc-notes' }, v.notes.map(n => el('li', {}, n)))] : [el('div', { class: 'sc-good' }, '✓ Looking strong here!')]),
+    ]));
+  });
+  return box;
+}
+
+/* --------------------------- PARENT: PLAN EDITOR ------------------------- */
+function renderPlanEditor() {
+  const stu = STATE.students[VIEW.child];
+  const wrap = el('div', { class: 'page parent-view' });
+  wrap.append(topbar(STATE.parents[STATE.currentUserId], true, true));
+  const p = stu.plan;
+  const card = el('div', { class: 'card' });
+  card.append(el('h2', {}, `⚙️ ${stu.name}'s plan`));
+  card.append(el('p', { class: 'muted' }, 'Set the finish target and weekly schedule. Pace (ahead/behind) recalculates from this.'));
+  const targetInp = el('input', { class: 'inp', type: 'date', value: new Date(p.target).toISOString().slice(0, 10) });
+  const dpwInp = el('input', { class: 'inp', type: 'number', min: '1', max: '7', value: String(p.daysPerWeek) });
+  const hpdInp = el('input', { class: 'inp', type: 'number', min: '0.5', max: '8', step: '0.5', value: String(p.hoursPerDay) });
+  card.append(el('label', { class: 'flabel' }, 'Target finish date'), targetInp);
+  card.append(el('label', { class: 'flabel' }, 'Days per week'), dpwInp);
+  card.append(el('label', { class: 'flabel' }, 'Hours per day'), hpdInp);
+  card.append(el('div', { class: 'answer-row' }, [
+    el('button', { class: 'btn primary wide', onclick: () => {
+      p.target = startOfDay(new Date(targetInp.value + 'T00:00:00').getTime());
+      p.daysPerWeek = Math.max(1, Math.min(7, Number(dpwInp.value) || 5));
+      p.hoursPerDay = Math.max(0.5, Number(hpdInp.value) || 1);
+      persist(); go('parent-child', { child: stu.id });
+    } }, 'Save plan'),
+  ]));
+  card.append(el('button', { class: 'btn ghost wide', onclick: () => go('parent-child', { child: stu.id }) }, 'Cancel'));
+  wrap.append(card);
+  return wrap;
+}
+
 /* ----------------------------- PARENT PORTAL ----------------------------- */
 function renderParentHome() {
   const par = STATE.parents[STATE.currentUserId];
@@ -370,6 +467,7 @@ function renderParentChild() {
   wrap.append(el('div', { class: 'card' }, [
     el('h2', {}, `${stu.avatar} ${stu.name} — ${CURRICULUM.subject}`),
     el('div', { class: 'muted' }, CURRICULUM.standard),
+    el('button', { class: 'chip-btn edit-plan', onclick: () => go('parent-plan', { child: stu.id }) }, '⚙️ Edit plan'),
     el('div', { class: 'pace-line' }, [
       pace.daysDelta >= 0 ? el('span', { class: 'badge good' }, `${pace.daysDelta} days ahead of schedule` ) : el('span', { class: 'badge warn' }, `${Math.abs(pace.daysDelta)} days behind schedule`),
       el('span', { class: 'muted' }, `Target: finish by ${fmtDate(stu.plan.target)} · ${stu.plan.daysPerWeek} days/wk · ${stu.plan.hoursPerDay}h/day`),
@@ -417,8 +515,8 @@ function topbar(user, back, parent) {
   ]);
 }
 function navbar(active, parent) {
-  const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['progress', '📈', 'Progress']];
-  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', progress: 'progress' };
+  const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['write', '✍️', 'Write'], ['progress', '📈', 'Progress']];
+  const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', write: 'writing', progress: 'progress' };
   return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => go(map[k]) }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
 }
 
@@ -437,10 +535,11 @@ function render() {
   const isParent = !!STATE.parents[STATE.currentUserId];
   const views = {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
-    'progress': renderProgress, 'parent-home': renderParentHome, 'parent-child': renderParentChild,
+    'progress': renderProgress, 'writing': renderWriting, 'parent-home': renderParentHome,
+    'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
   };
   let name = VIEW.name;
-  if (isParent && (name === 'student-home' || name === 'practice' || name === 'progress')) name = 'parent-home';
+  if (isParent && ['student-home', 'practice', 'progress', 'writing'].includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
   root.append((views[name] || renderStudentHome)());
 }
