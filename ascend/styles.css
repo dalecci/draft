@@ -154,6 +154,30 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .flabel { display: block; font-weight: 700; font-size: 13px; margin: 12px 0 2px; }
 .edit-plan { display: inline-block; margin: 6px 0; }
 
+/* math sprint game */
+.play-card { display: flex; align-items: center; gap: 14px; cursor: pointer; background: linear-gradient(135deg, #7048e8, #f76707); color: #fff; }
+.play-emoji { font-size: 38px; }
+.play-title { font-weight: 800; font-size: 18px; }
+.play-sub { font-size: 12px; opacity: .9; }
+.game-hud { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; }
+.hud-timer { background: #fff; border-radius: 16px; padding: 10px 18px; box-shadow: var(--shadow); font-size: 15px; color: var(--muted); font-weight: 700; }
+.hud-timer b { font-size: 24px; color: var(--ink); }
+.hud-timer.low b { color: var(--warn); }
+.hud-timer.low { animation: pulse .6s infinite; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+.hud-score { background: #fff; border-radius: 16px; padding: 10px 18px; box-shadow: var(--shadow); font-size: 12px; color: var(--muted); font-weight: 700; text-align: center; }
+.hud-score b { display: block; font-size: 22px; color: var(--primary-d); }
+.hud-streak { background: #fff4e6; color: var(--warn); border-radius: 16px; padding: 12px 16px; box-shadow: var(--shadow); font-weight: 800; font-size: 18px; }
+.game-card { min-height: 260px; }
+.game-q { font-size: 24px; }
+.game-opts .option { font-size: 18px; padding: 17px; text-align: center; }
+.game-opts .option.right { background: #d3f9d8; border-color: var(--good); }
+.game-opts .option.wrong { background: #ffe3e3; border-color: var(--warn); }
+.game-splash { text-align: center; padding: 30px 18px; }
+.game-logo { font-size: 60px; }
+.game-best { background: #f6f3fe; border-radius: 14px; padding: 12px; font-weight: 700; margin: 12px 0; }
+.game-score { font-size: 56px; font-weight: 800; color: var(--primary-d); margin: 6px 0; }
+
 /* save toast */
 #saveToast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff;
   padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: .25s; z-index: 50; }
