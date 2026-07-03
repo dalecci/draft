@@ -211,13 +211,20 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .boss-face { font-size: 46px; }
 .boss-face.big { font-size: 54px; }
 .boss-nm { font-weight: 800; font-size: 14px; margin: 4px 0 8px; }
-.boss-fightcard { background: linear-gradient(135deg, #2b2140, #4b2e83); color: #fff; }
+.boss-arena { background: linear-gradient(135deg, #2b2140, #4b2e83); color: #fff; }
 .boss-hpwrap { display: flex; align-items: center; gap: 14px; }
 .boss-mid { flex: 1; }
 .boss-title { font-weight: 800; margin-bottom: 6px; }
-.hpbar { height: 16px; background: rgba(255,255,255,.25); border-radius: 999px; overflow: hidden; }
-.hpbar-fill { height: 100%; background: linear-gradient(90deg, #ff6b6b, #f76707); border-radius: 999px; transition: width .3s; }
-.hearts { font-size: 18px; margin-top: 6px; letter-spacing: 2px; }
+.boss-sub { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+.streak-count { font-weight: 800; font-size: 15px; }
+.hearts { font-size: 17px; letter-spacing: 2px; }
+.streak-meter { display: flex; gap: 4px; }
+.streak-seg { flex: 1; height: 12px; border-radius: 4px; background: rgba(255,255,255,.22); transition: background .2s; }
+.streak-seg.lit { box-shadow: 0 0 8px rgba(255,255,255,.5); }
+.boss-timebar { height: 12px; background: rgba(255,255,255,.22); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+.boss-timebar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #69db7c, #ffd43b); border-radius: 999px; }
+.boss-timebar-fill.danger { background: #ff6b6b; }
+.boss-timelabel { text-align: right; font-weight: 800; font-size: 13px; margin-top: 5px; color: rgba(255,255,255,.85); }
 
 /* profile */
 .profile-hero { display: flex; align-items: center; gap: 16px; }
