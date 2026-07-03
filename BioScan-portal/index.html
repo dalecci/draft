@@ -1,0 +1,2133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Vibrant BioScan Portal · Dr. Kassandra Francis, DC</title>
+<meta name="robots" content="noindex,nofollow" />
+<meta name="theme-color" content="#065C8C" />
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23065C8C'/><circle cx='16' cy='16' r='6' fill='%23E8D833'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --blue: #065C8C; --blue-dark: #03405F; --blue-soft: #E6F1F7; --blue-tint: #F4FAFD; --blue-deep: #0A2540;
+  --gold: #E8D833; --gold-dark: #C9B92A; --gold-soft: #FBF6CC;
+  --bg: #FAFBFC; --bg-2: #F4F6F8; --panel: #FFFFFF;
+  --ink: #101828; --ink-soft: #475467; --ink-mute: #98A2B3;
+  --line: #E5E7EB; --line-2: #EEF0F3;
+  --good: #16a34a; --good-soft: #DCFCE7;
+  --warn: #ea580c; --warn-soft: #FED7AA;
+  --bad: #dc2626; --bad-soft: #FEE2E2;
+  --info: #2563eb; --info-soft: #DBEAFE;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,.05);
+  --shadow: 0 4px 16px rgba(16,24,40,.06);
+  --shadow-lg: 0 16px 40px rgba(16,24,40,.1);
+  --shadow-blue: 0 4px 14px rgba(6,92,140,.18);
+  --r: 14px; --r-sm: 10px; --r-lg: 20px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--ink); background: var(--bg); line-height: 1.55;
+  -webkit-font-smoothing: antialiased; min-height: 100vh;
+}
+h1, h2, h3, h4 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; line-height: 1.2; margin: 0 0 .4em; letter-spacing: -.01em; }
+h1 { font-size: 1.8rem; font-weight: 400; }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.15rem; }
+h4 { font-size: .95rem; font-family: 'Inter', sans-serif; font-weight: 600; }
+p { margin: 0 0 .8em; color: var(--ink-soft); }
+a { color: var(--blue); text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, textarea, select { font-family: inherit; font-size: .95rem; }
+small { color: var(--ink-mute); }
+
+/* ===== Buttons ===== */
+.btn { display:inline-flex; align-items:center; gap:.45rem; padding:.55rem 1rem; border-radius: 999px; font-weight: 600; font-size:.88rem; transition: all .15s ease; border: none; white-space: nowrap; cursor: pointer; }
+.btn-primary { background: var(--blue); color: white; box-shadow: var(--shadow-blue); }
+.btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.btn-gold { background: var(--gold); color: var(--ink); box-shadow: 0 4px 14px rgba(232,216,51,.4); }
+.btn-gold:hover { background: var(--gold-dark); transform: translateY(-1px); }
+.btn-ghost { background: var(--panel); color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--bg-2); border-color: var(--ink-mute); }
+.btn-sm { padding:.35rem .7rem; font-size:.8rem; }
+.btn-lg { padding:.85rem 1.5rem; font-size: 1rem; }
+.btn-danger { background: var(--bad-soft); color: var(--bad); }
+.btn-danger:hover { background: var(--bad); color: white; }
+
+/* ===== Top bar ===== */
+.topbar {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  height: 60px;
+  display: flex; align-items: center; padding: 0 24px;
+  gap: 1rem;
+}
+.brand {
+  display: flex; align-items: center; gap: .6rem;
+  font-family: 'Fraunces', serif; font-size: 1.05rem; color: var(--ink);
+}
+.brand-mark {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--blue); position: relative;
+  display: grid; place-items: center;
+}
+.brand-mark::before, .brand-mark::after {
+  content:''; position:absolute; inset: 8px;
+  border-radius: 50%; border: 1.5px solid rgba(232,216,51,.55);
+}
+.brand-mark::after { inset: 12px; border-color: var(--gold); }
+.brand small { display: block; font-family: 'Inter', sans-serif; font-size: .65rem; color: var(--ink-mute); letter-spacing: .1em; text-transform: uppercase; }
+.topbar .spacer { flex: 1; }
+.demo-badge {
+  background: var(--gold-soft); color: var(--blue-deep);
+  padding: .3rem .7rem; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--gold);
+}
+.role-pill {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .35rem .75rem .35rem .35rem; border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line);
+  font-size: .82rem; color: var(--ink);
+}
+.role-pill .ava { width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: white; display:grid; place-items:center; font-size: .8rem; font-weight: 600; }
+.role-pill .role { font-size: .68rem; color: var(--ink-mute); display: block; text-transform: uppercase; letter-spacing: .1em; }
+.role-pill button { color: var(--ink-mute); padding-left: .4rem; }
+
+/* ===== Login ===== */
+.login-screen {
+  min-height: calc(100vh - 60px);
+  display: grid; place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(800px circle at 20% 30%, rgba(232,216,51,.12), transparent 50%),
+    radial-gradient(800px circle at 80% 70%, rgba(6,92,140,.1), transparent 50%);
+}
+.login-card {
+  background: var(--panel); border-radius: var(--r-lg); padding: 2.5rem;
+  max-width: 540px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--line);
+}
+.login-card h1 { text-align: center; margin-bottom: .3rem; }
+.login-card p { text-align: center; margin-bottom: 2rem; }
+.login-card .eyebrow {
+  text-align: center; display: block; font-size: .7rem; color: var(--blue);
+  letter-spacing: .15em; text-transform: uppercase; font-weight: 700; margin-bottom: .8rem;
+}
+.role-options {
+  display: grid; grid-template-columns: 1fr; gap: .6rem; margin-top: 1.5rem;
+}
+.role-options h3 { font-family:'Inter'; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color: var(--ink-mute); margin: 1rem 0 .3rem; font-weight: 600; }
+.role-card {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.1rem; border-radius: var(--r); border: 1px solid var(--line);
+  background: var(--bg); cursor: pointer; transition: all .15s ease;
+  text-align: left; width: 100%;
+}
+.role-card:hover { background: var(--blue-tint); border-color: var(--blue); transform: translateY(-1px); }
+.role-card .ava { width: 44px; height: 44px; border-radius: 50%; background: var(--blue); color: white; display: grid; place-items: center; font-size: 1.2rem; font-weight: 600; flex-shrink: 0; }
+.role-card.kassie .ava { background: linear-gradient(135deg, var(--blue), var(--gold)); }
+.role-card .name { font-weight: 600; font-size: 1rem; }
+.role-card .sub { color: var(--ink-soft); font-size: .82rem; }
+
+/* ===== App layout (practitioner) ===== */
+.app-shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 60px);
+}
+.sidebar {
+  background: var(--panel); border-right: 1px solid var(--line);
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+  position: sticky; top: 60px;
+}
+.sidebar .section-label { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-mute); font-weight: 700; padding: 0 .8rem; margin: 1.4rem 0 .5rem; }
+.sidebar .search {
+  position: relative; margin-bottom: 1rem;
+}
+.sidebar .search input {
+  width: 100%; padding: .6rem .9rem .6rem 2.3rem; border-radius: var(--r-sm);
+  border: 1px solid var(--line); background: var(--bg);
+  font-size: .9rem; outline: none;
+}
+.sidebar .search input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.sidebar .search::before {
+  content: '🔍'; position: absolute; top: 50%; left: .8rem; transform: translateY(-50%);
+  font-size: .85rem; pointer-events: none;
+}
+.nav-link {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .55rem .8rem; border-radius: var(--r-sm);
+  color: var(--ink-soft); font-size: .9rem; font-weight: 500;
+  cursor: pointer; text-decoration: none;
+  margin-bottom: 2px;
+}
+.nav-link:hover { background: var(--bg-2); color: var(--ink); }
+.nav-link.active { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+.nav-link .ic { width: 18px; opacity: .7; }
+.patient-list { display: flex; flex-direction: column; gap: 2px; }
+.patient-item {
+  display: flex; align-items: center; gap: .65rem;
+  padding: .55rem .7rem; border-radius: var(--r-sm);
+  cursor: pointer; transition: background .12s ease;
+}
+.patient-item:hover { background: var(--bg-2); }
+.patient-item.active { background: var(--blue-soft); }
+.patient-item.active .pname { color: var(--blue); }
+.patient-ava {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--blue); color: white; display: grid; place-items: center;
+  font-size: .82rem; font-weight: 600; flex-shrink: 0;
+}
+.patient-item .meta { flex: 1; min-width: 0; }
+.patient-item .pname { font-size: .88rem; color: var(--ink); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.patient-item .psub { font-size: .73rem; color: var(--ink-mute); }
+.patient-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot.green { background: var(--good); }
+.dot.amber { background: var(--warn); }
+.dot.gray { background: var(--ink-mute); }
+
+.main {
+  padding: 2rem 2.5rem 3rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; max-height: none; padding: 1rem; }
+  .main { padding: 1.5rem 1.25rem 3rem; }
+}
+
+/* ===== Cards & panels ===== */
+.card {
+  background: var(--panel); border-radius: var(--r); padding: 1.5rem;
+  border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.card-h {
+  display:flex; justify-content:space-between; align-items: center;
+  padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--line);
+}
+.card-h h3 { margin: 0; }
+.card-h .small-actions { display:flex; gap:.4rem; }
+.eyebrow {
+  display: inline-block; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--blue); font-weight: 700; margin-bottom: .8rem;
+}
+.eyebrow.gold { color: var(--gold-dark); }
+.eyebrow.warn { color: var(--warn); }
+
+/* Page header for patient detail */
+.page-head {
+  display: flex; align-items: flex-start; gap: 1.2rem;
+  margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line);
+}
+.page-head .big-ava {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--blue); color: white; display: grid; place-items: center;
+  font-size: 1.6rem; font-weight: 600; flex-shrink: 0;
+}
+.page-head h1 { margin: 0 0 .3rem; font-size: 1.6rem; }
+.page-head .meta-row { display: flex; flex-wrap: wrap; gap: .9rem; color: var(--ink-soft); font-size: .88rem; }
+.page-head .meta-row span { display: inline-flex; align-items: center; gap: .3rem; }
+.page-head .actions { margin-left: auto; display: flex; gap: .4rem; }
+
+/* Tabs */
+.tabs-row {
+  display: flex; gap: 4px; border-bottom: 1px solid var(--line);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+.tab {
+  padding: .7rem 1.1rem; border-bottom: 2px solid transparent;
+  font-size: .9rem; font-weight: 600; color: var(--ink-soft);
+  cursor: pointer; white-space: nowrap; background: none; border-radius: 0;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+.tab .count { background: var(--bg-2); padding: 1px 6px; border-radius: 999px; font-size: .72rem; margin-left: .35rem; color: var(--ink-soft); }
+.tab.active .count { background: var(--blue-soft); color: var(--blue); }
+
+/* Stat tiles */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem; margin-bottom: 1.5rem;
+}
+.stat {
+  background: var(--panel); border-radius: var(--r); padding: 1.1rem 1.2rem;
+  border: 1px solid var(--line);
+}
+.stat .lbl { font-size: .7rem; color: var(--ink-mute); letter-spacing: .1em; text-transform: uppercase; font-weight: 600; margin-bottom: .35rem; }
+.stat .val { font-family:'Fraunces', serif; font-size: 1.6rem; line-height: 1.1; }
+.stat .delta { font-size: .8rem; margin-top: .3rem; font-weight: 600; }
+.stat .delta.up { color: var(--bad); }
+.stat .delta.down { color: var(--good); }
+.stat.gold { background: linear-gradient(135deg, var(--gold-soft), #fffbe7); border-color: var(--gold); }
+.stat.blue { background: var(--blue-tint); border-color: var(--blue-soft); }
+
+/* System reactivity bars */
+.findings-list { display: flex; flex-direction: column; gap: .8rem; }
+.finding {
+  display: grid; grid-template-columns: 130px 1fr 60px 100px;
+  align-items: center; gap: 1rem;
+  padding: .8rem 0; border-bottom: 1px solid var(--line-2);
+}
+.finding:last-child { border-bottom: none; }
+.finding .sys { font-weight: 600; font-size: .95rem; }
+.finding .bar { height: 8px; border-radius: 999px; background: var(--bg-2); position: relative; overflow: hidden; }
+.finding .bar .fl { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--good), var(--gold), var(--warn), var(--bad)); }
+.finding .pct { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; }
+.finding .delta { font-size: .78rem; font-weight: 600; text-align: right; }
+.finding .delta.up { color: var(--bad); }
+.finding .delta.down { color: var(--good); }
+.finding .delta.flat { color: var(--ink-mute); }
+@media (max-width: 700px) {
+  .finding { grid-template-columns: 100px 1fr; }
+  .finding .pct, .finding .delta { grid-column: span 2; text-align: left; padding-left: 100px; padding-top: .2rem; }
+}
+
+/* Trend chart */
+.chart-wrap { padding: 1rem 0; }
+.chart-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; color: var(--ink-soft); margin-bottom: .8rem; }
+.chart-legend .sw { display: inline-flex; align-items: center; gap: .35rem; }
+.chart-legend .sw::before { content:''; width: 12px; height: 4px; border-radius: 2px; background: var(--clr); }
+
+/* Protocol */
+.protocol-card { padding: 1.5rem; background: linear-gradient(180deg, var(--blue-tint), white); border-radius: var(--r); border: 1px solid var(--blue-soft); }
+.protocol-card .ver { font-size: .72rem; color: var(--blue); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.supp-list { display: flex; flex-direction: column; gap: .6rem; margin-top: 1rem; }
+.supp {
+  display: grid; grid-template-columns: 1fr auto;
+  padding: .8rem 1rem; background: white; border-radius: var(--r-sm);
+  border: 1px solid var(--line); gap: 1rem; align-items: center;
+}
+.supp .name { font-weight: 600; font-size: .95rem; }
+.supp .brand { font-size: .78rem; color: var(--ink-mute); }
+.supp .dose { font-size: .85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; text-align: right; }
+.supp .dur { font-size: .76rem; color: var(--ink-mute); }
+.lifestyle-list { list-style: none; padding: 0; margin: 1rem 0 0; }
+.lifestyle-list li { padding: .55rem 0; border-bottom: 1px dashed var(--line); display: flex; gap: .6rem; }
+.lifestyle-list li:last-child { border-bottom: none; }
+.lifestyle-list li::before { content: '◆'; color: var(--gold-dark); flex-shrink: 0; }
+
+/* Chat */
+.chat-list { display: flex; flex-direction: column; gap: 1rem; padding: 1rem; max-height: 560px; overflow-y: auto; background: var(--bg-2); border-radius: var(--r); }
+.msg { max-width: 80%; padding: .8rem 1rem; border-radius: var(--r); position: relative; }
+.msg .who { font-size: .72rem; font-weight: 600; color: var(--ink-mute); margin-bottom: .25rem; letter-spacing: .04em; text-transform: uppercase; }
+.msg .body { font-size: .92rem; line-height: 1.5; }
+.msg .time { font-size: .68rem; color: var(--ink-mute); margin-top: .35rem; }
+.msg.patient { background: white; border: 1px solid var(--line); align-self: flex-start; }
+.msg.kassie { background: var(--blue); color: white; align-self: flex-end; }
+.msg.kassie .who { color: rgba(255,255,255,.7); }
+.msg.kassie .time { color: rgba(255,255,255,.6); }
+.msg.ai { background: var(--gold-soft); border: 1px solid var(--gold); align-self: flex-start; max-width: 90%; }
+.msg.ai .who { color: var(--gold-dark); }
+.msg.ai .ai-tag {
+  display: inline-block; background: var(--gold); color: var(--ink);
+  font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+  padding: 1px 6px; border-radius: 4px; margin-left: .4rem; text-transform: uppercase;
+}
+.msg.draft { background: white; border: 2px dashed var(--gold); align-self: flex-end; }
+.msg.draft .who { color: var(--gold-dark); }
+.chat-input {
+  margin-top: 1rem; padding: 1rem; background: white; border-radius: var(--r); border: 1px solid var(--line);
+}
+.chat-input textarea {
+  width: 100%; min-height: 70px; padding: .6rem; border: 1px solid var(--line);
+  border-radius: var(--r-sm); resize: vertical; outline: none;
+}
+.chat-input textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.chat-input-actions { display: flex; justify-content: space-between; align-items: center; margin-top: .6rem; flex-wrap: wrap; gap: .5rem; }
+.chat-input-actions .ai-help {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .82rem; color: var(--gold-dark); font-weight: 600;
+}
+
+/* Knowledge editor */
+.kb-editor textarea {
+  width: 100%; min-height: 500px;
+  padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--r);
+  font-family: 'Inter', sans-serif; font-size: .92rem; line-height: 1.6;
+  outline: none; resize: vertical;
+}
+.kb-editor textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.kb-info {
+  background: var(--gold-soft); border: 1px solid var(--gold);
+  padding: 1rem 1.2rem; border-radius: var(--r); margin-bottom: 1.5rem;
+  font-size: .9rem; color: var(--blue-deep);
+}
+.kb-info strong { color: var(--blue-deep); }
+
+/* Modal */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(10,37,64,.6);
+  backdrop-filter: blur(4px); z-index: 100;
+  display: none; justify-content: center; align-items: flex-start;
+  padding: 5vh 2rem 2rem; overflow-y: auto;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--panel); border-radius: var(--r-lg); width: 100%; max-width: 880px;
+  padding: 2rem; box-shadow: var(--shadow-lg);
+  margin: auto;
+}
+.modal-h { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.4rem; }
+.modal-h h2 { margin: 0; }
+.modal-h .close { font-size: 1.4rem; color: var(--ink-mute); padding: .2rem .6rem; border-radius: 999px; }
+.modal-h .close:hover { background: var(--bg-2); color: var(--ink); }
+.modal-body label { display: block; font-size: .82rem; font-weight: 600; color: var(--ink); margin-bottom: .4rem; margin-top: 1rem; }
+.modal-body label small { color: var(--ink-mute); font-weight: 400; margin-left: .4rem; }
+.modal-body input[type="text"], .modal-body textarea, .modal-body select {
+  width: 100%; padding: .65rem .8rem; border: 1px solid var(--line);
+  border-radius: var(--r-sm); outline: none; background: white;
+}
+.modal-body input:focus, .modal-body textarea:focus, .modal-body select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-soft); }
+.modal-body textarea { min-height: 140px; font-family: inherit; resize: vertical; }
+.modal-foot { display: flex; justify-content: flex-end; gap: .6rem; margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+
+/* AI thinking indicator */
+.ai-thinking {
+  display: flex; align-items: center; gap: .6rem;
+  padding: 1rem 1.2rem; background: var(--gold-soft); border: 1px solid var(--gold);
+  border-radius: var(--r); color: var(--blue-deep);
+  margin: 1rem 0;
+}
+.ai-thinking .dot-pulse {
+  display: inline-flex; gap: 3px;
+}
+.ai-thinking .dot-pulse span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--gold-dark);
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+.ai-thinking .dot-pulse span:nth-child(2) { animation-delay: .15s; }
+.ai-thinking .dot-pulse span:nth-child(3) { animation-delay: .3s; }
+@keyframes dotPulse { 0%, 100% { transform: scale(.7); opacity: .5; } 50% { transform: scale(1); opacity: 1; } }
+
+.ai-output {
+  background: var(--gold-soft); border: 2px solid var(--gold);
+  padding: 1.4rem; border-radius: var(--r); position: relative;
+}
+.ai-output::before {
+  content: 'AI DRAFT'; position: absolute; top: -10px; left: 16px;
+  background: var(--gold); color: var(--ink); padding: 2px 8px;
+  border-radius: 4px; font-size: .65rem; font-weight: 700; letter-spacing: .1em;
+}
+.ai-output h4 { margin-top: 1rem; }
+.ai-output h4:first-child { margin-top: 0; }
+
+/* Patient view (simplified, warmer) */
+.patient-app .main { max-width: 880px; margin: 0 auto; }
+.patient-welcome {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-deep) 100%);
+  color: white; border-radius: var(--r-lg); padding: 2rem; margin-bottom: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.patient-welcome::after {
+  content:''; position: absolute; top: -100px; right: -100px;
+  width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,216,51,.18), transparent 70%);
+}
+.patient-welcome h1 { color: white; font-size: 2rem; margin-bottom: .3rem; }
+.patient-welcome p { color: rgba(255,255,255,.85); margin: 0; }
+.patient-welcome .next {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: rgba(232,216,51,.18); color: var(--gold);
+  padding: .5rem .9rem; border-radius: 999px; margin-top: 1.2rem;
+  font-size: .85rem; font-weight: 600;
+}
+
+/* Misc */
+.empty { padding: 3rem 2rem; text-align: center; color: var(--ink-mute); }
+.empty .ic { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+.row { display: flex; gap: 1rem; }
+.col { flex: 1; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+@media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+.badge { display: inline-flex; align-items: center; gap: .3rem; padding: .15rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 600; }
+.badge.good { background: var(--good-soft); color: var(--good); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.bad { background: var(--bad-soft); color: var(--bad); }
+.badge.info { background: var(--info-soft); color: var(--info); }
+.badge.gold { background: var(--gold-soft); color: var(--gold-dark); }
+hr.sep { border: none; border-top: 1px solid var(--line); margin: 1.5rem 0; }
+
+/* Scan compare side-by-side */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+.compare-col { background: var(--bg); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 1rem; }
+.compare-col h4 { margin-bottom: .5rem; }
+.compare-col .date { font-size: .75rem; color: var(--ink-mute); margin-bottom: .8rem; }
+@media (max-width: 700px) { .compare-grid { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+
+<!-- ===================== TOPBAR ===================== -->
+<header class="topbar">
+  <a href="#/" class="brand">
+    <span class="brand-mark"></span>
+    <span>Vibrant BioScan<br><small>Patient Portal</small></span>
+  </a>
+  <span class="spacer"></span>
+  <span class="demo-badge" id="demo-badge" style="display:none;">Demo · Mock Data</span>
+  <span id="role-pill-slot"></span>
+</header>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <span class="eyebrow">Vibrant BioScan Portal</span>
+    <h1>Welcome.</h1>
+    <p>Choose a demo role to explore the portal. This is a working prototype with mock patient data — no real PHI.</p>
+
+    <div class="role-options">
+      <h3>Practitioner</h3>
+      <button class="role-card kassie" data-login="kassie">
+        <div class="ava">KF</div>
+        <div>
+          <div class="name">Dr. Kassandra Francis, DC</div>
+          <div class="sub">Owner · Sees all patients · Knowledge editor</div>
+        </div>
+      </button>
+
+      <h3>Patients</h3>
+      <button class="role-card" data-login="patient:p1">
+        <div class="ava" style="background:#7c3aed;">MH</div>
+        <div>
+          <div class="name">Maria Hendricks · 47</div>
+          <div class="sub">90-Day Reset · scan 2 of 3 · gut + hormones</div>
+        </div>
+      </button>
+      <button class="role-card" data-login="patient:p2">
+        <div class="ava" style="background:#0891b2;">JC</div>
+        <div>
+          <div class="name">James Chen · 38</div>
+          <div class="sub">New patient · post-COVID gut stress</div>
+        </div>
+      </button>
+      <button class="role-card" data-login="patient:p3">
+        <div class="ava" style="background:#16a34a;">LR</div>
+        <div>
+          <div class="name">Linda Rodriguez · 62</div>
+          <div class="sub">Inner Circle · 4 scans · stable maintenance</div>
+        </div>
+      </button>
+      <button class="role-card" data-login="patient:p4">
+        <div class="ava" style="background:#ea580c;">TO</div>
+        <div>
+          <div class="name">Tomás Ortega · 8 (mom: Marisol)</div>
+          <div class="sub">Pediatric · eczema + focus support</div>
+        </div>
+      </button>
+      <button class="role-card" data-login="patient:p5">
+        <div class="ava" style="background:#dc2626;">KW</div>
+        <div>
+          <div class="name">Karen Wilson · 53</div>
+          <div class="sub">Complex case · stealth pathogen patterns</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app-shell" class="app-shell" style="display:none;">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="main"></main>
+</div>
+
+<!-- Patient app shell (different layout) -->
+<div id="patient-app" class="patient-app" style="display:none;">
+  <main class="main" id="patient-main"></main>
+</div>
+
+<!-- ===================== MODAL ===================== -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ===================================================
+   STATE & MOCK DATA
+   =================================================== */
+
+const NOW = new Date('2026-06-05'); // fixed for determinism
+const today = (offsetDays = 0) => {
+  const d = new Date(NOW);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0,10);
+};
+const niceDate = s => {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+const daysAgo = s => {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  const diff = Math.floor((NOW - d) / 86400000);
+  if (diff === 0) return 'today';
+  // Future dates
+  if (diff < 0) {
+    const fd = -diff;
+    if (fd === 1) return 'in 1 day';
+    if (fd < 14) return 'in ' + fd + ' days';
+    if (fd < 60) return 'in ' + Math.round(fd/7) + ' weeks';
+    return 'in ' + Math.round(fd/30) + ' months';
+  }
+  if (diff === 1) return 'yesterday';
+  if (diff < 7) return diff + ' days ago';
+  if (diff < 30) return Math.floor(diff/7) + 'w ago';
+  if (diff < 365) return Math.floor(diff/30) + 'mo ago';
+  return Math.floor(diff/365) + 'y ago';
+};
+
+const SEED = {
+  clinicalKnowledge: `# Dr. Kassie's Clinical Playbook
+*(This becomes part of the AI assistant's system prompt — edit anytime.)*
+
+## Philosophy
+Root-cause first. Never diagnose. Always frame findings as "stress patterns the body is holding," never as disease detection. Compliance language matters legally and clinically.
+
+## My favorite brands by category
+- **Gut:** Designs for Health (GI-Microb-X, Glutamine), Microbiome Labs (MegaSporeBiotic), Standard Process (Zypan)
+- **Detox:** Energetix (Drainage-Tone), Quicksilver (Pushcatch), Designs for Health (LV-GB Complex)
+- **Adrenals:** Standard Process (Drenamin, Adaptogen-R3), Energetix (Adrenal-Tone)
+- **Hormones:** Designs for Health (FemGuard+Balance), Energetix (Female-Tone)
+- **Methylation:** Seeking Health (Active B-Complex, Liposomal Glutathione)
+- **Mitochondria:** Energetix (Mito-Tone), Designs for Health (Mitochondrial NRG)
+
+## My sequencing rules
+1. Always drain before detox. If lymph and liver are stressed, start with Drainage-Tone for 2 weeks BEFORE pushing heavy-metal mobilization.
+2. Gut first when in doubt. ~70% of cases have gut-driven downstream issues.
+3. Never start more than 4 supplements at once. Build tolerance, watch for Herx.
+4. Always re-scan at 30 days mid-protocol for the 90-Day Reset.
+5. Pediatric (under 12): half adult dose, no aggressive detox, drainage + nutrition + lifestyle first.
+
+## Dosing defaults I use
+- Glutamine: 5g morning empty stomach, can go to 10g in week 3
+- GI-Microb-X: 2 caps with breakfast/dinner, 30 days, then reassess
+- MegaSpore: start 1 cap daily, ramp to 2 over 2 weeks
+- Drainage-Tone: 15 drops in water 3x/day before meals
+
+## Things to always flag for me
+- Stress >85 in any system
+- Big shifts (>20 points) up or down from last scan
+- Pediatric protocols (I review every one personally)
+- Anything in heart/kidney/neuro categories
+- Patients on prescription meds — interaction check first
+
+## Compliance language (use these, not those)
+✓ "stress pattern," "energetic information," "supports the body's natural processes," "what your body is asking for"
+✗ "detects," "diagnoses," "treats," "cures," "tests for [disease]"
+
+## Trained context from Jordan's research
+Bioresonance market norms: initial $200-280, follow-up $75-150, 3-mo programs $1500-2000 PIF, supplement attach is where the real margin lives.
+SWFL competitive landscape: Cape Coral is white space; closest serious competitor is Quiet Waters in Bonita Springs (~25 mi, NES Health).
+FDA risk: ZYTO got warnings in 2015 + 2023; RoyalVibe 2022. Stay clear of disease names.`,
+
+  patients: [
+    /* ===== Maria — flagship 90-Day Reset case ===== */
+    {
+      id: 'p1', name: 'Maria Hendricks', age: 47, email: 'maria.h@example.com',
+      initials: 'MH', color: '#7c3aed',
+      enrolled: '2026-02-14', program: '90-Day Root Cause Reset',
+      programStart: '2026-04-01',
+      chiefComplaint: 'Chronic fatigue, brain fog, hormone swings since perimenopause',
+      tags: ['Perimenopause', 'Gut-Hormone axis'],
+      scans: [
+        {
+          id: 's1-1', date: '2026-04-01', type: 'initial',
+          findings: [
+            { system: 'Gut', stress: 82, items: ['Candida albicans signal', 'H. pylori signal', 'Intestinal permeability pattern'] },
+            { system: 'Hormones', stress: 78, items: ['Cortisol flat-line pattern', 'Estrogen dominance signature', 'Progesterone low'] },
+            { system: 'Detox', stress: 71, items: ['Glutathione depletion', 'Phase II conjugation stress'] },
+            { system: 'Adrenals', stress: 69, items: ['HPA axis dysregulation pattern'] },
+            { system: 'Minerals', stress: 58, items: ['Magnesium low', 'Zinc:Copper imbalance'] },
+            { system: 'Toxins', stress: 54, items: ['Glyphosate pattern', 'Mycotoxin signal (Ochratoxin)'] },
+            { system: 'Emotional', stress: 64, items: ['Limbic stress pattern'] },
+            { system: 'Immune', stress: 41, items: ['TH1/TH2 imbalance'] }
+          ],
+          summary: 'Classic perimenopause + gut-driven systemic stress picture. Cortisol-progesterone steal evident. Drainage capacity compromised — drain before detox.',
+          kassieNotes: 'Maria is highly motivated. Type-A, will overdo it — explicit "no more than 4 supps at once" conversation.'
+        },
+        {
+          id: 's1-2', date: '2026-05-01', type: 'followup',
+          findings: [
+            { system: 'Gut', stress: 58, items: ['Candida residual signal', 'Permeability improving'] },
+            { system: 'Hormones', stress: 64, items: ['Cortisol pattern less flat', 'Estrogen dominance moderating'] },
+            { system: 'Detox', stress: 53, items: ['Glutathione improving', 'Phase II better supported'] },
+            { system: 'Adrenals', stress: 56, items: ['HPA showing repair'] },
+            { system: 'Minerals', stress: 44, items: ['Magnesium replete', 'Zinc trending up'] },
+            { system: 'Toxins', stress: 49, items: ['Mycotoxin signal slightly reduced'] },
+            { system: 'Emotional', stress: 51, items: ['Limbic stress easing'] },
+            { system: 'Immune', stress: 38, items: ['TH balance restoring'] }
+          ],
+          summary: 'Strong 30-day response. Gut dropped 24 points. Adrenals trending right direction. Ready for phase-2 protocol: gentle binders + targeted hormone support.',
+          kassieNotes: 'She felt "fog lifting" by week 3. Sleep improved. Add binders carefully — slow Herx so far but watch.'
+        }
+      ],
+      protocols: [
+        {
+          id: 'pr1-1', version: 1, date: '2026-04-01', status: 'archived',
+          goal: 'Phase 1: Calm gut, support drainage, baseline mineral & adrenal support',
+          supplements: [
+            { name: 'GI-Microb-X', brand: 'Designs for Health', dose: '2 caps AM/PM', duration: '30 days' },
+            { name: 'L-Glutamine Powder', brand: 'Designs for Health', dose: '5g empty stomach AM', duration: 'ongoing' },
+            { name: 'Drainage-Tone', brand: 'Energetix', dose: '15 drops 3x/day before meals', duration: '30 days' },
+            { name: 'Adrenal-Tone', brand: 'Energetix', dose: '15 drops 2x/day', duration: '30 days' }
+          ],
+          lifestyle: ['Eliminate gluten and dairy x30 days', 'Castor oil pack 3x/week (liver area)', '10k steps/day, no fasted cardio', 'Bed by 10:30pm, no screens after 9pm'],
+          remedy: 'Custom imprinted remedy bottle — gut + adrenal calm blend',
+          rescan: '2026-05-01'
+        },
+        {
+          id: 'pr1-2', version: 2, date: '2026-05-01', status: 'active',
+          goal: 'Phase 2: Continue gut repair, add gentle binder, begin hormone re-balance',
+          supplements: [
+            { name: 'GI-Microb-X', brand: 'Designs for Health', dose: '1 cap AM/PM (taper)', duration: '15 days' },
+            { name: 'MegaSporeBiotic', brand: 'Microbiome Labs', dose: '1 cap → 2 caps over 2 wks', duration: 'ongoing' },
+            { name: 'GI-Detox+', brand: 'Bio-Botanical', dose: '1 cap before bed (binder)', duration: '30 days' },
+            { name: 'FemGuard+Balance', brand: 'Designs for Health', dose: '2 caps with breakfast', duration: '60 days' },
+            { name: 'Liposomal Glutathione', brand: 'Seeking Health', dose: '1 tsp AM', duration: '30 days' }
+          ],
+          lifestyle: ['Continue gluten/dairy out', 'Add 30g protein at breakfast', 'Magnesium glycinate 400mg before bed', 'Castor oil pack 4x/week'],
+          remedy: 'Custom remedy — gentle binder + hormone harmonizer',
+          rescan: '2026-07-01'
+        }
+      ],
+      chat: [
+        { role: 'patient', author: 'Maria', date: '2026-05-15 10:24', text: 'Dr. Kassie — sleep has been amazing this week. But I had two days where the bloating came back hard. Should I be worried?' },
+        { role: 'kassie', author: 'Dr. Kassie', date: '2026-05-15 14:08', text: "So glad sleep is sticking! Bloating flares at this phase usually mean the binder is mobilizing more than the gut wants to clear. Skip the GI-Detox+ for 2 nights, then resume at half dose for a week. Also — were you near any 'splurge' foods? Check in Monday and we'll adjust." },
+        { role: 'patient', author: 'Maria', date: '2026-05-18 09:42', text: 'Cut the binder for 2 days and bloating gone. Resuming half dose tonight. No food splurges (I PROMISE 😅).' }
+      ],
+      notes: [
+        { date: '2026-04-01', text: 'Type A, will overdo. Set expectation: improvement is non-linear.' },
+        { date: '2026-05-01', text: 'Sleep is the keystone for her. Track that, everything else follows.' },
+        { date: '2026-05-18', text: 'Binder tolerance better than expected — but she needs the brake of "skip a night" permission.' }
+      ]
+    },
+
+    /* ===== James — new patient, single initial scan ===== */
+    {
+      id: 'p2', name: 'James Chen', age: 38, email: 'james.chen@example.com',
+      initials: 'JC', color: '#0891b2',
+      enrolled: '2026-05-28', program: 'Single Scan',
+      programStart: '2026-05-30',
+      chiefComplaint: 'Post-COVID gut issues, energy crash mid-afternoon, food sensitivities',
+      tags: ['Post-COVID', 'Gut'],
+      scans: [
+        {
+          id: 's2-1', date: '2026-05-30', type: 'initial',
+          findings: [
+            { system: 'Gut', stress: 88, items: ['Dysbiosis pattern severe', 'Multiple food signatures (gluten, dairy, eggs)', 'SIBO suspect signal'] },
+            { system: 'Immune', stress: 74, items: ['Post-viral immune dysregulation pattern', 'Persistent inflammation marker'] },
+            { system: 'Mitochondria', stress: 68, items: ['ATP production stress', 'CoQ10 depletion signal'] },
+            { system: 'Adrenals', stress: 61, items: ['HPA axis blunted'] },
+            { system: 'Methylation', stress: 55, items: ['MTHFR support indicated', 'B12/Folate flux'] },
+            { system: 'Detox', stress: 49, items: ['Phase II conjugation soft'] },
+            { system: 'Hormones', stress: 36, items: ['Testosterone within normal range'] },
+            { system: 'Emotional', stress: 47, items: ['Mild limbic activation'] }
+          ],
+          summary: 'Classic post-COVID picture. Gut + mitochondria + immune triad. Methylation support will speed recovery. Cannot push fast — energy reserves low.',
+          kassieNotes: 'James wants to go hard. Slow him down. Phase 1 = restore, not crush.'
+        }
+      ],
+      protocols: [], // not yet built — Kassie will draft today using AI
+      chat: [
+        { role: 'patient', author: 'James', date: '2026-06-02 18:11', text: "Hi Dr. Kassie — got my scan results back over the weekend, very keen to start. Can we talk Monday? I've been reading about high-dose vitamin C protocols, curious your thoughts." }
+      ],
+      notes: [
+        { date: '2026-05-30', text: 'Scan day — James is an engineer, will want to understand mechanism. Frame everything as "the system is asking for X." Has wife/2 kids, wants energy back for soccer Saturday mornings.' }
+      ]
+    },
+
+    /* ===== Linda — long-term Inner Circle ===== */
+    {
+      id: 'p3', name: 'Linda Rodriguez', age: 62, email: 'linda.r@example.com',
+      initials: 'LR', color: '#16a34a',
+      enrolled: '2025-10-15', program: 'Inner Circle',
+      programStart: '2025-10-20',
+      chiefComplaint: 'General wellness, post-cancer survivorship maintenance, energy & immune',
+      tags: ['Inner Circle', 'Survivorship', 'Maintenance'],
+      scans: [
+        {
+          id: 's3-1', date: '2025-10-20', type: 'initial',
+          findings: [
+            { system: 'Detox', stress: 86, items: ['Heavy clearance stress', 'Glutathione very low'] },
+            { system: 'Immune', stress: 79, items: ['NK function support indicated', 'Post-treatment recovery pattern'] },
+            { system: 'Gut', stress: 71, items: ['Post-antibiotic dysbiosis'] },
+            { system: 'Adrenals', stress: 68, items: ['Chronic stress imprint'] },
+            { system: 'Mitochondria', stress: 64, items: ['ATP recovery needed'] }
+          ],
+          summary: 'Post-cancer treatment recovery profile. Drainage + detox + gut rebuild + immune support.',
+          kassieNotes: 'Linda is precious. Slow and steady. Oncologist on speed dial for any flags.'
+        },
+        {
+          id: 's3-2', date: '2026-01-22', type: 'followup',
+          findings: [
+            { system: 'Detox', stress: 58, items: ['Improving'] },
+            { system: 'Immune', stress: 51, items: ['NK pattern strengthening'] },
+            { system: 'Gut', stress: 44, items: ['Microbiome rebuilding'] },
+            { system: 'Adrenals', stress: 49, items: ['HPA repairing'] },
+            { system: 'Mitochondria', stress: 47, items: ['Energy returning'] }
+          ],
+          summary: 'Excellent 3-month response across all priority systems.',
+          kassieNotes: 'Linda reported "I feel like me again" at last visit. Stay the course.'
+        },
+        {
+          id: 's3-3', date: '2026-04-20', type: 'followup',
+          findings: [
+            { system: 'Detox', stress: 42, items: ['Good clearance capacity'] },
+            { system: 'Immune', stress: 36, items: ['Stable'] },
+            { system: 'Gut', stress: 31, items: ['Stable'] },
+            { system: 'Adrenals', stress: 35, items: ['Stable'] },
+            { system: 'Mitochondria', stress: 38, items: ['Stable'] }
+          ],
+          summary: 'Maintenance picture. Reduce protocol intensity. Continue immune + light support.',
+          kassieNotes: 'Reduce supplements to maintenance dose. Quarterly check-in.'
+        }
+      ],
+      protocols: [
+        {
+          id: 'pr3-3', version: 3, date: '2026-04-20', status: 'active',
+          goal: 'Maintenance: immune support + gentle detox + foundational nutrition',
+          supplements: [
+            { name: 'Liposomal Glutathione', brand: 'Seeking Health', dose: '1 tsp AM, 4 days/week', duration: 'ongoing' },
+            { name: 'MegaSporeBiotic', brand: 'Microbiome Labs', dose: '1 cap AM', duration: 'ongoing' },
+            { name: 'Vitamin D3/K2', brand: 'Designs for Health', dose: '5000 IU AM with fat', duration: 'ongoing' },
+            { name: 'Adaptogen-R3', brand: 'Standard Process', dose: '2 caps midday', duration: 'ongoing' }
+          ],
+          lifestyle: ['Mediterranean pattern, fish 3x/week', '20-min walk after dinner', 'Quarterly footbath at Vibrant', 'Annual functional bloodwork'],
+          remedy: 'Custom maintenance blend — immune + adaptogen',
+          rescan: '2026-07-20'
+        }
+      ],
+      chat: [
+        { role: 'patient', author: 'Linda', date: '2026-05-12 11:20', text: 'Kassie my love — last week’s footbath was wonderful. Felt lighter. Looking forward to July re-scan!' },
+        { role: 'kassie', author: 'Dr. Kassie', date: '2026-05-12 16:45', text: 'Linda 💛 You\'re a star. See you next month — bring those scan grandchildren photos!' }
+      ],
+      notes: [
+        { date: '2026-04-20', text: 'Maintenance phase officially. Reduce contact freq to monthly. Watch for any uptick — survivorship vigilance.' }
+      ]
+    },
+
+    /* ===== Tomás — pediatric ===== */
+    {
+      id: 'p4', name: 'Tomás Ortega', age: 8, email: 'marisol.o@example.com',
+      initials: 'TO', color: '#ea580c',
+      enrolled: '2026-03-10', program: '90-Day Root Cause Reset (Pediatric)',
+      programStart: '2026-03-15',
+      chiefComplaint: 'Eczema (since age 4), trouble focusing in school, picky eating, frequent stomachaches',
+      tags: ['Pediatric', 'Eczema', 'Focus'],
+      scans: [
+        {
+          id: 's4-1', date: '2026-03-15', type: 'initial',
+          findings: [
+            { system: 'Gut', stress: 76, items: ['Dysbiosis pattern (pediatric)', 'Multiple food sensitivity signals (dairy, wheat, peanut)'] },
+            { system: 'Immune', stress: 68, items: ['TH2 polarization (atopic pattern)', 'Histamine sensitivity'] },
+            { system: 'Skin', stress: 72, items: ['Skin barrier stress', 'Hydration pattern'] },
+            { system: 'Methylation', stress: 54, items: ['Pediatric MTHFR support'] },
+            { system: 'Nervous System', stress: 61, items: ['Sensory processing stress pattern'] }
+          ],
+          summary: 'Gut → skin → focus triad common in atopic pediatric kids. Half-dose protocol, drainage + nutrition foundation, no aggressive detox.',
+          kassieNotes: 'Talk to Marisol (mom). She is anxious — needs reassurance and clear weekly checkpoints.'
+        },
+        {
+          id: 's4-2', date: '2026-04-18', type: 'followup',
+          findings: [
+            { system: 'Gut', stress: 54, items: ['Improving with diet changes'] },
+            { system: 'Immune', stress: 51, items: ['TH2 moderating'] },
+            { system: 'Skin', stress: 47, items: ['Eczema flares less frequent per mom'] },
+            { system: 'Methylation', stress: 46, items: ['B-vitamin support helping'] },
+            { system: 'Nervous System', stress: 49, items: ['Focus reports improving from teacher'] }
+          ],
+          summary: 'Strong pediatric response. Mom reports calmer, teacher noted focus improvement, skin clearer. Continue & expand foods slowly.',
+          kassieNotes: 'Marisol much more confident. Build in a "wins" check-in next time.'
+        }
+      ],
+      protocols: [
+        {
+          id: 'pr4-2', version: 2, date: '2026-04-18', status: 'active',
+          goal: 'Continue gut healing, expand safe foods, support focus + skin',
+          supplements: [
+            { name: "Kid's Probiotic", brand: 'Klaire Labs', dose: '1 chewable AM', duration: 'ongoing' },
+            { name: 'L-Glutamine Powder', brand: 'Designs for Health', dose: '2g in smoothie AM', duration: '30 days' },
+            { name: "Kid's MultiVit (no folic acid)", brand: 'Seeking Health', dose: '1 chewable AM', duration: 'ongoing' },
+            { name: 'Omega-3 (kid)', brand: 'Nordic Naturals', dose: '1 tsp AM in food', duration: 'ongoing' }
+          ],
+          lifestyle: ['Continue dairy/wheat OUT for now', 'Reintroduce eggs week 6 (1 at a time)', 'Outdoor play 60 min/day', 'Magnesium bath 2x/week for skin'],
+          remedy: 'Custom pediatric blend — gut soothing + skin support',
+          rescan: '2026-06-18'
+        }
+      ],
+      chat: [
+        { role: 'patient', author: 'Marisol (mom)', date: '2026-05-22 21:14', text: "Doctora — Tomás had a flare last weekend after the birthday party (he had 2 cupcakes 🙈). It’s gone now. Should we adjust anything?" },
+        { role: 'kassie', author: 'Dr. Kassie', date: '2026-05-23 09:30', text: 'Marisol — totally normal. The fact that the flare RESOLVED quickly tells us his barrier is getting stronger. No protocol change needed. Maybe a magnesium bath that night next time. ❤️' }
+      ],
+      notes: [
+        { date: '2026-03-15', text: 'Marisol very engaged. Tomás shy but cooperative. NEVER push aggressive detox. Slow & gentle.' },
+        { date: '2026-04-18', text: 'Win: teacher unprompted noted focus improvement. Tell Marisol.' }
+      ]
+    },
+
+    /* ===== Karen — complex case ===== */
+    {
+      id: 'p5', name: 'Karen Wilson', age: 53, email: 'k.wilson@example.com',
+      initials: 'KW', color: '#dc2626',
+      enrolled: '2025-09-01', program: 'Inner Circle (complex)',
+      programStart: '2025-09-10',
+      chiefComplaint: 'Decade of unexplained chronic illness — joint pain, brain fog, periodic flares; multiple negative bloodworks',
+      tags: ['Complex', 'Stealth pathogen patterns', 'Long-haul'],
+      scans: [
+        {
+          id: 's5-1', date: '2025-09-10', type: 'initial',
+          findings: [
+            { system: 'Immune', stress: 91, items: ['Severe dysregulation', 'Multiple stealth pathogen signatures'] },
+            { system: 'Detox', stress: 88, items: ['Heavy clearance failure', 'Phase II almost absent'] },
+            { system: 'Mitochondria', stress: 84, items: ['ATP production severely stressed'] },
+            { system: 'Adrenals', stress: 79, items: ['HPA collapse pattern'] },
+            { system: 'Nervous System', stress: 76, items: ['Neuro stress patterns'] },
+            { system: 'Methylation', stress: 71, items: ['MTHFR + COMT stress'] },
+            { system: 'Hormones', stress: 64, items: ['Steroidogenesis stressed'] }
+          ],
+          summary: 'Severe presentation. 5+ systems above 75. Cannot detox until drainage capacity is built. 6-month minimum protocol expected.',
+          kassieNotes: 'Karen has been failed by the medical system. Build trust first, results second. Coordinate with her PCP — get records.'
+        },
+        {
+          id: 's5-2', date: '2025-12-08', type: 'followup',
+          findings: [
+            { system: 'Immune', stress: 78, items: ['Slight moderation'] },
+            { system: 'Detox', stress: 74, items: ['Drainage opening'] },
+            { system: 'Mitochondria', stress: 71, items: ['Some recovery'] },
+            { system: 'Adrenals', stress: 68, items: ['Some recovery'] },
+            { system: 'Nervous System', stress: 68, items: ['Calmer'] },
+            { system: 'Methylation', stress: 58, items: ['Active B response good'] },
+            { system: 'Hormones', stress: 56, items: ['Some restoration'] }
+          ],
+          summary: 'Slow, steady. Drainage finally opening. Now is the window to begin gentle binders.',
+          kassieNotes: 'First Herx episode in November scared her — she trusts the protocol now.'
+        },
+        {
+          id: 's5-3', date: '2026-03-15', type: 'followup',
+          findings: [
+            { system: 'Immune', stress: 64, items: ['Continued moderation'] },
+            { system: 'Detox', stress: 58, items: ['Good clearance now'] },
+            { system: 'Mitochondria', stress: 55, items: ['Energy returning'] },
+            { system: 'Adrenals', stress: 51, items: ['HPA repairing'] },
+            { system: 'Nervous System', stress: 54, items: ['Brain fog clearing days'] },
+            { system: 'Methylation', stress: 47, items: ['Stable'] },
+            { system: 'Hormones', stress: 49, items: ['Continuing to rebalance'] }
+          ],
+          summary: 'Substantial progress across the board. First time below 60 in immune. Continue phase 3 — deeper binder + mitochondrial push.',
+          kassieNotes: 'Karen cried with relief at this visit. Be careful — expectations now high.'
+        },
+        {
+          id: 's5-4', date: '2026-05-25', type: 'followup',
+          findings: [
+            { system: 'Immune', stress: 57, items: ['Stable, continuing'] },
+            { system: 'Detox', stress: 49, items: ['Strong clearance'] },
+            { system: 'Mitochondria', stress: 46, items: ['Energy 60% of pre-illness baseline'] },
+            { system: 'Adrenals', stress: 44, items: ['Good HPA capacity'] },
+            { system: 'Nervous System', stress: 47, items: ['Brain fog rare'] },
+            { system: 'Methylation', stress: 41, items: ['Stable'] },
+            { system: 'Hormones', stress: 42, items: ['Stable'] }
+          ],
+          summary: 'Plateau-ing in good zone. May be time to add gentle mitochondrial push + reduce binder frequency.',
+          kassieNotes: 'Karen mentioned she "had a full week without thinking about being sick." That is the win.'
+        }
+      ],
+      protocols: [
+        {
+          id: 'pr5-4', version: 4, date: '2026-05-25', status: 'active',
+          goal: 'Phase 4: Mitochondrial push, gentle binder, sustained immune support',
+          supplements: [
+            { name: 'Mito-Tone', brand: 'Energetix', dose: '15 drops 2x/day', duration: '60 days' },
+            { name: 'PQQ + CoQ10', brand: 'Designs for Health', dose: '1 cap AM with fat', duration: '60 days' },
+            { name: 'GI-Detox+', brand: 'Bio-Botanical', dose: '1 cap before bed (3 nights on, 1 off)', duration: 'ongoing' },
+            { name: 'Liposomal Glutathione', brand: 'Seeking Health', dose: '1 tsp AM', duration: 'ongoing' },
+            { name: 'MegaSporeBiotic', brand: 'Microbiome Labs', dose: '2 caps AM', duration: 'ongoing' },
+            { name: 'Adaptogen-R3', brand: 'Standard Process', dose: '2 caps midday', duration: 'ongoing' }
+          ],
+          lifestyle: ['Mediterranean+protein', 'HRV training 10 min AM', '4-7-8 breath before bed', 'Continue Vibrant footbath weekly'],
+          remedy: 'Complex remedy — mitochondrial + drainage + immune support',
+          rescan: '2026-08-25'
+        }
+      ],
+      chat: [
+        { role: 'patient', author: 'Karen', date: '2026-06-01 07:55', text: 'Doctora — I had to share. I went on a 2-mile WALK Sunday morning. No fog. No crash after. Eight years and that is the first time. Thank you.' },
+        { role: 'kassie', author: 'Dr. Kassie', date: '2026-06-01 08:30', text: "Karen, I'm crying. Two miles. EIGHT YEARS. This is the medicine. Send pics next time — let's hang one in the office. (with your permission of course)" },
+        { role: 'patient', author: 'Karen', date: '2026-06-01 08:42', text: '❤️❤️❤️' }
+      ],
+      notes: [
+        { date: '2025-09-10', text: 'Coordinate with PCP. Get records. Patient has been gaslit by system; trust-build is everything.' },
+        { date: '2025-12-08', text: 'First Herx — she stuck with it. Trust earned.' },
+        { date: '2026-03-15', text: 'Big breakthrough scan. Manage expectations carefully going forward.' },
+        { date: '2026-06-01', text: 'Two-mile walk milestone. Document this for HER, not just clinic. Print and frame.' }
+      ]
+    }
+  ]
+};
+
+// Live mutable state — load from localStorage if present
+const LS_KEY = 'bioscan-portal-state-v1';
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(SEED));
+}
+function saveState() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function resetState() {
+  if (confirm('Reset all demo data?')) {
+    localStorage.removeItem(LS_KEY);
+    state = JSON.parse(JSON.stringify(SEED));
+    saveState(); render();
+  }
+}
+let state = loadState();
+let session = { user: null, view: 'login' };
+
+/* ===================================================
+   MOCK AI CLIENT
+   In production: replace with fetch() to a Supabase Edge Function that calls Anthropic.
+   The function shapes here mirror what real prompts would return.
+   =================================================== */
+const AI = {
+  async analyzeNewScan({ patient, newFindings }) {
+    await wait(700);
+    const prev = patient.scans[patient.scans.length - 1];
+    // Build comparison
+    const comparison = (newFindings || []).map(f => {
+      const old = prev?.findings.find(x => x.system === f.system);
+      const delta = old ? f.stress - old.stress : null;
+      return { system: f.system, current: f.stress, previous: old?.stress, delta };
+    });
+    const top = [...(newFindings||[])].sort((a,b)=>b.stress-a.stress).slice(0,3);
+    const improved = comparison.filter(c => c.delta !== null && c.delta <= -8).map(c => c.system);
+    const worsened = comparison.filter(c => c.delta !== null && c.delta >= 8).map(c => c.system);
+    return {
+      executiveSummary: prev
+        ? `Compared to ${niceDate(prev.date)}: ${improved.length ? improved.join(', ') + ' improving' : 'no major improvements yet'}${worsened.length ? '; ' + worsened.join(', ') + ' showing increase' : ''}. Top current stressors: ${top.map(t => t.system).join(', ')}.`
+        : `Initial scan. Top 3 systems by reactivity: ${top.map(t => `${t.system} (${t.stress}%)`).join(' · ')}. Build phase-1 protocol around drainage and the highest-priority system.`,
+      topConcerns: top.map(t => ({
+        system: t.system, stress: t.stress,
+        rationale: rationaleFor(t.system, t.stress),
+      })),
+      improvements: improved,
+      regressions: worsened,
+      kassieFlags: top.filter(t => t.stress > 85).map(t => `${t.system} >85 — review carefully (Kassie's flag rule)`)
+        .concat(worsened.length ? [`Watch: ${worsened.join(', ')} stress increased from prior scan`] : []),
+      comparison
+    };
+  },
+
+  async draftProtocol({ patient, analysis, knowledge }) {
+    await wait(900);
+    const concerns = analysis.topConcerns.map(c => c.system);
+    const supplements = [];
+    const lifestyle = [];
+
+    // Apply Kassie's playbook patterns from clinical knowledge
+    if (concerns.includes('Gut')) {
+      supplements.push({ name: 'GI-Microb-X', brand: 'Designs for Health', dose: '2 caps AM/PM', duration: '30 days', why: 'Kassie rule: gut first when in doubt.' });
+      supplements.push({ name: 'L-Glutamine Powder', brand: 'Designs for Health', dose: '5g empty stomach AM', duration: 'ongoing', why: 'Default dose per Kassie\'s playbook.' });
+      lifestyle.push('Eliminate gluten and dairy for 30 days');
+    }
+    if (concerns.includes('Detox') || concerns.includes('Toxins')) {
+      supplements.push({ name: 'Drainage-Tone', brand: 'Energetix', dose: '15 drops 3x/day before meals', duration: '30 days', why: 'Kassie rule: drain before detox — open lymph/liver pathways.' });
+    }
+    if (concerns.includes('Adrenals')) {
+      supplements.push({ name: 'Adrenal-Tone', brand: 'Energetix', dose: '15 drops 2x/day', duration: '30 days', why: 'Kassie\'s adrenal default.' });
+      lifestyle.push('Bed by 10:30pm, no screens after 9pm');
+    }
+    if (concerns.includes('Hormones')) {
+      supplements.push({ name: 'FemGuard+Balance', brand: 'Designs for Health', dose: '2 caps with breakfast', duration: '60 days', why: 'Kassie\'s hormone re-balance default.' });
+    }
+    if (concerns.includes('Mitochondria')) {
+      supplements.push({ name: 'Mito-Tone', brand: 'Energetix', dose: '15 drops 2x/day', duration: '60 days', why: 'Kassie\'s mito default.' });
+    }
+    if (concerns.includes('Methylation')) {
+      supplements.push({ name: 'Active B-Complex', brand: 'Seeking Health', dose: '1 cap AM', duration: 'ongoing', why: 'Per playbook.' });
+    }
+    if (concerns.includes('Immune')) {
+      supplements.push({ name: 'Liposomal Glutathione', brand: 'Seeking Health', dose: '1 tsp AM', duration: '30 days', why: 'Foundational immune support.' });
+    }
+    // Cap to 4 supplements per Kassie's rule
+    const capped = supplements.slice(0, 4);
+    const overflow = supplements.slice(4);
+    lifestyle.push('10k steps/day');
+    if (patient.age < 13) {
+      capped.forEach(s => s.dose = `(half adult dose) ${s.dose}`);
+      lifestyle.push('Pediatric: no aggressive detox per Kassie\'s rule');
+    }
+    return {
+      goal: `Address top stressors: ${concerns.join(', ')}. Apply Kassie\'s sequencing: drainage first when needed, gut first when in doubt, never more than 4 supps at once.`,
+      supplements: capped,
+      overflow: overflow.length ? `${overflow.length} additional candidates held back (4-supplement rule). Consider rotating in at re-scan: ${overflow.map(o=>o.name).join(', ')}` : null,
+      lifestyle,
+      remedy: `Custom imprinted remedy — ${concerns.slice(0,2).join(' + ').toLowerCase()} blend`,
+      rescan: today(30),
+      complianceCheck: 'Language: framed as "stress patterns" and "supports the body" only. No diagnoses, no disease names.'
+    };
+  },
+
+  async draftReply({ patient, lastMessage }) {
+    await wait(600);
+    const last = lastMessage.text.toLowerCase();
+    // Pattern match on common patient concerns
+    if (/bloat|gas|stomach|gut/.test(last)) {
+      return `Thanks for the update — bloating at this phase usually means the protocol is mobilizing more than the gut is comfortable clearing. Two options: (1) skip [supplement] for 2 nights then resume at half-dose, or (2) add ginger tea before meals. Check in Monday and we'll adjust. — Dr. Kassie`;
+    }
+    if (/sleep|tired|energy|fatigue/.test(last)) {
+      return `Glad you flagged this — energy/sleep shifts are the biggest signal in the early weeks. Are you taking magnesium glycinate at bedtime? If not, add 400mg. Also: any caffeine after noon? Let's chat at your next visit. — Dr. Kassie`;
+    }
+    if (/flare|rash|skin|eczema/.test(last)) {
+      return `Flares this early are normal as the system clears. The fact that it RESOLVED tells me your barrier is improving. No protocol change needed yet — let's watch for a week. If you'd like, magnesium bath 2x/week. — Dr. Kassie`;
+    }
+    if (/protocol|supplement|new|add/.test(last)) {
+      return `Great question. Before adding anything, let's see how the current protocol is settling. We'll review options at your re-scan. In the meantime — what's the biggest symptom you'd like us to focus on next? — Dr. Kassie`;
+    }
+    return `Thanks for the message — got it. I'll review with the protocol notes and reply by end of day. Anything specific you want me to address? — Dr. Kassie`;
+  },
+
+  async insight({ patient }) {
+    await wait(400);
+    const scans = patient.scans;
+    if (scans.length < 2) return null;
+    const latest = scans[scans.length-1];
+    const prev = scans[scans.length-2];
+    const biggestImprovement = latest.findings.map(f => {
+      const old = prev.findings.find(p => p.system === f.system);
+      return { system: f.system, delta: old ? f.stress - old.stress : 0 };
+    }).sort((a,b)=>a.delta-b.delta)[0];
+    return biggestImprovement && biggestImprovement.delta < -5
+      ? `${biggestImprovement.system} dropped ${Math.abs(biggestImprovement.delta)} points since ${niceDate(prev.date)} — the protocol is working there.`
+      : null;
+  }
+};
+
+function rationaleFor(system, stress) {
+  const map = {
+    Gut: 'Per Kassie\'s playbook: ~70% of cases are gut-driven downstream. Address first.',
+    Detox: 'Drainage must open BEFORE deeper detox per Kassie\'s rule.',
+    Adrenals: 'HPA recovery is foundational — protect sleep + circadian.',
+    Hormones: 'Sequence: cortisol pattern first, then sex hormones.',
+    Mitochondria: 'ATP capacity gates everything else. Slow ramp.',
+    Methylation: 'MTHFR / B-vitamin support often unlocks energy.',
+    Immune: 'Watch TH1/TH2 balance. Gentle modulation.',
+    Toxins: 'Bind only when drainage is open. Order matters.',
+    Emotional: 'Limbic stress feeds physiology. Consider HRV / breath training.',
+    'Nervous System': 'Pediatric: think sensory + nutrition + sleep first.',
+    Skin: 'Skin = gut signal. Address gut first.',
+    Minerals: 'Often a quick win — replete and reassess.'
+  };
+  return (map[system] || 'Address per protocol sequencing rules.') + ` (current: ${stress}%)`;
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ===================================================
+   ROUTER
+   =================================================== */
+function navigate(path) {
+  if (location.hash.slice(1) === path) { render(); return; }
+  location.hash = path;
+}
+window.addEventListener('hashchange', render);
+
+/* ===================================================
+   AUTH (mock)
+   =================================================== */
+function login(target) {
+  if (target === 'kassie') {
+    session.user = { role: 'practitioner', name: 'Dr. Kassandra Francis', initials: 'KF', id: 'kf' };
+  } else if (target.startsWith('patient:')) {
+    const pid = target.split(':')[1];
+    const p = state.patients.find(x => x.id === pid);
+    if (!p) return;
+    session.user = { role: 'patient', name: p.name, initials: p.initials, id: pid, color: p.color };
+  }
+  session.view = 'app';
+  location.hash = '#/';
+  render();
+}
+function logout() {
+  session.user = null;
+  session.view = 'login';
+  location.hash = '#/';
+  render();
+}
+
+/* ===================================================
+   VIEW: RENDER ENTRY
+   =================================================== */
+function render() {
+  const loginEl = document.getElementById('login-screen');
+  const appEl = document.getElementById('app-shell');
+  const patientApp = document.getElementById('patient-app');
+  const roleSlot = document.getElementById('role-pill-slot');
+  const demoBadge = document.getElementById('demo-badge');
+
+  if (!session.user) {
+    loginEl.style.display = '';
+    appEl.style.display = 'none';
+    patientApp.style.display = 'none';
+    roleSlot.innerHTML = '';
+    demoBadge.style.display = 'none';
+    return;
+  }
+
+  loginEl.style.display = 'none';
+  demoBadge.style.display = '';
+  roleSlot.innerHTML = `
+    <span class="role-pill">
+      <span class="ava" style="${session.user.color ? `background:${session.user.color}`:''}">${session.user.initials}</span>
+      <span><span class="role">${session.user.role}</span>${session.user.name}</span>
+      <button title="Sign out" onclick="logout()">↪</button>
+    </span>
+  `;
+
+  if (session.user.role === 'practitioner') {
+    appEl.style.display = '';
+    patientApp.style.display = 'none';
+    renderSidebar();
+    renderMain();
+  } else {
+    appEl.style.display = 'none';
+    patientApp.style.display = '';
+    renderPatientApp();
+  }
+}
+
+/* ===================================================
+   PRACTITIONER SIDEBAR
+   =================================================== */
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const hash = location.hash.slice(1) || '/';
+  const m = hash.match(/^\/patient\/(\w+)/);
+  const activeId = m && m[1];
+
+  sidebar.innerHTML = `
+    <div class="search">
+      <input id="search-input" placeholder="Search patients..." />
+    </div>
+
+    <a class="nav-link ${hash==='/'?'active':''}" href="#/"><span class="ic">📋</span> All Patients</a>
+    <a class="nav-link ${hash.startsWith('/knowledge')?'active':''}" href="#/knowledge"><span class="ic">📖</span> Knowledge Base</a>
+    <a class="nav-link ${hash.startsWith('/templates')?'active':''}" href="#/templates"><span class="ic">🧪</span> Protocol Templates</a>
+
+    <div class="section-label">Patients (${state.patients.length})</div>
+    <div class="patient-list" id="patient-list">
+      ${state.patients.map(p => renderPatientItem(p, activeId)).join('')}
+    </div>
+
+    <div class="section-label">Actions</div>
+    <button class="nav-link" onclick="openModal('new-patient')"><span class="ic">➕</span> Add Patient</button>
+    <button class="nav-link" onclick="resetState()"><span class="ic">↺</span> Reset Demo Data</button>
+  `;
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    const q = e.target.value.toLowerCase();
+    const list = document.getElementById('patient-list');
+    list.innerHTML = state.patients
+      .filter(p => p.name.toLowerCase().includes(q) || (p.tags||[]).some(t => t.toLowerCase().includes(q)))
+      .map(p => renderPatientItem(p, activeId)).join('');
+  });
+}
+
+function renderPatientItem(p, activeId) {
+  const latest = p.scans[p.scans.length-1];
+  const daysSince = latest ? Math.floor((NOW - new Date(latest.date + 'T00:00:00'))/86400000) : 999;
+  const statusDot = daysSince < 30 ? 'green' : daysSince < 90 ? 'amber' : 'gray';
+  return `
+    <div class="patient-item ${activeId===p.id?'active':''}" onclick="navigate('/patient/${p.id}')">
+      <div class="patient-ava" style="background:${p.color}">${p.initials}</div>
+      <div class="meta">
+        <div class="pname">${p.name}</div>
+        <div class="psub">${p.program} · ${daysAgo(latest?.date) || 'no scan yet'}</div>
+      </div>
+      <div class="dot ${statusDot}"></div>
+    </div>
+  `;
+}
+
+/* ===================================================
+   PRACTITIONER MAIN
+   =================================================== */
+function renderMain() {
+  const hash = location.hash.slice(1) || '/';
+
+  if (hash === '/' || hash === '') return renderDashboard();
+  if (hash === '/knowledge') return renderKnowledge();
+  if (hash === '/templates') return renderTemplates();
+  const m = hash.match(/^\/patient\/(\w+)(?:\/(\w+))?/);
+  if (m) {
+    const p = state.patients.find(x => x.id === m[1]);
+    if (!p) return renderDashboard();
+    return renderPatient(p, m[2] || 'overview');
+  }
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const main = document.getElementById('main');
+  // High-level stats
+  const totalPatients = state.patients.length;
+  const onProgram = state.patients.filter(p => /Reset|Inner|Pediatric/i.test(p.program)).length;
+  const needsFollowup = state.patients.filter(p => {
+    const latest = p.scans[p.scans.length-1];
+    if (!latest) return true;
+    return Math.floor((NOW - new Date(latest.date + 'T00:00:00'))/86400000) > 60;
+  }).length;
+  const scansLast30 = state.patients.reduce((acc,p) => acc + p.scans.filter(s => Math.floor((NOW - new Date(s.date+'T00:00:00'))/86400000) < 30).length, 0);
+
+  main.innerHTML = `
+    <h1>Good morning, Dr. Kassie.</h1>
+    <p>You have <strong>${state.patients.length}</strong> active patients in the portal. Here's the state of things.</p>
+
+    <div class="stats">
+      <div class="stat blue"><div class="lbl">Active Patients</div><div class="val">${totalPatients}</div></div>
+      <div class="stat"><div class="lbl">On Programs</div><div class="val">${onProgram}</div><div class="delta down">${onProgram}/${totalPatients} engaged</div></div>
+      <div class="stat gold"><div class="lbl">Scans · last 30 days</div><div class="val">${scansLast30}</div></div>
+      <div class="stat"><div class="lbl">Need Follow-up</div><div class="val">${needsFollowup}</div>${needsFollowup ? '<div class="delta up">review queue</div>' : ''}</div>
+    </div>
+
+    <h2>All patients</h2>
+    <div class="grid-3" style="margin-top:1rem;">
+      ${state.patients.map(p => renderPatientCard(p)).join('')}
+    </div>
+  `;
+}
+
+function renderPatientCard(p) {
+  const latest = p.scans[p.scans.length-1];
+  const protocol = p.protocols[p.protocols.length-1];
+  const daysSince = latest ? Math.floor((NOW - new Date(latest.date+'T00:00:00'))/86400000) : null;
+  const status = !latest ? '<span class="badge info">No scan yet</span>' :
+                 daysSince < 30 ? '<span class="badge good">Active</span>' :
+                 daysSince < 60 ? '<span class="badge gold">Mid-cycle</span>' :
+                 '<span class="badge warn">Re-scan due</span>';
+  const top = latest ? [...latest.findings].sort((a,b)=>b.stress-a.stress).slice(0,2) : [];
+
+  return `
+    <div class="card" onclick="navigate('/patient/${p.id}')" style="cursor:pointer;">
+      <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem;">
+        <div class="patient-ava" style="background:${p.color}; width:38px; height:38px; font-size:.9rem;">${p.initials}</div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">${p.name}</div>
+          <div style="font-size:.78rem;color:var(--ink-mute);">${p.age} · ${p.program}</div>
+        </div>
+        ${status}
+      </div>
+      <div style="font-size:.85rem;color:var(--ink-soft);min-height: 3em;">${p.chiefComplaint}</div>
+      ${top.length ? `
+        <hr class="sep" />
+        <div style="font-size:.74rem;color:var(--ink-mute);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem;">Top stressors</div>
+        ${top.map(f => `
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.3rem;">
+            <span>${f.system}</span>
+            <strong style="color:${f.stress>75?'var(--bad)':f.stress>55?'var(--warn)':'var(--ink-soft)'};">${f.stress}%</strong>
+          </div>
+        `).join('')}
+      ` : '<hr class="sep" /><div style="text-align:center;color:var(--ink-mute);font-size:.85rem;">Awaiting first scan</div>'}
+    </div>
+  `;
+}
+
+/* ===================================================
+   PATIENT DETAIL
+   =================================================== */
+function renderPatient(p, tab) {
+  const main = document.getElementById('main');
+  const latest = p.scans[p.scans.length-1];
+  const protocol = p.protocols[p.protocols.length-1];
+
+  main.innerHTML = `
+    <div class="page-head">
+      <div class="big-ava" style="background:${p.color}">${p.initials}</div>
+      <div>
+        <h1>${p.name}</h1>
+        <div class="meta-row">
+          <span>📅 Age ${p.age}</span>
+          <span>📧 ${p.email}</span>
+          <span>📋 ${p.program}</span>
+          <span>🏁 Started ${niceDate(p.programStart)}</span>
+        </div>
+        <div style="margin-top:.7rem;">
+          ${(p.tags||[]).map(t => `<span class="badge info" style="margin-right:.3rem;">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" onclick="openModal('new-scan','${p.id}')">+ New Scan</button>
+        <button class="btn btn-primary btn-sm" onclick="openModal('new-protocol','${p.id}')">+ New Protocol</button>
+      </div>
+    </div>
+
+    <div class="tabs-row">
+      <button class="tab ${tab==='overview'?'active':''}" onclick="navigate('/patient/${p.id}')">Overview</button>
+      <button class="tab ${tab==='scans'?'active':''}" onclick="navigate('/patient/${p.id}/scans')">Scans <span class="count">${p.scans.length}</span></button>
+      <button class="tab ${tab==='protocol'?'active':''}" onclick="navigate('/patient/${p.id}/protocol')">Protocols <span class="count">${p.protocols.length}</span></button>
+      <button class="tab ${tab==='chat'?'active':''}" onclick="navigate('/patient/${p.id}/chat')">Chat <span class="count">${p.chat.length}</span></button>
+      <button class="tab ${tab==='notes'?'active':''}" onclick="navigate('/patient/${p.id}/notes')">Clinical Notes <span class="count">${p.notes.length}</span></button>
+    </div>
+
+    <div id="tab-body">${
+      tab==='scans' ? renderScansTab(p)
+      : tab==='protocol' ? renderProtocolTab(p)
+      : tab==='chat' ? renderChatTab(p)
+      : tab==='notes' ? renderNotesTab(p)
+      : renderOverviewTab(p)
+    }</div>
+  `;
+}
+
+function renderOverviewTab(p) {
+  const latest = p.scans[p.scans.length-1];
+  const prev = p.scans[p.scans.length-2];
+  const protocol = p.protocols[p.protocols.length-1];
+
+  if (!latest) {
+    return `
+      <div class="card">
+        <div class="empty">
+          <div class="ic">🔬</div>
+          <h3>No scan yet</h3>
+          <p>Run the first BioScan to start building a baseline.</p>
+          <button class="btn btn-primary" onclick="openModal('new-scan','${p.id}')">+ New Scan</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const top = [...latest.findings].sort((a,b)=>b.stress-a.stress).slice(0,5);
+  const avgScore = Math.round(latest.findings.reduce((a,f) => a+f.stress, 0) / latest.findings.length);
+  const prevAvg = prev ? Math.round(prev.findings.reduce((a,f) => a+f.stress, 0) / prev.findings.length) : null;
+  const avgDelta = prevAvg !== null ? avgScore - prevAvg : null;
+
+  return `
+    <div class="stats">
+      <div class="stat blue"><div class="lbl">Latest Scan</div><div class="val">${niceDate(latest.date)}</div><div class="delta down">${daysAgo(latest.date)}</div></div>
+      <div class="stat"><div class="lbl">Avg System Stress</div><div class="val">${avgScore}%</div>${avgDelta!==null?`<div class="delta ${avgDelta<0?'down':'up'}">${avgDelta>0?'+':''}${avgDelta} vs prior</div>`:''}</div>
+      <div class="stat gold"><div class="lbl">Scans Total</div><div class="val">${p.scans.length}</div></div>
+      <div class="stat"><div class="lbl">Next Re-scan</div><div class="val" style="font-size:1.2rem;">${protocol?.rescan ? niceDate(protocol.rescan) : '—'}</div></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-h"><h3>Top stressors (latest scan)</h3></div>
+        <div class="findings-list">
+          ${top.map(f => {
+            const old = prev?.findings.find(x => x.system === f.system);
+            const delta = old ? f.stress - old.stress : null;
+            return findingRow(f, delta);
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Trend across scans</h3></div>
+        ${renderTrendChart(p)}
+      </div>
+    </div>
+
+    ${protocol ? `
+      <div style="margin-top:1.5rem;">
+        <div class="card">
+          <div class="card-h">
+            <div><span class="ver">Active Protocol · v${protocol.version}</span><h3 style="margin-top:.3rem;">${protocol.goal}</h3></div>
+            <div class="small-actions">
+              <button class="btn btn-ghost btn-sm" onclick="navigate('/patient/${p.id}/protocol')">View full</button>
+            </div>
+          </div>
+          <div class="supp-list">
+            ${protocol.supplements.slice(0,4).map(s => `
+              <div class="supp">
+                <div><div class="name">${s.name}</div><div class="brand">${s.brand}</div></div>
+                <div><div class="dose">${s.dose}</div><div class="dur">${s.duration}</div></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    ` : ''}
+
+    <div style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-h"><h3>Latest scan summary</h3><span class="badge info">${latest.type === 'initial' ? 'Initial' : 'Follow-up'}</span></div>
+        <p>${latest.summary}</p>
+        ${latest.kassieNotes ? `<div style="background:var(--blue-tint);padding:1rem;border-radius:var(--r);border-left:3px solid var(--blue);"><strong style="font-size:.8rem;color:var(--blue);letter-spacing:.08em;text-transform:uppercase;">Your private note</strong><div style="margin-top:.3rem;">${latest.kassieNotes}</div></div>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function findingRow(f, delta) {
+  const cls = f.stress > 80 ? 'bad' : f.stress > 60 ? 'warn' : f.stress > 40 ? 'gold' : 'good';
+  return `
+    <div class="finding">
+      <div class="sys">${f.system}</div>
+      <div class="bar"><div class="fl" style="width:${f.stress}%"></div></div>
+      <div class="pct">${f.stress}%</div>
+      <div class="delta ${delta===null||delta===undefined?'flat':delta>=5?'up':delta<=-5?'down':'flat'}">${delta===null||delta===undefined?'—':(delta>0?'+':'')+delta+' pts'}</div>
+    </div>
+  `;
+}
+
+function renderTrendChart(p) {
+  if (p.scans.length < 2) return '<div class="empty"><p>Need at least 2 scans to show a trend.</p></div>';
+  const systems = ['Gut','Hormones','Detox','Immune','Adrenals','Mitochondria','Nervous System'];
+  const presentSystems = systems.filter(s => p.scans.some(sc => sc.findings.find(f => f.system === s)));
+  const tracked = presentSystems.slice(0, 5);
+  const colors = ['#065C8C', '#E8D833', '#7c3aed', '#16a34a', '#dc2626'];
+  const W = 480, H = 220, P = 30;
+  const xStep = (W - 2*P) / Math.max(1, p.scans.length - 1);
+  const points = tracked.map((sys, i) => {
+    const pts = p.scans.map((sc, idx) => {
+      const f = sc.findings.find(x => x.system === sys);
+      const y = P + (H - 2*P) * ((f?.stress ?? 0) / 100);
+      return [P + idx * xStep, H - y + P]; // invert y for "lower stress = better visually"
+    });
+    return { sys, color: colors[i], pts };
+  });
+  return `
+    <div class="chart-wrap">
+      <div class="chart-legend">
+        ${points.map(s => `<span class="sw" style="--clr:${s.color}">${s.sys}</span>`).join('')}
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%; height: auto;">
+        <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="#E5E7EB" />
+        ${[0,25,50,75,100].map(v => {
+          const y = P + (H - 2*P) * (1 - v/100);
+          return `<line x1="${P}" y1="${y}" x2="${W-P}" y2="${y}" stroke="#F4F6F8" /><text x="6" y="${y+4}" font-size="9" fill="#98A2B3">${v}</text>`;
+        }).join('')}
+        ${p.scans.map((sc, idx) => `<text x="${P + idx*xStep}" y="${H-8}" font-size="9" fill="#98A2B3" text-anchor="middle">${sc.date.slice(5).replace('-','/')}</text>`).join('')}
+        ${points.map(s => `
+          <polyline fill="none" stroke="${s.color}" stroke-width="2" points="${s.pts.map(pt=>pt.join(',')).join(' ')}" />
+          ${s.pts.map(pt => `<circle cx="${pt[0]}" cy="${pt[1]}" r="3" fill="${s.color}" />`).join('')}
+        `).join('')}
+      </svg>
+      <p style="font-size:.78rem;color:var(--ink-mute);text-align:center;margin-top:.5rem;">Lower line = lower stress = better. Y-axis = % reactivity.</p>
+    </div>
+  `;
+}
+
+function renderScansTab(p) {
+  if (!p.scans.length) {
+    return `<div class="card"><div class="empty"><div class="ic">🔬</div><h3>No scans yet</h3><button class="btn btn-primary" onclick="openModal('new-scan','${p.id}')">+ New Scan</button></div></div>`;
+  }
+  return `
+    <div class="card">
+      <div class="card-h">
+        <h3>Scan Timeline</h3>
+        <button class="btn btn-primary btn-sm" onclick="openModal('new-scan','${p.id}')">+ New Scan</button>
+      </div>
+      ${p.scans.map((s, i) => {
+        const prev = p.scans[i-1];
+        return `
+          <div style="padding:1.2rem 0; border-bottom: 1px solid var(--line);">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <h4 style="font-family:'Fraunces',serif; font-weight:500; font-size:1.1rem; margin:0 0 .3rem;">${niceDate(s.date)} · ${s.type === 'initial' ? 'Initial' : 'Follow-up'}</h4>
+                <p style="margin: 0; font-size:.92rem;">${s.summary}</p>
+              </div>
+              <span class="badge info">${daysAgo(s.date)}</span>
+            </div>
+            <div class="findings-list" style="margin-top: 1rem;">
+              ${[...s.findings].sort((a,b)=>b.stress-a.stress).map(f => {
+                const old = prev?.findings.find(x => x.system === f.system);
+                return findingRow(f, old ? f.stress - old.stress : null);
+              }).join('')}
+            </div>
+            ${s.kassieNotes ? `<div style="background:var(--blue-tint);padding:.8rem 1rem;border-radius:var(--r-sm);margin-top:1rem;font-size:.88rem;border-left:3px solid var(--blue);"><strong>Your note:</strong> ${s.kassieNotes}</div>` : ''}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderProtocolTab(p) {
+  if (!p.protocols.length) {
+    return `<div class="card"><div class="empty"><div class="ic">📋</div><h3>No protocol yet</h3><p>Draft the first protocol from the most recent scan.</p><button class="btn btn-primary" onclick="openModal('new-protocol','${p.id}')">+ Draft with AI</button></div></div>`;
+  }
+  const sortedDesc = [...p.protocols].sort((a,b)=>b.version-a.version);
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <h3 style="margin:0;">Protocol History</h3>
+      <button class="btn btn-primary btn-sm" onclick="openModal('new-protocol','${p.id}')">+ New Version (AI draft)</button>
+    </div>
+    ${sortedDesc.map(pr => `
+      <div class="protocol-card" style="margin-bottom:1.2rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <span class="ver">Version ${pr.version} · ${niceDate(pr.date)}</span>
+            ${pr.status==='active' ? '<span class="badge good" style="margin-left:.5rem;">Active</span>' : '<span class="badge" style="background:var(--bg-2);color:var(--ink-mute);margin-left:.5rem;">Archived</span>'}
+            <h3 style="margin: .5rem 0;">${pr.goal}</h3>
+          </div>
+          <small>Re-scan: ${niceDate(pr.rescan)}</small>
+        </div>
+        <h4 style="margin-top:1.2rem;font-family:'Inter';font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);">Supplements (${pr.supplements.length})</h4>
+        <div class="supp-list">
+          ${pr.supplements.map(s => `
+            <div class="supp">
+              <div><div class="name">${s.name}</div><div class="brand">${s.brand}</div></div>
+              <div><div class="dose">${s.dose}</div><div class="dur">${s.duration}</div></div>
+            </div>
+          `).join('')}
+        </div>
+        <h4 style="margin-top:1.2rem;font-family:'Inter';font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);">Lifestyle</h4>
+        <ul class="lifestyle-list">
+          ${pr.lifestyle.map(l => `<li>${l}</li>`).join('')}
+        </ul>
+        <p style="margin-top:1.2rem; font-size:.88rem;"><strong>Custom remedy:</strong> ${pr.remedy}</p>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderChatTab(p) {
+  return `
+    <div class="card">
+      <div class="card-h">
+        <h3>Conversation with ${p.name}</h3>
+        <span class="badge gold">AI-assisted drafting on</span>
+      </div>
+      <div class="chat-list" id="chat-list">
+        ${p.chat.map(m => renderChatMsg(m)).join('')}
+        <div id="chat-anchor"></div>
+      </div>
+      <div class="chat-input">
+        <textarea id="chat-text" placeholder="Type your reply..."></textarea>
+        <div class="chat-input-actions">
+          <button class="ai-help" onclick="aiDraftChatReply('${p.id}')">✨ Draft with AI</button>
+          <button class="btn btn-primary" onclick="sendChat('${p.id}')">Send to ${p.name.split(' ')[0]}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderChatMsg(m) {
+  return `
+    <div class="msg ${m.role}">
+      <div class="who">${m.author}${m.role==='ai'?' <span class="ai-tag">AI Draft</span>':''}</div>
+      <div class="body">${escapeHtml(m.text).replace(/\n/g,'<br>')}</div>
+      <div class="time">${m.date}</div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]);
+}
+
+async function aiDraftChatReply(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const lastPatient = [...p.chat].reverse().find(m => m.role === 'patient');
+  if (!lastPatient) return alert('No patient message to reply to yet.');
+  const txt = document.getElementById('chat-text');
+  txt.value = '✨ Drafting...';
+  const draft = await AI.draftReply({ patient: p, lastMessage: lastPatient });
+  txt.value = draft;
+  txt.focus();
+}
+
+function sendChat(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const txt = document.getElementById('chat-text');
+  const val = (txt.value || '').trim();
+  if (!val) return;
+  p.chat.push({
+    role: 'kassie',
+    author: 'Dr. Kassie',
+    date: new Date().toISOString().replace('T',' ').slice(0,16),
+    text: val
+  });
+  saveState();
+  txt.value = '';
+  render();
+  setTimeout(() => document.getElementById('chat-anchor')?.scrollIntoView({behavior:'smooth'}), 50);
+}
+
+function renderNotesTab(p) {
+  return `
+    <div class="card">
+      <div class="card-h"><h3>Clinical Notes (private)</h3><button class="btn btn-primary btn-sm" onclick="addNote('${p.id}')">+ Add note</button></div>
+      ${p.notes.length === 0 ? '<div class="empty"><p>No clinical notes yet.</p></div>' : p.notes.slice().reverse().map(n => `
+        <div style="padding:.9rem 0;border-bottom:1px solid var(--line-2);">
+          <div style="font-size:.78rem;color:var(--ink-mute);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.3rem;">${niceDate(n.date)}</div>
+          <div>${n.text}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function addNote(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const txt = prompt('Add clinical note:');
+  if (!txt) return;
+  p.notes.push({ date: today(), text: txt });
+  saveState(); render();
+}
+
+/* ===================================================
+   KNOWLEDGE BASE
+   =================================================== */
+function renderKnowledge() {
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <h1>Knowledge Base</h1>
+    <p>This is the document the AI uses as its system prompt for every patient. It encodes your clinical preferences, rules, and dosing defaults — and the research Jordan trained it on.</p>
+
+    <div class="kb-info">
+      <strong>How it works.</strong> Every time the AI analyzes a scan, drafts a protocol, or composes a message, this entire document is prepended to its prompt. Edit it to make the AI more "you." Changes save automatically.
+    </div>
+
+    <div class="kb-editor">
+      <textarea id="kb-text" oninput="state.clinicalKnowledge=this.value; saveState()">${escapeHtml(state.clinicalKnowledge)}</textarea>
+    </div>
+
+    <div style="margin-top:1rem;display:flex;justify-content:space-between;align-items:center;">
+      <small>Saved automatically to local storage. In production this saves to Supabase.</small>
+      <button class="btn btn-ghost btn-sm" onclick="state.clinicalKnowledge = SEED.clinicalKnowledge; saveState(); render();">↺ Reset to default</button>
+    </div>
+  `;
+}
+
+function renderTemplates() {
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <h1>Protocol Templates</h1>
+    <p>Pre-built protocol patterns the AI will reach for first.</p>
+    <div class="grid-2">
+      ${[
+        {n:'Gut First Reset',d:'Default for gut-driven cases (~70% of patients per playbook). 30-day starter.'},
+        {n:'Drainage Before Detox',d:'When detox/toxins stress is high. Open lymph + liver pathways before binders.'},
+        {n:'Adrenal-Hormone Re-balance',d:'For HPA + sex hormone stress patterns.'},
+        {n:'Post-Viral Recovery',d:'Mitochondria + immune dysregulation. Slow ramp protocol.'},
+        {n:'Pediatric Gentle Reset',d:'Half-dose, no aggressive detox. Drainage + nutrition + sleep.'},
+        {n:'Complex/Long-haul',d:'Multi-system >75% stress. 6-month minimum.'},
+      ].map(t => `
+        <div class="card">
+          <h3>${t.n}</h3>
+          <p>${t.d}</p>
+          <button class="btn btn-ghost btn-sm" disabled>Apply to patient (coming soon)</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ===================================================
+   PATIENT VIEW (Maria, James, etc.)
+   =================================================== */
+function renderPatientApp() {
+  const main = document.getElementById('patient-main');
+  const p = state.patients.find(x => x.id === session.user.id);
+  if (!p) return main.innerHTML = '<p>Patient not found.</p>';
+  const latest = p.scans[p.scans.length-1];
+  const protocol = p.protocols[p.protocols.length-1];
+  const tab = (location.hash.slice(1).split('/')[1]) || 'home';
+
+  main.innerHTML = `
+    <div class="patient-welcome">
+      <h1>Hi ${p.name.split(' ')[0]} 👋</h1>
+      <p>Welcome to your BioScan portal. Here's where everything we're working on lives.</p>
+      ${protocol?.rescan ? `<div class="next">📅 Next re-scan · ${niceDate(protocol.rescan)} (${daysAgo(protocol.rescan)})</div>` : ''}
+    </div>
+
+    <div class="tabs-row">
+      <button class="tab ${tab==='home'?'active':''}" onclick="location.hash='#/home'">Dashboard</button>
+      <button class="tab ${tab==='scans'?'active':''}" onclick="location.hash='#/scans'">My Scans</button>
+      <button class="tab ${tab==='protocol'?'active':''}" onclick="location.hash='#/protocol'">My Protocol</button>
+      <button class="tab ${tab==='chat'?'active':''}" onclick="location.hash='#/chat'">Messages</button>
+    </div>
+
+    <div>${
+      tab==='scans' ? patientScansView(p) :
+      tab==='protocol' ? patientProtocolView(p) :
+      tab==='chat' ? patientChatView(p) :
+      patientHomeView(p)
+    }</div>
+
+    <div style="margin-top:2rem;text-align:center;color:var(--ink-mute);font-size:.78rem;">
+      <strong>Wellness Notice.</strong> The Vibrant BioScan is a biofeedback assessment, not a medical diagnostic. Always consult your primary healthcare provider regarding medical concerns. — Vibrant Health & Wellness
+    </div>
+  `;
+}
+
+function patientHomeView(p) {
+  const latest = p.scans[p.scans.length-1];
+  const prev = p.scans[p.scans.length-2];
+  const protocol = p.protocols[p.protocols.length-1];
+  if (!latest) {
+    return `<div class="card"><div class="empty"><div class="ic">🔬</div><h3>Your first scan is being scheduled</h3><p>Dr. Kassie will reach out to book your initial BioScan.</p></div></div>`;
+  }
+  const avg = Math.round(latest.findings.reduce((a,f)=>a+f.stress,0) / latest.findings.length);
+  const prevAvg = prev ? Math.round(prev.findings.reduce((a,f)=>a+f.stress,0) / prev.findings.length) : null;
+  const trend = prevAvg !== null ? avg - prevAvg : null;
+
+  return `
+    <div class="stats">
+      <div class="stat blue"><div class="lbl">Your latest scan</div><div class="val" style="font-size:1.3rem;">${niceDate(latest.date)}</div></div>
+      <div class="stat gold"><div class="lbl">Overall system stress</div><div class="val">${avg}%</div>${trend!==null?`<div class="delta ${trend<0?'down':'up'}">${trend>0?'+':''}${trend} vs last scan</div>`:''}</div>
+      <div class="stat"><div class="lbl">Scans completed</div><div class="val">${p.scans.length}</div></div>
+    </div>
+
+    ${protocol ? `
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-h"><h3>Your current protocol</h3><a href="#/protocol" style="font-size:.85rem;">See all →</a></div>
+        <p><strong>Goal:</strong> ${protocol.goal}</p>
+        <div class="supp-list" style="margin-top:1rem;">
+          ${protocol.supplements.slice(0,3).map(s => `
+            <div class="supp"><div><div class="name">${s.name}</div><div class="brand">${s.brand}</div></div><div><div class="dose">${s.dose}</div><div class="dur">${s.duration}</div></div></div>
+          `).join('')}
+        </div>
+        ${protocol.supplements.length > 3 ? `<small>+ ${protocol.supplements.length - 3} more · view protocol</small>` : ''}
+      </div>
+    ` : ''}
+
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-h"><h3>What we found in your latest scan</h3></div>
+      <p>${latest.summary.replace(/[A-Za-z]+ rule.*?\./g,'').trim()}</p>
+      <div class="findings-list" style="margin-top:1rem;">
+        ${[...latest.findings].sort((a,b)=>b.stress-a.stress).slice(0,5).map(f => {
+          const old = prev?.findings.find(x => x.system === f.system);
+          return findingRow(f, old ? f.stress - old.stress : null);
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function patientScansView(p) {
+  return `
+    <div class="card">
+      <div class="card-h"><h3>Your scan history</h3></div>
+      ${p.scans.slice().reverse().map(s => `
+        <div style="padding:1rem 0;border-bottom:1px solid var(--line);">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+            <div><strong>${niceDate(s.date)}</strong> · ${s.type === 'initial' ? 'Initial scan' : 'Follow-up scan'}</div>
+            <span class="badge info">${daysAgo(s.date)}</span>
+          </div>
+          <p style="margin-top:.5rem;font-size:.92rem;">${s.summary.replace(/[A-Za-z]+ rule.*?\./g,'').trim()}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function patientProtocolView(p) {
+  const protocol = p.protocols[p.protocols.length-1];
+  if (!protocol) return '<div class="card"><div class="empty"><p>Your protocol is being prepared. Dr. Kassie will send it to you soon.</p></div></div>';
+  return `
+    <div class="protocol-card">
+      <span class="ver">Your active protocol · v${protocol.version}</span>
+      <h3 style="margin:.4rem 0 1rem;">${protocol.goal}</h3>
+      <h4 style="font-family:'Inter';font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);">Supplements</h4>
+      <div class="supp-list">
+        ${protocol.supplements.map(s => `<div class="supp"><div><div class="name">${s.name}</div><div class="brand">${s.brand}</div></div><div><div class="dose">${s.dose}</div><div class="dur">${s.duration}</div></div></div>`).join('')}
+      </div>
+      <h4 style="font-family:'Inter';font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-top:1.2rem;">Lifestyle</h4>
+      <ul class="lifestyle-list">${protocol.lifestyle.map(l => `<li>${l}</li>`).join('')}</ul>
+      <p style="margin-top:1.2rem;font-size:.9rem;"><strong>Custom remedy:</strong> ${protocol.remedy}</p>
+      <p style="margin-top:.5rem;"><strong>Next re-scan:</strong> ${niceDate(protocol.rescan)}</p>
+    </div>
+  `;
+}
+
+function patientChatView(p) {
+  return `
+    <div class="card">
+      <div class="card-h"><h3>Messages with Dr. Kassie</h3></div>
+      <div class="chat-list">
+        ${p.chat.map(m => renderChatMsg(m.role==='kassie' ? {...m, role:'kassie'} : {...m, role:'patient'})).join('')}
+      </div>
+      <div class="chat-input">
+        <textarea id="patient-chat-text" placeholder="Send Dr. Kassie a message..."></textarea>
+        <div class="chat-input-actions">
+          <small>Replies usually within 24h on weekdays.</small>
+          <button class="btn btn-primary" onclick="patientSendChat('${p.id}')">Send</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function patientSendChat(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const txt = document.getElementById('patient-chat-text');
+  const val = (txt.value||'').trim();
+  if (!val) return;
+  p.chat.push({
+    role: 'patient', author: p.name.split(' ')[0],
+    date: new Date().toISOString().replace('T',' ').slice(0,16),
+    text: val
+  });
+  saveState(); render();
+}
+
+/* ===================================================
+   MODALS
+   =================================================== */
+function openModal(kind, pid) {
+  const modalBg = document.getElementById('modal-bg');
+  const modal = document.getElementById('modal');
+  if (kind === 'new-scan') modal.innerHTML = newScanModal(pid);
+  else if (kind === 'new-protocol') modal.innerHTML = newProtocolModal(pid);
+  else if (kind === 'new-patient') modal.innerHTML = newPatientModal();
+  modalBg.classList.add('open');
+  modalBg.onclick = e => { if (e.target === modalBg) closeModal(); };
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+}
+
+function newScanModal(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  return `
+    <div class="modal-h">
+      <div><h2>New BioScan · ${p.name}</h2><small>Paste findings from Qest4 software. AI analyzes against history.</small></div>
+      <button class="close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Scan date<small>defaults to today</small></label>
+      <input type="text" id="ns-date" value="${today()}" />
+
+      <label>Scan type</label>
+      <select id="ns-type">
+        <option value="initial">Initial</option>
+        <option value="followup" ${p.scans.length>0?'selected':''}>Follow-up</option>
+      </select>
+
+      <label>Findings (paste from Qest4 or use sample)<small>Format: System: stress% — item; item; item (one per line)</small></label>
+      <textarea id="ns-findings" placeholder="Gut: 78% — Candida signal; Permeability; SIBO suspect&#10;Hormones: 65% — Cortisol flat; Estrogen dominance&#10;Detox: 60% — Phase II soft">${p.scans.length ? sampleFindingsForFollowup(p) : ''}</textarea>
+
+      <div style="display:flex;justify-content:space-between;margin-top:.5rem;">
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ns-findings').value = sampleFindingsForFollowup(state.patients.find(x=>x.id==='${pid}'))">📋 Load sample (next-step scan)</button>
+      </div>
+
+      <div id="ns-ai-output"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="analyzeNewScan('${pid}')">✨ Analyze with AI</button>
+      <button class="btn btn-primary" onclick="saveNewScan('${pid}')">Save scan</button>
+    </div>
+  `;
+}
+
+function sampleFindingsForFollowup(p) {
+  // Generate a "next-step" scan based on current latest, with realistic deltas
+  const latest = p.scans[p.scans.length-1];
+  if (!latest) return 'Gut: 75% — Dysbiosis pattern; Permeability\nHormones: 60% — Cortisol pattern\nDetox: 58% — Phase II soft';
+  return latest.findings.map(f => {
+    const newStress = Math.max(20, f.stress - Math.floor(Math.random()*15 + 5));
+    return `${f.system}: ${newStress}% — ${f.items.slice(0,2).join('; ')}`;
+  }).join('\n');
+}
+
+function parseFindings(text) {
+  return text.split('\n').map(line => {
+    const m = line.match(/^([^:]+):\s*(\d+)%\s*[—-]\s*(.*)$/);
+    if (!m) return null;
+    return { system: m[1].trim(), stress: parseInt(m[2]), items: m[3].split(';').map(s => s.trim()).filter(Boolean) };
+  }).filter(Boolean);
+}
+
+async function analyzeNewScan(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const text = document.getElementById('ns-findings').value;
+  const findings = parseFindings(text);
+  if (!findings.length) return alert('Could not parse findings — check format.');
+  const out = document.getElementById('ns-ai-output');
+  out.innerHTML = `<div class="ai-thinking"><span class="dot-pulse"><span></span><span></span><span></span></span><strong>Analyzing with Claude...</strong> &nbsp;<small>Using Dr. Kassie's knowledge base + ${p.scans.length} prior scan${p.scans.length===1?'':'s'}</small></div>`;
+  const analysis = await AI.analyzeNewScan({ patient: p, newFindings: findings });
+  out.innerHTML = `
+    <div class="ai-output">
+      <h4>Executive summary</h4>
+      <p>${analysis.executiveSummary}</p>
+      <h4>Top concerns this scan</h4>
+      <ul>
+        ${analysis.topConcerns.map(c => `<li><strong>${c.system}</strong> (${c.stress}%) — <em>${c.rationale}</em></li>`).join('')}
+      </ul>
+      ${analysis.improvements.length ? `<h4 style="color:var(--good)">✓ Improved since last scan</h4><p>${analysis.improvements.join(', ')}</p>` : ''}
+      ${analysis.regressions.length ? `<h4 style="color:var(--bad)">⚠ Stress increased</h4><p>${analysis.regressions.join(', ')}</p>` : ''}
+      ${analysis.kassieFlags.length ? `<h4 style="color:var(--warn)">🚩 Kassie review flags</h4><ul>${analysis.kassieFlags.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--gold-dark);">
+        <small>Next step: click "Save scan" then draft a protocol from this analysis.</small>
+      </div>
+    </div>
+  `;
+}
+
+function saveNewScan(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const findings = parseFindings(document.getElementById('ns-findings').value);
+  if (!findings.length) return alert('Add findings first.');
+  const newScan = {
+    id: 's-' + Date.now(),
+    date: document.getElementById('ns-date').value,
+    type: document.getElementById('ns-type').value,
+    findings,
+    summary: 'New scan added by Dr. Kassie. AI analysis available.',
+    kassieNotes: ''
+  };
+  p.scans.push(newScan);
+  saveState();
+  closeModal();
+  render();
+}
+
+function newProtocolModal(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  return `
+    <div class="modal-h">
+      <div><h2>Draft new protocol · ${p.name}</h2><small>AI uses latest scan + your knowledge base.</small></div>
+      <button class="close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p>This will analyze the latest scan and draft a protocol using your <a href="#/knowledge" onclick="closeModal()">Clinical Knowledge</a> as guidance. Review and edit before publishing to the patient.</p>
+      <div id="np-output"><button class="btn btn-gold btn-lg" style="margin: 1rem auto; display:block;" onclick="draftNewProtocol('${pid}')">✨ Draft with AI</button></div>
+    </div>
+  `;
+}
+
+async function draftNewProtocol(pid) {
+  const p = state.patients.find(x => x.id === pid);
+  const latest = p.scans[p.scans.length-1];
+  if (!latest) return alert('Run a scan first.');
+  const out = document.getElementById('np-output');
+  out.innerHTML = `<div class="ai-thinking"><span class="dot-pulse"><span></span><span></span><span></span></span><strong>Drafting protocol...</strong> <small>Applying Kassie's playbook to top stressors</small></div>`;
+  const analysis = await AI.analyzeNewScan({ patient: p, newFindings: latest.findings });
+  const draft = await AI.draftProtocol({ patient: p, analysis, knowledge: state.clinicalKnowledge });
+
+  out.innerHTML = `
+    <div class="ai-output">
+      <h4>Goal</h4>
+      <p>${draft.goal}</p>
+      <h4>Supplements</h4>
+      <div class="supp-list">
+        ${draft.supplements.map(s => `
+          <div class="supp">
+            <div><div class="name">${s.name}</div><div class="brand">${s.brand}</div><div style="font-size:.74rem;color:var(--ink-mute);margin-top:.2rem;">Why: ${s.why}</div></div>
+            <div><div class="dose">${s.dose}</div><div class="dur">${s.duration}</div></div>
+          </div>
+        `).join('')}
+      </div>
+      ${draft.overflow ? `<p style="margin-top:.6rem;font-size:.85rem;color:var(--ink-mute);">${draft.overflow}</p>` : ''}
+      <h4>Lifestyle</h4>
+      <ul class="lifestyle-list">${draft.lifestyle.map(l => `<li>${l}</li>`).join('')}</ul>
+      <h4>Custom remedy</h4>
+      <p>${draft.remedy}</p>
+      <h4>Re-scan</h4>
+      <p>${niceDate(draft.rescan)}</p>
+      <p style="font-size:.8rem;color:var(--ink-mute);"><strong>Compliance check:</strong> ${draft.complianceCheck}</p>
+    </div>
+    <div style="display:flex; gap:.5rem; margin-top:1rem;">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick='publishProtocol("${pid}", ${JSON.stringify(draft).replace(/"/g,'&quot;')})'>Publish to ${p.name.split(' ')[0]}</button>
+    </div>
+  `;
+}
+
+function publishProtocol(pid, draft) {
+  if (typeof draft === 'string') draft = JSON.parse(draft.replace(/&quot;/g,'"'));
+  const p = state.patients.find(x => x.id === pid);
+  // Archive previous
+  p.protocols.forEach(pr => pr.status = 'archived');
+  const newVersion = (p.protocols[p.protocols.length-1]?.version || 0) + 1;
+  p.protocols.push({
+    id: 'pr-' + Date.now(),
+    version: newVersion,
+    date: today(),
+    status: 'active',
+    goal: draft.goal,
+    supplements: draft.supplements.map(s => ({ name: s.name, brand: s.brand, dose: s.dose, duration: s.duration })),
+    lifestyle: draft.lifestyle,
+    remedy: draft.remedy,
+    rescan: draft.rescan
+  });
+  saveState();
+  closeModal();
+  navigate('/patient/' + pid + '/protocol');
+}
+
+function newPatientModal() {
+  return `
+    <div class="modal-h">
+      <div><h2>Add new patient</h2></div>
+      <button class="close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Name</label><input type="text" id="np-name" />
+      <label>Age</label><input type="text" id="np-age" />
+      <label>Email</label><input type="text" id="np-email" />
+      <label>Program</label>
+      <select id="np-program">
+        <option>Single Scan</option>
+        <option>90-Day Root Cause Reset</option>
+        <option>Inner Circle</option>
+        <option>90-Day Root Cause Reset (Pediatric)</option>
+      </select>
+      <label>Chief complaint</label>
+      <textarea id="np-complaint" placeholder="What brings them in?"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewPatient()">Add patient</button>
+    </div>
+  `;
+}
+
+function saveNewPatient() {
+  const name = document.getElementById('np-name').value.trim();
+  if (!name) return alert('Name required');
+  const initials = name.split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+  const colors = ['#7c3aed','#0891b2','#16a34a','#ea580c','#dc2626','#0284c7','#9333ea'];
+  const newP = {
+    id: 'p-' + Date.now(),
+    name, initials,
+    color: colors[Math.floor(state.patients.length % colors.length)],
+    age: parseInt(document.getElementById('np-age').value) || null,
+    email: document.getElementById('np-email').value,
+    enrolled: today(), program: document.getElementById('np-program').value,
+    programStart: today(),
+    chiefComplaint: document.getElementById('np-complaint').value || 'New intake — to be filled in.',
+    tags: [],
+    scans: [], protocols: [], chat: [], notes: []
+  };
+  state.patients.push(newP);
+  saveState(); closeModal();
+  navigate('/patient/' + newP.id);
+}
+
+/* ===================================================
+   INIT
+   =================================================== */
+function setupLogin() {
+  document.querySelectorAll('[data-login]').forEach(btn => {
+    btn.addEventListener('click', () => login(btn.dataset.login));
+  });
+}
+setupLogin();
+render();
+</script>
+</body>
+</html>

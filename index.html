@@ -518,6 +518,27 @@
     font-weight: 700;
   }
 
+  /* ---------- Lineup / roster ---------- */
+  .assign-row {
+    display: flex; align-items: center; gap: 8px; padding: 3px 0;
+  }
+  .pos-badge {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: 0;
+  }
+  .pos-badge.offense { background: linear-gradient(135deg,#5a82ff,#1d3fb8); color:#fff; }
+  .pos-badge.defense { background: linear-gradient(135deg,#e85a55,#9a2520); color:#fff; }
+  .player-select {
+    flex: 1; min-width: 0;
+    background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--ink); padding: 7px 10px; border-radius: 9px;
+    font-size: 13px; font-family: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .player-select:focus { outline:none; border-color:var(--border-strong); box-shadow: 0 0 0 3px var(--gold-glow); }
+
   /* ---------- Draw mode ---------- */
   button.draw-active {
     background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%) !important;
@@ -831,6 +852,20 @@
       </div>
     </div>
 
+    <!-- Roster + position assignments -->
+    <div class="section">
+      <div class="section-title">
+        <span>Lineup</span>
+        <label class="toggle" style="margin:0;gap:8px;">
+          <input type="checkbox" id="namesToggle"/>
+          <span class="switch"></span>
+          <span style="font-size:11px;color:var(--muted);letter-spacing:1px;">Show Names</span>
+        </label>
+      </div>
+      <div id="offenseAssign"></div>
+      <div id="defenseAssign" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"></div>
+    </div>
+
     <!-- Zones (defensive areas, lanes, freehand annotations) — added 2026-05-19 -->
     <div class="section">
       <div class="section-title">
@@ -1006,7 +1041,9 @@
     zones: [],            // [{id, shape:'oval'|'rect'|'freehand', x,y,w,h | d, color}]
     selectedZoneId: null,
     drawMode: false,      // when true, pointer events on court draw a freehand path
-    zoneColor: '#FFD24D'  // current paint color for new shapes
+    zoneColor: '#FFD24D', // current paint color for new shapes
+    playerNames: { '1':'','2':'','3':'','4':'','5':'','X1':'','X2':'','X3':'','X4':'','X5':'' },
+    showNames: false
   };
 
   // ---------- DOM refs ----------
@@ -1091,6 +1128,12 @@
         t.setAttribute('x', e.x);
         t.setAttribute('y', e.y);
         el.classList.toggle('has-ball', state.ballHolder === id);
+        // Update label: name or number
+        const customName = state.showNames ? (state.playerNames[id] || '').trim() : '';
+        const displayLabel = customName || e.label;
+        t.textContent = displayLabel;
+        const len = displayLabel.length;
+        t.setAttribute('font-size', len <= 2 ? 13 : len <= 3 ? 11 : len <= 4 ? 9 : 8);
       }
     });
   }
@@ -1614,6 +1657,24 @@
     if (!dragId) return;
     const el = renderedEls[dragId];
     if (el) el.classList.remove('dragging');
+
+    // TAP detected (no path recorded = finger didn't move) on a player → instant pass
+    if (!recordingPath && dragId !== 'ball') {
+      const ent = state.entities[dragId];
+      if (ent && ent.type !== 'ball' && state.ballHolder !== dragId) {
+        state.ballHolder = dragId;
+        const ball = state.entities.ball;
+        if (ball) { ball.x = ent.x; ball.y = ent.y; }
+        delete state.pendingPaths.ball;
+        renderAll();
+        const displayName = (state.showNames && state.playerNames[dragId]) ? state.playerNames[dragId] : dragId;
+        toast(`Ball → ${displayName}`);
+      }
+      dragId = null; dragOffset = null; dragStartPos = null;
+      recordingPath = null; ballFollowOffset = null; ballFollowStartPos = null; ballFollowPath = null;
+      return;
+    }
+
     if (recordingPath && recordingPath.length >= 2) {
       const ent = state.entities[dragId];
       const last = recordingPath[recordingPath.length - 1];
@@ -2201,6 +2262,7 @@
   document.getElementById('defenseToggle').addEventListener('change', (e) => {
     state.showDefense = e.target.checked;
     renderAll();
+    document.getElementById('defenseAssign').style.display = state.showDefense ? '' : 'none';
   });
   document.getElementById('speedRange').addEventListener('input', (e) => {
     state.speed = parseFloat(e.target.value);
@@ -2219,6 +2281,78 @@
       e.preventDefault();
       undo();
     }
+  });
+
+  // ---------- Roster & Lineup ----------
+  const NAMES_KEY    = 'playmaker_player_names_v1';
+  const ROSTER_KEY   = 'playmaker_roster_v1';
+  const DEFAULT_ROSTER = ['Jason','Reed','Dom','Herb','Cairo','Jayden','Nathan','Michael','Brantley','Jacob'];
+
+  function getRoster() {
+    try { return JSON.parse(localStorage.getItem(ROSTER_KEY)) || DEFAULT_ROSTER.slice(); }
+    catch { return DEFAULT_ROSTER.slice(); }
+  }
+  function setRoster(r) { localStorage.setItem(ROSTER_KEY, JSON.stringify(r)); }
+
+  function loadSavedNames() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
+      Object.keys(saved).forEach(id => { if (id in state.playerNames) state.playerNames[id] = saved[id]; });
+    } catch {}
+  }
+  function saveNames() { localStorage.setItem(NAMES_KEY, JSON.stringify(state.playerNames)); }
+
+  function buildAssignUI(containerId, positions, type) {
+    const wrap = document.getElementById(containerId);
+    wrap.innerHTML = '';
+    const roster = getRoster();
+    positions.forEach(pos => {
+      const row = document.createElement('div');
+      row.className = 'assign-row';
+
+      const badge = document.createElement('span');
+      badge.className = 'pos-badge ' + type;
+      badge.textContent = pos;
+      row.appendChild(badge);
+
+      const sel = document.createElement('select');
+      sel.className = 'player-select';
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— select player —';
+      sel.appendChild(blank);
+      roster.forEach(name => {
+        const o = document.createElement('option');
+        o.value = name; o.textContent = name;
+        if (state.playerNames[pos] === name) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', () => {
+        state.playerNames[pos] = sel.value;
+        saveNames();
+        if (state.showNames) renderEntities();
+      });
+      row.appendChild(sel);
+      wrap.appendChild(row);
+    });
+  }
+
+  function refreshNameGrids() {
+    buildAssignUI('offenseAssign', ['1','2','3','4','5'], 'offense');
+    buildAssignUI('defenseAssign', ['X1','X2','X3','X4','X5'], 'defense');
+    document.getElementById('defenseAssign').style.display = state.showDefense ? '' : 'none';
+  }
+
+  // Initialise roster if not yet saved
+  if (!localStorage.getItem(ROSTER_KEY)) setRoster(DEFAULT_ROSTER.slice());
+
+  document.getElementById('namesToggle').addEventListener('change', (e) => {
+    state.showNames = e.target.checked;
+    Object.keys(renderedEls).forEach(id => {
+      if (renderedEls[id] && state.entities[id] && state.entities[id].type !== 'ball') {
+        renderedEls[id].remove(); delete renderedEls[id];
+      }
+    });
+    renderEntities();
   });
 
   // ---------- GitHub Sync ----------
@@ -2354,6 +2488,8 @@
 
   refreshFolderDropdown();
   refreshPlaybook();
+  loadSavedNames();
+  refreshNameGrids();
   state.ballHolder = detectBallHolder();
   renderAll();
   updateUndoBtn();

@@ -106,6 +106,95 @@
   .nav-btn:hover, .nav-btn.active { background: var(--gold); color: #1a1208; border-color: var(--gold); }
   .nav-btn.danger:hover { background: var(--missed); color: white; border-color: var(--missed); }
 
+  /* ---------- Sync status pill ---------- */
+  .sync-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 11px; border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: rgba(255,255,255,0.03);
+    color: var(--ink); font-size: 11px; letter-spacing: 0.08em; font-weight: 700;
+    cursor: pointer; transition: all .15s;
+    font-family: inherit; text-transform: uppercase;
+  }
+  .sync-pill:hover { background: rgba(255,255,255,0.07); }
+  .sync-pill-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--muted); flex: none;
+  }
+  .sync-pill[data-state="synced"]  { border-color: rgba(63,185,132,0.5); color: #6bd49a; }
+  .sync-pill[data-state="synced"]  .sync-pill-dot { background: #3fb984; box-shadow: 0 0 8px #3fb984; }
+  .sync-pill[data-state="pending"] { border-color: rgba(212,175,55,0.5); color: var(--gold-2); }
+  .sync-pill[data-state="pending"] .sync-pill-dot { background: var(--gold); box-shadow: 0 0 8px var(--gold-glow); animation: pulse 1.4s ease-in-out infinite; }
+  .sync-pill[data-state="offline"] { border-color: rgba(255,106,31,0.55); color: #ffb892; background: rgba(255,106,31,0.10); }
+  .sync-pill[data-state="offline"] .sync-pill-dot { background: var(--accent); box-shadow: 0 0 8px rgba(255,106,31,0.6); }
+  .sync-pill[data-state="error"]   { border-color: rgba(240,87,79,0.55); color: #f0746c; }
+  .sync-pill[data-state="error"]   .sync-pill-dot { background: #f0746c; box-shadow: 0 0 8px rgba(240,87,79,0.5); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @media (max-width: 720px) {
+    .sync-pill { padding: 5px 9px; font-size: 10px; }
+    .sync-pill-label { display: none; }
+  }
+
+  /* ---------- Sync Center modal ---------- */
+  .sync-center { display: flex; flex-direction: column; gap: 14px; }
+  .sync-status-block {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: rgba(255,255,255,0.03);
+  }
+  .sync-status-block.synced  { border-color: rgba(63,185,132,0.45); background: rgba(63,185,132,0.08); }
+  .sync-status-block.pending { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.08); }
+  .sync-status-block.offline { border-color: rgba(255,106,31,0.5); background: rgba(255,106,31,0.10); }
+  .sync-status-block.error   { border-color: rgba(240,87,79,0.4); background: rgba(240,87,79,0.10); }
+  .sync-status-icon { font-size: 28px; line-height: 1; }
+  .sync-status-text { flex: 1; }
+  .sync-status-title { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 3px; }
+  .sync-status-sub { font-size: 12px; color: var(--ink-2); }
+  .sync-toggle-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 10px;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--border);
+  }
+  .sync-toggle-row label { flex: 1; font-weight: 700; font-size: 13px; color: var(--ink); }
+  .sync-toggle-row .hint { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; }
+  .sync-switch {
+    position: relative; display: inline-block; width: 50px; height: 28px; cursor: pointer;
+    flex: none;
+  }
+  .sync-switch input { opacity: 0; width: 0; height: 0; }
+  .sync-switch-track {
+    position: absolute; inset: 0; background: rgba(255,255,255,0.1); border-radius: 999px;
+    transition: background .2s;
+  }
+  .sync-switch-thumb {
+    position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+    background: #f4f1ea; transition: transform .2s;
+  }
+  .sync-switch input:checked + .sync-switch-track { background: var(--accent); }
+  .sync-switch input:checked + .sync-switch-track .sync-switch-thumb { transform: translateX(22px); }
+  .sync-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sync-actions .btn { padding: 11px 12px; font-size: 12px; }
+  .sync-pending-list {
+    margin-top: 6px; max-height: 36vh; overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 10px;
+    background: rgba(0,0,0,0.2);
+  }
+  .sync-pending-item {
+    display: grid; grid-template-columns: 70px 70px 1fr; gap: 10px; align-items: center;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    font-size: 11px; color: var(--ink-2);
+  }
+  .sync-pending-item:last-child { border-bottom: none; }
+  .sync-pending-item .op {
+    padding: 2px 8px; border-radius: 6px; font-weight: 800; letter-spacing: 0.06em;
+    text-align: center; font-size: 10px;
+  }
+  .sync-pending-item .op.upsert { background: rgba(63,185,132,0.18); color: #6bd49a; }
+  .sync-pending-item .op.delete { background: rgba(240,87,79,0.18); color: #f0746c; }
+  .sync-pending-item .tbl { color: var(--gold-2); font-weight: 700; }
+  .sync-pending-item .err { color: #f0746c; font-size: 10px; }
+
   /* ---------- Layout ---------- */
   main {
     padding: 18px;
@@ -675,6 +764,72 @@
 
   /* ---------- Lineup tool ---------- */
   .lu-hint { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; margin: 4px 0 14px; }
+
+  /* ----- Smart Lineup ----- */
+  .smart-section {
+    background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px; margin: 0 0 14px;
+  }
+  .smart-section-head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--border);
+  }
+  .smart-section-head.good { border-bottom-color: rgba(95,224,134,0.4); }
+  .smart-section-head.warn { border-bottom-color: rgba(212,175,55,0.4); }
+  .smart-section-head.bad  { border-bottom-color: rgba(240,87,79,0.45); }
+  .smart-section-title { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-2); }
+  .smart-section-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .smart-section-head.good .smart-section-sub { color: #6bd49a; }
+  .smart-section-head.warn .smart-section-sub { color: var(--gold-2); }
+  .smart-section-head.bad  .smart-section-sub { color: #f0746c; }
+
+  .smart-avail-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .smart-avail-chip {
+    padding: 6px 10px; border-radius: 16px; font-size: 11px; letter-spacing: 0.06em; font-weight: 600;
+    border: 1px solid var(--border-strong); background: rgba(95,224,134,0.08); color: #6bd49a;
+    cursor: pointer; transition: all 0.12s;
+  }
+  .smart-avail-chip.in:hover { background: rgba(95,224,134,0.18); border-color: rgba(95,224,134,0.5); }
+  .smart-avail-chip.out {
+    background: rgba(60,60,60,0.4); color: var(--muted-2); text-decoration: line-through;
+    border-color: var(--border);
+  }
+  .smart-avail-chip.out:hover { background: rgba(80,80,80,0.5); color: var(--muted); }
+
+  .smart-top-alert {
+    background: rgba(240,87,79,0.10); border: 1px solid rgba(240,87,79,0.4);
+    color: #f0746c; padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; margin-bottom: 8px; letter-spacing: 0.04em;
+  }
+
+  .smart-player-list { display: grid; gap: 5px; }
+  .smart-player-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 12px;
+    padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02); font-size: 12px;
+  }
+  .smart-player-row.ok       { border-color: rgba(95,224,134,0.28); }
+  .smart-player-row.warning  { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.05); }
+  .smart-player-row.violation{ border-color: rgba(240,87,79,0.5);   background: rgba(240,87,79,0.07); }
+  .smart-player-row .spr-name { font-weight: 700; color: var(--ink); }
+  .smart-player-row.violation .spr-name { color: #f0746c; }
+  .smart-player-row.warning .spr-name { color: var(--gold-2); }
+  .smart-player-row.ok .spr-name { color: #6bd49a; }
+  .smart-player-row .spr-counts { display: flex; gap: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+  .smart-player-row .spr-counts span { font-variant-numeric: tabular-nums; }
+  .smart-player-row .spr-pair { color: var(--gold-2); }
+  .smart-player-row .spr-msg {
+    grid-column: 1 / -1; font-size: 11px; color: var(--muted-2); letter-spacing: 0.04em;
+  }
+  .smart-player-row.violation .spr-msg { color: #f0746c; }
+  .smart-player-row.warning .spr-msg { color: var(--gold-2); }
+
+  .lu-slot.smart-bad,
+  .lu-chip.smart-bad {
+    border-color: rgba(240,87,79,0.55) !important;
+    background: rgba(240,87,79,0.10) !important;
+    color: #f0746c !important;
+  }
   .lu-bench-card { padding: 14px 14px 10px; margin-bottom: 16px; }
   .lu-bench-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
   .lu-bench-head h3 { margin: 0; }
@@ -1113,12 +1268,17 @@
       </div>
     </div>
     <div class="header-spacer"></div>
+    <button class="sync-pill" id="sync-pill" type="button" title="Open sync center">
+      <span class="sync-pill-dot" id="sync-pill-dot"></span>
+      <span class="sync-pill-label" id="sync-pill-label">Loading…</span>
+    </button>
     <button class="nav-btn" id="nav-games">Games</button>
     <button class="nav-btn" id="nav-workout">Workout</button>
     <button class="nav-btn" id="nav-roster">Roster</button>
     <button class="nav-btn" id="nav-ratings">Ratings</button>
     <a class="nav-btn" href="/">Plays</a>
     <button class="nav-btn" id="nav-lineup">Lineup Tool</button>
+    <button class="nav-btn" id="nav-smart">Smart Lineup</button>
   </header>
 
   <div id="toast-root"></div>
@@ -1197,6 +1357,14 @@ function shotZone(x, y) {
 /* ============ DATA OPS ============ */
 async function loadInitial() {
   state.loading = true; render();
+  // Always populate from local cache first so the app is usable instantly,
+  // even when offline. Then top up from Supabase if reachable.
+  loadCache();
+  if (!effectivelyOnline()) {
+    state.error = null;
+    state.loading = false; render();
+    return;
+  }
   try {
     const [pl, gm] = await Promise.all([
       sb.from('players').select('*').order('name'),
@@ -1204,8 +1372,10 @@ async function loadInitial() {
     ]);
     if (pl.error) throw pl.error;
     if (gm.error) throw gm.error;
-    state.players = pl.data || [];
-    state.games = gm.data || [];
+    // Merge: server is authoritative, but rows still pending in outbox stay
+    // visible until they've been pushed.
+    state.players = mergeRowsKeepingPending('players', pl.data || [], state.players);
+    state.games = mergeRowsKeepingPending('games', gm.data || [], state.games);
     mergePositionsIntoPlayers();
     mergeRatingsFromPlayers();
     migrateLocalPositionsToSupabase();
@@ -1215,14 +1385,22 @@ async function loadInitial() {
     saveCache();
   } catch (e) {
     console.error(e);
-    state.error = `Database connection issue: ${e.message}. Showing cached data if available.`;
-    loadCache();
+    state.error = `Database connection issue: ${e.message}. Showing cached data.`;
   }
   state.loading = false; render();
 }
 
 async function loadGameDetail(gameId) {
   state.loading = true; render();
+  // Restore from cache first — works offline and gives instant load.
+  const cached = loadGameDataCache(gameId);
+  state.events = cached.events;
+  state.stints = cached.stints;
+  state.undoStack = [];
+  if (!effectivelyOnline()) {
+    state.loading = false; render();
+    return;
+  }
   try {
     const [ev, st] = await Promise.all([
       sb.from('events').select('*').eq('game_id', gameId).order('created_at'),
@@ -1230,19 +1408,242 @@ async function loadGameDetail(gameId) {
     ]);
     if (ev.error) throw ev.error;
     if (st.error) throw st.error;
-    state.events = ev.data || [];
-    state.stints = st.data || [];
-    state.undoStack = [];
+    // Merge: server is source of truth, but local rows not yet on server stay.
+    state.events = mergeRowsByPendingId('events', ev.data || []);
+    state.stints = mergeRowsByPendingId('stints', st.data || []);
+    persistCurrentGameData();
   } catch (e) {
     console.error(e);
-    toast('Could not load game data');
+    // Keep cache; just surface a hint
+    if (!cached.events.length && !cached.stints.length) {
+      toast('Could not load game data (offline?)');
+    }
   }
   state.loading = false; render();
+}
+
+/* Merge server rows with rows still pending in the outbox for the same table:
+   pending rows that haven't reached the server yet must not be wiped from
+   local state during a refresh. */
+function mergeRowsByPendingId(table, serverRows) {
+  return mergeRowsKeepingPending(table, serverRows,
+    table === 'events' ? state.events : state.stints);
+}
+function mergeRowsKeepingPending(table, serverRows, localRows) {
+  const pendingWrites = new Set(
+    sync.outbox.filter(e => e.table === table && (e.op === 'upsert' || e.op === 'update')).map(e => e.rowId)
+  );
+  const pendingDeletes = new Set(
+    sync.outbox.filter(e => e.table === table && e.op === 'delete').map(e => e.rowId)
+  );
+  const serverIds = new Set(serverRows.map(r => r.id));
+  // Server rows except those locally pending deletion
+  const fromServer = serverRows.filter(r => !pendingDeletes.has(r.id));
+  // Local rows still pending write and not yet on server (preserve them on refresh)
+  const localOnly = (localRows || []).filter(r => pendingWrites.has(r.id) && !serverIds.has(r.id));
+  return [...fromServer, ...localOnly];
+}
+
+/* Cache events + stints per game so an iPad can open a game offline. */
+function gameEventsKey(gameId) { return `events-${gameId}`; }
+function gameStintsKey(gameId) { return `stints-${gameId}`; }
+function loadGameDataCache(gameId) {
+  let events = [], stints = [];
+  try { events = JSON.parse(lsGet(gameEventsKey(gameId)) || '[]') || []; } catch(e) {}
+  try { stints = JSON.parse(lsGet(gameStintsKey(gameId)) || '[]') || []; } catch(e) {}
+  return { events, stints };
+}
+function persistGameData(gameId, eventsArr, stintsArr) {
+  lsSet(gameEventsKey(gameId), JSON.stringify(eventsArr || []));
+  lsSet(gameStintsKey(gameId), JSON.stringify(stintsArr || []));
+}
+function persistCurrentGameData() {
+  if (!state.currentGameId) return;
+  persistGameData(state.currentGameId, state.events, state.stints);
 }
 
 function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 function lsRm(k) { try { localStorage.removeItem(k); } catch(e) {} }
+
+/* ============ OFFLINE / OUTBOX SYNC ============
+   Every write that should reach Supabase goes through the outbox. Local state
+   is updated immediately (writes never block on the network). The outbox is
+   persisted in localStorage so app reloads / crashes / wifi drops don't lose
+   pending ops. An explicit OFFLINE toggle plus navigator.onLine determine
+   whether we attempt to flush right now. Ops use 'upsert' (insert→upsert,
+   update→upsert with id) so retrying is idempotent and ordering only matters
+   between insert/update vs delete of the same row — coalescing handles that.
+*/
+const OUTBOX_LS_KEY = 'hoops-outbox-v1';
+const OFFLINE_TOGGLE_LS_KEY = 'hoops-offline-toggle';
+const SYNC_RECENT_ERROR_MAX_AGE_MS = 60_000;
+
+const sync = {
+  outbox: [],
+  offlineToggle: lsGet(OFFLINE_TOGGLE_LS_KEY) === '1',
+  navOnline: (typeof navigator !== 'undefined' && 'onLine' in navigator) ? navigator.onLine : true,
+  flushing: false,
+  flushTimer: null,
+  lastErrorAt: 0,
+  lastErrorMsg: null,
+  listeners: new Set(),
+};
+
+function loadOutbox() {
+  try { sync.outbox = JSON.parse(lsGet(OUTBOX_LS_KEY) || '[]') || []; }
+  catch(e) { sync.outbox = []; }
+}
+function persistOutbox() { lsSet(OUTBOX_LS_KEY, JSON.stringify(sync.outbox)); }
+
+function effectivelyOnline() { return sync.navOnline && !sync.offlineToggle; }
+function pendingCount() { return sync.outbox.length; }
+function setOfflineToggle(on) {
+  sync.offlineToggle = !!on;
+  lsSet(OFFLINE_TOGGLE_LS_KEY, on ? '1' : '0');
+  notifySync();
+  if (!on) scheduleFlush();
+}
+function notifySync() {
+  for (const fn of sync.listeners) { try { fn(); } catch(e) {} }
+}
+function onSyncChange(fn) { sync.listeners.add(fn); return () => sync.listeners.delete(fn); }
+
+function enqueueOp(entry) {
+  // Coalescing rules (all keyed by table + rowId):
+  //   new upsert + pending upsert → merge into pending upsert (still upsert)
+  //   new update + pending upsert → merge into pending upsert (upsert wins, full row preserved)
+  //   new update + pending update → merge into pending update (still update)
+  //   new upsert + pending update → replace pending update with new upsert (full row supersedes partial)
+  //   new delete + any pending → drop pending; queue delete
+  if (entry.op === 'delete') {
+    sync.outbox = sync.outbox.filter(e => !(e.table === entry.table && e.rowId === entry.rowId));
+    sync.outbox.push({ id: uuid(), ts: Date.now(), attempts: 0, lastError: null, ...entry });
+    persistOutbox(); notifySync(); scheduleFlush();
+    return;
+  }
+  // upsert or update
+  const existing = sync.outbox.find(e => e.table === entry.table && e.rowId === entry.rowId && (e.op === 'upsert' || e.op === 'update'));
+  if (existing) {
+    if (existing.op === 'upsert') {
+      // Always merge into the pending upsert (preserves full row)
+      existing.payload = { ...existing.payload, ...entry.payload };
+      existing.ts = Date.now();
+    } else if (entry.op === 'upsert') {
+      // Upsert replaces a pending update — full row supersedes partial
+      existing.op = 'upsert';
+      existing.payload = { ...existing.payload, ...entry.payload };
+      existing.ts = Date.now();
+    } else {
+      // Both updates — merge partial diffs
+      existing.payload = { ...existing.payload, ...entry.payload };
+      existing.ts = Date.now();
+    }
+    persistOutbox(); notifySync(); scheduleFlush(); return;
+  }
+  sync.outbox.push({ id: uuid(), ts: Date.now(), attempts: 0, lastError: null, ...entry });
+  persistOutbox(); notifySync(); scheduleFlush();
+}
+
+const oxb = {
+  /* INSERT (or row-replacing UPSERT). payload must include id and all NOT NULL columns. */
+  upsert(table, row) {
+    if (!row || !row.id) { console.warn('oxb.upsert needs row.id', table, row); return; }
+    enqueueOp({ table, op: 'upsert', rowId: row.id, payload: row });
+  },
+  /* Partial column UPDATE on an existing row. */
+  update(table, rowId, updates) {
+    if (!rowId) { console.warn('oxb.update needs rowId', table); return; }
+    enqueueOp({ table, op: 'update', rowId, payload: { ...updates } });
+  },
+  /* DELETE by id. */
+  delete(table, rowId) {
+    if (!rowId) { console.warn('oxb.delete needs rowId', table); return; }
+    enqueueOp({ table, op: 'delete', rowId });
+  },
+};
+
+function scheduleFlush() {
+  if (sync.flushTimer) return;
+  sync.flushTimer = setTimeout(() => { sync.flushTimer = null; flushOutbox(); }, 150);
+}
+
+function looksLikeNotNullError(msg) {
+  if (!msg) return false;
+  const m = String(msg).toLowerCase();
+  return m.includes('null value') && m.includes('not-null');
+}
+
+async function flushOutbox(opts) {
+  opts = opts || {};
+  if (sync.flushing) return { ok: false, reason: 'busy' };
+  if (!effectivelyOnline()) return { ok: false, reason: 'offline' };
+  if (!sync.outbox.length) return { ok: true, drained: 0 };
+  sync.flushing = true; notifySync();
+  let drained = 0;
+  try {
+    while (sync.outbox.length) {
+      const e = sync.outbox[0];
+      try {
+        if (e.op === 'upsert') {
+          let { error } = await sb.from(e.table).upsert(e.payload, { onConflict: 'id' });
+          if (error) {
+            // Recovery path for entries queued by older builds where partial
+            // UPDATE diffs got tagged as 'upsert' and fail NOT NULL on insert.
+            // The row almost certainly exists on the server already, so retry
+            // as an UPDATE keyed by id (stripping id from the SET clause).
+            if (looksLikeNotNullError(error.message)) {
+              const updatePayload = { ...e.payload };
+              delete updatePayload.id;
+              if (Object.keys(updatePayload).length) {
+                const r2 = await sb.from(e.table).update(updatePayload).eq('id', e.rowId);
+                if (r2.error) throw r2.error;
+              } else {
+                throw error; // nothing to update; surface original
+              }
+            } else {
+              throw error;
+            }
+          }
+        } else if (e.op === 'update') {
+          const payload = { ...e.payload };
+          delete payload.id; // never set id in UPDATE SET clause
+          if (Object.keys(payload).length) {
+            const { error } = await sb.from(e.table).update(payload).eq('id', e.rowId);
+            if (error) throw error;
+          }
+        } else if (e.op === 'delete') {
+          const { error } = await sb.from(e.table).delete().eq('id', e.rowId);
+          if (error) throw error;
+        }
+        sync.outbox.shift();
+        drained++;
+        persistOutbox(); notifySync();
+      } catch (err) {
+        e.attempts = (e.attempts || 0) + 1;
+        e.lastError = (err && err.message) || String(err);
+        sync.lastErrorAt = Date.now();
+        sync.lastErrorMsg = e.lastError;
+        persistOutbox(); notifySync();
+        // Stop on first error to preserve order; user can retry.
+        return { ok: false, reason: 'error', error: e.lastError, drained };
+      }
+    }
+    return { ok: true, drained };
+  } finally {
+    sync.flushing = false; notifySync();
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => { sync.navOnline = true; notifySync(); scheduleFlush(); });
+  window.addEventListener('offline', () => { sync.navOnline = false; notifySync(); });
+  // Periodic retry every 30s while items are queued
+  setInterval(() => { if (sync.outbox.length && effectivelyOnline()) flushOutbox(); }, 30_000);
+}
+loadOutbox();
+// Try to flush anything pending from a previous session, once Supabase is loaded
+setTimeout(() => { if (sync.outbox.length && effectivelyOnline()) flushOutbox(); }, 1000);
 
 /* Player position 1-5 (PG/SG/SF/PF/C). Stored on the player row and mirrored
    to localStorage so it survives even if the Supabase 'players' table has no
@@ -1272,7 +1673,7 @@ function migrateLocalPositionsToSupabase() {
   const m = loadPositionsMap();
   for (const p of state.players) {
     if (p.position == null && m[p.id] != null) {
-      sb.from('players').update({ position: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
+      oxb.update('players', p.id, { position: m[p.id] });
     }
   }
 }
@@ -1317,7 +1718,7 @@ function syncPlayerRatingsToSupabase(playerId) {
   const m = loadRatings();
   const r = m[playerId];
   const payload = r && Object.keys(r).length ? r : null;
-  sb.from('players').update({ ratings: payload }).eq('id', playerId).then(() => {}, () => {});
+  oxb.update('players', playerId, { ratings: payload });
 }
 /* Called after loadInitial pulls players from Supabase. Overrides localStorage
    with anything coming from Supabase so cross-device sync works. */
@@ -1340,7 +1741,7 @@ function migrateLocalRatingsToSupabase() {
     const supaEmpty = !p.ratings || Object.keys(p.ratings).length === 0;
     const localHas = m[p.id] && Object.keys(m[p.id]).length;
     if (supaEmpty && localHas) {
-      sb.from('players').update({ ratings: m[p.id] }).eq('id', p.id).then(() => {}, () => {});
+      oxb.update('players', p.id, { ratings: m[p.id] });
     }
   }
 }
@@ -1403,15 +1804,17 @@ async function createGame({ game_date, opponent, location, quarter_length_second
   };
   state.games.unshift(row);
   saveCache();
-  const { error } = await sb.from('games').insert(row);
-  if (error) { toast('Save failed: ' + error.message); }
+  oxb.upsert('games', row);
   return id;
 }
 
 async function deleteGame(id) {
   state.games = state.games.filter(g => g.id !== id);
   saveCache();
-  await sb.from('games').delete().eq('id', id);
+  // Drop any cached events/stints + per-game state so they don't linger
+  lsRm(`events-${id}`); lsRm(`stints-${id}`); lsRm(`gscore-${id}`);
+  for (let q = 1; q <= 4; q++) lsRm(`clock-${id}-${q}`);
+  oxb.delete('games', id);
 }
 
 async function logEvent(eventData) {
@@ -1428,14 +1831,15 @@ async function logEvent(eventData) {
   };
   state.events.push(row);
   state.undoStack.push({ type: 'event', id });
-  const { error } = await sb.from('events').insert(row);
-  if (error) toast('Save failed (will retry)');
+  oxb.upsert('events', row);
+  persistCurrentGameData();
   render();
 }
 
 async function deleteEvent(eventId) {
   state.events = state.events.filter(e => e.id !== eventId);
-  await sb.from('events').delete().eq('id', eventId);
+  oxb.delete('events', eventId);
+  persistCurrentGameData();
 }
 
 async function adjustStat(playerId, eventType, delta) {
@@ -1491,8 +1895,8 @@ async function startStint(playerId, secsRemaining, quarter = state.currentQuarte
   };
   state.stints.push(row);
   state.undoStack.push({ type: 'stint-start', id });
-  const { error } = await sb.from('stints').insert(row);
-  if (error) toast('Save failed');
+  oxb.upsert('stints', row);
+  persistCurrentGameData();
   render();
 }
 
@@ -1514,7 +1918,8 @@ async function endStint(stintId, secsRemaining) {
   if (!stint) return;
   stint.ended_seconds_remaining = secsRemaining;
   state.undoStack.push({ type: 'stint-end', id: stintId });
-  await sb.from('stints').update({ ended_seconds_remaining: secsRemaining }).eq('id', stintId);
+  oxb.update('stints', stintId, { ended_seconds_remaining: secsRemaining });
+  persistCurrentGameData();
   render();
 }
 
@@ -1525,14 +1930,15 @@ async function undoLastAction() {
     await deleteEvent(action.id);
   } else if (action.type === 'stint-start') {
     state.stints = state.stints.filter(s => s.id !== action.id);
-    await sb.from('stints').delete().eq('id', action.id);
+    oxb.delete('stints', action.id);
   } else if (action.type === 'stint-end') {
     const stint = state.stints.find(s => s.id === action.id);
     if (stint) {
       stint.ended_seconds_remaining = null;
-      await sb.from('stints').update({ ended_seconds_remaining: null }).eq('id', action.id);
+      oxb.update('stints', action.id, { ended_seconds_remaining: null });
     }
   }
+  persistCurrentGameData();
   toast('Undone');
   render();
 }
@@ -1543,7 +1949,7 @@ async function addPlayer(name, jersey_number) {
   state.players.push(row);
   state.players.sort((a, b) => a.name.localeCompare(b.name));
   saveCache();
-  await sb.from('players').insert(row);
+  oxb.upsert('players', row);
   render();
 }
 
@@ -1552,14 +1958,14 @@ async function updatePlayer(id, updates) {
   if (!p) return;
   Object.assign(p, updates);
   saveCache();
-  await sb.from('players').update(updates).eq('id', id);
+  oxb.update('players', id, updates);
   render();
 }
 
 async function deletePlayer(id) {
   state.players = state.players.filter(p => p.id !== id);
   saveCache();
-  await sb.from('players').delete().eq('id', id);
+  oxb.delete('players', id);
   render();
 }
 
@@ -1710,6 +2116,7 @@ function render() {
   else if (state.view === 'roster') renderRoster(root);
   else if (state.view === 'workout') renderWorkout(root);
   else if (state.view === 'lineup') renderLineup(root);
+  else if (state.view === 'smart-lineup') renderSmartLineup(root);
   else if (state.view === 'ratings') renderRatings(root);
 }
 
@@ -3166,6 +3573,403 @@ function tryUnlockRatings() {
   }
 }
 
+/* ============================================================
+   SMART LINEUP — separate tool with rules-engine validation.
+   Stores its own lineup data + an "unavailable today" set.
+   ============================================================ */
+const SMART_LU_LS_KEY = 'hoops-smart-lineup-v1';
+const SMART_AVAIL_LS_KEY = 'hoops-smart-availability-v1';
+const SMART_RULES = { minFullQ: 2, minSitQ: 1 };
+
+function smartLuLoad() {
+  try {
+    const raw = lsGet(SMART_LU_LS_KEY);
+    // No saved Smart Lineup yet → seed from the main Lineup Tool so the rules
+    // engine has something to chew on immediately. Once the user edits, edits
+    // get saved under SMART_LU_LS_KEY and the two lineups diverge.
+    if (!raw) {
+      const seed = luLoad();
+      const out = luDefault();
+      for (const q of LU_QUARTERS) {
+        if (seed && seed[q]) for (const s of LU_SLOTS) if (seed[q][s]) out[q][s] = seed[q][s];
+      }
+      return out;
+    }
+    const parsed = JSON.parse(raw);
+    const out = luDefault();
+    for (const q of LU_QUARTERS) {
+      if (parsed && parsed[q]) for (const s of LU_SLOTS) if (parsed[q][s]) out[q][s] = parsed[q][s];
+    }
+    return out;
+  } catch (e) { return luDefault(); }
+}
+function smartLuSave(lu) { lsSet(SMART_LU_LS_KEY, JSON.stringify(lu)); }
+function smartAvailLoad() {
+  try {
+    const raw = lsGet(SMART_AVAIL_LS_KEY);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw));
+  } catch (e) { return new Set(); }
+}
+function smartAvailSave(set) { lsSet(SMART_AVAIL_LS_KEY, JSON.stringify([...set])); }
+
+/* For each available player, compute their counts + reachability:
+   fullQ        - full solo quarters (counts toward MIN_FULL_Q)
+   pairCount    - pair halves
+   presentIn    - Set of quarters with any presence
+   absentCount  - 4 - presentIn.size
+   status       - 'ok' | 'warning' | 'violation'
+   msgs         - human-readable messages
+
+   Plus top-level: capacityOk, unavailablePlaced, quarterOverfilled. */
+function validateSmartLineup(lu, availablePlayers) {
+  const MIN = SMART_RULES.minFullQ;
+  const SIT = SMART_RULES.minSitQ;
+  const TOTAL = LU_QUARTERS.length;
+  const perPlayer = {};
+  for (const p of availablePlayers) {
+    perPlayer[p.id] = { fullQ: 0, pairCount: 0, presentIn: new Set(), msgs: [], status: 'ok' };
+  }
+
+  for (const q of LU_QUARTERS) {
+    for (const s of LU_SLOTS) {
+      const v = lu[q][s];
+      if (!v) continue;
+      if (typeof v === 'string') {
+        if (perPlayer[v]) { perPlayer[v].fullQ++; perPlayer[v].presentIn.add(q); }
+      } else if (v.a && v.b) {
+        if (perPlayer[v.a]) { perPlayer[v.a].pairCount++; perPlayer[v.a].presentIn.add(q); }
+        if (perPlayer[v.b]) { perPlayer[v.b].pairCount++; perPlayer[v.b].presentIn.add(q); }
+      }
+    }
+  }
+
+  // Count empty solo slots in quarters where this player is not present
+  const emptySolosLeft = (playerId) => {
+    let n = 0;
+    for (const q of LU_QUARTERS) {
+      const present = LU_SLOTS.some(s => {
+        const v = lu[q][s];
+        if (!v) return false;
+        if (typeof v === 'string') return v === playerId;
+        return v.a === playerId || v.b === playerId;
+      });
+      if (present) continue;
+      n += LU_SLOTS.filter(s => !lu[q][s]).length;
+    }
+    return n;
+  };
+
+  for (const p of availablePlayers) {
+    const ps = perPlayer[p.id];
+    ps.absentCount = TOTAL - ps.presentIn.size;
+
+    if (ps.fullQ < MIN) {
+      const reach = emptySolosLeft(p.id);
+      if (ps.fullQ + reach < MIN) {
+        ps.msgs.push(`Only ${ps.fullQ}/${MIN} full Q — no empty solo slots remain in their open quarters`);
+        ps.status = 'violation';
+      } else {
+        ps.msgs.push(`${ps.fullQ}/${MIN} full Q`);
+        if (ps.status === 'ok') ps.status = 'warning';
+      }
+    }
+
+    if (ps.absentCount < SIT) {
+      ps.msgs.push(`Sits ${ps.absentCount} Q — needs to sit ≥ ${SIT}`);
+      ps.status = 'violation';
+    }
+  }
+
+  // Top-level: capacity check
+  const N = availablePlayers.length;
+  const capacityOk = N * MIN <= TOTAL * LU_SLOTS.length;
+
+  // Top-level: unavailable players placed in slots
+  const availIds = new Set(availablePlayers.map(p => p.id));
+  const unavailablePlaced = [];
+  for (const q of LU_QUARTERS) {
+    for (const s of LU_SLOTS) {
+      const v = lu[q][s];
+      if (!v) continue;
+      const ids = typeof v === 'string' ? [v] : [v.a, v.b];
+      for (const id of ids) {
+        if (!availIds.has(id)) unavailablePlaced.push({ q, s, id });
+      }
+    }
+  }
+
+  // Top-level: quarter overfilled (shouldn't happen via UI but just in case)
+  const quarterOverfilled = LU_QUARTERS.filter(q => LU_SLOTS.filter(s => lu[q][s]).length > 5);
+
+  return { perPlayer, capacityOk, unavailablePlaced, quarterOverfilled, N, MIN };
+}
+
+function renderSmartLineup(root) {
+  const lu = smartLuLoad();
+  const unavailSet = smartAvailLoad();
+  const allActive = state.players.filter(p => p.active !== false);
+  const available = allActive.filter(p => !unavailSet.has(p.id));
+  const v = validateSmartLineup(lu, available);
+
+  const wrap = el('div');
+  wrap.append(el('div', { class: 'game-header' },
+    el('button', { class: 'iconbtn', onclick: () => { state.view = 'home'; render(); } }, '←'),
+    el('h2', { style: 'margin:0' }, 'Smart Lineup'),
+  ));
+
+  wrap.append(el('div', { class: 'lu-hint' },
+    `Rules: each available player must have ≥ ${v.MIN} full solo quarters and sit at least 1 full quarter. Pair halves don't count toward the full-Q minimum.`
+  ));
+
+  wrap.append(el('div', { class: 'lu-actions' },
+    el('button', { class: 'nav-btn', onclick: () => {
+      const cur = luLoad();
+      smartLuSave(cur);
+      toast('Copied from Lineup Tool');
+      render();
+    }}, '↓ From Lineup Tool'),
+    el('button', { class: 'nav-btn', onclick: () => {
+      if (!confirm('Replace your Lineup Tool with this Smart Lineup?')) return;
+      luSave(smartLuLoad());
+      toast('Pushed to Lineup Tool');
+    }}, '↑ To Lineup Tool'),
+    el('button', { class: 'nav-btn', onclick: () => {
+      if (!confirm('Reset all quarters?')) return;
+      smartLuSave(luDefault());
+      render();
+    }}, 'Reset'),
+  ));
+
+  // Availability chips
+  const avSection = el('div', { class: 'smart-section' });
+  const inN = available.length;
+  avSection.append(el('div', { class: 'smart-section-head' },
+    el('div', { class: 'smart-section-title' }, 'Availability today'),
+    el('div', { class: 'smart-section-sub' }, `${inN} of ${allActive.length} available`),
+  ));
+  const chips = el('div', { class: 'smart-avail-chips' });
+  for (const p of allActive) {
+    const isOut = unavailSet.has(p.id);
+    chips.append(el('button', {
+      class: `smart-avail-chip ${isOut ? 'out' : 'in'}`,
+      title: isOut ? 'Tap to mark available' : 'Tap to mark unavailable',
+      onclick: () => {
+        const s = smartAvailLoad();
+        if (s.has(p.id)) s.delete(p.id); else s.add(p.id);
+        smartAvailSave(s);
+        render();
+      },
+    }, isOut ? '✕ ' : '', (p.jersey_number ? `#${p.jersey_number} ` : ''), shortName(p.name)));
+  }
+  avSection.append(chips);
+  wrap.append(avSection);
+
+  // Top-level alerts
+  const topAlerts = [];
+  if (!v.capacityOk) {
+    topAlerts.push(`${v.N} available players × ${v.MIN} full quarters = ${v.N * v.MIN} solo slots, but the game only has ${LU_QUARTERS.length * LU_SLOTS.length}. Impossible to satisfy.`);
+  }
+  if (v.unavailablePlaced.length) {
+    const names = v.unavailablePlaced.map(x => {
+      const p = state.players.find(pp => pp.id === x.id);
+      return p ? shortName(p.name) : 'Unknown';
+    });
+    topAlerts.push(`Unavailable players are placed: ${[...new Set(names)].join(', ')}`);
+  }
+  if (v.quarterOverfilled.length) topAlerts.push(`${v.quarterOverfilled.join(', ')} over capacity`);
+
+  // Validation panel
+  const valWrap = el('div', { class: 'smart-section' });
+  const okCount = available.filter(p => v.perPlayer[p.id].status === 'ok').length;
+  const headStatusCls = topAlerts.length ? 'bad' : (okCount === inN && inN > 0 ? 'good' : 'warn');
+  valWrap.append(el('div', { class: `smart-section-head ${headStatusCls}` },
+    el('div', { class: 'smart-section-title' }, 'Rules check'),
+    el('div', { class: 'smart-section-sub' },
+      topAlerts.length ? '✕ Violations' : (inN === 0 ? '— No players' : (okCount === inN ? '✓ All players OK' : `${okCount}/${inN} players OK`))),
+  ));
+  if (topAlerts.length) {
+    for (const a of topAlerts) valWrap.append(el('div', { class: 'smart-top-alert' }, a));
+  }
+  if (inN > 0) {
+    const playerList = el('div', { class: 'smart-player-list' });
+    // Sort: violations first, then warnings, then ok, then alphabetically
+    const order = { violation: 0, warning: 1, ok: 2 };
+    const rows = available.map(p => ({ p, ps: v.perPlayer[p.id] }));
+    rows.sort((a, b) => order[a.ps.status] - order[b.ps.status] || a.p.name.localeCompare(b.p.name));
+    for (const { p, ps } of rows) {
+      playerList.append(el('div', { class: `smart-player-row ${ps.status}` },
+        el('div', { class: 'spr-name' }, (p.jersey_number ? `#${p.jersey_number} ` : '') + shortName(p.name)),
+        el('div', { class: 'spr-counts' },
+          el('span', {}, `${ps.fullQ} full`),
+          ps.pairCount ? el('span', { class: 'spr-pair' }, `${ps.pairCount}× ½`) : null,
+          el('span', {}, `sits ${ps.absentCount}`),
+        ),
+        ps.msgs.length ? el('div', { class: 'spr-msg' }, ps.msgs.join(' · ')) : null,
+      ));
+    }
+    valWrap.append(playerList);
+  }
+  wrap.append(valWrap);
+
+  // 2x2 grid of quarters
+  const grid = el('div', { class: 'lu-quarters' });
+  for (const q of LU_QUARTERS) {
+    const filled = LU_SLOTS.filter(s => lu[q][s]).length;
+    const isFull = filled >= LU_SLOTS.length;
+    const qCard = el('div', { class: `lu-q${isFull ? ' full' : ''}` });
+    qCard.append(el('div', { class: 'lu-q-head' },
+      el('div', { class: 'lu-q-title' }, q),
+      el('div', { class: `lu-q-count${isFull ? ' full' : ''}` }, `${filled} / ${LU_SLOTS.length}`),
+    ));
+    const slotsWrap = el('div', { class: 'lu-slots' });
+    for (const sl of LU_SLOTS) {
+      const val = lu[q][sl];
+      const isPair = val && typeof val === 'object' && val.a && val.b;
+      // Slot turns red if it contains an unavailable player
+      const ids = !val ? [] : (typeof val === 'string' ? [val] : [val.a, val.b]);
+      const hasUnavail = ids.some(id => unavailSet.has(id));
+      const slotEl = el('div', { class: `lu-slot${val ? (isPair ? ' pair' : '') : ' empty'}${hasUnavail ? ' smart-bad' : ''}` });
+      if (!val) {
+        slotEl.append('Tap to pick');
+      } else if (typeof val === 'string') {
+        const p = state.players.find(x => x.id === val);
+        slotEl.append(buildSmartChip(p, q, sl, false, unavailSet));
+      } else {
+        slotEl.append(buildSmartChip(state.players.find(x => x.id === val.a), q, sl, true, unavailSet));
+        slotEl.append(buildSmartChip(state.players.find(x => x.id === val.b), q, sl, true, unavailSet));
+      }
+      slotEl.addEventListener('click', () => openSmartPickerModal(q, sl));
+      slotsWrap.append(el('div', { class: 'lu-slot-row' },
+        el('div', { class: 'lu-slot-label' }, sl),
+        slotEl,
+      ));
+    }
+    qCard.append(slotsWrap);
+    grid.append(qCard);
+  }
+  wrap.append(grid);
+
+  root.append(wrap);
+}
+
+function buildSmartChip(p, q, sl, isHalf, unavailSet) {
+  if (!p) return el('div', { class: 'lu-chip smart-bad' }, '— missing —');
+  const cls = unavailSet.has(p.id) ? 'lu-chip smart-bad' : 'lu-chip';
+  return el('div', { class: cls },
+    el('div', { class: 'lu-num' }, p.jersey_number || '·'),
+    el('div', { class: 'lu-name' }, shortName(p.name) + (isHalf ? ' ½' : '')),
+  );
+}
+
+function openSmartPickerModal(q, slot) {
+  const lu = smartLuLoad();
+  const unavailSet = smartAvailLoad();
+  const all = state.players.filter(p => p.active !== false);
+  const cur = lu[q][slot];
+
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, `${q} · ${slot}`));
+
+  if (cur) {
+    body.append(el('div', { class: 'modal-actions', style: 'justify-content:flex-start' },
+      el('button', { class: 'nav-btn', onclick: () => {
+        const u = smartLuLoad();
+        u[q][slot] = null;
+        smartLuSave(u);
+        closeModal();
+        render();
+      }}, 'Clear slot'),
+      typeof cur === 'string' ? el('button', { class: 'nav-btn', onclick: () => {
+        closeModal();
+        openSmartPartnerModal(q, slot);
+      }}, '+ Add ½ partner') : null,
+    ));
+  }
+
+  const list = el('div', { class: 'picker-list' });
+  const sorted = [...all].sort((a, b) => (a.jersey_number || 999) - (b.jersey_number || 999));
+  for (const p of sorted) {
+    const isUnavail = unavailSet.has(p.id);
+    const usage = luUsage(lu, p.id);
+    const usageText = (usage % 1 === 0) ? String(usage) : usage.toFixed(1);
+    const note = isUnavail ? 'Not available today' : `${usageText}/4 Q used`;
+    const row = el('div', { class: `picker-row${isUnavail ? ' disabled' : ''}` },
+      el('div', { class: 'picker-jersey' + (p.jersey_number ? '' : ' no-num') }, p.jersey_number || '·'),
+      el('div', {},
+        el('div', { class: 'picker-name' }, p.name),
+        el('div', { class: 'picker-note' }, note),
+      ),
+    );
+    if (!isUnavail) {
+      row.addEventListener('click', () => {
+        const u = smartLuLoad();
+        // Remove this player from any other slot in the same quarter
+        for (const s of LU_SLOTS) {
+          if (s === slot) continue;
+          const v = u[q][s];
+          if (!v) continue;
+          if (typeof v === 'string') { if (v === p.id) u[q][s] = null; }
+          else {
+            if (v.a === p.id && v.b === p.id) u[q][s] = null;
+            else if (v.a === p.id) u[q][s] = v.b;
+            else if (v.b === p.id) u[q][s] = v.a;
+          }
+        }
+        u[q][slot] = p.id;
+        smartLuSave(u);
+        closeModal();
+        render();
+      });
+    }
+    list.append(row);
+  }
+  body.append(list);
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+  ));
+  openModal(body);
+}
+
+function openSmartPartnerModal(q, slot) {
+  const lu = smartLuLoad();
+  const cur = lu[q][slot];
+  if (!cur || typeof cur !== 'string') return;
+  const unavailSet = smartAvailLoad();
+  const all = state.players.filter(p => p.active !== false && p.id !== cur);
+
+  const body = el('div', { class: 'modal modal-lg' });
+  body.append(el('h3', {}, `${q} · ${slot} · Add ½ partner`));
+  body.append(el('div', { class: 'picker-section' }, 'Each plays half of this quarter (counts 0.5 each).'));
+
+  const list = el('div', { class: 'picker-list' });
+  for (const p of all) {
+    const isUnavail = unavailSet.has(p.id);
+    const row = el('div', { class: `picker-row${isUnavail ? ' disabled' : ''}` },
+      el('div', { class: 'picker-jersey' + (p.jersey_number ? '' : ' no-num') }, p.jersey_number || '·'),
+      el('div', {},
+        el('div', { class: 'picker-name' }, p.name),
+        el('div', { class: 'picker-note' }, isUnavail ? 'Not available today' : ''),
+      ),
+    );
+    if (!isUnavail) {
+      row.addEventListener('click', () => {
+        const u = smartLuLoad();
+        u[q][slot] = { a: cur, b: p.id };
+        smartLuSave(u);
+        closeModal();
+        render();
+      });
+    }
+    list.append(row);
+  }
+  body.append(list);
+  body.append(el('div', { class: 'modal-actions' },
+    el('button', { class: 'btn btn-ghost', onclick: () => { closeModal(); openSmartPickerModal(q, slot); } }, 'Back'),
+  ));
+  openModal(body);
+}
+
 function renderRatings(root) {
   const wrap = el('div');
   wrap.append(el('div', { class: 'game-header' },
@@ -3277,9 +4081,7 @@ function addSavedLineup(name) {
   const row = { id: uuid(), name, savedAt: new Date().toISOString(), lu: luLoad() };
   arr.unshift(row);
   saveSavedLineups(arr);
-  sb.from('saved_lineups').insert({
-    id: row.id, name: row.name, saved_at: row.savedAt, lineup: row.lu,
-  }).then(() => {}, () => {});
+  oxb.upsert('saved_lineups', { id: row.id, name: row.name, saved_at: row.savedAt, lineup: row.lu });
   return row;
 }
 function updateSavedLineup(id, newName) {
@@ -3292,9 +4094,7 @@ function updateSavedLineup(id, newName) {
   const [row] = arr.splice(idx, 1);
   arr.unshift(row);
   saveSavedLineups(arr);
-  sb.from('saved_lineups').update({
-    name: row.name, saved_at: row.savedAt, lineup: row.lu,
-  }).eq('id', id).then(() => {}, () => {});
+  oxb.update('saved_lineups', id, { name: row.name, saved_at: row.savedAt, lineup: row.lu });
   return true;
 }
 function findSavedLineupByName(name) {
@@ -3303,7 +4103,7 @@ function findSavedLineupByName(name) {
 }
 function deleteSavedLineup(id) {
   saveSavedLineups(loadSavedLineups().filter(s => s.id !== id));
-  sb.from('saved_lineups').delete().eq('id', id).then(() => {}, () => {});
+  oxb.delete('saved_lineups', id);
 }
 
 /* Convert current Lineup tool into stints for a target game.
@@ -3371,13 +4171,14 @@ async function pushLineupToGame(gameId, opts = {}) {
     if (state.currentGameId === gameId) {
       state.stints = state.stints.filter(s => !stintsToDelete.includes(s.id));
     }
-    await sb.from('stints').delete().in('id', stintsToDelete);
+    for (const sid of stintsToDelete) oxb.delete('stints', sid);
   }
   if (newStints.length) {
-    const { error } = await sb.from('stints').insert(newStints);
-    if (error) return { ok: false, msg: error.message };
+    for (const row of newStints) oxb.upsert('stints', row);
     if (state.currentGameId === gameId) state.stints.push(...newStints);
   }
+  if (state.currentGameId === gameId) persistCurrentGameData();
+  else persistGameData(gameId);
   return { ok: true, pushed, skipped, inserted: newStints.length };
 }
 
@@ -3489,8 +4290,8 @@ async function pullLineupForCurrentQuarter() {
   }
   if (!newStints.length) return toast('Floor already has the lineup players');
   state.stints.push(...newStints);
-  const { error } = await sb.from('stints').insert(newStints);
-  if (error) toast('Save failed (will retry)');
+  for (const row of newStints) oxb.upsert('stints', row);
+  persistCurrentGameData();
   render();
   toast(`Pulled Q${q} from lineup`);
 }
@@ -3505,9 +4306,7 @@ async function syncSavedLineupsWithSupabase() {
   // Push local-only entries up so they aren't lost
   for (const s of local) {
     if (!remoteIds.has(s.id)) {
-      sb.from('saved_lineups').insert({
-        id: s.id, name: s.name, saved_at: s.savedAt, lineup: s.lu,
-      }).then(() => {}, () => {});
+      oxb.upsert('saved_lineups', { id: s.id, name: s.name, saved_at: s.savedAt, lineup: s.lu });
     }
   }
   const remote = (data || []).map(r => ({ id: r.id, name: r.name, savedAt: r.saved_at, lu: r.lineup }));
@@ -3574,14 +4373,18 @@ async function printLineup() {
   doc.text(`Warriors  ·  ${dateStr}`, W / 2, M + 36, { align: 'center' });
   doc.setTextColor(0, 0, 0);
 
-  // 2x2 grid of quarters
+  // 2x2 grid of quarters, with room reserved at the bottom for the usage summary
+  const usageHeight = 110;
   const gridTop = M + 58;
-  const gridBottom = H - M;
+  const gridBottom = H - M - usageHeight;
   const gridW = W - 2 * M;
   const gridH = gridBottom - gridTop;
   const gap = 14;
   const cellW = (gridW - gap) / 2;
   const cellH = (gridH - gap) / 2;
+
+  // Pre-compute the quarter-count for each player (1.0 per solo slot, 0.5 per pair half)
+  const fmtQ = (n) => (Number.isInteger(n) ? `${n}` : n.toFixed(1)) + 'Q';
 
   for (let i = 0; i < LU_QUARTERS.length; i++) {
     const q = LU_QUARTERS[i];
@@ -3632,23 +4435,33 @@ async function printLineup() {
       doc.setTextColor(80, 80, 80);
       doc.text(sl, x + 26, textY - 1, { align: 'center' });
 
-      // Player name(s)
+      // Player name(s) + quarter-count suffix
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(11);
+      const renderNameWithCount = (pid, baseY, isHalfA, isHalfB) => {
+        const label = playerLabelFromId(pid) + (isHalfA || isHalfB ? '  ½' : '');
+        const totalQ = luUsage(lu, pid);
+        const suffix = `  ·  ${fmtQ(totalQ)}`;
+        doc.setFont('helvetica', 'normal');
+        doc.text(label, x + 52, baseY, { maxWidth: cellW - 120 });
+        // Quarter count tag on the right side of the row
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(110, 110, 110);
+        doc.text(fmtQ(totalQ), x + cellW - 14, baseY, { align: 'right' });
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+      };
       if (!v) {
         doc.setFont('helvetica', 'italic');
         doc.setTextColor(170, 170, 170);
         doc.text('—', x + 52, textY);
       } else if (typeof v === 'string') {
-        doc.setFont('helvetica', 'normal');
-        doc.text(playerLabelFromId(v), x + 52, textY, { maxWidth: cellW - 66 });
+        renderNameWithCount(v, textY, false, false);
       } else if (v.a && v.b) {
-        doc.setFont('helvetica', 'normal');
-        const aLbl = playerLabelFromId(v.a) + '  ½';
-        const bLbl = playerLabelFromId(v.b) + '  ½';
-        doc.text(aLbl, x + 52, textY - 6, { maxWidth: cellW - 66 });
+        renderNameWithCount(v.a, textY - 6, true, false);
         doc.setTextColor(110, 110, 110);
-        doc.text(bLbl, x + 52, textY + 7, { maxWidth: cellW - 66 });
+        renderNameWithCount(v.b, textY + 7, false, true);
       }
 
       // Row separator
@@ -3657,6 +4470,66 @@ async function printLineup() {
         doc.setLineWidth(0.5);
         doc.line(x + 10, rowY + lineH, x + cellW - 10, rowY + lineH);
       }
+    }
+  }
+
+  // Player Usage summary (sorted by quarter count desc)
+  const usageRows = state.players
+    .map(p => ({ p, q: luUsage(lu, p.id) }))
+    .filter(r => r.q > 0)
+    .sort((a, b) => b.q - a.q || a.p.name.localeCompare(b.p.name));
+
+  const uTop = gridBottom + gap;
+  const uH = usageHeight - 8;
+  doc.setDrawColor(120, 120, 120);
+  doc.setLineWidth(1);
+  doc.roundedRect(M, uTop, gridW, uH, 8, 8);
+  doc.setFillColor(28, 28, 28);
+  doc.roundedRect(M, uTop, gridW, 22, 8, 8, 'F');
+  doc.rect(M, uTop + 8, gridW, 14, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(255, 255, 255);
+  doc.text('PLAYER USAGE', M + 14, uTop + 15);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(200, 200, 200);
+  doc.text(`${usageRows.length} player${usageRows.length === 1 ? '' : 's'} in rotation`, M + gridW - 14, uTop + 15, { align: 'right' });
+  doc.setTextColor(0, 0, 0);
+
+  if (usageRows.length === 0) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text('No players assigned yet.', M + 14, uTop + 50);
+  } else {
+    // 4-column layout
+    const cols = 4;
+    const colW = (gridW - 20) / cols;
+    const rowH = 14;
+    const startX = M + 10;
+    const startY = uTop + 36;
+    for (let i = 0; i < usageRows.length; i++) {
+      const { p, q } = usageRows[i];
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx = startX + col * colW;
+      const cy = startY + row * rowH;
+      // Highlight outliers in subtle color (too many or too few)
+      const isHigh = q >= 4;
+      const isLow = q <= 1;
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      if (isHigh) doc.setTextColor(180, 100, 40);
+      else if (isLow) doc.setTextColor(150, 150, 150);
+      else doc.setTextColor(40, 40, 40);
+      const qLbl = fmtQ(q).padStart(4, ' ');
+      doc.text(qLbl, cx, cy);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      const nm = (p.jersey_number ? `#${p.jersey_number} ` : '') + p.name.split(' ')[0];
+      doc.text(nm, cx + 26, cy, { maxWidth: colW - 32 });
     }
   }
 
@@ -4241,6 +5114,227 @@ function renderWorkout(root) {
   woUpdateButtons();
 }
 
+/* ============ SYNC CENTER ============ */
+function openSyncCenter() {
+  function render() {
+    const root = $('#modal-root');
+    root.innerHTML = '';
+    const st = syncPillState();
+    const pc = sync.outbox.length;
+    const block = el('div', { class: `sync-status-block ${st}` },
+      el('div', { class: 'sync-status-icon' },
+        st === 'synced' ? '🟢' : st === 'pending' ? '🟡' : st === 'offline' ? '🔴' : '⚠️'),
+      el('div', { class: 'sync-status-text' },
+        el('div', { class: 'sync-status-title' },
+          st === 'synced' ? 'All synced' :
+          st === 'pending' ? `${pc} change${pc === 1 ? '' : 's'} pending — pushing` :
+          st === 'offline' ? `Offline · ${pc} change${pc === 1 ? '' : 's'} queued` :
+          `Sync error · ${pc} stuck`),
+        el('div', { class: 'sync-status-sub' },
+          st === 'synced' ? 'Everything on this iPad matches the server.' :
+          st === 'pending' ? 'Background sync is running. Safe to keep using the app.' :
+          st === 'offline' ? (sync.offlineToggle ? 'OFFLINE toggle is on. Your changes are saved locally and will push when you turn it off.' : 'No network detected. Changes are saved locally and will push when wifi returns.') :
+          (sync.lastErrorMsg ? sync.lastErrorMsg : 'Last sync attempt failed. Tap Sync Now to retry.')),
+      ),
+    );
+
+    const toggleRow = el('div', { class: 'sync-toggle-row' },
+      el('label', { for: 'sync-offline-toggle' },
+        'OFFLINE mode',
+        el('div', { class: 'hint' }, 'When ON, no Supabase calls. All work saves locally.'),
+      ),
+      el('label', { class: 'sync-switch' },
+        el('input', {
+          type: 'checkbox', id: 'sync-offline-toggle',
+          checked: sync.offlineToggle ? 'checked' : null,
+          onchange: (e) => { setOfflineToggle(e.target.checked); render(); updateSyncPill(); },
+        }),
+        el('span', { class: 'sync-switch-track' },
+          el('span', { class: 'sync-switch-thumb' }),
+        ),
+      ),
+    );
+
+    const actions = el('div', { class: 'sync-actions' },
+      el('button', {
+        class: 'btn btn-primary',
+        disabled: (!effectivelyOnline() || !pc) ? '' : null,
+        style: (!effectivelyOnline() || !pc) ? 'opacity:0.4; pointer-events:none;' : '',
+        onclick: async () => {
+          const r = await flushOutbox({ manual: true });
+          if (r.ok) toast(r.drained ? `Synced ${r.drained}` : 'Already synced');
+          else if (r.reason === 'error') toast('Sync error — see Pending list');
+          else if (r.reason === 'offline') toast('You are offline');
+          render();
+        },
+      }, 'Sync Now'),
+      el('button', {
+        class: 'btn btn-ghost',
+        onclick: () => { backupCurrentGame(); },
+      }, state.currentGameId ? '💾 Backup Game' : '💾 Backup All'),
+    );
+
+    const actions2 = el('div', { class: 'sync-actions' },
+      el('button', {
+        class: 'btn btn-ghost',
+        onclick: () => { restoreBackupFromFile(() => render()); },
+      }, '📂 Restore from Backup'),
+      el('button', {
+        class: 'btn btn-ghost',
+        style: pc ? '' : 'opacity:0.4; pointer-events:none;',
+        disabled: pc ? null : '',
+        onclick: () => {
+          if (!confirm(`Clear ${pc} pending change${pc === 1 ? '' : 's'} WITHOUT pushing to the server? Local data stays. This cannot be undone.`)) return;
+          sync.outbox = []; persistOutbox(); notifySync(); render();
+        },
+      }, 'Discard pending'),
+    );
+
+    let pendingList = null;
+    if (pc) {
+      pendingList = el('div', { class: 'sync-pending-list' });
+      for (const e of sync.outbox.slice(0, 50)) {
+        const item = el('div', { class: 'sync-pending-item' },
+          el('span', { class: `op ${e.op}` }, e.op.toUpperCase()),
+          el('span', { class: 'tbl' }, e.table),
+          el('span', {},
+            (e.rowId || '').slice(0, 8) + (e.lastError ? ' · ' : ''),
+            e.lastError ? el('span', { class: 'err' }, `try ${e.attempts}: ${e.lastError.slice(0, 60)}`) : null,
+          ),
+        );
+        pendingList.append(item);
+      }
+      if (sync.outbox.length > 50) {
+        pendingList.append(el('div', { class: 'sync-pending-item', style: 'justify-content:center;color:var(--muted)' },
+          el('span', {}, ''), el('span', {}, ''),
+          el('span', {}, `+ ${sync.outbox.length - 50} more`)));
+      }
+    }
+
+    const body = el('div', { class: 'modal modal-lg sync-center' },
+      el('h3', {}, 'Sync Center'),
+      block,
+      toggleRow,
+      actions,
+      actions2,
+      pendingList,
+      el('div', { class: 'modal-actions' },
+        el('button', { class: 'btn btn-ghost', onclick: closeModal }, 'Close'),
+      ),
+    );
+    openModal(body);
+  }
+  render();
+  const off = onSyncChange(render);
+  // Auto-detach when modal closes (poll modal-root)
+  const cleanup = setInterval(() => {
+    if (!$('#modal-root').firstChild) { off(); clearInterval(cleanup); }
+  }, 500);
+}
+
+/* ============ BACKUP / RESTORE ============ */
+function backupCurrentGame() {
+  const gid = state.currentGameId;
+  const everything = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    scope: gid ? 'game' : 'all',
+    game: gid ? state.games.find(g => g.id === gid) : null,
+    games: gid ? null : state.games,
+    players: state.players,
+    events: gid ? state.events : null,
+    stints: gid ? state.stints : null,
+    ratings: (function() { try { return JSON.parse(lsGet('hoops-ratings-v1') || '{}'); } catch(e) { return {}; } })(),
+    positions: (function() { try { return JSON.parse(lsGet('hoops-positions') || '{}'); } catch(e) { return {}; } })(),
+    lineupTool: (function() { try { return JSON.parse(lsGet('hoops-lineup-v1') || 'null'); } catch(e) { return null; } })(),
+    savedLineups: loadSavedLineups(),
+    outbox: sync.outbox,
+  };
+  const filename = gid
+    ? `hoops-backup-${(everything.game?.opponent || 'game').replace(/\W+/g, '-')}-${(everything.game?.game_date || '').replace(/-/g, '')}-${new Date().toISOString().slice(0, 16).replace(/[:T-]/g, '')}.json`
+    : `hoops-backup-all-${new Date().toISOString().slice(0, 16).replace(/[:T-]/g, '')}.json`;
+  const blob = new Blob([JSON.stringify(everything, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.append(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+  toast('Backup downloaded');
+}
+
+function restoreBackupFromFile(onDone) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'application/json,.json';
+  input.onchange = async () => {
+    const f = input.files && input.files[0];
+    if (!f) { onDone && onDone(); return; }
+    let data;
+    try { data = JSON.parse(await f.text()); }
+    catch(e) { toast('Bad backup file'); return; }
+    if (!data || data.version !== 1) { toast('Unsupported backup'); return; }
+    if (!confirm(`Restore backup from ${new Date(data.exportedAt).toLocaleString()}? Existing data will be upserted (no deletes). The backup’s pending sync ops will also re-queue.`)) {
+      onDone && onDone(); return;
+    }
+    // Restore games/players/events/stints into state + outbox
+    const gamesToUpsert = data.scope === 'game' ? (data.game ? [data.game] : []) : (data.games || []);
+    for (const g of gamesToUpsert) {
+      if (!state.games.find(x => x.id === g.id)) state.games.unshift(g);
+      else Object.assign(state.games.find(x => x.id === g.id), g);
+      oxb.upsert('games', g);
+    }
+    for (const p of (data.players || [])) {
+      const ex = state.players.find(x => x.id === p.id);
+      if (ex) Object.assign(ex, p); else state.players.push(p);
+      oxb.upsert('players', p);
+    }
+    saveCache();
+    if (data.scope === 'game' && data.game) {
+      const gid = data.game.id;
+      const existingEvents = loadGameDataCache(gid).events;
+      const existingStints = loadGameDataCache(gid).stints;
+      const mergedEvents = mergeById(existingEvents, data.events || []);
+      const mergedStints = mergeById(existingStints, data.stints || []);
+      persistGameData(gid, mergedEvents, mergedStints);
+      if (state.currentGameId === gid) {
+        state.events = mergedEvents;
+        state.stints = mergedStints;
+      }
+      for (const ev of (data.events || [])) oxb.upsert('events', ev);
+      for (const st of (data.stints || [])) oxb.upsert('stints', st);
+    }
+    if (data.ratings) lsSet('hoops-ratings-v1', JSON.stringify(data.ratings));
+    if (data.positions) lsSet('hoops-positions', JSON.stringify(data.positions));
+    if (data.lineupTool) lsSet('hoops-lineup-v1', JSON.stringify(data.lineupTool));
+    if (Array.isArray(data.savedLineups)) {
+      const local = loadSavedLineups();
+      const localIds = new Set(local.map(s => s.id));
+      const merged = [...local];
+      for (const s of data.savedLineups) if (!localIds.has(s.id)) merged.push(s);
+      saveSavedLineups(merged);
+    }
+    // Re-queue any outbox ops that were saved in the backup (idempotent)
+    if (Array.isArray(data.outbox)) {
+      for (const e of data.outbox) {
+        if (e.op === 'upsert' && e.payload) oxb.upsert(e.table, e.payload);
+        else if (e.op === 'delete') oxb.delete(e.table, e.rowId);
+      }
+    }
+    toast('Backup restored');
+    if (typeof render === 'function') render();
+    onDone && onDone();
+  };
+  input.click();
+}
+function mergeById(a, b) {
+  const out = [...a];
+  const idx = new Map(out.map((r, i) => [r.id, i]));
+  for (const r of b) {
+    if (idx.has(r.id)) out[idx.get(r.id)] = r;
+    else { idx.set(r.id, out.length); out.push(r); }
+  }
+  return out;
+}
+
 /* ============ MODALS / TOAST ============ */
 function openModal(content) {
   const root = $('#modal-root');
@@ -4265,7 +5359,34 @@ $('#nav-games').onclick = () => { state.view = 'home'; render(); };
 $('#nav-roster').onclick = () => { state.view = 'roster'; render(); };
 $('#nav-workout').onclick = () => { state.view = 'workout'; render(); };
 $('#nav-lineup').onclick = () => { state.view = 'lineup'; render(); };
+$('#nav-smart').onclick = () => { state.view = 'smart-lineup'; render(); };
 $('#nav-ratings').onclick = () => { state.view = 'ratings'; render(); };
+$('#sync-pill').onclick = () => openSyncCenter();
+
+/* ============ SYNC STATUS PILL ============ */
+function syncPillState() {
+  if (sync.offlineToggle || !sync.navOnline) return 'offline';
+  if (sync.outbox.length === 0) {
+    const recentErr = sync.lastErrorAt && (Date.now() - sync.lastErrorAt) < SYNC_RECENT_ERROR_MAX_AGE_MS;
+    if (recentErr) return 'error';
+    return 'synced';
+  }
+  return 'pending';
+}
+function updateSyncPill() {
+  const pill = document.getElementById('sync-pill');
+  const label = document.getElementById('sync-pill-label');
+  if (!pill || !label) return;
+  const st = syncPillState();
+  pill.setAttribute('data-state', st);
+  const pc = sync.outbox.length;
+  if (st === 'offline') label.textContent = pc ? `OFFLINE · ${pc}` : 'OFFLINE';
+  else if (st === 'pending') label.textContent = `${pc} PENDING`;
+  else if (st === 'error') label.textContent = pc ? `${pc} STUCK` : 'RETRY';
+  else label.textContent = 'SYNCED';
+}
+onSyncChange(updateSyncPill);
+updateSyncPill();
 
 /* ============ INIT ============ */
 loadWorkout();
