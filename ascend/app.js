@@ -573,40 +573,55 @@ function renderSprint() {
   return wrap;
 }
 
-/* ---------------------------- BOSS BATTLE (game) ------------------------- */
+/* --------------------------- BOSS CHALLENGE (game) ---------------------- */
 let BOSS = { phase: 'lobby' };
+let BOSS_TIMER = null;
 const BOSS_EMOJI = { nso: '🐉', ar: '👹', pr: '🦑', gr: '🗿', dp: '👻' };
+const BOSS_TARGET = 7, BOSS_LIVES = 3;
 function unitSkills(unitId) { return ALL_SKILLS.filter(s => s.unitId === unitId); }
+function bossStopTimer() { if (BOSS_TIMER) { clearInterval(BOSS_TIMER); BOSS_TIMER = null; } }
+function bossQuestionMs() { return Math.max(5, 12 - (BOSS.streak || 0)) * 1000; } // clock speeds up as streak climbs
+function bossStartTimer() { bossStopTimer(); BOSS.qStart = now(); BOSS.qDur = bossQuestionMs(); BOSS_TIMER = setInterval(bossTick, 100); }
+function bossTick() {
+  if (!BOSS.dom) return;
+  const rem = BOSS.qDur - (now() - BOSS.qStart);
+  BOSS.dom.timebar.style.width = Math.max(0, rem / BOSS.qDur * 100) + '%';
+  BOSS.dom.timenum.textContent = Math.max(0, Math.ceil(rem / 1000));
+  if (rem <= 3000) BOSS.dom.timebar.classList.add('danger');
+  if (rem <= 0) bossResolve('timeout', null);
+}
 function startBoss(unit) {
   const stu = STATE.students[STATE.currentUserId];
-  BOSS = { phase: 'fight', unitId: unit.id, hp: 6, maxHp: 6, hearts: 3, item: gameItem(unitSkills(unit.id)), asked: 0, hit: 0 };
+  BOSS = { phase: 'active', unitId: unit.id, target: BOSS_TARGET, streak: 0, lives: BOSS_LIVES, item: gameItem(unitSkills(unit.id)), asked: 0, correct: 0, newBadges: [] };
   ensureDailies(stu); bumpQuest(stu, 'boss', 1); persist();
   go('boss');
 }
-function answerBoss(choice, btn) {
+function bossResolve(result, btn) {
   if (BOSS.locked) return; BOSS.locked = true;
+  bossStopTimer();
   const stu = STATE.students[STATE.currentUserId];
-  const ok = choice === BOSS.item.answer;
-  BOSS.asked++; if (ok) BOSS.hit++;
-  const cel = handleAnswer(stu, BOSS.item.skill, ok, 4);
-  if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = (BOSS.newBadges || []).concat(cel.newBadges);
-  if (ok) { BOSS.hp = Math.max(0, BOSS.hp - 1); if (btn) btn.classList.add('right'); }
-  else { BOSS.hearts = Math.max(0, BOSS.hearts - 1); if (btn) btn.classList.add('wrong'); }
+  const answered = result !== 'timeout';
+  const ok = result === true;
+  if (answered) { BOSS.asked++; if (ok) BOSS.correct++; const cel = handleAnswer(stu, BOSS.item.skill, ok, 3); if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = BOSS.newBadges.concat(cel.newBadges); }
+  if (ok) { BOSS.streak++; if (btn) btn.classList.add('right'); }
+  else { BOSS.lives = Math.max(0, BOSS.lives - 1); BOSS.streak = 0; if (btn) btn.classList.add('wrong'); }
   persist();
   setTimeout(() => {
     BOSS.locked = false;
-    if (BOSS.hp <= 0) { winBoss(); return; }
-    if (BOSS.hearts <= 0) { BOSS.phase = 'lose'; go('boss'); return; }
+    if (BOSS.streak >= BOSS.target) { winBoss(); return; }
+    if (BOSS.lives <= 0) { BOSS.phase = 'lose'; go('boss'); return; }
     BOSS.item = gameItem(unitSkills(BOSS.unitId)); go('boss');
-  }, ok ? 350 : 700);
+  }, ok ? 320 : 680);
 }
+function answerBoss(choice, btn) { bossResolve(choice === BOSS.item.answer, btn); }
 function winBoss() {
   const stu = STATE.students[STATE.currentUserId];
   const firstTime = !stu.games.bossCleared[BOSS.unitId];
+  BOSS.flawless = BOSS.lives === BOSS_LIVES;
   stu.games.bossCleared[BOSS.unitId] = true;
-  awardXP(stu, 60); awardCoins(stu, firstTime ? 50 : 20);
-  BOSS.newBadges = (BOSS.newBadges || []).concat(refreshBadges(stu));
-  BOSS.phase = 'win'; persist(); setTimeout(() => confetti(['⚔️', '🏆', '💥', '⭐']), 150); go('boss');
+  awardXP(stu, 70); awardCoins(stu, (firstTime ? 50 : 20) + (BOSS.flawless ? 20 : 0));
+  BOSS.newBadges = BOSS.newBadges.concat(refreshBadges(stu));
+  BOSS.phase = 'win'; persist(); setTimeout(() => confetti(['🏆', '💥', '⭐', '🔥']), 150); go('boss');
 }
 function renderBoss() {
   const stu = STATE.students[STATE.currentUserId];
@@ -614,14 +629,15 @@ function renderBoss() {
   wrap.append(topbar(stu, true));
 
   if (BOSS.phase === 'lobby') {
-    wrap.append(el('div', { class: 'card' }, [el('h2', {}, '⚔️ Boss Battle'), el('p', { class: 'muted' }, 'Beat a topic boss with 3 hearts. Wrong answers cost a heart — get 6 hits to win!')]));
+    wrap.append(el('div', { class: 'card' }, [el('h2', {}, '⚔️ Boss Challenge'),
+      el('p', { class: 'muted' }, `Get a streak of ${BOSS_TARGET} correct in a row to defeat the boss. You have ${BOSS_LIVES} lives, the clock speeds up as you climb, and a wrong answer wipes your streak — so don't guess!`)]));
     const grid = el('div', { class: 'boss-grid' });
     CURRICULUM.units.forEach(u => {
       const cleared = stu.games.bossCleared[u.id];
       grid.append(el('button', { class: 'card boss-pick', style: `border:2px solid ${u.color}`, onclick: () => startBoss(u) }, [
         el('div', { class: 'boss-face' }, BOSS_EMOJI[u.id] || '👾'),
         el('div', { class: 'boss-nm' }, u.name),
-        cleared ? el('span', { class: 'badge good' }, '⭐ Cleared') : el('span', { class: 'chip', style: `background:${u.color}22;color:${u.color}` }, 'Fight'),
+        cleared ? el('span', { class: 'badge good' }, '⭐ Cleared') : el('span', { class: 'chip', style: `background:${u.color}22;color:${u.color}` }, 'Take on'),
       ]));
     });
     wrap.append(grid);
@@ -631,12 +647,12 @@ function renderBoss() {
   if (BOSS.phase === 'win' || BOSS.phase === 'lose') {
     const win = BOSS.phase === 'win';
     wrap.append(el('div', { class: 'card game-splash' }, [
-      el('div', { class: 'game-logo' }, win ? '🏆' : '💀'),
-      el('h2', {}, win ? 'Boss defeated!' : 'Defeated…'),
-      el('div', { class: 'muted' }, win ? `${BOSS.hit}/${BOSS.asked} hits landed · +XP & coins` : 'The boss won this round — try again!'),
+      el('div', { class: 'game-logo' }, win ? '🏆' : '💔'),
+      el('h2', {}, win ? (BOSS.flawless ? 'Flawless victory!' : 'Boss defeated!') : 'Out of lives!'),
+      el('div', { class: 'muted' }, win ? `${BOSS.correct}/${BOSS.asked} correct · streak of ${BOSS.target}! ${BOSS.flawless ? '+bonus coins' : ''}` : 'Your streak broke one too many times — take another run!'),
       (win && BOSS.newBadges && BOSS.newBadges.length) ? el('div', { class: 'game-best' }, BOSS.newBadges.map(b => `${b.emoji} ${b.name}`).join('  ')) : null,
       el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
-        el('button', { class: 'btn primary', onclick: () => { const u = CURRICULUM.units.find(x => x.id === BOSS.unitId); startBoss(u); } }, win ? '⚔️ Fight again' : '↻ Retry'),
+        el('button', { class: 'btn primary', onclick: () => { const u = CURRICULUM.units.find(x => x.id === BOSS.unitId); startBoss(u); } }, win ? '⚔️ Challenge again' : '↻ Try again'),
         el('button', { class: 'btn ghost', onclick: () => { BOSS = { phase: 'lobby' }; go('boss'); } }, 'Back'),
       ]),
     ]));
@@ -644,17 +660,24 @@ function renderBoss() {
     return wrap;
   }
 
-  // fight
+  // active challenge
   const unit = CURRICULUM.units.find(u => u.id === BOSS.unitId);
-  const hpbar = el('div', { class: 'boss-hpwrap' }, [
-    el('div', { class: 'boss-face big' }, BOSS_EMOJI[unit.id] || '👾'),
-    el('div', { class: 'boss-mid' }, [
-      el('div', { class: 'boss-title' }, `${unit.name} Boss`),
-      el('div', { class: 'hpbar' }, el('div', { class: 'hpbar-fill', style: `width:${100 * BOSS.hp / BOSS.maxHp}%` })),
-      el('div', { class: 'hearts' }, '❤️'.repeat(BOSS.hearts) + '🤍'.repeat(3 - BOSS.hearts)),
+  const meter = el('div', { class: 'streak-meter' });
+  for (let i = 0; i < BOSS.target; i++) meter.append(el('div', { class: 'streak-seg' + (i < BOSS.streak ? ' lit' : ''), style: i < BOSS.streak ? `background:${unit.color}` : '' }));
+  const timebar = el('div', { class: 'boss-timebar-fill' });
+  const timenum = el('b', {}, String(Math.ceil(bossQuestionMs() / 1000)));
+  wrap.append(el('div', { class: 'card boss-arena' }, [
+    el('div', { class: 'boss-hpwrap' }, [
+      el('div', { class: 'boss-face big' }, BOSS_EMOJI[unit.id] || '👾'),
+      el('div', { class: 'boss-mid' }, [
+        el('div', { class: 'boss-title' }, `${unit.name} Boss`),
+        el('div', { class: 'boss-sub' }, [el('span', { class: 'hearts' }, '❤️'.repeat(BOSS.lives) + '🤍'.repeat(BOSS_LIVES - BOSS.lives)), el('span', { class: 'streak-count' }, `🔥 ${BOSS.streak}/${BOSS.target}`)]),
+        meter,
+      ]),
     ]),
-  ]);
-  wrap.append(el('div', { class: 'card boss-fightcard' }, [hpbar]));
+    el('div', { class: 'boss-timebar' }, [timebar]),
+    el('div', { class: 'boss-timelabel' }, ['⏱ ', timenum, 's — answer fast!']),
+  ]));
   const q = el('div', { class: 'card game-card' });
   q.append(el('div', { class: 'q game-q', html: BOSS.item.prompt }));
   const opts = el('div', { class: 'options game-opts' });
@@ -662,6 +685,8 @@ function renderBoss() {
   q.append(opts);
   wrap.append(q);
   wrap.append(navbar('play'));
+  BOSS.dom = { timebar, timenum };
+  bossStartTimer();
   return wrap;
 }
 
@@ -681,7 +706,7 @@ function renderPlayHub() {
   modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#7048e8,#f76707)', onclick: () => { SPRINT = { phase: 'ready' }; go('sprint'); } },
     [el('div', { class: 'mode-emoji' }, '⚡'), el('div', { class: 'mode-nm' }, 'Math Sprint'), el('div', { class: 'mode-sub' }, `60-second combo rush · best ${stu.games.sprintBest || 0}`)]));
   modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#e64980,#7048e8)', onclick: () => { BOSS = { phase: 'lobby' }; go('boss'); } },
-    [el('div', { class: 'mode-emoji' }, '⚔️'), el('div', { class: 'mode-nm' }, 'Boss Battle'), el('div', { class: 'mode-sub' }, `Beat topic bosses · ${Object.keys(stu.games.bossCleared || {}).length}/${CURRICULUM.units.length} cleared`)]));
+    [el('div', { class: 'mode-emoji' }, '⚔️'), el('div', { class: 'mode-nm' }, 'Boss Challenge'), el('div', { class: 'mode-sub' }, `Streak-to-win under the clock · ${Object.keys(stu.games.bossCleared || {}).length}/${CURRICULUM.units.length} cleared`)]));
   modes.append(el('div', { class: 'card mode-card locked' },
     [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Unlocks with cloud sync — coming soon')]));
   wrap.append(modes);
@@ -946,7 +971,7 @@ async function logout() { if (CLOUD && sb) await sb.auth.signOut(); STATE.curren
 
 /* -------------------------------- ROUTER --------------------------------- */
 function render() {
-  stopSprintTimer();
+  stopSprintTimer(); bossStopTimer();
   const root = $('#app'); root.innerHTML = '';
   if (!STATE.currentUserId) return void root.append(renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
