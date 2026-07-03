@@ -961,7 +961,16 @@ function render() {
   let name = VIEW.name;
   if (isParent && studentOnly.includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
-  root.append((views[name] || renderStudentHome)());
+  try {
+    root.append((views[name] || renderStudentHome)());
+  } catch (e) {
+    console.error('render error on', name, e);
+    root.append(el('div', { class: 'card', style: 'margin-top:40px' }, [
+      el('h3', {}, '😵 This screen hit a snag'),
+      el('p', { class: 'muted' }, 'screen: ' + name + ' — ' + String((e && e.message) || e)),
+      el('button', { class: 'btn primary', onclick: () => go(isParent ? 'parent-home' : 'student-home') }, '← Back home'),
+    ]));
+  }
 }
 
 /* -------------------------------- BOOT ----------------------------------- */
