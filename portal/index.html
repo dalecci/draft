@@ -306,6 +306,15 @@ input,textarea,select{font:inherit;color:inherit;}
 .trip-fbo-name{font-family:var(--serif);font-size:18px;color:var(--warm-white);}
 .trip-fbo-addr{font-size:13px;color:var(--stone);margin:4px 0 6px;line-height:1.4;}
 .trip-foot{margin-top:12px;padding-top:16px;border-top:1px solid rgba(160,132,80,.25);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--stone);}
+/* ===== share sheet ===== */
+.share-overlay{position:fixed;inset:0;background:rgba(15,15,15,.55);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;animation:toastIn .2s ease;}
+.share-sheet{background:var(--warm-white);width:100%;max-width:380px;border:1px solid var(--mist);overflow:hidden;}
+.share-sheet-title{font-family:var(--serif);font-size:22px;font-weight:400;color:var(--charcoal);padding:22px 24px 14px;border-bottom:1px solid var(--mist);}
+.share-opt{display:flex;align-items:center;gap:14px;width:100%;padding:15px 24px;font-family:var(--sans);font-size:15px;color:var(--charcoal);text-decoration:none;background:#fff;border:none;border-bottom:1px solid var(--mist);cursor:pointer;text-align:left;transition:background .15s;}
+.share-opt:hover{background:var(--cream);}
+.share-opt svg{width:20px;height:20px;color:var(--gold);flex-shrink:0;}
+.share-cancel{display:block;width:100%;padding:15px;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ash);background:var(--cream);border:none;cursor:pointer;}
+.share-cancel:hover{color:var(--charcoal);}
 
 /* ============== ADMIN CALENDAR (master) ============== */
 .cal-flight.master{border-left-width:3px;font-weight:500;}
@@ -1752,23 +1761,20 @@ function ownerTripCard(flightId, clientId){
       </div>
 
       <div style="display:flex;gap:12px;margin-top:20px;">
-        <button class="btn primary" style="flex:1;justify-content:center;" onclick="shareTripCard('${f.id}')">${I.share}Share trip card</button>
+        <button class="btn primary" style="flex:1;justify-content:center;" onclick="openTripShare('${f.id}')">${I.share}Share trip card</button>
         <a href="#flights/${f.id}" data-nav="flights/${f.id}" class="btn ghost">Back to flight</a>
       </div>
     </div>`;
 }
 
-function shareTripCard(flightId){
-  const f = state.flights.find(x=>x.id===flightId);
-  if (!f) return;
-  const c = state.clients.find(x=>x.id===f.client_id);
+function buildTripText(f, c){
   const picPhone = f.crew.pic ? crewContact(f.crew.pic) : null;
   const sicPhone = f.crew.sic ? crewContact(f.crew.sic) : null;
   const L = [];
   L.push('J3T · Trip Card');
   L.push(c.aircraft.tail + ' · ' + c.aircraft.model);
   L.push(fmtDate(f.departure.date,{weekday:'short',month:'short',day:'numeric'}) + ' · Wheels-up ' + f.departure.time);
-  L.push(f.departure.airport + ' → ' + f.arrival.airport);
+  L.push(f.departure.airport + ' -> ' + f.arrival.airport);
   L.push('');
   L.push('Crew');
   if (f.crew.pic) L.push('  ' + f.crew.pic + (picPhone?' · '+picPhone:''));
@@ -1782,14 +1788,55 @@ function shareTripCard(flightId){
   }
   if (f.ground){ L.push(''); L.push('Ground: ' + f.ground); }
   if (f.catering){ L.push('Catering: ' + f.catering); }
-  const text = L.join('\n');
-  if (navigator.share){
-    navigator.share({ title: 'J3T Trip Card', text }).catch(()=>{});
-  } else if (navigator.clipboard){
-    navigator.clipboard.writeText(text).then(()=>toast('Trip card copied to clipboard')).catch(()=>toast('Copy failed'));
-  } else {
-    toast('Sharing not supported on this browser');
+  return L.join('\n');
+}
+
+let _tripShareText = '';
+const SHARE_ICON = {
+  text: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,6 12,13 2,6"/></svg>',
+  whats: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.9c0 2.1.55 4.06 1.6 5.83L2 22l4.4-1.7c1.7.93 3.63 1.42 5.64 1.42 5.46 0 9.91-4.45 9.91-9.9C21.95 6.45 17.5 2 12.04 2m0 1.8c4.48 0 8.11 3.63 8.11 8.1 0 4.48-3.63 8.11-8.11 8.11-1.78 0-3.5-.5-4.98-1.44l-.36-.22-2.61 1 .99-2.54-.23-.37a8.06 8.06 0 01-1.24-4.32c0-4.47 3.63-8.1 8.1-8.1m4.68 11.44c-.25-.13-1.5-.74-1.73-.82-.23-.09-.4-.13-.57.13-.17.25-.65.82-.8.99-.15.17-.29.19-.54.06-.25-.13-1.07-.4-2.03-1.26-.75-.67-1.26-1.5-1.4-1.75-.15-.26-.02-.4.11-.52.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.09-.17.04-.31-.02-.44-.06-.13-.57-1.37-.78-1.87-.2-.49-.41-.42-.57-.43-.15 0-.32-.01-.49-.01-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.6.13.17 1.78 2.72 4.32 3.81.6.26 1.07.42 1.44.53.6.19 1.15.16 1.59.1.48-.07 1.5-.61 1.71-1.2.21-.59.21-1.1.15-1.2-.06-.11-.23-.17-.48-.29"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>'
+};
+
+function openTripShare(flightId){
+  const f = state.flights.find(x=>x.id===flightId);
+  if (!f) return;
+  const c = state.clients.find(x=>x.id===f.client_id);
+  _tripShareText = buildTripText(f, c);
+  const subject = 'J3T Trip Card · ' + f.departure.airport + '-' + f.arrival.airport + ' · ' + fmtDate(f.departure.date,{month:'short',day:'numeric'});
+  const enc = encodeURIComponent(_tripShareText);
+  const esub = encodeURIComponent(subject);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'share-overlay';
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.innerHTML = raw`
+    <div class="share-sheet">
+      <div class="share-sheet-title">Share trip card</div>
+      <a class="share-opt" href="sms:?&body=${enc}">${SHARE_ICON.text}<span>Text message</span></a>
+      <a class="share-opt" href="https://mail.google.com/mail/?view=cm&fs=1&su=${esub}&body=${enc}" target="_blank" rel="noopener">${SHARE_ICON.mail}<span>Gmail</span></a>
+      <a class="share-opt" href="mailto:?subject=${esub}&body=${enc}">${SHARE_ICON.mail}<span>Email (default app)</span></a>
+      <a class="share-opt" href="https://wa.me/?text=${enc}" target="_blank" rel="noopener">${SHARE_ICON.whats}<span>WhatsApp</span></a>
+      <button class="share-opt" onclick="copyTripText(this)">${SHARE_ICON.copy}<span>Copy text</span></button>
+      ${navigator.share ? raw`<button class="share-opt" onclick="shareTripNative();this.closest('.share-overlay').remove();">${SHARE_ICON.more}<span>More apps…</span></button>` : ''}
+      <button class="share-cancel" onclick="this.closest('.share-overlay').remove();">Cancel</button>
+    </div>`;
+  document.body.appendChild(overlay);
+  // close the sheet after tapping a link option (let the link fire first)
+  overlay.querySelectorAll('a.share-opt').forEach(a => a.addEventListener('click', () => setTimeout(()=>overlay.remove(), 100)));
+}
+
+function copyTripText(btn){
+  if (navigator.clipboard){
+    navigator.clipboard.writeText(_tripShareText).then(()=>toast('Trip card copied')).catch(()=>toast('Copy failed'));
   }
+  const ov = btn.closest('.share-overlay'); if (ov) ov.remove();
+}
+
+function shareTripNative(){
+  if (navigator.share){ navigator.share({ title: 'J3T Trip Card', text: _tripShareText }).catch(()=>{}); }
 }
 
 /* ============== ADMIN DASHBOARD ============== */
