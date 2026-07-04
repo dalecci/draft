@@ -333,3 +333,5 @@ button { font-family: inherit; cursor: pointer; border: none; }
 #saveToast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff;
   padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; opacity: 0; pointer-events: none; transition: .25s; z-index: 50; }
 #saveToast.show { opacity: .95; transform: translateX(-50%) translateY(0); }
+
+.build-stamp { font-size: 11px; color: var(--muted); margin: -14px 0 18px; opacity: .7; }
