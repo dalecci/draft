@@ -10,8 +10,8 @@ const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 if (CLOUD) sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 
-const LS_KEY = 'ascend_state_v2';
-const LS_MIRROR = 'ascend_mirror_v2'; // the "double save" — a second local copy
+const LS_KEY = 'ascend_state_v3';
+const LS_MIRROR = 'ascend_mirror_v3'; // the "double save" — a second local copy
 
 /* ----------------------------- TIME HELPERS ------------------------------ */
 const DAY = 86400000;
@@ -41,42 +41,13 @@ function blankStudent(id, name, avatar) {
   };
 }
 
-/* ---------------- DEMO SEED (fake students, realistic history) ------------ */
+/* ------------------- REAL SETUP: Jayden, Grade 5, from zero --------------- */
 function seedDemo() {
-  const students = [
-    blankStudent('stu_jayden', 'Jayden', '🏀'),
-    blankStudent('stu_maya', 'Maya', '🎨'),
-    blankStudent('stu_theo', 'Theo', '🚀'),
-  ];
-  // give each a different pace: Jayden ahead, Maya on pace, Theo behind
-  const profiles = { stu_jayden: 0.72, stu_maya: 0.55, stu_theo: 0.33 };
-  students.forEach(stu => {
-    const frac = profiles[stu.id];
-    const nMastered = Math.round(ALL_SKILLS.length * frac);
-    // backfill activity across the last 28 days
-    ALL_SKILLS.forEach((sk, i) => {
-      const mastered = i < nMastered;
-      const attempts = mastered ? randInt(10, 22) : (i === nMastered ? randInt(3, 8) : 0);
-      const correct = mastered ? Math.round(attempts * (0.8 + Math.random() * 0.15)) : Math.round(attempts * 0.5);
-      stu.progress[sk.id] = { score: mastered ? 100 : (attempts ? randInt(30, 75) : 0), attempts, correct, masteredAt: mastered ? startOfDay(now() - randInt(1, 26) * DAY) : null };
-      for (let k = 0; k < attempts; k++) {
-        stu.log.push({ ts: startOfDay(now() - randInt(0, 27) * DAY) + randInt(0, DAY - 1), skillId: sk.id, unitId: sk.unitId, correct: k < correct, seconds: randInt(25, 120) });
-      }
-    });
-    stu.log.sort((a, b) => a.ts - b.ts);
-    stu.games = { sprintBest: Math.round(frac * 500) + randInt(20, 90), xp: Math.round(frac * 1800), coins: Math.round(frac * 200) + 40,
-      streak: { count: Math.max(1, Math.round(frac * 9)), last: dayKey(now()) }, badges: [], ownedAvatars: [stu.avatar], theme: null,
-      dailies: null, bossCleared: frac > 0.6 ? { nso: true } : {} };
-    ensureDailies(stu);
-    // give a couple of demo quests some progress
-    stu.games.dailies.quests.forEach((q, i) => { if (i === 0) { q.progress = q.goal; q.done = true; } });
-    refreshBadges(stu);
-  });
-  // seed one writing draft for the first student so the Write tab has history
-  const sampleText = 'Every 7th grader should learn how to manage their time. First, it helps you finish homework without stress. For example, when I plan my week, I finish earlier and still have time for basketball.\n\nIn addition, this skill builds responsibility. Because students who plan ahead do better, teachers notice their effort.\n\nIn conclusion, learning to manage time helps you in school and in life.';
-  students[0].writing.push({ ts: now() - 3 * DAY, promptId: 'w1', text: sampleText, result: evaluateWriting(sampleText) });
-  const parent = { id: 'par_alex', name: 'Alex (Parent)', avatar: '👤', role: 'parent', childIds: students.map(s => s.id) };
-  return { students: Object.fromEntries(students.map(s => [s.id, s])), parents: { par_alex: parent }, currentUserId: null };
+  const jayden = blankStudent('stu_jayden', 'Jayden', '🏀');
+  // real trial: start today, finish the whole Grade 5 department in ~2 months, 1 hr/day, every day
+  jayden.plan = { start: startOfDay(now()), target: startOfDay(now() + 60 * DAY), daysPerWeek: 7, hoursPerDay: 1 };
+  const parent = { id: 'par_home', name: 'Parent', avatar: '👤', role: 'parent', childIds: [jayden.id] };
+  return { students: { [jayden.id]: jayden }, parents: { [parent.id]: parent }, currentUserId: null };
 }
 
 /* ------------------------------- STORE ----------------------------------- */
@@ -904,7 +875,15 @@ function startSkill(skillId) {
 
 /* --------------------------- LESSON (theory) ----------------------------- */
 function renderLesson() {
-  const skillId = VIEW.skill; const loc = skillLoc(skillId); const th = THEORY[skillId] || {};
+  const skillId = VIEW.skill; const loc = skillLoc(skillId);
+  let th = THEORY[skillId];
+  if (!th || !th.concept) { // synthesize a real lesson from a generated worked example
+    const ex = generateItem(loc.skill.gen);
+    th = { concept: `In this section you'll practice: ${loc.skill.name}. Study the worked example, then try it yourself.`,
+      worked: [`Example — ${ex.prompt}`, ex.explanation || `The answer is ${ex.answer}.`],
+      vocab: [], misconception: 'Work one step at a time and check your answer before moving on.',
+      why: `This builds toward the rest of ${loc.unit.name}.` };
+  }
   const isParent = !!STATE.parents[STATE.currentUserId];
   const stu = isParent ? STATE.students[VIEW.child] : STATE.students[STATE.currentUserId];
   const u = loc.unit;
