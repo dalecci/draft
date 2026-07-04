@@ -191,7 +191,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 8`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 9`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -865,6 +865,7 @@ function skillStrength(stu, skillId) {
   return Math.min(0.85, (p.score || 0) / 100);
 }
 function overallReadiness(stu) { const a = ALL_SKILLS.map(s => skillStrength(stu, s.id)); return a.reduce((x, y) => x + y, 0) / a.length; }
+function unitReadiness(stu, unit) { const a = unit.skills.map(s => skillStrength(stu, s.id)); return a.reduce((x, y) => x + y, 0) / a.length; }
 function projectedBand(stu) { const r = overallReadiness(stu); return { band: Math.max(1, Math.min(5, 1 + Math.round(r * 4))), r }; }
 function fadedSkills(stu) { return ALL_SKILLS.filter(s => stu.progress[s.id]?.masteredAt && skillStrength(stu, s.id) < 0.6); }
 function suggestions(stu, n) { return ALL_SKILLS.map(s => ({ s, str: skillStrength(stu, s.id) })).sort((a, b) => a.str - b.str).slice(0, n || 3); }
@@ -988,6 +989,69 @@ function heatmap(stu) {
   return grid;
 }
 
+/* --------------------- COACH'S REPORT (parent analysis) ------------------ */
+function coachReport(stu) {
+  const pace = subjectPace(stu);
+  const wk = reportFor(stu, 'week');
+  const elapsed = Math.max(1, daysBetween(stu.plan.start, now()));
+  const rate = pace.mastered / elapsed;                 // actual skills/day
+  const remaining = pace.total - pace.mastered;
+  const toTarget = Math.max(0, daysBetween(now(), stu.plan.target));
+  const lines = [];
+  let headline;
+
+  if (pace.mastered === 0) {
+    headline = `Jayden is just getting started — 0 of ${pace.total} skills so far.`;
+    lines.push(`🎯 First goal: master a few skills in ${CURRICULUM.units[0].name} this week to build momentum. To finish on time he needs about ${pace.perDay} skills/day.`);
+  } else {
+    const projDays = rate > 0 ? Math.round(remaining / rate) : null;
+    headline = pace.daysDelta >= 0 ? `On track — about ${pace.daysDelta} day(s) ahead of the finish target. 🎉` : `Behind pace by about ${Math.abs(pace.daysDelta)} day(s).`;
+    if (projDays != null) lines.push(`📈 At his current rate (${round(rate, 1)} skills/day) he'd finish the whole department in ~${projDays} days${projDays <= toTarget ? ' — beating the 2-month goal!' : ' — a little past the 2-month goal.'}`);
+  }
+  if (wk.attempts > 0) lines.push(`⚡ This week: ${wk.attempts} questions, ${wk.accuracy}% correct, ${wk.masteredCount} new skill(s) mastered.`);
+
+  // strongest / weakest touched units
+  const touched = CURRICULUM.units.map(u => ({ u, s: unitReadiness(stu, u), att: u.skills.reduce((a, sk) => a + (stu.progress[sk.id]?.attempts || 0), 0) })).filter(x => x.att > 0);
+  if (touched.length) {
+    const best = touched.slice().sort((a, b) => b.s - a.s)[0];
+    const worst = touched.slice().sort((a, b) => a.s - b.s)[0];
+    lines.push(`💪 Strongest so far: ${best.u.name}.`);
+    if (worst.u.id !== best.u.id && worst.s < 0.65) lines.push(`🔧 Needs the most work: ${worst.u.name}.`);
+  }
+  // most-missed skill
+  if (stu.misses.length) {
+    const g = {}; stu.misses.forEach(m => g[m.skillId] = (g[m.skillId] || 0) + 1);
+    const top = Object.entries(g).sort((a, b) => b[1] - a[1])[0];
+    const loc = skillLoc(top[0]);
+    if (loc) lines.push(`❌ Most-missed: “${loc.skill.name}” (${top[1]}×) — worth reviewing the concept and re-practicing.`);
+  }
+  const faded = fadedSkills(stu);
+  if (faded.length) lines.push(`⏳ ${faded.length} mastered topic(s) are starting to fade — a quick refresh keeps them sharp for the FAST test.`);
+  const streak = stu.games.streak?.count || 0;
+  lines.push(streak >= 2 ? `🔥 ${streak}-day streak — consistency is the #1 driver of speed. Keep it going.` : `📅 Build a daily streak — even one focused hour a day compounds fast.`);
+
+  const sug = suggestions(stu, 3).filter(x => x.str < 0.9);
+  return { headline, lines, sug };
+}
+function renderCoachCard(stu) {
+  const r = coachReport(stu);
+  const card = el('div', { class: 'card coach-card' });
+  card.append(el('div', { class: 'coach-head' }, [el('span', { class: 'coach-ic' }, '🧭'), el('h3', {}, "Coach's Report"), el('span', { class: 'coach-live' }, 'live')]));
+  card.append(el('div', { class: 'coach-headline' }, r.headline));
+  const box = el('div', { class: 'coach-lines' });
+  r.lines.forEach(l => box.append(el('div', { class: 'coach-line' }, l)));
+  card.append(box);
+  if (r.sug.length) {
+    card.append(el('div', { class: 'sug-head' }, '👉 Recommended this week:'));
+    r.sug.forEach(x => { const loc = skillLoc(x.s.id); card.append(el('div', { class: 'sug-row' }, [
+      el('span', { class: 'chip', style: `background:${loc.unit.color}22;color:${loc.unit.color}` }, sectionRef(x.s.id)),
+      el('span', { class: 'sug-nm' }, x.s.name),
+      el('button', { class: 'mini', onclick: () => { assignLikeThis(stu, x.s.id, 5); persist(); toast('✅ Sent to ' + stu.name); go('parent-child', { child: stu.id }); } }, 'Assign 5'),
+    ])); });
+  }
+  return card;
+}
+
 /* ------------------------------ dark mode -------------------------------- */
 function isDark() { try { return localStorage.getItem('ascend_dark') === '1'; } catch (e) { return false; } }
 function applyDark() { document.documentElement.dataset.theme = isDark() ? 'dark' : 'light'; }
@@ -1065,6 +1129,9 @@ function renderParentChild() {
     el('div', { class: 'legend' }, [el('span', {}, `● actual ${pace.mastered}`), el('span', { class: 'muted' }, `▮ expected ${pace.expected}`)]),
   ]));
 
+  // Coach's Report — written analysis + recommendations
+  wrap.append(renderCoachCard(stu));
+
   // quick actions
   const nReview = stu.misses.length;
   wrap.append(el('div', { class: 'card action-row' }, [
@@ -1079,12 +1146,7 @@ function renderParentChild() {
   fastCard.append(el('div', { class: 'muted', style: 'margin:-4px 0 8px' }, 'Modeled estimate from mastery + how recently each topic was practiced.'));
   fastCard.append(heatmap(stu));
   if (faded.length) fastCard.append(el('div', { class: 'fade-alert' }, `⏳ ${faded.length} topic${faded.length > 1 ? 's are' : ' is'} fading — a quick review would refresh ${faded.length > 1 ? 'them' : 'it'}.`));
-  fastCard.append(el('div', { class: 'sug-head' }, 'Work on next:'));
-  sug.forEach(x => { const loc = skillLoc(x.s.id); fastCard.append(el('div', { class: 'sug-row' }, [
-    el('span', { class: 'chip', style: `background:${loc.unit.color}22;color:${loc.unit.color}` }, sectionRef(x.s.id)),
-    el('span', { class: 'sug-nm' }, x.s.name),
-    el('button', { class: 'mini', onclick: () => { assignLikeThis(stu, x.s.id, 5); persist(); toast('✅ Sent to ' + stu.name); go('parent-child', { child: stu.id }); } }, 'Assign'),
-  ])); });
+  fastCard.append(el('div', { class: 'muted', style: 'margin-top:8px;font-size:12px' }, 'Each square is a skill: green = strong, yellow = shaky, grey = not started, striped = fading.'));
   wrap.append(fastCard);
 
   // period toggle
