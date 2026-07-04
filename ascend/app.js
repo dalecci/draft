@@ -191,7 +191,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 9`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 10`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -1086,22 +1086,33 @@ function renderPlanEditor() {
 }
 
 /* ----------------------------- PARENT PORTAL ----------------------------- */
+function paceStatus(stu, pace) {
+  if (pace.mastered === 0) return { text: '🚀 Ready to start', cls: 'good' };
+  if (pace.daysDelta >= 1) return { text: `🔥 ${pace.daysDelta} days ahead`, cls: 'good' };
+  if (pace.daysDelta <= -1) return { text: `⏳ ${Math.abs(pace.daysDelta)} days behind`, cls: 'warn' };
+  return { text: '✅ Right on pace', cls: 'good' };
+}
 function renderParentHome() {
   const par = STATE.parents[STATE.currentUserId];
   const wrap = el('div', { class: 'page parent-view' });
   wrap.append(topbar(par, false, true));
-  wrap.append(el('h2', { class: 'ph' }, '👨‍👩‍👧 Family dashboard'));
-  const grid = el('div', { class: 'child-grid' });
+  wrap.append(el('div', { class: 'family-head' }, [el('h2', {}, '👨‍👩‍👧 Family dashboard'), el('p', { class: 'muted' }, 'Tap your child to see progress, pace, and the coach report.')]));
+  const grid = el('div', { class: 'child-grid2' });
   par.childIds.forEach(id => {
-    const stu = STATE.students[id]; const pace = subjectPace(stu);
-    const c = el('div', { class: 'card child-card', onclick: () => go('parent-child', { child: id }) });
-    c.append(ring(pace.pct, 90, '#7048e8', ''));
-    c.append(el('div', {}, [
-      el('div', { class: 'child-name' }, `${stu.avatar} ${stu.name}`),
-      pace.daysDelta >= 0 ? el('span', { class: 'badge good' }, `${pace.daysDelta}d ahead`) : el('span', { class: 'badge warn' }, `${Math.abs(pace.daysDelta)}d behind`),
-      el('div', { class: 'sub' }, `${pace.mastered}/${pace.total} skills`),
+    const stu = STATE.students[id]; const pace = subjectPace(stu); const lv = levelInfo(stu.games.xp); const st = paceStatus(stu, pace);
+    const tile = el('button', { class: 'child-tile', onclick: () => go('parent-child', { child: id }) });
+    tile.append(el('div', { class: 'tile-top' }, [
+      el('div', { class: 'tile-av' }, stu.avatar),
+      el('div', { class: 'tile-id' }, [el('div', { class: 'tile-name' }, stu.name), el('div', { class: 'tile-sub' }, `${CURRICULUM.subject} · Lv ${lv.level} ${lv.title}`)]),
     ]));
-    grid.append(c);
+    tile.append(ring(pace.pct, 116, '#7048e8', 'mastered'));
+    tile.append(el('span', { class: 'badge ' + st.cls, style: 'font-size:14px;padding:7px 16px' }, st.text));
+    tile.append(el('div', { class: 'tile-stats' }, [
+      el('div', { class: 'tile-stat' }, [el('b', {}, `${pace.mastered}/${pace.total}`), el('span', {}, 'skills mastered')]),
+      el('div', { class: 'tile-stat' }, [el('b', {}, `🔥 ${stu.games.streak?.count || 0}`), el('span', {}, 'day streak')]),
+    ]));
+    tile.append(el('div', { class: 'tile-cta' }, `View ${stu.name}'s dashboard →`));
+    grid.append(tile);
   });
   wrap.append(grid);
   wrap.append(navbar('home', true));

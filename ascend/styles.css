@@ -345,3 +345,25 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .coach-lines { display: flex; flex-direction: column; gap: 7px; }
 .coach-line { font-size: 14px; line-height: 1.45; background: rgba(112,72,232,.05); border-radius: 10px; padding: 8px 10px; }
 :root[data-theme="dark"] .coach-line { background: #2b2440; }
+
+/* family dashboard — child selection */
+.family-head { text-align: center; padding: 12px 4px 2px; }
+.family-head h2 { font-size: 24px; }
+.child-grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 340px)); gap: 18px; justify-content: center; margin-top: 14px; }
+.child-tile { background: var(--card); border: none; border-radius: 26px; box-shadow: var(--shadow); padding: 26px 22px 22px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; overflow: hidden; width: 100%;
+  transition: transform .14s ease, box-shadow .14s ease; }
+.child-tile::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 84px; background: linear-gradient(135deg, var(--primary), #9775fa); opacity: .14; }
+.child-tile:hover { transform: translateY(-4px); box-shadow: 0 18px 36px rgba(80,50,160,.20); }
+.child-tile:active { transform: scale(.985); }
+.tile-top { display: flex; align-items: center; gap: 14px; width: 100%; position: relative; }
+.tile-av { width: 58px; height: 58px; border-radius: 50%; background: #efe9fd; display: grid; place-items: center; font-size: 32px; flex-shrink: 0; box-shadow: 0 4px 12px rgba(112,72,232,.18); }
+:root[data-theme="dark"] .tile-av { background: #362e4d; }
+.tile-id { text-align: left; min-width: 0; }
+.tile-name { font-weight: 800; font-size: 22px; line-height: 1.1; }
+.tile-sub { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile-stats { display: flex; gap: 26px; justify-content: center; margin-top: 2px; }
+.tile-stat { text-align: center; }
+.tile-stat b { display: block; font-size: 19px; color: var(--primary-d); }
+.tile-stat span { font-size: 11px; color: var(--muted); font-weight: 700; }
+.tile-cta { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: 4px; }
