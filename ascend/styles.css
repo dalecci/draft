@@ -261,6 +261,66 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .lb-nm { flex: 1; font-weight: 700; }
 .lb-xp { font-weight: 800; color: var(--primary-d); }
 
+/* lessons (teaching) */
+.practice-top { display: flex; align-items: center; justify-content: space-between; }
+.lesson-concept { font-size: 15px; line-height: 1.55; margin: 10px 0; }
+.lesson-box { background: #f6f3fe; border-radius: 14px; padding: 12px 14px; margin: 12px 0; }
+.lesson-box h4 { margin: 0 0 8px; }
+.wstep { display: flex; gap: 10px; align-items: flex-start; margin: 6px 0; font-size: 14px; }
+.wnum { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 800; font-size: 12px; display: grid; place-items: center; }
+.vrow { font-size: 14px; margin: 4px 0; }
+.lesson-warn { background: #fff4e6; border-radius: 12px; padding: 12px 14px; font-size: 14px; margin: 8px 0; }
+.lesson-why { background: #e6fcf5; border-radius: 12px; padding: 12px 14px; font-size: 14px; margin: 8px 0 14px; }
+
+/* assignments */
+.assign-card { border: 2px solid var(--primary); }
+.assign-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; border-top: 1px solid #f0ecf9; }
+.assign-row:first-of-type { border-top: none; }
+.assign-mid { flex: 1; }
+.assign-nm { font-weight: 700; font-size: 14px; }
+
+/* parent needs-review */
+.action-row { display: flex; gap: 10px; }
+.action-row .btn { flex: 1; }
+.rev-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.miss { background: #f6f3fe; border-radius: 12px; padding: 10px 12px; margin: 8px 0; }
+.miss-q { font-weight: 700; font-size: 14px; }
+.miss-a { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.wrongtag { background: #ffe3e3; color: #c92a2a; border-radius: 8px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+.righttag { background: #d3f9d8; color: #2b8a3e; border-radius: 8px; padding: 2px 8px; font-size: 12px; font-weight: 700; }
+.miss-ex { font-size: 12px; color: var(--muted); }
+
+/* FAST readiness + heatmap */
+.fast-head, .fade-alert, .sug-head, .fast-prog { }
+.fast-head { display: flex; align-items: center; justify-content: space-between; }
+.fast-band { background: var(--primary); color: #fff; border-radius: 999px; padding: 5px 12px; font-weight: 800; font-size: 13px; }
+.heatmap { display: grid; grid-template-columns: repeat(auto-fill, minmax(26px, 1fr)); gap: 5px; margin: 6px 0; }
+.hcell { aspect-ratio: 1; border-radius: 6px; background: #e9ecef; }
+.hcell.h1 { background: #ffc9c9; } .hcell.h2 { background: #ffe066; } .hcell.h3 { background: #8ce99a; } .hcell.h4 { background: #2f9e44; }
+.hcell.h0 { background: #e9ecef; }
+.hcell.faded { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.14) 0 3px, transparent 3px 6px); }
+.fade-alert { background: #fff4e6; color: #e8590c; border-radius: 12px; padding: 10px 12px; font-size: 13px; font-weight: 700; margin: 8px 0; }
+.sug-head { font-weight: 800; margin: 10px 0 4px; font-size: 14px; }
+.sug-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+.sug-nm { flex: 1; font-size: 14px; }
+.fast-prog b { font-size: 14px; }
+.fast-prog .bar { margin-top: 6px; }
+
+/* dark mode */
+:root[data-theme="dark"] {
+  --bg: #16131f; --card: #211c30; --ink: #ece9f5; --muted: #9a92b5; --shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+:root[data-theme="dark"] .option { background: #2b2440; border-color: #3a3255; }
+:root[data-theme="dark"] .stat, :root[data-theme="dark"] .lesson-box, :root[data-theme="dark"] .miss,
+:root[data-theme="dark"] .badge-cell, :root[data-theme="dark"] .shop-cell, :root[data-theme="dark"] .seg,
+:root[data-theme="dark"] .stat-sub, :root[data-theme="dark"] .smart { background: #2b2440; }
+:root[data-theme="dark"] .inp { background: #2b2440; border-color: #3a3255; color: var(--ink); }
+:root[data-theme="dark"] .icon-btn, :root[data-theme="dark"] .me-chip, :root[data-theme="dark"] .hud-timer,
+:root[data-theme="dark"] .hud-score, :root[data-theme="dark"] .navbar { background: #211c30; }
+:root[data-theme="dark"] .bar, :root[data-theme="dark"] .hcell.h0 { background: #362e4d; }
+:root[data-theme="dark"] .lesson-warn, :root[data-theme="dark"] .fade-alert { background: #3a2a1a; }
+:root[data-theme="dark"] .lesson-why { background: #12332a; }
+
 /* confetti + celebrate toast */
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 100; overflow: hidden; }
 .confetti span { position: absolute; top: -30px; animation: fall 2.2s linear forwards; }
