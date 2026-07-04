@@ -35,7 +35,9 @@ function blankStudent(id, name, avatar) {
     progress: {},   // skillId -> {score, attempts, correct, masteredAt}
     log: [],        // {ts, skillId, unitId, correct, seconds}
     writing: [],    // {ts, promptId, text, result}
-    games: { sprintBest: 0, xp: 0, coins: 0, streak: { count: 0, last: null }, badges: [], ownedAvatars: [avatar], theme: null, dailies: null, bossCleared: {} },
+    misses: [],     // {ts, skillId, unitId, prompt, answer, studentAnswer, explanation, reviewed, assigned}
+    assignments: [],// {id, skillId, total, remaining, correct, ts, status}
+    games: { sprintBest: 0, xp: 0, coins: 0, streak: { count: 0, last: null }, badges: [], ownedAvatars: [avatar], theme: null, dailies: null, bossCleared: {}, taught: {} },
   };
 }
 
@@ -260,9 +262,21 @@ function renderStudentHome() {
     el('h2', {}, `Hi ${stu.name}! ${stu.avatar}`),
     el('p', {}, `${pace.mastered} of ${pace.total} skills mastered in ${CURRICULUM.subject}.`),
     paceBadge,
-    el('div', {}, el('button', { class: 'btn primary big', onclick: () => go('practice') }, '▶ Start today’s practice')),
+    el('div', {}, el('button', { class: 'btn primary big', onclick: () => { const c = currentSkill(stu); c ? startSkill(c.id) : go('practice'); } }, '▶ Start today’s practice')),
   ]));
   wrap.append(hero);
+
+  // assignments from a parent/coach
+  const openAsg = stu.assignments.filter(a => a.status !== 'done');
+  if (openAsg.length) {
+    const ab = el('div', { class: 'card assign-card' });
+    ab.append(el('h3', {}, '🎯 Assigned to you'));
+    openAsg.slice(0, 3).forEach(a => { const loc = skillLoc(a.skillId); ab.append(el('div', { class: 'assign-row', onclick: () => startSkill(a.skillId) }, [
+      el('div', { class: 'assign-mid' }, [el('div', { class: 'assign-nm' }, loc.skill.name), el('div', { class: 'muted' }, `${a.total - a.remaining}/${a.total} done`)]),
+      el('span', { class: 'mini' }, 'Practice ▶'),
+    ])); });
+    wrap.append(ab);
+  }
 
   // today's mission
   const cur = currentSkill(stu);
@@ -271,7 +285,7 @@ function renderStudentHome() {
   if (cur) mission.append(el('div', { class: 'mission' }, [
     el('span', { class: 'chip', style: `background:${cur.color}22;color:${cur.color}` }, cur.unitName),
     el('div', { class: 'mission-name' }, cur.name),
-    el('button', { class: 'btn primary', onclick: () => go('practice') }, 'Practice'),
+    el('button', { class: 'btn primary', onclick: () => startSkill(cur.id) }, stu.games.taught[cur.id] ? 'Practice' : '📖 Learn'),
   ]));
   else mission.append(el('p', {}, '🏆 Every skill mastered — amazing!'));
   wrap.append(mission);
@@ -323,7 +337,10 @@ function renderPractice() {
   if (!PRACTICE || PRACTICE.skillId !== skill.id) PRACTICE = { skillId: skill.id, item: generateItem(skill.gen), start: now(), streak: 0, answered: 0 };
   const p = stu.progress[skill.id] || { score: 0 };
   const card = el('div', { class: 'card practice' });
-  card.append(el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName));
+  card.append(el('div', { class: 'practice-top' }, [
+    el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName),
+    el('button', { class: 'mini', onclick: () => go('lesson', { skill: skill.id, then: 'practice' }) }, '📖 Learn'),
+  ]));
   card.append(el('h2', {}, skill.name));
   card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
 
@@ -336,7 +353,10 @@ function renderPractice() {
     PRACTICE.locked = true;
     const secs = Math.max(2, Math.round((now() - PRACTICE.start) / 1000));
     const ok = checkAnswer(item, val);
+    if (!ok) recordMiss(stu, skill, item, val);
     const cel = handleAnswer(stu, skill, ok, secs);
+    const asg = openAssignment(stu, skill.id);
+    if (asg) { asg.remaining = Math.max(0, asg.remaining - 1); if (ok) asg.correct++; if (asg.remaining <= 0) asg.status = 'done'; }
     persist();
     celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
@@ -382,7 +402,7 @@ function renderProgress() {
       skills.append(el('div', { class: 'skill-line' }, [
         el('span', { class: 'skill-nm' }, s.name),
         el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${u.color}` })),
-        p.masteredAt ? el('span', { class: 'star' }, '⭐') : el('button', { class: 'mini', onclick: () => { PRACTICE = null; go('practice', { skill: s.id }); } }, 'practice'),
+        p.masteredAt ? el('span', { class: 'star' }, '⭐') : el('button', { class: 'mini', onclick: () => startSkill(s.id) }, stu.games.taught[s.id] ? 'practice' : '📖 learn'),
       ]));
     });
   });
@@ -496,6 +516,7 @@ function sprintAnswer(choice, btn) {
   const stu = STATE.students[STATE.currentUserId];
   const ok = choice === SPRINT.item.answer;
   SPRINT.answered++; if (ok) SPRINT.correct++;
+  if (!ok) recordMiss(stu, SPRINT.item.skill, SPRINT.item, choice);
   const cel = handleAnswer(stu, SPRINT.item.skill, ok, 3); // counts toward mastery, xp, quests, reports
   if (cel.newBadges && cel.newBadges.length) SPRINT.newBadges = (SPRINT.newBadges || []).concat(cel.newBadges);
   if (ok) { SPRINT.streak++; const mult = 1 + Math.floor(SPRINT.streak / 3); SPRINT.score += 10 * mult; if (btn) btn.classList.add('right'); }
@@ -602,7 +623,7 @@ function bossResolve(result, btn) {
   const stu = STATE.students[STATE.currentUserId];
   const answered = result !== 'timeout';
   const ok = result === true;
-  if (answered) { BOSS.asked++; if (ok) BOSS.correct++; const cel = handleAnswer(stu, BOSS.item.skill, ok, 3); if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = BOSS.newBadges.concat(cel.newBadges); }
+  if (answered) { BOSS.asked++; if (ok) BOSS.correct++; if (!ok) recordMiss(stu, BOSS.item.skill, BOSS.item, 'boss'); const cel = handleAnswer(stu, BOSS.item.skill, ok, 3); if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = BOSS.newBadges.concat(cel.newBadges); }
   if (ok) { BOSS.streak++; if (btn) btn.classList.add('right'); }
   else { BOSS.lives = Math.max(0, BOSS.lives - 1); BOSS.streak = 0; if (btn) btn.classList.add('wrong'); }
   persist();
@@ -707,6 +728,8 @@ function renderPlayHub() {
     [el('div', { class: 'mode-emoji' }, '⚡'), el('div', { class: 'mode-nm' }, 'Math Sprint'), el('div', { class: 'mode-sub' }, `60-second combo rush · best ${stu.games.sprintBest || 0}`)]));
   modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#e64980,#7048e8)', onclick: () => { BOSS = { phase: 'lobby' }; go('boss'); } },
     [el('div', { class: 'mode-emoji' }, '⚔️'), el('div', { class: 'mode-nm' }, 'Boss Challenge'), el('div', { class: 'mode-sub' }, `Streak-to-win under the clock · ${Object.keys(stu.games.bossCleared || {}).length}/${CURRICULUM.units.length} cleared`)]));
+  modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#1c7ed6,#20c997)', onclick: () => { FAST = null; go('fast'); } },
+    [el('div', { class: 'mode-emoji' }, '📋'), el('div', { class: 'mode-nm' }, 'FAST Practice Test'), el('div', { class: 'mode-sub' }, 'A 10-question Florida FAST-style mock')]));
   modes.append(el('div', { class: 'card mode-card locked' },
     [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Unlocks with cloud sync — coming soon')]));
   wrap.append(modes);
@@ -846,6 +869,150 @@ function renderLeaderboard() {
   return wrap;
 }
 
+/* =========================== v2: TEACH · REVIEW · FAST ==================== */
+function skillLoc(skillId) {
+  for (let ci = 0; ci < CURRICULUM.units.length; ci++) {
+    const u = CURRICULUM.units[ci]; const si = u.skills.findIndex(s => s.id === skillId);
+    if (si >= 0) return { ch: ci + 1, sec: si + 1, unit: u, skill: u.skills[si] };
+  }
+  return null;
+}
+function sectionRef(skillId) { const l = skillLoc(skillId); return l ? `§${l.ch}.${l.sec}` : ''; }
+function recordMiss(stu, skill, item, studentAns) {
+  stu.misses.unshift({ ts: now(), skillId: skill.id, unitId: skill.unitId, prompt: item.prompt, answer: String(item.answer), studentAnswer: String(studentAns), explanation: item.explanation || '', reviewed: false, assigned: false });
+  if (stu.misses.length > 120) stu.misses.length = 120;
+}
+function assignLikeThis(stu, skillId, count) { stu.assignments.unshift({ id: 'a' + now() + '_' + Math.floor(Math.random() * 9999), skillId, total: count, remaining: count, correct: 0, ts: now(), status: 'assigned' }); }
+function openAssignment(stu, skillId) { return stu.assignments.find(a => a.skillId === skillId && a.status !== 'done'); }
+
+// FAST readiness + recency/decay (a modeled estimate, not a promised score)
+function lastPracticed(stu, skillId) { let t = 0; for (const l of stu.log) if (l.skillId === skillId && l.ts > t) t = l.ts; return t; }
+function skillStrength(stu, skillId) {
+  const p = stu.progress[skillId]; if (!p || !p.attempts) return 0;
+  if (p.masteredAt) { const lp = lastPracticed(stu, skillId) || p.masteredAt; const days = (now() - lp) / DAY; return Math.max(0.35, Math.min(1, 1 - days / 56)); }
+  return Math.min(0.85, (p.score || 0) / 100);
+}
+function overallReadiness(stu) { const a = ALL_SKILLS.map(s => skillStrength(stu, s.id)); return a.reduce((x, y) => x + y, 0) / a.length; }
+function projectedBand(stu) { const r = overallReadiness(stu); return { band: Math.max(1, Math.min(5, 1 + Math.round(r * 4))), r }; }
+function fadedSkills(stu) { return ALL_SKILLS.filter(s => stu.progress[s.id]?.masteredAt && skillStrength(stu, s.id) < 0.6); }
+function suggestions(stu, n) { return ALL_SKILLS.map(s => ({ s, str: skillStrength(stu, s.id) })).sort((a, b) => a.str - b.str).slice(0, n || 3); }
+function startSkill(skillId) {
+  const stu = STATE.students[STATE.currentUserId];
+  if (!stu.games.taught[skillId]) go('lesson', { skill: skillId, then: 'practice' });
+  else { PRACTICE = null; go('practice', { skill: skillId }); }
+}
+
+/* --------------------------- LESSON (theory) ----------------------------- */
+function renderLesson() {
+  const skillId = VIEW.skill; const loc = skillLoc(skillId); const th = THEORY[skillId] || {};
+  const isParent = !!STATE.parents[STATE.currentUserId];
+  const stu = isParent ? STATE.students[VIEW.child] : STATE.students[STATE.currentUserId];
+  const u = loc.unit;
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(isParent ? STATE.parents[STATE.currentUserId] : stu, true, isParent));
+  const card = el('div', { class: 'card lesson' });
+  card.append(el('div', { class: 'chip', style: `background:${u.color}22;color:${u.color}` }, `${sectionRef(skillId)} · ${u.name}`));
+  card.append(el('h2', {}, '📖 ' + loc.skill.name));
+  card.append(el('div', { class: 'lesson-concept' }, th.concept || ''));
+  const w = el('div', { class: 'lesson-box' }); w.append(el('h4', {}, '📝 Worked example'));
+  (th.worked || []).forEach((s, i) => w.append(el('div', { class: 'wstep' }, [el('span', { class: 'wnum' }, String(i + 1)), el('span', {}, s)])));
+  card.append(w);
+  const v = el('div', { class: 'lesson-box' }); v.append(el('h4', {}, '🔑 Key words'));
+  (th.vocab || []).forEach(x => v.append(el('div', { class: 'vrow' }, [el('b', {}, x.t + ': '), el('span', {}, x.d)])));
+  card.append(v);
+  card.append(el('div', { class: 'lesson-warn' }, [el('b', {}, '⚠️ Watch out: '), th.misconception || '']));
+  card.append(el('div', { class: 'lesson-why' }, [el('b', {}, '💡 Why it matters: '), th.why || '']));
+  if (!isParent && VIEW.then === 'practice') {
+    card.append(el('button', { class: 'btn primary big wide', onclick: () => { stu.games.taught[skillId] = now(); persist(); PRACTICE = null; go('practice', { skill: skillId }); } }, 'Got it — start practice ▶'));
+  } else {
+    card.append(el('button', { class: 'btn ghost wide', onclick: () => go(isParent ? 'parent-review' : 'student-home', isParent ? { child: stu.id } : {}) }, '← Back'));
+  }
+  wrap.append(card);
+  if (!isParent) wrap.append(navbar('practice'));
+  return wrap;
+}
+
+/* ----------------------- PARENT: NEEDS-REVIEW FEED ----------------------- */
+function renderParentReview() {
+  const stu = STATE.students[VIEW.child];
+  const wrap = el('div', { class: 'page parent-view' });
+  wrap.append(topbar(STATE.parents[STATE.currentUserId], true, true));
+  wrap.append(el('div', { class: 'card' }, [el('h2', {}, `📌 ${stu.name} — Needs review`), el('p', { class: 'muted' }, 'The exact questions missed. Review the concept together, then send 5 more like it.')]));
+  const groups = {}; stu.misses.forEach(m => { (groups[m.skillId] = groups[m.skillId] || []).push(m); });
+  const keys = Object.keys(groups);
+  if (!keys.length) { wrap.append(el('div', { class: 'card' }, '🎉 Nothing to review — no recent misses!')); wrap.append(navbar('home', true)); return wrap; }
+  keys.forEach(sid => {
+    const loc = skillLoc(sid); const ms = groups[sid];
+    const card = el('div', { class: 'card' });
+    card.append(el('div', { class: 'rev-head' }, [el('span', { class: 'chip', style: `background:${loc.unit.color}22;color:${loc.unit.color}` }, `${sectionRef(sid)} · ${loc.unit.name}`), el('b', {}, loc.skill.name), el('span', { class: 'muted' }, `${ms.length} missed`)]));
+    ms.slice(0, 3).forEach(m => card.append(el('div', { class: 'miss' }, [
+      el('div', { class: 'miss-q', html: m.prompt }),
+      el('div', { class: 'miss-a' }, [el('span', { class: 'wrongtag' }, `answered: ${m.studentAnswer}`), el('span', { class: 'righttag' }, `correct: ${m.answer}`)]),
+      m.explanation ? el('div', { class: 'miss-ex' }, m.explanation) : null,
+    ])));
+    const asg = openAssignment(stu, sid); const done = stu.assignments.find(a => a.skillId === sid && a.status === 'done');
+    card.append(el('div', { class: 'answer-row' }, [
+      el('button', { class: 'btn ghost', onclick: () => go('lesson', { skill: sid, child: stu.id }) }, '📖 Review concept'),
+      asg ? el('span', { class: 'badge warn' }, `assigned · ${asg.total - asg.remaining}/${asg.total}`)
+        : el('button', { class: 'btn primary', onclick: () => { assignLikeThis(stu, sid, 5); ms.forEach(m => m.assigned = true); persist(); toast('✅ 5 questions sent to ' + stu.name); go('parent-review', { child: stu.id }); } }, '🔁 Assign 5 like this'),
+    ]));
+    if (done) card.append(el('div', { class: 'badge good', style: 'margin-top:8px' }, `✓ practiced ${done.correct}/${done.total} correct`));
+    wrap.append(card);
+  });
+  wrap.append(navbar('home', true));
+  return wrap;
+}
+
+/* --------------------------- FAST PRACTICE TEST -------------------------- */
+let FAST = null;
+function startFast() { FAST = { i: 0, n: 10, correct: 0, item: gameItem(), answers: [] }; go('fast'); }
+function fastAnswer(choice, btn) {
+  if (FAST.locked) return; FAST.locked = true;
+  const stu = STATE.students[STATE.currentUserId];
+  const ok = choice === FAST.item.answer;
+  if (ok) { FAST.correct++; if (btn) btn.classList.add('right'); } else { recordMiss(stu, FAST.item.skill, FAST.item, choice); if (btn) btn.classList.add('wrong'); }
+  handleAnswer(stu, FAST.item.skill, ok, 5); persist();
+  setTimeout(() => { FAST.locked = false; FAST.i++; if (FAST.i >= FAST.n) { FAST.done = true; } else { FAST.item = gameItem(); } go('fast'); }, ok ? 250 : 550);
+}
+function renderFast() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  if (!FAST) {
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '📋'), el('h2', {}, 'FAST Practice Test'),
+      el('p', { class: 'muted' }, '10 mixed questions, just like the Florida FAST. Do your best — misses go to your review list.'),
+      el('button', { class: 'btn primary big', onclick: startFast }, '▶ Start test')]));
+    wrap.append(navbar('play')); return wrap;
+  }
+  if (FAST.done) {
+    const pct = Math.round(100 * FAST.correct / FAST.n); const band = Math.max(1, Math.min(5, 1 + Math.round(pct / 100 * 4)));
+    FAST = null;
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, pct >= 70 ? '🎉' : '💪'), el('h2', {}, `You scored ${pct}%`),
+      el('div', { class: 'fast-band' }, `Projected FAST level: ${band} / 5`),
+      el('p', { class: 'muted' }, 'Estimate only. Missed questions were added to your review list to practice.'),
+      el('div', { class: 'answer-row', style: 'justify-content:center' }, [el('button', { class: 'btn primary', onclick: startFast }, '↻ Again'), el('button', { class: 'btn ghost', onclick: () => go('play-hub') }, 'Done')])]));
+    wrap.append(navbar('play')); return wrap;
+  }
+  wrap.append(el('div', { class: 'card fast-prog' }, [el('b', {}, `Question ${FAST.i + 1} of ${FAST.n}`), el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * FAST.i / FAST.n}%;background:var(--primary)` }))]));
+  const q = el('div', { class: 'card game-card' });
+  q.append(el('div', { class: 'q game-q', html: FAST.item.prompt }));
+  const opts = el('div', { class: 'options game-opts' });
+  FAST.item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: (e) => fastAnswer(c, e.currentTarget) }, c)));
+  q.append(opts); wrap.append(q);
+  wrap.append(navbar('play'));
+  return wrap;
+}
+function heatmap(stu) {
+  const grid = el('div', { class: 'heatmap' });
+  ALL_SKILLS.forEach(s => { const st = skillStrength(stu, s.id); const cls = st >= 0.8 ? 'h4' : st >= 0.55 ? 'h3' : st >= 0.3 ? 'h2' : st > 0 ? 'h1' : 'h0'; const faded = stu.progress[s.id]?.masteredAt && st < 0.6; grid.append(el('div', { class: 'hcell ' + cls + (faded ? ' faded' : ''), title: `${s.name} · ${Math.round(st * 100)}%` })); });
+  return grid;
+}
+
+/* ------------------------------ dark mode -------------------------------- */
+function isDark() { try { return localStorage.getItem('ascend_dark') === '1'; } catch (e) { return false; } }
+function applyDark() { document.documentElement.dataset.theme = isDark() ? 'dark' : 'light'; }
+function toggleDark() { try { localStorage.setItem('ascend_dark', isDark() ? '0' : '1'); } catch (e) {} applyDark(); render(); }
+
 /* --------------------------- PARENT: PLAN EDITOR ------------------------- */
 function renderPlanEditor() {
   const stu = STATE.students[VIEW.child];
@@ -907,7 +1074,6 @@ function renderParentChild() {
   wrap.append(el('div', { class: 'card' }, [
     el('h2', {}, `${stu.avatar} ${stu.name} — ${CURRICULUM.subject}`),
     el('div', { class: 'muted' }, CURRICULUM.standard),
-    el('button', { class: 'chip-btn edit-plan', onclick: () => go('parent-plan', { child: stu.id }) }, '⚙️ Edit plan'),
     el('div', { class: 'pace-line' }, [
       pace.daysDelta >= 0 ? el('span', { class: 'badge good' }, `${pace.daysDelta} days ahead of schedule` ) : el('span', { class: 'badge warn' }, `${Math.abs(pace.daysDelta)} days behind schedule`),
       el('span', { class: 'muted' }, `Target: finish by ${fmtDate(stu.plan.target)} · ${stu.plan.daysPerWeek} days/wk · ${stu.plan.hoursPerDay}h/day`),
@@ -918,6 +1084,28 @@ function renderParentChild() {
     ]),
     el('div', { class: 'legend' }, [el('span', {}, `● actual ${pace.mastered}`), el('span', { class: 'muted' }, `▮ expected ${pace.expected}`)]),
   ]));
+
+  // quick actions
+  const nReview = stu.misses.length;
+  wrap.append(el('div', { class: 'card action-row' }, [
+    el('button', { class: 'btn primary', onclick: () => go('parent-review', { child: stu.id }) }, `📌 Needs review${nReview ? ' (' + nReview + ')' : ''}`),
+    el('button', { class: 'btn ghost', onclick: () => go('parent-plan', { child: stu.id }) }, '⚙️ Edit plan'),
+  ]));
+
+  // FAST readiness
+  const pb = projectedBand(stu); const faded = fadedSkills(stu); const sug = suggestions(stu, 3);
+  const fastCard = el('div', { class: 'card' });
+  fastCard.append(el('div', { class: 'fast-head' }, [el('h3', {}, '📋 FAST readiness'), el('span', { class: 'fast-band' }, `Projected level ${pb.band}/5`)]));
+  fastCard.append(el('div', { class: 'muted', style: 'margin:-4px 0 8px' }, 'Modeled estimate from mastery + how recently each topic was practiced.'));
+  fastCard.append(heatmap(stu));
+  if (faded.length) fastCard.append(el('div', { class: 'fade-alert' }, `⏳ ${faded.length} topic${faded.length > 1 ? 's are' : ' is'} fading — a quick review would refresh ${faded.length > 1 ? 'them' : 'it'}.`));
+  fastCard.append(el('div', { class: 'sug-head' }, 'Work on next:'));
+  sug.forEach(x => { const loc = skillLoc(x.s.id); fastCard.append(el('div', { class: 'sug-row' }, [
+    el('span', { class: 'chip', style: `background:${loc.unit.color}22;color:${loc.unit.color}` }, sectionRef(x.s.id)),
+    el('span', { class: 'sug-nm' }, x.s.name),
+    el('button', { class: 'mini', onclick: () => { assignLikeThis(stu, x.s.id, 5); persist(); toast('✅ Sent to ' + stu.name); go('parent-child', { child: stu.id }); } }, 'Assign'),
+  ])); });
+  wrap.append(fastCard);
 
   // period toggle
   const tog = el('div', { class: 'seg' });
@@ -951,6 +1139,7 @@ function topbar(user, back, parent) {
     back ? el('button', { class: 'icon-btn', onclick: () => go(parent ? 'parent-home' : 'student-home') }, '←') : el('span', { class: 'brand' }, '⛰️ Ascend'),
     (!parent && user && user.games) ? el('button', { class: 'me-chip', onclick: () => go('profile') }, [el('span', { class: 'me-av' }, user.avatar), el('b', {}, 'Lv ' + levelInfo(user.games.xp).level), el('span', { class: 'me-coin' }, '🪙' + (user.games.coins || 0))]) : null,
     el('div', { class: 'grow' }),
+    el('button', { class: 'chip-btn', onclick: toggleDark, title: 'Toggle dark mode' }, isDark() ? '☀️' : '🌙'),
     el('button', { class: 'chip-btn', onclick: exportBackup, title: 'Download a backup copy' }, '⬇'),
     el('button', { class: 'chip-btn', onclick: logout }, 'Switch'),
   ]);
@@ -958,7 +1147,7 @@ function topbar(user, back, parent) {
 function navbar(active, parent) {
   const items = parent ? [['home', '🏠', 'Family']] : [['home', '🏠', 'Home'], ['practice', '✏️', 'Practice'], ['play', '🎮', 'Play'], ['write', '✍️', 'Write'], ['progress', '📈', 'Progress']];
   const map = { home: parent ? 'parent-home' : 'student-home', practice: 'practice', play: 'play-hub', write: 'writing', progress: 'progress' };
-  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => go(map[k]) }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
+  return el('div', { class: 'navbar' }, items.map(([k, ic, lb]) => el('button', { class: 'nav-item ' + (active === k ? 'on' : ''), onclick: () => { if (k === 'practice' && !parent) { const c = currentSkill(STATE.students[STATE.currentUserId]); return c ? startSkill(c.id) : go('practice'); } go(map[k]); } }, [el('div', { class: 'nav-ic' }, ic), el('div', {}, lb)])));
 }
 
 /* ------------------------------- ACTIONS --------------------------------- */
@@ -980,9 +1169,10 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
+    'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
   };
-  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard'];
+  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast'];
   let name = VIEW.name;
   if (isParent && studentOnly.includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
@@ -1000,15 +1190,16 @@ function render() {
 
 /* -------------------------------- BOOT ----------------------------------- */
 function ensureStudentShape(stu) {
-  stu.writing = stu.writing || [];
+  stu.writing = stu.writing || []; stu.misses = stu.misses || []; stu.assignments = stu.assignments || [];
   const g = stu.games = stu.games || {};
   g.sprintBest = g.sprintBest || 0; g.xp = g.xp || 0; g.coins = g.coins || 0;
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
-  g.bossCleared = g.bossCleared || {}; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
+  g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
 }
 
 (async function boot() {
+  applyDark();
   STATE = await Store.load();
   if (!STATE || !STATE.students) STATE = seedDemo();
   Object.values(STATE.students || {}).forEach(ensureStudentShape);
