@@ -412,3 +412,21 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .grade-pick { flex: 1; min-width: 120px; padding: 12px; border-radius: 14px; background: #f6f3fe; font-weight: 800; border: 2px solid transparent; color: var(--ink); }
 .grade-pick.on { border-color: var(--primary); background: #efe9fd; color: var(--primary-d); }
 :root[data-theme="dark"] .grade-pick { background: #2b2440; }
+
+/* Build It! — clock, coins, array */
+.clock-face { display: flex; justify-content: center; margin: 6px 0; }
+.clock-steppers { display: flex; gap: 16px; justify-content: center; margin: 10px 0; }
+.stepper { display: flex; align-items: center; gap: 10px; background: #f6f3fe; border-radius: 14px; padding: 6px 10px; }
+:root[data-theme="dark"] .stepper { background: #2b2440; }
+.step-btn { width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: #fff; font-size: 22px; font-weight: 800; }
+.step-lbl { font-weight: 800; font-size: 13px; min-width: 58px; text-align: center; }
+.coin-jar { min-height: 90px; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: flex-start; padding: 10px; background: #f6f3fe; border-radius: 14px; }
+:root[data-theme="dark"] .coin-jar { background: #2b2440; }
+.coin { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: inset 0 -2px 4px rgba(0,0,0,.2); border: 2px solid rgba(0,0,0,.15); }
+.coin-palette { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.coin-pick { width: 62px; height: 62px; border-radius: 50%; color: #fff; font-weight: 800; box-shadow: inset 0 -3px 5px rgba(0,0,0,.2); border: 2px solid rgba(0,0,0,.15); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.coin-pick small { font-size: 9px; opacity: .9; font-weight: 600; }
+.array-box { display: inline-flex; flex-direction: column; gap: 6px; padding: 12px; background: #f6f3fe; border-radius: 14px; margin: 0 auto; }
+:root[data-theme="dark"] .array-box { background: #2b2440; }
+.array-row { display: flex; gap: 6px; }
+.array-dot { width: 26px; height: 26px; border-radius: 6px; background: var(--primary); }
