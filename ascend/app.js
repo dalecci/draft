@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 26; // shown on every screen so you can confirm the running version
+const APP_BUILD = 27; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -56,25 +56,40 @@ function seedDemo() {
 // Double-save: every write goes to primary (cloud OR local) AND a local mirror.
 const Store = {
   async load() {
+    // read BOTH sources, then keep whichever was saved most recently — never let a
+    // stale copy silently overwrite newer progress.
+    let local = null, mirror = null, cloud = null;
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) local = JSON.parse(raw); } catch (e) {}
+    try { const raw = localStorage.getItem(LS_MIRROR); if (raw) mirror = JSON.parse(raw); } catch (e) {}
     if (CLOUD && sb) {
-      const { data: { user } } = await sb.auth.getUser();
-      if (user) {
-        const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle();
-        if (data && data.data) return data.data;
-      }
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) { const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle(); if (data && data.data) cloud = data.data; }
+      } catch (e) { console.warn('cloud load failed', e); }
     }
-    const raw = localStorage.getItem(LS_KEY);
-    if (raw) { try { return JSON.parse(raw); } catch (e) {} }
-    return seedDemo();
+    const at = s => (s && s._savedAt) || 0;
+    const newest = [local, mirror, cloud].filter(Boolean).sort((a, b) => at(b) - at(a))[0];
+    if (!newest) return seedDemo();
+    // converge: if the newest came from local but the cloud was older, push it up so the cloud is protected
+    if (CLOUD && sb && newest !== cloud && at(newest) > at(cloud)) { setTimeout(() => Store.save(newest).catch(() => {}), 0); }
+    return newest;
   },
   async save(state) {
+    const prevAt = state._savedAt || 0;         // when this state was last persisted/loaded
+    state._savedAt = now();                      // stamp BEFORE serialising so the copy carries its true time
     const json = JSON.stringify(state);
-    localStorage.setItem(LS_KEY, json);        // primary local
-    localStorage.setItem(LS_MIRROR, json);     // second copy (the "double save")
-    state._savedAt = now();
+    try { localStorage.setItem(LS_KEY, json); localStorage.setItem(LS_MIRROR, json); } catch (e) {}
     if (CLOUD && sb) {
-      const { data: { user } } = await sb.auth.getUser();
-      if (user) await sb.from('ascend_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() });
+      try {
+        const { data: { user } } = await sb.auth.getUser();
+        if (user) {
+          // stale-write guard: if the cloud advanced past what we started from, another device is ahead — don't clobber it
+          const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle();
+          const cloudAt = (data && data.data && data.data._savedAt) || 0;
+          if (cloudAt > prevAt + 1000) { console.warn('cloud is newer — skipping overwrite to avoid clobbering progress'); }
+          else { await sb.from('ascend_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() }); }
+        }
+      } catch (e) { console.warn('cloud save failed', e); }
     }
     flashSaved();
   },
