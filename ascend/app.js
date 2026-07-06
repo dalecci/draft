@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 21; // shown on every screen so you can confirm the running version
+const APP_BUILD = 22; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -415,7 +415,9 @@ function renderPractice() {
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
     const mastered = adv ? stu.progress[skill.id].stretch?.masteredAt : stu.progress[skill.id].masteredAt;
     const label = mastered ? (adv ? '🔥 Grade 6 mastered — continue' : '🎉 Skill mastered — continue') : 'Next question ▶';
-    feedback.append(el('button', { class: 'btn primary', onclick: () => { PRACTICE = null; go('practice', adv ? { skill: skill.id, stretch: true } : { skill: mastered ? undefined : skill.id }); } }, label));
+    const goNext = () => { PRACTICE = null; go('practice', adv ? { skill: skill.id, stretch: true } : { skill: mastered ? undefined : skill.id }); };
+    PRACTICE.next = goNext;   // lets the spacebar advance
+    feedback.append(el('button', { class: 'btn primary', onclick: goNext }, label + '  ␣'));
     // after on-grade mastery, offer the Grade 6 challenge
     if (!adv && stu.progress[skill.id].masteredAt && stretchGen) feedback.append(el('button', { class: 'btn stretch-btn', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, '🔥 Try the Grade 6 Challenge'));
   };
@@ -923,7 +925,7 @@ function buildClock(area, status) {
   const face = el('div', { class: 'clock-face' });
   const draw = () => {
     face.innerHTML = clockSVG((BUILD.hr % 12) * 30 + BUILD.min * 0.5, BUILD.min * 6);
-    status.innerHTML = `You set: <b>${BUILD.hr}:${two(BUILD.min)}</b>`;
+    status.innerHTML = BUILD.solved ? '✅ Nice!' : 'Move the hands, then tap Check'; // no digital readout — he must read the clock
     status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
   };
   area.append(face); area.append(status);
@@ -1590,6 +1592,14 @@ function ensureStudentShape(stu) {
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
   g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
 }
+
+// keyboard: Enter submits (per-input); Space advances to the next question once answered
+window.addEventListener('keydown', (e) => {
+  if ((e.key === ' ' || e.code === 'Space') && VIEW.name === 'practice' && PRACTICE && PRACTICE.locked && typeof PRACTICE.next === 'function') {
+    e.preventDefault();
+    PRACTICE.next();
+  }
+});
 
 (async function boot() {
   applyDark();
