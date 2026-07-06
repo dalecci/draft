@@ -134,9 +134,9 @@ function handleAnswer(stu, skill, correct, seconds) {
   const beforeLvl = levelInfo(stu.games.xp).level;
   const mastered = recordAnswer(stu, skill, correct, seconds);
   ensureDailies(stu);
-  awardXP(stu, correct ? 10 : 2); awardCoins(stu, correct ? 2 : 0);
+  awardXP(stu, correct ? 8 : 2); awardCoins(stu, correct ? 1 : 0);
   bumpQuest(stu, 'answer', 1); if (correct) bumpQuest(stu, 'correct', 1);
-  if (mastered) { awardXP(stu, 50); awardCoins(stu, 25); bumpQuest(stu, 'master', 1); }
+  if (mastered) { awardXP(stu, 40); awardCoins(stu, 8); bumpQuest(stu, 'master', 1); }
   touchStreak(stu);
   const newBadges = refreshBadges(stu);
   const leveledUp = levelInfo(stu.games.xp).level > beforeLvl;
@@ -167,7 +167,8 @@ const $ = sel => document.querySelector(sel);
 const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.entries(props).forEach(([k, v]) => { if (k === 'class') n.className = v; else if (k === 'html') n.innerHTML = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); }); (Array.isArray(kids) ? kids : [kids]).forEach(c => c && n.append(c.nodeType ? c : document.createTextNode(c))); return n; };
 
 let VIEW = { name: 'student-home' };
-function go(name, opts = {}) { VIEW = { name, ...opts }; render(); }
+function go(name, opts = {}) { VIEW = { name, ...opts }; saveRoute(); render(); }
+function saveRoute() { try { if (STATE && STATE.currentUserId && VIEW.name !== 'login') localStorage.setItem('ascend_route', JSON.stringify({ u: STATE.currentUserId, v: VIEW })); } catch (e) {} }
 
 function flashSaved() { const t = $('#saveToast'); if (!t) return; t.classList.add('show'); clearTimeout(flashSaved._t); flashSaved._t = setTimeout(() => t.classList.remove('show'), 1200); }
 
@@ -191,7 +192,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 10`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 11`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -221,6 +222,31 @@ function renderLogin() {
 }
 
 /* --------------------------- STUDENT: HOME ------------------------------- */
+/* ---- daily / weekly goal (are we done for today?) ---- */
+function masteredSince(stu, ts) { return ALL_SKILLS.filter(s => { const p = stu.progress[s.id]; return p && p.masteredAt && p.masteredAt >= ts; }).length; }
+function goalBar(label, done, goal, color) {
+  const pct = goal ? Math.min(100, Math.round(100 * done / goal)) : 0;
+  return el('div', { class: 'goal-row' }, [
+    el('div', { class: 'goal-top' }, [el('span', {}, label), el('b', { class: done >= goal ? 'goal-hit' : '' }, `${done}/${goal} skills`)]),
+    el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${pct}%;background:${color}` })),
+  ]);
+}
+function goalCard(stu) {
+  const pace = subjectPace(stu);
+  const dGoal = Math.max(1, Math.ceil(pace.perDay));
+  const wGoal = Math.max(dGoal, Math.round(pace.perDay * (stu.plan.daysPerWeek || 7)));
+  const dDone = masteredSince(stu, startOfDay(now()));
+  const wDone = masteredSince(stu, startOfDay(now() - 6 * DAY));
+  const qToday = stu.log.filter(l => l.ts >= startOfDay(now())).length;
+  const done = dDone >= dGoal;
+  const card = el('div', { class: 'card goal-card' + (done ? ' goal-complete' : '') });
+  card.append(el('div', { class: 'goal-head' }, done ? '✅ Done for today — great work!' : '🎯 Today’s goal'));
+  card.append(goalBar('Today', dDone, dGoal, '#12b886'));
+  card.append(goalBar('This week', wDone, wGoal, '#7048e8'));
+  const remain = Math.max(0, dGoal - dDone);
+  card.append(el('div', { class: 'muted', style: 'margin-top:8px' }, `${qToday} question${qToday === 1 ? '' : 's'} practiced today${done ? ' 🎉' : ` · ${remain} more skill${remain === 1 ? '' : 's'} to hit today’s target`}`));
+  return card;
+}
 function renderStudentHome() {
   const stu = STATE.students[STATE.currentUserId];
   const pace = subjectPace(stu);
@@ -237,6 +263,7 @@ function renderStudentHome() {
     el('div', {}, el('button', { class: 'btn primary big', onclick: () => { const c = currentSkill(stu); c ? startSkill(c.id) : go('practice'); } }, '▶ Start today’s practice')),
   ]));
   wrap.append(hero);
+  wrap.append(goalCard(stu));
 
   // assignments from a parent/coach
   const openAsg = stu.assignments.filter(a => a.status !== 'done');
@@ -411,7 +438,7 @@ function renderWriting() {
   const evalBtn = el('button', { class: 'btn primary', onclick: () => {
     const r = evaluateWriting(ta.value);
     stu.writing.push({ ts: now(), promptId, text: ta.value, result: r });
-    ensureDailies(stu); bumpQuest(stu, 'write', 1); awardXP(stu, 20 + r.total * 3); awardCoins(stu, 10); touchStreak(stu);
+    ensureDailies(stu); bumpQuest(stu, 'write', 1); awardXP(stu, 15 + r.total * 2); awardCoins(stu, 6); touchStreak(stu);
     const cel = { newBadges: refreshBadges(stu) };
     persist(); celebrate(cel);
     result.innerHTML = ''; result.append(scorecard(r));
@@ -511,7 +538,7 @@ function endSprint() {
   SPRINT.best = Math.max(stu.games.sprintBest || 0, SPRINT.score);
   SPRINT.isRecord = SPRINT.score > (stu.games.sprintBest || 0);
   stu.games.sprintBest = SPRINT.best;
-  ensureDailies(stu); bumpQuest(stu, 'sprint', 1); awardCoins(stu, 15 + Math.floor(SPRINT.score / 20));
+  ensureDailies(stu); bumpQuest(stu, 'sprint', 1); awardCoins(stu, 8 + Math.floor(SPRINT.score / 40));
   SPRINT.newBadges = (SPRINT.newBadges || []).concat(refreshBadges(stu));
   SPRINT.phase = 'over';
   persist();
@@ -612,7 +639,7 @@ function winBoss() {
   const firstTime = !stu.games.bossCleared[BOSS.unitId];
   BOSS.flawless = BOSS.lives === BOSS_LIVES;
   stu.games.bossCleared[BOSS.unitId] = true;
-  awardXP(stu, 70); awardCoins(stu, (firstTime ? 50 : 20) + (BOSS.flawless ? 20 : 0));
+  awardXP(stu, 55); awardCoins(stu, (firstTime ? 25 : 8) + (BOSS.flawless ? 10 : 0));
   BOSS.newBadges = BOSS.newBadges.concat(refreshBadges(stu));
   BOSS.phase = 'win'; persist(); setTimeout(() => confetti(['🏆', '💥', '⭐', '🔥']), 150); go('boss');
 }
@@ -966,7 +993,7 @@ function renderFast() {
     wrap.append(navbar('play')); return wrap;
   }
   if (FAST.done) {
-    const pct = Math.round(100 * FAST.correct / FAST.n); const band = Math.max(1, Math.min(5, 1 + Math.round(pct / 100 * 4)));
+    const pct = Math.round(100 * FAST.correct / FAST.n); const band = pct >= 95 ? 5 : pct >= 80 ? 4 : pct >= 60 ? 3 : pct >= 40 ? 2 : 1;
     FAST = null;
     wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, pct >= 70 ? '🎉' : '💪'), el('h2', {}, `You scored ${pct}%`),
       el('div', { class: 'fast-band' }, `Projected FAST level: ${band} / 5`),
@@ -1115,6 +1142,19 @@ function renderParentHome() {
     grid.append(tile);
   });
   wrap.append(grid);
+
+  // data & backup
+  const data = el('div', { class: 'card data-card' });
+  data.append(el('h3', {}, '💾 Data & backup'));
+  data.append(el('p', { class: 'muted' }, 'Progress saves automatically on this device (kept in two local copies). It is not yet synced to the cloud — download a backup regularly, and you can restore it here or on another device.'));
+  const fileInp = el('input', { type: 'file', accept: 'application/json', style: 'display:none', onchange: (e) => { if (e.target.files && e.target.files[0]) importBackup(e.target.files[0]); } });
+  data.append(el('div', { class: 'answer-row' }, [
+    el('button', { class: 'btn primary', onclick: exportBackup }, '⬇ Download backup'),
+    el('button', { class: 'btn ghost', onclick: () => fileInp.click() }, '⬆ Restore backup'),
+  ]));
+  data.append(fileInp);
+  wrap.append(data);
+
   wrap.append(navbar('home', true));
   return wrap;
 }
@@ -1142,6 +1182,7 @@ function renderParentChild() {
 
   // Coach's Report — written analysis + recommendations
   wrap.append(renderCoachCard(stu));
+  wrap.append(goalCard(stu));
 
   // quick actions
   const nReview = stu.misses.length;
@@ -1208,6 +1249,21 @@ function exportBackup() {
   const blob = new Blob([JSON.stringify(STATE, null, 2)], { type: 'application/json' });
   const a = el('a', { href: URL.createObjectURL(blob), download: `ascend-backup-${new Date().toISOString().slice(0, 10)}.json` });
   document.body.append(a); a.click(); a.remove();
+  toast('⬇ Backup downloaded');
+}
+function importBackup(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const data = JSON.parse(r.result);
+      if (!data || !data.students) throw new Error('not an Ascend backup');
+      STATE = data; Object.values(STATE.students).forEach(ensureStudentShape);
+      persist();
+      toast('✅ Backup restored');
+      go(STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login');
+    } catch (e) { toast('❌ That file is not a valid Ascend backup'); }
+  };
+  r.readAsText(file);
 }
 async function logout() { if (CLOUD && sb) await sb.auth.signOut(); STATE.currentUserId = null; await persist(); go('login'); }
 
@@ -1257,6 +1313,9 @@ function ensureStudentShape(stu) {
   if (!STATE || !STATE.students) STATE = seedDemo();
   Object.values(STATE.students || {}).forEach(ensureStudentShape);
   if (CLOUD && sb) { const { data: { user } } = await sb.auth.getUser(); if (!user) STATE.currentUserId = null; }
-  VIEW = { name: STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login' };
+  // "Continue where you were": restore the last route for this user
+  let restored = null;
+  try { const r = JSON.parse(localStorage.getItem('ascend_route') || 'null'); if (r && r.u === STATE.currentUserId && r.v && r.v.name && r.v.name !== 'login') restored = r.v; } catch (e) {}
+  VIEW = STATE.currentUserId ? (restored || { name: STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home' }) : { name: 'login' };
   render();
 })();
