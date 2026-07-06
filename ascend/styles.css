@@ -376,3 +376,29 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .goal-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
 .goal-hit { color: var(--good); }
 .data-card p { margin: 6px 0 12px; }
+
+/* Build It! — interactive manipulatives */
+.build-area { text-align: center; }
+.build-prompt { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+.build-prompt b { color: var(--primary-d); font-size: 26px; }
+.build-status { margin-top: 12px; font-weight: 700; color: var(--muted); font-size: 15px; }
+.build-status.ok { color: var(--good); }
+.build-status b { color: var(--ink); font-size: 20px; }
+/* base-ten */
+.tenmat { display: flex; justify-content: center; gap: 14px; align-items: flex-start; }
+.ten-col { flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ten-blocks { min-height: 80px; display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; align-content: flex-start; padding: 6px; background: #f6f3fe; border-radius: 12px; width: 100%; }
+:root[data-theme="dark"] .ten-blocks { background: #2b2440; }
+.blk { cursor: pointer; border-radius: 3px; transition: transform .08s; }
+.blk:active { transform: scale(.9); }
+.blk-h { width: 40px; height: 40px; background: #7048e8; background-image: repeating-linear-gradient(0deg,rgba(255,255,255,.35) 0 1px,transparent 1px 4px),repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0 1px,transparent 1px 4px); }
+.blk-t { width: 12px; height: 40px; background: #1c7ed6; background-image: repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0 1px,transparent 1px 4px); }
+.blk-o { width: 12px; height: 12px; background: #20c997; }
+.ten-add { width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: #fff; font-size: 22px; font-weight: 800; box-shadow: var(--shadow); }
+.ten-lbl { font-size: 12px; font-weight: 700; color: var(--muted); }
+/* fractions */
+.frac-bar { display: flex; width: 100%; max-width: 420px; height: 90px; margin: 0 auto; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; }
+.frac-seg { flex: 1; border-right: 2px solid var(--ink); cursor: pointer; transition: background .12s; }
+.frac-seg:last-child { border-right: none; }
+.frac-seg.on { background: var(--primary); }
+.frac-seg:active { opacity: .7; }

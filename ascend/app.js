@@ -194,7 +194,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 15`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 16`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -758,11 +758,114 @@ function renderPlayHub() {
     [el('div', { class: 'mode-emoji' }, '⚔️'), el('div', { class: 'mode-nm' }, 'Boss Challenge'), el('div', { class: 'mode-sub' }, `Streak-to-win under the clock · ${Object.keys(stu.games.bossCleared || {}).length}/${CURRICULUM.units.length} cleared`)]));
   modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#1c7ed6,#20c997)', onclick: () => { FAST = null; go('fast'); } },
     [el('div', { class: 'mode-emoji' }, '📋'), el('div', { class: 'mode-nm' }, 'FAST Practice Test'), el('div', { class: 'mode-sub' }, 'A 10-question Florida FAST-style mock')]));
+  modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#f59f00,#e64980)', onclick: () => { BUILD = null; go('build'); } },
+    [el('div', { class: 'mode-emoji' }, '🧩'), el('div', { class: 'mode-nm' }, 'Build It! (interactive)'), el('div', { class: 'mode-sub' }, 'Tap & place — base-ten blocks, fraction shapes')]));
   modes.append(el('div', { class: 'card mode-card locked' },
-    [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Unlocks with cloud sync — coming soon')]));
+    [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Real-time head-to-head — coming soon')]));
   wrap.append(modes);
   wrap.append(navbar('play'));
   return wrap;
+}
+
+/* ===================== INTERACTIVE MANIPULATIVES ('Build It') ============= */
+let BUILD = null;
+const BUILD_KINDS = {
+  baseten: { emoji: '🔢', name: 'Base-Ten Blocks', sub: 'Build the number by tapping blocks' },
+  fraction: { emoji: '🍕', name: 'Fraction Shapes', sub: 'Tap parts to shade the fraction' },
+};
+function setupBuild() {
+  if (BUILD.kind === 'baseten') { BUILD.target = randInt(11, 999); BUILD.h = 0; BUILD.t = 0; BUILD.o = 0; }
+  else { BUILD.den = pick([2, 3, 4, 6, 8]); BUILD.num = randInt(1, BUILD.den - 1); BUILD.shaded = new Set(); }
+  BUILD.solved = false;
+}
+function startBuild(kind) { BUILD = { kind, i: 0, n: 6, correct: 0 }; setupBuild(); go('build'); }
+function refreshBuild() { const root = $('#app'); root.innerHTML = ''; root.append(renderBuild()); }
+function checkBuild(ok) {
+  if (BUILD.solved) return;
+  const stu = STATE.students[STATE.currentUserId];
+  if (ok) {
+    BUILD.solved = true; BUILD.correct++;
+    awardXP(stu, 8); awardCoins(stu, 2); touchStreak(stu); refreshBadges(stu); persist();
+    confetti(['⭐', '🎉']); toast('✅ Correct!');
+    setTimeout(() => { BUILD.i++; if (BUILD.i >= BUILD.n) BUILD.done = true; else setupBuild(); refreshBuild(); }, 800);
+  } else { toast('Not quite — take another look!'); }
+  refreshBuild();
+}
+function renderBuild() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+
+  if (!BUILD) { // menu
+    wrap.append(el('div', { class: 'card' }, [el('h2', {}, '🧩 Build It!'), el('p', { class: 'muted' }, 'Learn by doing — tap and place to build the answer.')]));
+    const grid = el('div', { class: 'mode-grid' });
+    Object.entries(BUILD_KINDS).forEach(([k, m]) => grid.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#7048e8,#20c997)', onclick: () => startBuild(k) },
+      [el('div', { class: 'mode-emoji' }, m.emoji), el('div', { class: 'mode-nm' }, m.name), el('div', { class: 'mode-sub' }, m.sub)])));
+    wrap.append(grid); wrap.append(navbar('play')); return wrap;
+  }
+  if (BUILD.done) {
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '🎉'), el('h2', {}, `${BUILD.correct}/${BUILD.n} built!`),
+      el('div', { class: 'muted' }, 'Nice building! +XP & coins earned.'),
+      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
+        el('button', { class: 'btn primary', onclick: () => startBuild(BUILD.kind) }, '↻ Again'),
+        el('button', { class: 'btn ghost', onclick: () => { BUILD = null; go('build'); } }, 'Menu'),
+      ])]));
+    wrap.append(navbar('play')); return wrap;
+  }
+
+  wrap.append(el('div', { class: 'card fast-prog' }, [el('b', {}, `${BUILD_KINDS[BUILD.kind].name} · ${BUILD.i + 1} of ${BUILD.n}`),
+    el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * BUILD.i / BUILD.n}%;background:var(--primary)` }))]));
+  const area = el('div', { class: 'card build-area' });
+  const status = el('div', { class: 'build-status' });
+  if (BUILD.kind === 'baseten') buildBaseTen(area, status);
+  else buildFraction(area, status);
+  wrap.append(area);
+  wrap.append(navbar('play'));
+  return wrap;
+}
+function buildBaseTen(area, status) {
+  const target = BUILD.target;
+  area.append(el('div', { class: 'build-prompt' }, ['Build the number ', el('b', {}, String(target))]));
+  const mat = el('div', { class: 'tenmat' });
+  const cols = [['Hundreds', 'h', 100, 9], ['Tens', 't', 10, 18], ['Ones', 'o', 1, 18]];
+  const draw = () => {
+    mat.innerHTML = '';
+    cols.forEach(([label, key, val, cap]) => {
+      const col = el('div', { class: 'ten-col' });
+      const blocks = el('div', { class: 'ten-blocks' });
+      for (let i = 0; i < BUILD[key]; i++) blocks.append(el('div', { class: 'blk blk-' + key, title: 'tap to remove', onclick: () => { BUILD[key]--; draw(); } }));
+      col.append(blocks);
+      col.append(el('button', { class: 'ten-add', onclick: () => { if (BUILD[key] < cap) { BUILD[key]++; draw(); } } }, '＋'));
+      col.append(el('div', { class: 'ten-lbl' }, `${label} (${BUILD[key]})`));
+      mat.append(col);
+    });
+    const cur = BUILD.h * 100 + BUILD.t * 10 + BUILD.o;
+    status.innerHTML = `You built: <b>${cur}</b>`;
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+  };
+  area.append(mat); area.append(status);
+  area.append(el('div', { class: 'answer-row', style: 'margin-top:10px' }, [
+    el('button', { class: 'btn ghost', onclick: () => { BUILD.h = BUILD.t = BUILD.o = 0; refreshBuild(); } }, '↺ Clear'),
+    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.h * 100 + BUILD.t * 10 + BUILD.o === target) }, 'Check ✓'),
+  ]));
+  draw();
+}
+function buildFraction(area, status) {
+  const { den, num } = BUILD;
+  area.append(el('div', { class: 'build-prompt' }, ['Shade ', el('b', {}, `${num}/${den}`), ' of the shape']));
+  const bar = el('div', { class: 'frac-bar' });
+  const draw = () => {
+    bar.innerHTML = '';
+    for (let i = 0; i < den; i++) bar.append(el('div', { class: 'frac-seg' + (BUILD.shaded.has(i) ? ' on' : ''), onclick: () => { BUILD.shaded.has(i) ? BUILD.shaded.delete(i) : BUILD.shaded.add(i); draw(); } }));
+    status.innerHTML = `Shaded: <b>${BUILD.shaded.size}/${den}</b>`;
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+  };
+  area.append(bar); area.append(status);
+  area.append(el('div', { class: 'answer-row', style: 'margin-top:10px' }, [
+    el('button', { class: 'btn ghost', onclick: () => { BUILD.shaded = new Set(); refreshBuild(); } }, '↺ Clear'),
+    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.shaded.size === num) }, 'Check ✓'),
+  ]));
+  draw();
 }
 
 /* ------------------------------- PROFILE --------------------------------- */
@@ -1307,10 +1410,10 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
-    'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
+    'build': renderBuild, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
   };
-  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast'];
+  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build'];
   let name = VIEW.name;
   if (isParent && studentOnly.includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
