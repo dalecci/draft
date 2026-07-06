@@ -30,10 +30,10 @@ function scheduledDays(start, end, daysPerWeek) {
 /* ------------------------------ STATE MODEL ------------------------------ */
 let STATE = null;
 
-function blankStudent(id, name, avatar) {
+function blankStudent(id, name, avatar, grade) {
   return {
-    id, name, avatar, role: 'student',
-    plan: { start: startOfDay(now() - 28 * DAY), target: startOfDay(now() + 84 * DAY), daysPerWeek: 5, hoursPerDay: 1 },
+    id, name, avatar, role: 'student', grade: grade || 'g5',
+    plan: { start: startOfDay(now()), target: startOfDay(now() + 60 * DAY), daysPerWeek: 7, hoursPerDay: 1 },
     progress: {},   // skillId -> {score, attempts, correct, masteredAt}
     log: [],        // {ts, skillId, unitId, correct, seconds}
     writing: [],    // {ts, promptId, text, result}
@@ -43,13 +43,12 @@ function blankStudent(id, name, avatar) {
   };
 }
 
-/* ------------------- REAL SETUP: Jayden, Grade 5, from zero --------------- */
+/* ------------------- REAL SETUP: Jayden (G5) + Jackson (G2) --------------- */
 function seedDemo() {
-  const jayden = blankStudent('stu_jayden', 'Jayden', '🏀');
-  // real trial: start today, finish the whole Grade 5 department in ~2 months, 1 hr/day, every day
-  jayden.plan = { start: startOfDay(now()), target: startOfDay(now() + 60 * DAY), daysPerWeek: 7, hoursPerDay: 1 };
-  const parent = { id: 'par_home', name: 'Parent', avatar: '👤', role: 'parent', childIds: [jayden.id] };
-  return { students: { [jayden.id]: jayden }, parents: { [parent.id]: parent }, currentUserId: null };
+  const jayden = blankStudent('stu_jayden', 'Jayden', '🏀', 'g5');
+  const jackson = blankStudent('stu_jackson', 'Jackson', '🦖', 'g2');
+  const parent = { id: 'par_home', name: 'Parent', avatar: '👤', role: 'parent', childIds: [jayden.id, jackson.id] };
+  return { students: { [jayden.id]: jayden, [jackson.id]: jackson }, parents: { [parent.id]: parent }, currentUserId: null };
 }
 
 /* ------------------------------- STORE ----------------------------------- */
@@ -194,7 +193,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 16`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 17`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -1258,11 +1257,14 @@ function renderParentHome() {
   wrap.append(el('div', { class: 'family-head' }, [el('h2', {}, '👨‍👩‍👧 Family dashboard'), el('p', { class: 'muted' }, 'Tap your child to see progress, pace, and the coach report.')]));
   const grid = el('div', { class: 'child-grid2' });
   par.childIds.forEach(id => {
-    const stu = STATE.students[id]; const pace = subjectPace(stu); const lv = levelInfo(stu.games.xp); const st = paceStatus(stu, pace);
+    const stu = STATE.students[id]; if (!stu) return;
+    // compute this child's pace IN THEIR OWN grade
+    const { pace, subject } = withGrade(stu, () => ({ pace: subjectPace(stu), subject: CURRICULUM.subject }));
+    const lv = levelInfo(stu.games.xp); const st = paceStatus(stu, pace);
     const tile = el('button', { class: 'child-tile', onclick: () => go('parent-child', { child: id }) });
     tile.append(el('div', { class: 'tile-top' }, [
       el('div', { class: 'tile-av' }, stu.avatar),
-      el('div', { class: 'tile-id' }, [el('div', { class: 'tile-name' }, stu.name), el('div', { class: 'tile-sub' }, `${CURRICULUM.subject} · Lv ${lv.level} ${lv.title}`)]),
+      el('div', { class: 'tile-id' }, [el('div', { class: 'tile-name' }, stu.name), el('div', { class: 'tile-sub' }, `${subject} · Lv ${lv.level}`)]),
     ]));
     tile.append(ring(pace.pct, 116, '#7048e8', 'mastered'));
     tile.append(el('span', { class: 'badge ' + st.cls, style: 'font-size:14px;padding:7px 16px' }, st.text));
@@ -1274,6 +1276,7 @@ function renderParentHome() {
     grid.append(tile);
   });
   wrap.append(grid);
+  wrap.append(el('button', { class: 'btn ghost wide', onclick: () => go('parent-add') }, '➕ Add a child'));
 
   // data & backup
   const data = el('div', { class: 'card data-card' });
@@ -1287,6 +1290,40 @@ function renderParentHome() {
   data.append(fileInp);
   wrap.append(data);
 
+  wrap.append(navbar('home', true));
+  return wrap;
+}
+
+function renderAddChild() {
+  const par = STATE.parents[STATE.currentUserId];
+  const wrap = el('div', { class: 'page parent-view' });
+  wrap.append(topbar(par, true, true));
+  wrap.append(el('div', { class: 'card' }, [el('h2', {}, '➕ Add a child'), el('p', { class: 'muted' }, 'Each child gets their own grade, progress, games, and dashboard — all under this one family login.')]));
+  const card = el('div', { class: 'card' });
+  const name = el('input', { class: 'inp', placeholder: "Child's name" });
+  card.append(el('label', { class: 'field-lbl' }, 'Name'));
+  card.append(name);
+  card.append(el('label', { class: 'field-lbl' }, 'Avatar'));
+  let avatar = '🦖';
+  const avs = ['🦖', '🦊', '🐼', '🚀', '🦄', '🐲', '🤖', '🦁', '🎨', '⚽'];
+  const avRow = el('div', { class: 'av-row' });
+  const drawAv = () => { avRow.innerHTML = ''; avs.forEach(a => avRow.append(el('button', { class: 'av-pick' + (a === avatar ? ' on' : ''), onclick: () => { avatar = a; drawAv(); } }, a))); };
+  drawAv(); card.append(avRow);
+  card.append(el('label', { class: 'field-lbl' }, 'Grade'));
+  let grade = 'g2';
+  const grRow = el('div', { class: 'av-row' });
+  const drawGr = () => { grRow.innerHTML = ''; GRADES.forEach(g => grRow.append(el('button', { class: 'grade-pick' + (g.id === grade ? ' on' : ''), onclick: () => { grade = g.id; drawGr(); } }, g.label))); };
+  drawGr(); card.append(grRow);
+  const msg = el('div', { class: 'msg' });
+  card.append(msg);
+  card.append(el('button', { class: 'btn primary wide', onclick: () => {
+    const nm = name.value.trim();
+    if (!nm) { msg.textContent = 'Please enter a name.'; return; }
+    const id = 'stu_' + Math.random().toString(36).slice(2, 9);
+    STATE.students[id] = blankStudent(id, nm, avatar, grade); par.childIds.push(id);
+    persist(); toast(`✅ ${nm} added!`); go('parent-child', { child: id });
+  } }, '✓ Add child'));
+  wrap.append(card);
   wrap.append(navbar('home', true));
   return wrap;
 }
@@ -1405,13 +1442,16 @@ function render() {
   const root = $('#app'); root.innerHTML = '';
   if (!STATE.currentUserId) return void root.append((CLOUD && AUTHED) ? renderPickProfile() : renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
+  // bind the active curriculum to whichever student is in context (student self, or the parent's current child)
+  const ctxStu = isParent ? STATE.students[VIEW.child] : STATE.students[STATE.currentUserId];
+  setActiveGrade((ctxStu && ctxStu.grade) || 'g5');
   if (!isParent) applyTheme(STATE.students[STATE.currentUserId]); else applyTheme(null);
   const views = {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
     'build': renderBuild, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
-    'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor,
+    'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor, 'parent-add': renderAddChild,
   };
   const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build'];
   let name = VIEW.name;
@@ -1430,7 +1470,9 @@ function render() {
 }
 
 /* -------------------------------- BOOT ----------------------------------- */
+function withGrade(stu, fn) { const prev = ACTIVE_GRADE; setActiveGrade((stu && stu.grade) || 'g5'); try { return fn(); } finally { setActiveGrade(prev); } }
 function ensureStudentShape(stu) {
+  stu.grade = CURRICULA[stu.grade] ? stu.grade : 'g5';
   stu.writing = stu.writing || []; stu.misses = stu.misses || []; stu.assignments = stu.assignments || [];
   const g = stu.games = stu.games || {};
   g.sprintBest = g.sprintBest || 0; g.xp = g.xp || 0; g.coins = g.coins || 0;

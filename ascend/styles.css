@@ -402,3 +402,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .frac-seg:last-child { border-right: none; }
 .frac-seg.on { background: var(--primary); }
 .frac-seg:active { opacity: .7; }
+
+/* add-child form */
+.field-lbl { display: block; font-weight: 800; font-size: 13px; margin: 12px 0 4px; color: var(--muted); }
+.av-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.av-pick { width: 48px; height: 48px; border-radius: 14px; background: #f6f3fe; font-size: 26px; border: 2px solid transparent; }
+.av-pick.on { border-color: var(--primary); background: #efe9fd; }
+:root[data-theme="dark"] .av-pick { background: #2b2440; }
+.grade-pick { flex: 1; min-width: 120px; padding: 12px; border-radius: 14px; background: #f6f3fe; font-weight: 800; border: 2px solid transparent; color: var(--ink); }
+.grade-pick.on { border-color: var(--primary); background: #efe9fd; color: var(--primary-d); }
+:root[data-theme="dark"] .grade-pick { background: #2b2440; }
