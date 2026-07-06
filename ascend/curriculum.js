@@ -119,6 +119,57 @@ const GEN = {
   area() { const l = randInt(3, 20), w = randInt(3, 20); return numItem(`Find the area of a rectangle ${l} by ${w}.`, l * w, `A = l × w = ${l} × ${w} = ${l * w}.`); },
   volume() { const l = randInt(2, 12), w = randInt(2, 10), h = randInt(2, 10); return numItem(`Find the volume of a box ${l} × ${w} × ${h}.`, l * w * h, `V = l × w × h = ${l * w * h}.`); },
   financial() { const gross = randInt(20, 80) * 100, tax = randInt(5, 25); const net = Math.round(gross * (1 - tax / 100)); return numItem(`Gross pay is $${gross} and ${tax}% is taken for taxes. What is the net (take-home) pay? ($)`, net, `$${gross} × (1 − ${tax}%) = $${net}.`, 0.5); },
+
+  /* ---------------------- GRADE 2 generators ---------------------- */
+  countNext() { const n = randInt(1, 998); return numItem(`What number comes right after ${n}?`, n + 1, `After ${n} comes ${n + 1}.`); },
+  countBefore() { const n = randInt(2, 999); return numItem(`What number comes right before ${n}?`, n - 1, `Before ${n} comes ${n - 1}.`); },
+  skipCount() { const k = pick([2, 5, 10, 100]); const start = k * randInt(1, 6); const seq = [start, start + k, start + 2 * k, start + 3 * k]; return numItem(`Skip-count by ${k}:  ${seq.join(', ')}, ___`, start + 4 * k, `Keep adding ${k}: ${start + 4 * k}.`); },
+  skipBack() { const k = pick([2, 5, 10]); const start = k * randInt(6, 12); const seq = [start, start - k, start - 2 * k, start - 3 * k]; return numItem(`Count backward by ${k}:  ${seq.join(', ')}, ___`, start - 4 * k, `Keep subtracting ${k}: ${start - 4 * k}.`); },
+  compare2() { const max = pick([100, 1000]); const a = randInt(1, max), b = randInt(1, max); return mc(`Compare:  ${a}  ?  ${b}`, a > b ? '>' : a < b ? '<' : '=', a > b ? ['<', '='] : a < b ? ['>', '='] : ['>', '<'], `${a} ${a > b ? 'is greater than' : a < b ? 'is less than' : 'equals'} ${b}.`); },
+  greatest() { const a = randInt(10, 999), b = randInt(10, 999), c = randInt(10, 999); return mc(`Which number is the greatest?`, Math.max(a, b, c), [a, b, c].filter(x => x !== Math.max(a, b, c)).concat([Math.max(a, b, c) + 1]).slice(0, 3), `The greatest is ${Math.max(a, b, c)}.`); },
+  least() { const a = randInt(10, 999), b = randInt(10, 999), c = randInt(10, 999); return mc(`Which number is the least?`, Math.min(a, b, c), [a, b, c].filter(x => x !== Math.min(a, b, c)).concat([Math.max(0, Math.min(a, b, c) - 1)]).slice(0, 3), `The least is ${Math.min(a, b, c)}.`); },
+  evenOdd() { const n = randInt(1, 100); return mc(`Is ${n} even or odd?`, n % 2 === 0 ? 'Even' : 'Odd', [n % 2 === 0 ? 'Odd' : 'Even'], `${n} is ${n % 2 === 0 ? 'even' : 'odd'} (${n % 2 === 0 ? 'ends in 0,2,4,6,8' : 'ends in 1,3,5,7,9'}).`); },
+  doubles() { const n = randInt(1, 12); return numItem(`Double ${n}  (${n} + ${n})`, n + n, `${n} + ${n} = ${n + n}.`); },
+  makeTen() { const a = randInt(1, 9); return numItem(`${a} + ___ = 10`, 10 - a, `${a} + ${10 - a} = 10.`); },
+  addSmall() { const a = randInt(1, 9), b = randInt(1, 9); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); },
+  addThree() { const a = randInt(1, 9), b = randInt(1, 9), c = randInt(1, 9); return numItem(`${a} + ${b} + ${c}`, a + b + c, `${a} + ${b} + ${c} = ${a + b + c}.`); },
+  subSmall() { const a = randInt(5, 20), b = randInt(1, a); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
+  addTwoDigit() { const a = randInt(10, 89), b = randInt(10, 99 - a > 0 ? 99 - a : 10); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); },
+  subTwoDigit() { const a = randInt(20, 99), b = randInt(1, a); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
+  addThreeDigit() { const a = randInt(100, 800), b = randInt(10, 199); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); },
+  subThreeDigit() { const a = randInt(200, 999), b = randInt(10, a - 100); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
+  add10or100() { const a = randInt(100, 800); const k = pick([10, 100]); return numItem(`${a} + ${k}`, a + k, `Add ${k}: ${a + k}.`); },
+  placeTensOnes() { const t = randInt(1, 9), o = randInt(0, 9); return numItem(`${t} tens and ${o} ones make what number?`, t * 10 + o, `${t} tens = ${t * 10}, plus ${o} ones = ${t * 10 + o}.`); },
+  digitValue2() { const digits = [randInt(1, 9), randInt(0, 9), randInt(0, 9)]; const num = +digits.join(''); const pos = randInt(0, 2); const places = ['hundreds', 'tens', 'ones']; const val = digits[pos] * Math.pow(10, 2 - pos); return numItem(`In ${num}, what is the value of the ${digits[pos]} (in the ${places[pos]} place)?`, val, `${digits[pos]} in the ${places[pos]} place = ${val}.`); },
+  expand2() { const n = randInt(100, 999); const h = Math.floor(n / 100) * 100, t = Math.floor((n % 100) / 10) * 10, o = n % 10; const parts = [h, t, o].filter(x => x); return mc(`Which is ${n} in expanded form?`, parts.join(' + '), [[h, t + 1, o].filter(x => x).join(' + '), String(n), [h, o].filter(x => x).join(' + ') || '0'], `${n} = ${parts.join(' + ')}.`); },
+  regroup() { const t = randInt(1, 9), o = randInt(10, 19); const total = t * 10 + o; return numItem(`${t} tens and ${o} ones is the same as what number?`, total, `${t * 10} + ${o} = ${total} (regroup 10 ones into a ten).`); },
+  repeatedAdd() { const g = randInt(2, 5), s = randInt(2, 5); return numItem(`${g} groups of ${s}:  ${Array(g).fill(s).join(' + ')}`, g * s, `${g} groups of ${s} = ${g * s}.`); },
+  arrays() { const r = randInt(2, 5), c = randInt(2, 5); return numItem(`An array has ${r} rows of ${c}. How many in all?`, r * c, `${r} × ${c} = ${r * c}.`); },
+  factFamily() { const a = randInt(2, 9), b = randInt(2, 9); const s = a + b; return mc(`Which is in the fact family for ${a}, ${b}, and ${s}?`, `${s} − ${a} = ${b}`, [`${a} + ${s} = ${b}`, `${s} + ${a} = ${b}`, `${a} − ${b} = ${s}`], `Fact family: ${a}+${b}=${s}, ${b}+${a}=${s}, ${s}−${a}=${b}, ${s}−${b}=${a}.`); },
+  roundTen() { const n = randInt(11, 99); return numItem(`Round ${n} to the nearest ten.`, Math.round(n / 10) * 10, `${n} rounds to ${Math.round(n / 10) * 10}.`); },
+  roundTenHundred() { const n = randInt(101, 989); const k = pick([10, 100]); return numItem(`Round ${n} to the nearest ${k === 10 ? 'ten' : 'hundred'}.`, Math.round(n / k) * k, `${n} rounds to ${Math.round(n / k) * k}.`); },
+  estSum2() { const a = randInt(11, 89), b = randInt(11, 89); const ra = Math.round(a / 10) * 10, rb = Math.round(b / 10) * 10; return numItem(`Estimate ${a} + ${b} by rounding to the nearest ten.`, ra + rb, `${a}≈${ra}, ${b}≈${rb}. ${ra} + ${rb} = ${ra + rb}.`); },
+  estDiff2() { const a = randInt(40, 99), b = randInt(11, a); const ra = Math.round(a / 10) * 10, rb = Math.round(b / 10) * 10; return numItem(`Estimate ${a} − ${b} by rounding to the nearest ten.`, ra - rb, `${a}≈${ra}, ${b}≈${rb}. ${ra} − ${rb} = ${ra - rb}.`); },
+  coinValue() { const c = pick([['penny', 1], ['nickel', 5], ['dime', 10], ['quarter', 25]]); return mc(`How many cents is a ${c[0]} worth?`, c[1] + '¢', [1, 5, 10, 25].filter(x => x !== c[1]).slice(0, 3).map(x => x + '¢'), `A ${c[0]} = ${c[1]}¢.`); },
+  countCoins() { const p = randInt(0, 5), n = randInt(0, 4), d = randInt(0, 5); const total = p * 1 + n * 5 + d * 10; return numItem(`How many cents:  ${d} dimes, ${n} nickels, ${p} pennies?`, total, `${d}×10 + ${n}×5 + ${p}×1 = ${total}¢.`); },
+  makeDollar() { const c = randInt(5, 95); return numItem(`You have ${c}¢. How many more cents make $1 (100¢)?`, 100 - c, `100 − ${c} = ${100 - c}¢.`); },
+  makeChange() { const cost = randInt(10, 90), paid = 100; return numItem(`A toy costs ${cost}¢. You pay with $1 (100¢). How much change?`, paid - cost, `100 − ${cost} = ${paid - cost}¢.`); },
+  addMoney() { const a = randInt(10, 80), b = randInt(5, 100 - 10); return numItem(`${a}¢ + ${b}¢`, a + b, `${a} + ${b} = ${a + b}¢.`); },
+  timeAfter() { const h = randInt(1, 11), m = pick([15, 30, 45]); const tot = m; return { type: 'text', prompt: `What time is ${m} minutes after ${h}:00?  (write like ${h}:30)`, answer: `${h}:${String(m).padStart(2, '0')}`, explanation: `${m} minutes after ${h}:00 is ${h}:${String(m).padStart(2, '0')}.` }; },
+  relateTime() { const q = pick([['minutes are in an hour', 60], ['hours are in a day', 24], ['days are in a week', 7]]); return numItem(`How many ${q[0]}?`, q[1], `There are ${q[1]} ${q[0].split(' ')[0]}.`); },
+  amPm() { const q = pick([['eating breakfast at 8:00', 'A.M.'], ['going to bed at 9:00', 'P.M.'], ['the sun rising at 6:00', 'A.M.'], ['eating dinner at 7:00', 'P.M.']]); return mc(`Is ${q[0]} A.M. or P.M.?`, q[1], [q[1] === 'A.M.' ? 'P.M.' : 'A.M.'], `${q[0]} happens in the ${q[1] === 'A.M.' ? 'morning (A.M.)' : 'evening (P.M.)'}.`); },
+  months() { const MO = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']; const i = randInt(0, 10); return mc(`Which month comes right after ${MO[i]}?`, MO[i + 1], [MO[(i + 2) % 12], MO[(i + 11) % 12], MO[(i + 3) % 12]], `After ${MO[i]} comes ${MO[i + 1]}.`); },
+  readData() { const a = randInt(3, 9), b = randInt(1, a - 1); return numItem(`A chart shows 🐱 cats: ${a} and 🐶 dogs: ${b}. How many more cats than dogs?`, a - b, `${a} − ${b} = ${a - b}.`); },
+  measureUnit() { const q = pick([['a pencil', 'inches', 'feet'], ['a car', 'feet', 'inches'], ['a book', 'inches', 'yards'], ['a playground', 'yards', 'inches']]); return mc(`Which unit best measures the length of ${q[0]}?`, q[1], [q[2]], `${q[0]} is best measured in ${q[1]}.`); },
+  sides() { const shapes = [['triangle', 3], ['square', 4], ['rectangle', 4], ['pentagon', 5], ['hexagon', 6]]; const s = pick(shapes); return numItem(`How many sides does a ${s[0]} have?`, s[1], `A ${s[0]} has ${s[1]} sides.`); },
+  name2D() { const shapes = [[3, 'triangle'], [4, 'quadrilateral'], [5, 'pentagon'], [6, 'hexagon']]; const s = pick(shapes); return mc(`What is a shape with ${s[0]} sides called?`, s[1], shapes.filter(x => x[1] !== s[1]).map(x => x[1]), `${s[0]} sides → ${s[1]}.`); },
+  solid3D() { const solids = [['cube', 6, 12, 8], ['rectangular prism', 6, 12, 8], ['square pyramid', 5, 8, 5]]; const s = pick(solids); const kind = pick([['faces', 1], ['edges', 2], ['vertices', 3]]); const val = s[kind[1]]; return numItem(`How many ${kind[0]} does a ${s[0]} have?`, val, `A ${s[0]} has ${val} ${kind[0]}.`); },
+  name3D() { const q = pick([['a ball', 'sphere'], ['a can of soup', 'cylinder'], ['a dice', 'cube'], ['an ice cream cone', 'cone']]); return mc(`Which solid shape is like ${q[0]}?`, q[1], ['sphere', 'cylinder', 'cube', 'cone'].filter(x => x !== q[1]).slice(0, 3), `${q[0]} is shaped like a ${q[1]}.`); },
+  tileArea() { const r = randInt(2, 6), c = randInt(2, 6); return numItem(`A rectangle is ${r} squares tall and ${c} squares wide. How many squares cover it (the area)?`, r * c, `${r} × ${c} = ${r * c} squares.`); },
+  identFrac() { const d = pick([2, 3, 4, 8]), n = randInt(1, d); return { type: 'text', prompt: `A shape has ${d} equal parts. ${n} ${n === 1 ? 'part is' : 'parts are'} shaded. What fraction is shaded?  (write like 1/${d})`, answer: `${n}/${d}`, explanation: `${n} out of ${d} parts = ${n}/${d}.` }; },
+  fracParts() { const d = pick([2, 3, 4, 8]); const names = { 2: 'halves', 3: 'thirds', 4: 'fourths', 8: 'eighths' }; return numItem(`How many ${names[d]} make one whole?`, d, `It takes ${d} ${names[d]} to make a whole.`); },
+  producerConsumer() { const q = pick([['bakes bread to sell', 'Producer'], ['buys a toy at the store', 'Consumer'], ['grows vegetables to sell', 'Producer'], ['eats at a restaurant', 'Consumer']]); return mc(`A person who ${q[0]} is a...`, q[1], [q[1] === 'Producer' ? 'Consumer' : 'Producer'], `Someone who ${q[0]} is a ${q[1].toLowerCase()}.`); },
+  spendSave() { const q = pick([['putting money in a piggy bank', 'Saving'], ['buying candy', 'Spending'], ['keeping money for later', 'Saving'], ['paying for a movie ticket', 'Spending']]); return mc(`Is ${q[0]} spending or saving?`, q[1], [q[1] === 'Saving' ? 'Spending' : 'Saving'], `${q[0]} is ${q[1].toLowerCase()}.`); },
 };
 
 /* --------------------- map every skill to a generator -------------------- */
@@ -211,7 +262,7 @@ const PALETTE = ['#ff6b6b', '#4dabf7', '#20c997', '#f59f00', '#b197fc', '#ff922b
 const ICONS = ['🔢', '➕', '🔟', '✖️', '➗', '🧮', '🟰', '📝', '🧩', '🍕', '⚖️', '➖', '🔺', '🟦', '📐', '📊', '💰', '⏱️', '📏', '🌡️', '🔁', '🗺️', '🔤', '📈', '📉', '🔻', '⬛', '🟩', '🧊', '🏦'];
 
 // [unitId, unitName, [skill names...]]
-const UNITS = [
+const UNITS5 = [
   ['A', 'Whole numbers and place value', ['Convert between standard and expanded form', 'Place value', 'Relationship between place values', 'Write numbers in words', 'Spell word names for numbers up to one million', 'Roman numerals I, V, X, L, C, D, M']],
   ['B', 'Addition and subtraction', ['Estimate sums and differences of whole numbers', 'Estimate sums and differences: word problems', 'Add and subtract whole numbers', 'Add and subtract whole numbers: word problems', 'Complete addition and subtraction sentences', 'Properties of addition', 'Add using properties']],
   ['C', 'Powers of ten', ['Understanding powers of ten', 'Evaluate powers of ten', 'Write powers of ten with exponents']],
@@ -262,15 +313,151 @@ const UNITS = [
   ['VV', 'Financial literacy', ['Income and payroll taxes: understanding pay stubs', 'Income and payroll taxes: word problems', 'Sales and property taxes: word problems', 'Identify types of taxes', 'Understand gross and net income', 'Calculate gross and net income', 'Identify advantages and disadvantages of payment methods', 'Evaluate payment methods', 'Reading financial records', 'Keeping financial records', 'Balance a budget', 'Adjust a budget']],
 ];
 
-const CURRICULUM = {
-  subject: 'Grade 5 Mathematics',
-  standard: 'Full curriculum · IXL-aligned scope',
-  units: UNITS.map((u, i) => ({
-    id: u[0], name: u[1], color: PALETTE[i % PALETTE.length], icon: ICONS[i % ICONS.length],
-    skills: u[2].map((nm, j) => ({ id: u[0] + (j + 1), name: nm, gen: pickGen(u[0], nm) })),
-  })),
+/* ---------------------- Grade 2 skill → generator map -------------------- */
+function pickGen2(unitId, name) {
+  const s = name.toLowerCase();
+  const has = (...w) => w.some(x => s.includes(x));
+  if (has('roman numeral')) return 'roman';
+  if (has('skip-count', 'skip count') && has('back')) return 'skipBack';
+  if (has('skip-count', 'skip count', 'count forward', 'count backward')) return 'skipCount';
+  if (has('hundred chart', 'number line', 'count forward')) return 'countNext';
+  if (has('greatest')) return 'greatest';
+  if (has('least')) return 'least';
+  if (has('comparing', 'compare')) return 'compare2';
+  if (has('order')) return 'greatest';
+  if (has('spell', 'word names', 'in words', 'writing numbers')) return 'wordName';
+  if (has('even') || has('odd')) return 'evenOdd';
+  if (has('double')) return 'doubles';
+  if (has('make ten', 'make 10')) return 'makeTen';
+  if (has('fact famil', 'related')) return 'factFamily';
+  if (has('add in any order', 'properties', 'terms')) return 'factFamily';
+  if (has('repeated addition', 'equal groups')) return 'repeatedAdd';
+  if (has('array')) return 'arrays';
+  if (has('round') && has('hundred')) return 'roundTenHundred';
+  if (has('round')) return 'roundTen';
+  if (has('estimate') && has('sum')) return 'estSum2';
+  if (has('estimate') && has('difference')) return 'estDiff2';
+  if (has('estimate')) return 'roundTen';
+  // place value
+  if (has('regroup')) return 'regroup';
+  if (has('value of a digit', 'identify a digit', 'place value')) return 'digitValue2';
+  if (has('expanded form')) return 'expand2';
+  if (has('convert') && has('number')) return 'placeTensOnes';
+  // money
+  if (has('names and values', 'value') && has('coin')) return 'coinValue';
+  if (has('change')) return 'makeChange';
+  if (has('make a dollar', 'more to make')) return 'makeDollar';
+  if (has('add') && has('money')) return 'addMoney';
+  if (has('subtract') && has('money')) return 'addMoney';
+  if (has('count money', 'enough money', 'exchanging', 'least number of coins', 'money')) return 'countCoins';
+  // time / calendar
+  if (has('a.m.', 'p.m.')) return 'amPm';
+  if (has('relate time', 'time units')) return 'relateTime';
+  if (has('clock', 'write times', 'read clocks')) return 'timeAfter';
+  if (has('month', 'calendar', 'days in')) return 'months';
+  // data
+  if (has('tally', 'picture graph', 'bar graph', 'line plot', 'table', 'data', 'graph')) return 'readData';
+  // measurement
+  if (has('measure', 'length', 'inch', 'centimeter', 'metric', 'customary', 'unit')) return 'measureUnit';
+  // geometry
+  if (has('vertices', 'edges', 'faces') && has('three-dimensional', '3-d', 'solid', 'cube')) return 'solid3D';
+  if (has('three-dimensional', '3-d') && has('real world', 'real-world', 'name')) return 'name3D';
+  if (has('three-dimensional', 'cube', 'select three')) return 'solid3D';
+  if (has('count sides', 'sides and vertices')) return 'sides';
+  if (has('quadrilateral', 'pentagon', 'polygon', 'name polygons', 'classify polygons', 'two-dimensional')) return 'name2D';
+  if (has('area')) return 'tileArea';
+  if (has('perimeter')) return 'perimeter';
+  // fractions
+  if (has('make halves', 'make thirds', 'make fourths', 'make eighths', 'equal parts', 'make')) return 'fracParts';
+  if (has('identify') && (has('half', 'third', 'fourth', 'eighth'))) return 'identFrac';
+  if (has('count halves', 'count fourths', 'count')) return 'fracParts';
+  if (has('fraction', 'halves', 'thirds', 'fourths', 'eighths')) return 'identFrac';
+  // financial
+  if (has('producer', 'consumer', 'cost to produce')) return 'producerConsumer';
+  if (has('spend', 'saving', 'deposit', 'withdraw', 'borrow', 'lend')) return 'spendSave';
+  // add/subtract by digit
+  if (has('add') && has('three-digit', '3-digit', 'up to 1,000', 'up to three')) return 'add10or100';
+  if (has('subtract') && has('three-digit', '3-digit', 'across zeros', 'up to three')) return 'subThreeDigit';
+  if (has('add') && has('three') && has('digit')) return 'addThreeDigit';
+  if (has('add') && (has('two-digit', 'two digit', 'up to two', 'multiple of 10'))) return 'addTwoDigit';
+  if (has('subtract') && (has('two-digit', 'two digit', 'up to two'))) return 'subTwoDigit';
+  if (has('add three', 'add four', 'three one-digit', 'four')) return 'addThree';
+  if (has('add') && has('sums to 10')) return 'addSmall';
+  if (has('add')) return 'addSmall';
+  if (has('subtract')) return 'subSmall';
+  if (has('addition and subtraction', 'mixed', 'which sign', 'balance', 'true', 'ways to make', 'inequal')) return 'addTwoDigit';
+  // unit fallback
+  const byUnit = { A: 'countNext', B: 'compare2', C: 'skipCount', D: 'wordName', E: 'evenOdd', F: 'addSmall', G: 'addSmall', H: 'subSmall', I: 'subSmall', J: 'addSmall', K: 'addSmall', L: 'placeTensOnes', M: 'addTwoDigit', N: 'addTwoDigit', O: 'subTwoDigit', P: 'subTwoDigit', Q: 'addTwoDigit', R: 'addTwoDigit', S: 'addThreeDigit', T: 'addThreeDigit', U: 'subThreeDigit', V: 'subThreeDigit', W: 'add10or100', X: 'repeatedAdd', Y: 'factFamily', Z: 'roundTen', AA: 'countCoins', BB: 'addMoney', CC: 'countCoins', DD: 'timeAfter', EE: 'months', FF: 'readData', GG: 'measureUnit', HH: 'measureUnit', II: 'name2D', JJ: 'solid3D', KK: 'tileArea', LL: 'identFrac', MM: 'spendSave' };
+  return byUnit[unitId] || 'addSmall';
+}
+
+// Grade 2 tree — [unitId, unitName, [skill names...]]
+const UNITS2 = [
+  ['A', 'Counting', ['Hundred chart', 'Number lines - up to 100', 'Number lines - up to 1,000', 'Place numbers on number lines - up to 1,000', 'Count forward - up to 1,000']],
+  ['B', 'Comparing and ordering', ['Comparing numbers up to 100', 'Put numbers up to 100 in order', 'Compare numbers up to 1,000 using number lines', 'Comparing numbers up to 1,000', 'Compare and order numbers up to 1,000 using number lines', 'Put numbers up to 1,000 in order', 'Greatest and least - word problems - up to 100', 'Greatest and least - word problems - up to 1,000']],
+  ['C', 'Skip-counting and number patterns', ['Skip-count by twos', 'Skip-count by fives', 'Skip-count by tens', 'Skip-count by fives and tens', 'Skip-count by twos, fives, and tens', 'Skip-counting stories', 'Skip-counting sequences', 'Count forward and backward by fives and tens', 'Count forward and backward by twos, fives, and tens', 'Skip-counting puzzles', 'Count forward by tens - up to 1,000', 'Count forward by fives, tens, and hundreds', 'Count forward and backward by fives, tens, and hundreds', 'Count forward and backward by twos, fives, tens, and hundreds']],
+  ['D', 'Names of numbers', ['Spell word names for numbers up to 20', 'Writing numbers up to 100 in words - convert words to digits', 'Writing numbers up to 100 in words - convert digits to words', 'Writing numbers up to 1,000 in words - convert words to digits', 'Writing numbers up to 1,000 in words - convert digits to words', 'Writing numbers up to 1,000 in words', 'Roman numerals I, V, X']],
+  ['E', 'Even and odd', ['Even or odd number of shapes - up to 20', 'Identify even and odd numbers - up to 20', 'Addition sentences for even and odd numbers', 'Identify even and odd numbers - up to 40', 'Even or odd numbers on number lines', 'Identify even and odd numbers - up to 100', 'Select even and odd numbers - up to 100', 'Which even or odd number comes before or after?']],
+  ['F', 'Addition strategies: one digit', ['Add doubles using models', 'Add doubles', 'Add doubles - complete the sentence', 'Add near doubles', 'Addition sentences using number lines - sums to 20', 'Add by counting on - sums to 20', 'Make ten to add', 'Add zero']],
+  ['G', 'Addition: one digit', ['Add one-digit numbers - sums to 10', 'Add one-digit numbers - sums to 20', 'Sort addition facts - sums to 20', 'Addition word problems - sums to 20', 'Addition sentences for word problems - sums to 20', 'Complete the addition sentence - sums to 20', 'Balance addition equations - sums to 20', 'Which addition sentence is true? - sums to 20', 'Add three one-digit numbers', 'Addition word problems - three one-digit numbers', 'Add four or more one-digit numbers', 'Addition word problems - four or more one-digit numbers']],
+  ['H', 'Subtraction strategies: one digit', ['Subtract doubles', 'Subtraction sentences using number lines - up to 20', 'Subtract by counting back - up to 20', 'Use ten to subtract', 'Subtract by counting on - up to 20', 'Count on and use ten to subtract - up to 20', 'Subtract zero or all']],
+  ['I', 'Subtraction: one digit', ['Subtract one-digit numbers - up to 10', 'Subtract a one-digit number from a two-digit number up to 20', 'Subtraction word problems - up to 20', 'Subtraction sentences for word problems - up to 20', 'Complete the subtraction sentence - up to 20', 'Balance subtraction equations - up to 20', 'Which subtraction sentence is true? - up to 20']],
+  ['J', 'Mixed operations: one digit', ['Addition and subtraction sentences using number lines - up to 20', 'Addition and subtraction - up to 20', 'Ways to make a number using addition and subtraction - up to 20', 'Balance addition and subtraction equations - up to 20', 'Which addition or subtraction sentence is true? - up to 20', 'Write the addition or subtraction rule for an input/output table - up to 20']],
+  ['K', 'Mixed operations word problems: one digit', ['Comparison word problems - up to 20', 'Use models to solve addition and subtraction word problems - up to 20', 'Addition and subtraction word problems - up to 20', 'Write number sentences for word problems - up to 20', 'Match word problems to addition and subtraction sentences - up to 20', 'Two-step addition and subtraction word problems - up to 20', 'Solve word problems using guess-and-check - up to 20']],
+  ['L', 'Place value', ['Place value models - tens and ones', 'Place value models - up to hundreds', 'Place value models - up to thousands', 'Identify a digit up to the hundreds place', 'Value of a digit - tens and ones', 'Value of a digit - up to hundreds', 'Value of a digit - up to thousands', 'Convert to/from a number - tens and ones', 'Regroup tens and ones - ways to make a number', 'Regroup tens and ones', 'Convert to/from a number - up to hundreds', 'Convert between place values - ones and hundreds', 'Convert between place values - ones, tens, and hundreds', 'Convert from expanded form - up to hundreds', 'Convert between standard and expanded form', 'Regroup hundreds, tens, and ones - ways to make a number', 'Guess the number']],
+  ['M', 'Addition strategies: two digits', ['Break apart a one-digit number to add', 'Use models to add a two-digit and a one-digit number - without regrouping', 'Use models to add a two-digit and a one-digit number - with regrouping', 'Use number lines to add two-digit numbers', 'Break apart a two-digit number to add - sums to 100', 'Use compensation to add on a number line - up to two digits', 'Use compensation to add - up to two digits', 'Use models to add two-digit numbers - without regrouping', 'Use models to add two-digit numbers - with regrouping', 'Use place value to add two-digit numbers - without regrouping', 'Use place value to add two-digit numbers - with regrouping']],
+  ['N', 'Addition: two digits', ['Add a two-digit and a one-digit number - without regrouping', 'Add a two-digit and a one-digit number - with regrouping', 'Add a multiple of 10 to a two-digit number', 'Add two-digit numbers without regrouping - sums to 100', 'Add two-digit numbers with regrouping - sums to 100', 'Add two-digit numbers - sums to 100', 'Add two-digit numbers vertically - sums to 100', 'Addition word problems - up to two digits', 'Ways to make a number using addition', 'Complete the addition sentence - up to two digits', 'Write the addition sentence - up to two digits', 'Balance addition equations - up to two digits', 'Add two-digit numbers - sums to 200', 'Add two-digit numbers vertically - sums to 200', 'Add three numbers up to two digits each', 'Addition word problems - three numbers up to two digits each', 'Add four numbers up to two digits each', 'Add three or four numbers vertically - up to two digits each', 'Addition word problems - four numbers up to two digits each']],
+  ['O', 'Subtraction strategies: two digits', ['Break apart a one-digit number to subtract', 'Use models to subtract a one-digit number from a two-digit number - without regrouping', 'Use models to subtract a one-digit number from a two-digit number - with regrouping', 'Use number lines to subtract two-digit numbers', 'Break apart a two-digit number to subtract', 'Use compensation to subtract on a number line - up to two digits', 'Use compensation to subtract - up to two digits', 'Count on to subtract two-digit numbers', 'Use models to subtract two-digit numbers - without regrouping', 'Use models to subtract two-digit numbers - with regrouping', 'Use place value to subtract two-digit numbers - without regrouping', 'Use place value to subtract two-digit numbers - with regrouping']],
+  ['P', 'Subtraction: two digits', ['Subtract a one-digit number from a two-digit number - without regrouping', 'Subtract a one-digit number from a two-digit number - with regrouping', 'Subtract a one-digit number from a two-digit number', 'Subtract a multiple of 10 from a two-digit number', 'Subtract two-digit numbers - without regrouping', 'Subtract two-digit numbers - with regrouping', 'Subtract two-digit numbers', 'Subtract two-digit numbers vertically', 'Ways to make a number using subtraction', 'Subtraction word problems - up to two digits', 'Complete the subtraction sentence - up to two digits', 'Write the subtraction sentence - up to two digits', 'Balance subtraction equations - up to two digits']],
+  ['Q', 'Mixed operations: two digits', ['Add and subtract numbers - up to 100', 'Add and subtract with two-digit numbers vertically', 'Which sign (+ or -) makes the number sentence true? - up to 100', 'Ways to make a number using addition and subtraction - up to 100', 'Relate addition and subtraction sentences - up to two digits', 'Complete the addition or subtraction sentence - up to 100', 'Balance addition and subtraction equations - up to 100', 'Which addition or subtraction equation is true? - up to 100', 'Write addition and subtraction sentences', 'Inequalities with addition and subtraction - up to 100']],
+  ['R', 'Mixed operations word problems: two digits', ['Use models to solve addition and subtraction word problems - up to 100', 'Addition and subtraction word problems - up to 100', 'Match addition and subtraction word problems to equations - up to 100', 'Two-step addition and subtraction word problems - up to 100']],
+  ['S', 'Addition strategies: three digits', ['Use number lines to add three-digit numbers', 'Break apart a three-digit number to add', 'Use compensation to add - up to three digits', 'Use models to add three-digit numbers - without regrouping', 'Use models to add three-digit numbers - with regrouping', 'Use expanded form to add three-digit numbers - without regrouping', 'Use expanded form to add three-digit numbers - with regrouping', 'Use expanded form to add three-digit numbers']],
+  ['T', 'Addition: three digits', ['Add 10 or 100 to a three-digit number', 'Add a multiple of 100 to a three-digit number', 'Add a multiple of 10 or 100 to a three-digit number', 'Addition with three-digit numbers - without regrouping', 'Addition with three-digit numbers - with regrouping', 'Addition with three-digit numbers', 'Add three-digit numbers vertically', 'Addition word problems - up to three digits', 'Complete the addition sentence - up to three digits', 'Write the addition sentence - up to three digits', 'Addition up to three digits - fill in the missing digits', 'Balance addition equations - up to three digits']],
+  ['U', 'Subtraction strategies: three digits', ['Use number lines to subtract three-digit numbers', 'Break apart a three-digit number to subtract', 'Use compensation to subtract - up to three digits', 'Use models to subtract from three-digit numbers - without regrouping', 'Use models to subtract from three-digit numbers - with regrouping', 'Use expanded form to subtract three-digit numbers - without regrouping', 'Use expanded form to subtract three-digit numbers - with regrouping', 'Use expanded form to subtract three-digit numbers']],
+  ['V', 'Subtraction: three digits', ['Subtract 10 or 100 from a three-digit number', 'Subtract a multiple of 100 from a three-digit number', 'Subtract a multiple of 10 or 100 from a three-digit number', 'Subtract across zeros', 'Subtract from three-digit numbers - without regrouping', 'Subtract from three-digit numbers - with regrouping', 'Subtract from three-digit numbers', 'Subtract from three-digit numbers vertically', 'Subtraction word problems - up to three digits', 'Complete the subtraction sentence - up to three digits', 'Write the subtraction sentence - up to three digits', 'Balance subtraction equations - up to three digits']],
+  ['W', 'Mixed operations: three digits', ['Break apart a three-digit number to add or subtract', 'Use compensation to add or subtract - up to 1,000', 'Add and subtract numbers up to 1,000', 'Add and subtract with three-digit numbers vertically', 'Addition and subtraction word problems - up to 1,000', 'Solve inequalities using addition and subtraction shortcuts']],
+  ['X', 'Repeated addition', ['Count equal groups', 'Identify repeated addition for equal groups - sums to 25', 'Write addition sentences for equal groups - sums to 25', 'Identify repeated addition for arrays - sums to 25', 'Write addition sentences for arrays - sums to 25', 'Solve word problems using repeated addition - sums to 25', 'Write stories involving repeated addition - sums to 25']],
+  ['Y', 'Properties', ['Add in any order', 'Related addition facts', 'Related subtraction facts', 'Fact families', 'Addition and subtraction terms']],
+  ['Z', 'Estimation and rounding', ['Estimate to the nearest ten', 'Round to the nearest ten', 'Round to the nearest ten or hundred', 'Estimate sums', 'Estimate differences']],
+  ['AA', 'Money up to $1', ['Names and values of common coins', 'Names and values of all coins', 'Count money - groups of like coins', 'Count money - pennies, nickels, and dimes only', 'Count money up to $1', 'Equivalent amounts of money up to $1', 'Exchanging money - with pictures', 'Exchanging money', 'Exchanging money II', 'Least number of coins', 'Do you have enough money? - up to $1', 'How much more to make a dollar?', 'Correct amount of change', 'Making change']],
+  ['BB', 'Add and subtract money up to $1', ['Add money up to $1', 'Add money up to $1: word problems', 'Subtract money up to $1', 'Subtract money up to $1: word problems', 'Add and subtract money up to $1', 'Add and subtract money up to $1: word problems']],
+  ['CC', 'Money up to $100', ['Count money up to $5', 'Do you have enough money? - up to $5', 'Which picture shows more? - up to $5', 'Count money up to $100 - bills', 'Count money up to $100']],
+  ['DD', 'Time', ['Match digital clocks and times', 'Match analog clocks and times', 'Match analog and digital clocks', 'Read clocks and write times: hour and half hour', 'Read clocks and write times', 'A.M. or P.M.', 'Compare clocks', 'Relate time units']],
+  ['EE', 'Calendars', ['Months of the year', 'Read a calendar I', 'Read a calendar II', 'Number of days in each month']],
+  ['FF', 'Data and graphs', ['Which tally chart is correct?', 'Interpret tally charts', 'Create picture graphs', 'Interpret picture graphs', 'Record data in tables', 'Interpret data in tables', 'Create bar graphs', 'Interpret bar graphs I', 'Interpret bar graphs II', 'Which bar graph is correct?', 'Create line plots', 'Interpret line plots']],
+  ['GG', 'Customary units of length', ['Measure length with inch cubes', 'Measure using an inch ruler', 'Measure to compare length in inches', 'Estimate lengths with inches and feet', 'Estimate lengths with inches, feet, and yards', 'Measure with different customary units: inches, feet, and yards', 'Which customary unit of length is appropriate: inches or feet?', 'Which customary unit of length is appropriate: inches, feet, or yards?', 'Choose the best measuring tool: customary units of length', 'Compare lengths: customary units', 'Customary units of length: word problems']],
+  ['HH', 'Metric units of length', ['Measure using a centimeter ruler', 'Measure to compare length in centimeters', 'Estimate lengths with centimeters and meters', 'Measure with different metric units', 'Which metric unit of length is appropriate?', 'Choose the best measuring tool: metric units of length', 'Compare lengths: metric units', 'Metric units of length: word problems']],
+  ['II', 'Two-dimensional shapes', ['Count sides and vertices', 'Identify quadrilaterals', 'Identify pentagons', 'Name polygons: up to 6 sides', 'Classify polygons: up to 6 sides', 'Name polygons: up to 12 sides', 'Classify polygons: up to 12 sides', 'Sort two-dimensional shapes', 'Draw polygons', 'Compose two-dimensional shapes']],
+  ['JJ', 'Three-dimensional shapes', ['Cubes', 'Select three-dimensional shapes', 'Name the three-dimensional shape', 'Count vertices, edges, and faces', 'Compare vertices, edges, and faces', 'Identify faces of three-dimensional shapes', 'Identify shapes traced from solids', 'Sort three-dimensional shapes', 'Three-dimensional shapes in the real world I', 'Three-dimensional shapes in the real world II', 'Three-dimensional shapes in real-world objects']],
+  ['KK', 'Area and perimeter', ['Tile a rectangle with squares', 'Count the number of squares in a rectangle', 'Area', 'Find the perimeter of a rectangle using centimeter cubes']],
+  ['LL', 'Fractions', ['Equal parts', 'Identify halves', 'Identify thirds', 'Identify fourths', 'Identify eighths', 'Identify halves, thirds, and fourths', 'Identify halves, fourths, and eighths', 'Make halves', 'Make thirds', 'Make fourths', 'Make eighths', 'Make halves, thirds, and fourths', 'Make halves, fourths, and eighths', 'Make halves, thirds, and fourths in different ways', 'Make halves, fourths, and eighths in different ways', 'Identify a half, a third, and a fourth', 'Identify a half, a fourth, and an eighth', 'Count halves, fourths, and eighths beyond one whole']],
+  ['MM', 'Financial literacy', ['Spending and saving money', 'Deposits and withdrawals', 'Borrowing and lending money', 'Producers and consumers', 'Cost to produce an item']],
+];
+
+function buildCurriculum(subject, standard, units, mapper) {
+  const cur = {
+    subject, standard,
+    units: units.map((u, i) => ({
+      id: u[0], name: u[1], color: PALETTE[i % PALETTE.length], icon: ICONS[i % ICONS.length],
+      skills: u[2].map((nm, j) => ({ id: u[0] + (j + 1), name: nm, gen: mapper(u[0], nm) })),
+    })),
+  };
+  cur.allSkills = cur.units.flatMap(u => u.skills.map(s => ({ ...s, unitId: u.id, unitName: u.name, color: u.color })));
+  return cur;
+}
+const CURRICULA = {
+  g5: buildCurriculum('Grade 5 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS5, pickGen),
+  g2: buildCurriculum('Grade 2 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS2, pickGen2),
 };
-const ALL_SKILLS = CURRICULUM.units.flatMap(u => u.skills.map(s => ({ ...s, unitId: u.id, unitName: u.name, color: u.color })));
+const GRADES = [
+  { id: 'g2', label: 'Grade 2', short: 'G2' },
+  { id: 'g5', label: 'Grade 5', short: 'G5' },
+];
+// active curriculum (mutable) — the app rebinds these to whichever student is in view
+let CURRICULUM = CURRICULA.g5;
+let ALL_SKILLS = CURRICULA.g5.allSkills;
+let ACTIVE_GRADE = 'g5';
+function setActiveGrade(grade) { const g = CURRICULA[grade] ? grade : 'g5'; CURRICULUM = CURRICULA[g]; ALL_SKILLS = CURRICULA[g].allSkills; ACTIVE_GRADE = g; return g; }
 function generateItem(genName) { return (GEN[genName] || GEN.addSub)(); }
 
-if (typeof module !== 'undefined') { module.exports = { CURRICULUM, ALL_SKILLS, GEN, generateItem, pickGen, gcd, reduceFrac }; }
+if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }
