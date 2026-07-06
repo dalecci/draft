@@ -60,10 +60,10 @@ function awardCoins(stu, n) { stu.games.coins = (stu.games.coins || 0) + n; }
 
 /* -------- stats + badges -------- */
 function playerStats(stu) {
-  let attempts = 0, correct = 0, mastered = 0;
-  for (const s of ALL_SKILLS) { const p = stu.progress[s.id]; if (p) { attempts += p.attempts; correct += p.correct; if (p.masteredAt) mastered++; } }
+  let attempts = 0, correct = 0, mastered = 0, stretchMastered = 0;
+  for (const s of ALL_SKILLS) { const p = stu.progress[s.id]; if (p) { attempts += p.attempts; correct += p.correct; if (p.masteredAt) mastered++; if (p.stretch && p.stretch.masteredAt) stretchMastered++; } }
   const unitsCleared = CURRICULUM.units.filter(u => u.skills.every(s => stu.progress[s.id]?.masteredAt)).length;
-  return { attempts, correct, mastered, unitsCleared, acc: attempts ? correct / attempts : 0 };
+  return { attempts, correct, mastered, stretchMastered, unitsCleared, acc: attempts ? correct / attempts : 0 };
 }
 const BADGES = [
   // mastery ladder
@@ -111,6 +111,10 @@ const BADGES = [
   { id: 'level20', emoji: '🏆', name: 'Hall of Famer', desc: 'Reach level 20', test: (s) => levelInfo(s.games.xp).level >= 20 },
   // writing
   { id: 'writer', emoji: '📝', name: 'Wordsmith', desc: 'Submit a piece of writing', test: (s) => (s.writing?.length || 0) >= 1 },
+  // above grade level (Grade 6 stretch)
+  { id: 'stretch1', emoji: '🔥', name: 'Above & Beyond', desc: 'Master a skill to Grade 6 level', test: (s, st) => st.stretchMastered >= 1 },
+  { id: 'stretch10', emoji: '💎', name: 'Overachiever', desc: '10 skills at Grade 6 level', test: (s, st) => st.stretchMastered >= 10 },
+  { id: 'stretch25', emoji: '🚀', name: 'Ahead of the Class', desc: '25 skills at Grade 6 level', test: (s, st) => st.stretchMastered >= 25 },
 ];
 function refreshBadges(stu) {
   const st = playerStats(stu);

@@ -170,7 +170,34 @@ const GEN = {
   fracParts() { const d = pick([2, 3, 4, 8]); const names = { 2: 'halves', 3: 'thirds', 4: 'fourths', 8: 'eighths' }; return numItem(`How many ${names[d]} make one whole?`, d, `It takes ${d} ${names[d]} to make a whole.`); },
   producerConsumer() { const q = pick([['bakes bread to sell', 'Producer'], ['buys a toy at the store', 'Consumer'], ['grows vegetables to sell', 'Producer'], ['eats at a restaurant', 'Consumer']]); return mc(`A person who ${q[0]} is a...`, q[1], [q[1] === 'Producer' ? 'Consumer' : 'Producer'], `Someone who ${q[0]} is a ${q[1].toLowerCase()}.`); },
   spendSave() { const q = pick([['putting money in a piggy bank', 'Saving'], ['buying candy', 'Spending'], ['keeping money for later', 'Saving'], ['paying for a movie ticket', 'Spending']]); return mc(`Is ${q[0]} spending or saving?`, q[1], [q[1] === 'Saving' ? 'Spending' : 'Saving'], `${q[0]} is ${q[1].toLowerCase()}.`); },
+
+  /* ---------------- GRADE 6 "stretch" generators (above grade level) ------- */
+  st_integers() { const a = randInt(-25, 25), b = randInt(-25, 25); const op = pick(['+', '−', '×']); const ans = op === '+' ? a + b : op === '−' ? a - b : a * b; return numItem(`${a < 0 ? '(' + a + ')' : a} ${op} ${b < 0 ? '(' + b + ')' : b}`, ans, `Mind the signs → ${ans}.`); },
+  st_multiply() { const a = randInt(100, 999), b = randInt(11, 99); return numItem(`${a} × ${b}`, a * b, `${a} × ${b} = ${a * b}.`); },
+  st_divide() { const d = randInt(12, 40), q = randInt(11, 99); return numItem(`${d * q} ÷ ${d}`, q, `${d * q} ÷ ${d} = ${q}.`); },
+  st_orderOps() { const a = randInt(2, 6), b = randInt(2, 5), c = randInt(2, 6), d = randInt(2, 5); const ans = a * (b + c) - d * d; return numItem(`${a} × (${b} + ${c}) − ${d}²`, ans, `(${b}+${c})=${b + c}; ×${a}=${a * (b + c)}; ${d}²=${d * d}; = ${ans}.`); },
+  st_fracMultDiv() { const n1 = randInt(1, 5), d1 = randInt(2, 6), n2 = randInt(1, 5), d2 = randInt(2, 6); if (Math.random() < 0.5) return { type: 'text', prompt: `Multiply (lowest terms):  ${n1}/${d1} × ${n2}/${d2}`, answer: fracStr(n1 * n2, d1 * d2), explanation: `${n1 * n2}/${d1 * d2} = ${fracStr(n1 * n2, d1 * d2)}.` }; return { type: 'text', prompt: `Divide (lowest terms):  ${n1}/${d1} ÷ ${n2}/${d2}`, answer: fracStr(n1 * d2, d1 * n2), explanation: `× reciprocal: ${n1}/${d1} × ${d2}/${n2} = ${fracStr(n1 * d2, d1 * n2)}.` }; },
+  st_decimals() { const a = +(randInt(11, 99) / 10).toFixed(1), b = +(randInt(11, 99) / 10).toFixed(1); const ans = +(a * b).toFixed(2); return numItem(`${a} × ${b}`, ans, `${a} × ${b} = ${ans}.`, 0.02); },
+  st_placeValue() { const digits = Array.from({ length: 7 }, (_, i) => i === 0 ? randInt(1, 9) : randInt(0, 9)); const num = +digits.join(''); const pos = randInt(0, 6); const val = digits[pos] * Math.pow(10, 6 - pos); const places = ['millions', 'hundred thousands', 'ten thousands', 'thousands', 'hundreds', 'tens', 'ones']; return numItem(`In ${num.toLocaleString()}, what is the value of the ${digits[pos]} in the ${places[pos]} place?`, val, `${digits[pos]} × ${Math.pow(10, 6 - pos).toLocaleString()} = ${val.toLocaleString()}.`); },
+  st_area() { const a = randInt(2, 10), b = randInt(2, 10), c = randInt(2, 10), d = randInt(2, 10); return numItem(`A compound shape is a ${a}×${b} rectangle joined to a ${c}×${d} rectangle. Total area?`, a * b + c * d, `${a}×${b} + ${c}×${d} = ${a * b} + ${c * d} = ${a * b + c * d}.`); },
+  st_stats() { const n = 4; const vals = Array.from({ length: n - 1 }, () => randInt(2, 20)); const meanTarget = randInt(6, 14); const missing = meanTarget * n - vals.reduce((a, b) => a + b, 0); if (missing < 0 || missing > 40) return GEN.mean(); return numItem(`The mean of ${n} numbers is ${meanTarget}. Three of them are ${vals.join(', ')}. Find the 4th.`, missing, `Total must be ${meanTarget}×${n}=${meanTarget * n}; − ${vals.reduce((a, b) => a + b)} = ${missing}.`); },
+  st_lcmgcf() { const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9); return numItem(`Find the LCM of ${a}, ${b}, and ${c}.`, lcm(lcm(a, b), c), `LCM(${a},${b},${c}) = ${lcm(lcm(a, b), c)}.`); },
 };
+
+// which base (Grade 5) generator gets an above-grade "Grade 6" stretch variant
+const STRETCH_MAP = {
+  addSub: 'st_integers', estimateSum: 'st_integers',
+  multiply: 'st_multiply', multBig: 'st_multiply', multZeros: 'st_multiply', multPowTen: 'st_multiply',
+  divide: 'st_divide', divBig: 'st_divide', divRem: 'st_divide', divZeros: 'st_divide',
+  orderOps: 'st_orderOps', evalVar: 'st_orderOps', writeExpr: 'st_orderOps',
+  equivFrac: 'st_fracMultDiv', simplify: 'st_fracMultDiv', addFrac: 'st_fracMultDiv', addMixed: 'st_fracMultDiv', multFrac: 'st_fracMultDiv', multFracWhole: 'st_fracMultDiv', fracOfNum: 'st_fracMultDiv', divFrac: 'st_fracMultDiv', cmpFrac: 'st_fracMultDiv', impropMixed: 'st_fracMultDiv', reciprocal: 'st_fracMultDiv',
+  addDec: 'st_decimals', multDec: 'st_decimals', divDec: 'st_decimals', multDecPow: 'st_decimals', divDecPow: 'st_decimals', roundDec: 'st_decimals', cmpDec: 'st_decimals', convFracDec: 'st_decimals',
+  placeValue: 'st_placeValue', expanded: 'st_placeValue', powTen: 'st_placeValue', powTenExp: 'st_placeValue',
+  perimeter: 'st_area', area: 'st_area', volume: 'st_area',
+  mean: 'st_stats', median: 'st_stats', mode: 'st_stats', range: 'st_stats',
+  lcmGen: 'st_lcmgcf', gcfGen: 'st_lcmgcf', factors: 'st_lcmgcf', multiples: 'st_lcmgcf', primeFact: 'st_lcmgcf',
+};
+function stretchGenName(baseGen) { return STRETCH_MAP[baseGen] || null; }
 
 /* --------------------- map every skill to a generator -------------------- */
 function pickGen(unitId, name) {
@@ -460,4 +487,4 @@ let ACTIVE_GRADE = 'g5';
 function setActiveGrade(grade) { const g = CURRICULA[grade] ? grade : 'g5'; CURRICULUM = CURRICULA[g]; ALL_SKILLS = CURRICULA[g].allSkills; ACTIVE_GRADE = g; return g; }
 function generateItem(genName) { return (GEN[genName] || GEN.addSub)(); }
 
-if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }
+if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, STRETCH_MAP, stretchGenName, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }

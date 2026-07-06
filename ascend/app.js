@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 19; // shown on every screen so you can confirm the running version
+const APP_BUILD = 20; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -131,23 +131,40 @@ function recordAnswer(stu, skill, correct, seconds) {
   return newlyMastered;
 }
 
+// above-grade "Grade 6" track — a separate score on the same skill
+function recordStretch(stu, skill, correct) {
+  const p = stu.progress[skill.id] || (stu.progress[skill.id] = { score: 0, attempts: 0, correct: 0, masteredAt: null });
+  const st = p.stretch || (p.stretch = { score: 0, attempts: 0, correct: 0, masteredAt: null });
+  st.attempts++; if (correct) st.correct++;
+  st.score = Math.max(0, Math.min(100, st.score + (correct ? 14 : -10)));
+  let newly = false;
+  if (st.score >= 100 && !st.masteredAt) { st.masteredAt = now(); newly = true; }
+  return newly;
+}
+function stretchGenFor(skill) { return skill ? stretchGenName(skill.gen) : null; }
+
 // central hook: records the answer AND all engagement (xp, coins, quests, streak, badges)
-function handleAnswer(stu, skill, correct, seconds) {
+// `stretch` = the above-grade (Grade 6) track
+function handleAnswer(stu, skill, correct, seconds, stretch) {
   const beforeLvl = levelInfo(stu.games.xp).level;
-  const mastered = recordAnswer(stu, skill, correct, seconds);
+  let mastered = false, stretchMastered = false;
+  if (stretch) stretchMastered = recordStretch(stu, skill, correct);
+  else mastered = recordAnswer(stu, skill, correct, seconds);
   ensureDailies(stu);
-  awardXP(stu, correct ? 8 : 2); awardCoins(stu, correct ? 1 : 0);
+  awardXP(stu, correct ? (stretch ? 14 : 8) : 2); awardCoins(stu, correct ? (stretch ? 2 : 1) : 0); // stretch pays bonus
   bumpQuest(stu, 'answer', 1); if (correct) bumpQuest(stu, 'correct', 1);
   if (mastered) { awardXP(stu, 40); awardCoins(stu, 8); bumpQuest(stu, 'master', 1); }
+  if (stretchMastered) { awardXP(stu, 60); awardCoins(stu, 15); }
   touchStreak(stu);
   const newBadges = refreshBadges(stu);
   const leveledUp = levelInfo(stu.games.xp).level > beforeLvl;
-  return { mastered, newBadges, leveledUp };
+  return { mastered, stretchMastered, newBadges, leveledUp };
 }
 
 // celebration: confetti + a short toast for level-ups / new badges / mastery
 function celebrate(cel) {
   if (!cel) return;
+  if (cel.stretchMastered) { confetti(['🔥', '💎', '⭐', '🚀']); toast('🔥 GRADE 6 mastered — above grade level!'); return; }
   if (cel.leveledUp) { confetti(); toast(`⬆️ Level up! You're now a ${levelInfo(STATE.students[STATE.currentUserId].games.xp).title}!`); }
   else if (cel.newBadges && cel.newBadges.length) { confetti(); toast(`${cel.newBadges[0].emoji} Badge unlocked: ${cel.newBadges[0].name}!`); }
   else if (cel.mastered) { confetti(['⭐', '🏀', '✨']); toast('⭐ Skill mastered!'); }
@@ -363,15 +380,22 @@ function renderPractice() {
   wrap.append(topbar(stu, true));
   if (!skill) { wrap.append(el('div', { class: 'card' }, '🏆 All done!')); wrap.append(navbar('home')); return wrap; }
 
-  if (!PRACTICE || PRACTICE.skillId !== skill.id) PRACTICE = { skillId: skill.id, item: generateItem(skill.gen), start: now(), streak: 0, answered: 0 };
   const p = stu.progress[skill.id] || { score: 0 };
-  const card = el('div', { class: 'card practice' });
+  const stretchGen = stretchGenFor(skill);
+  const canStretch = !!stretchGen && !!p.masteredAt;      // Grade 6 unlocks after on-grade mastery
+  const adv = !!VIEW.stretch && canStretch;               // are we in Advanced mode right now?
+
+  if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: generateItem(adv ? stretchGen : skill.gen), start: now(), streak: 0, answered: 0 };
+  const sp = p.stretch || { score: 0 };
+  const card = el('div', { class: 'card practice' + (adv ? ' advanced' : '') });
+  if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 GRADE 6 · Above grade level'));
   card.append(el('div', { class: 'practice-top' }, [
     el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName),
     el('button', { class: 'mini', onclick: () => go('lesson', { skill: skill.id, then: 'practice' }) }, '📖 Learn'),
   ]));
   card.append(el('h2', {}, skill.name));
-  card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
+  if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 Grade 6 SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
+  else card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
 
   const item = PRACTICE.item;
   card.append(el('div', { class: 'q', html: item.prompt }));
@@ -382,16 +406,18 @@ function renderPractice() {
     PRACTICE.locked = true;
     const secs = Math.max(2, Math.round((now() - PRACTICE.start) / 1000));
     const ok = checkAnswer(item, val);
-    if (!ok) recordMiss(stu, skill, item, val);
-    const cel = handleAnswer(stu, skill, ok, secs);
-    const asg = openAssignment(stu, skill.id);
-    if (asg) { asg.remaining = Math.max(0, asg.remaining - 1); if (ok) asg.correct++; if (asg.remaining <= 0) asg.status = 'done'; }
+    if (!ok && !adv) recordMiss(stu, skill, item, val);
+    const cel = handleAnswer(stu, skill, ok, secs, adv);
+    if (!adv) { const asg = openAssignment(stu, skill.id); if (asg) { asg.remaining = Math.max(0, asg.remaining - 1); if (ok) asg.correct++; if (asg.remaining <= 0) asg.status = 'done'; } }
     persist();
     celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
-    const next = el('button', { class: 'btn primary', onclick: () => { PRACTICE = null; go('practice', { skill: stu.progress[skill.id].masteredAt ? undefined : skill.id }); } }, stu.progress[skill.id]?.masteredAt ? '🎉 Skill mastered — continue' : 'Next question ▶');
-    feedback.append(next);
+    const mastered = adv ? stu.progress[skill.id].stretch?.masteredAt : stu.progress[skill.id].masteredAt;
+    const label = mastered ? (adv ? '🔥 Grade 6 mastered — continue' : '🎉 Skill mastered — continue') : 'Next question ▶';
+    feedback.append(el('button', { class: 'btn primary', onclick: () => { PRACTICE = null; go('practice', adv ? { skill: skill.id, stretch: true } : { skill: mastered ? undefined : skill.id }); } }, label));
+    // after on-grade mastery, offer the Grade 6 challenge
+    if (!adv && stu.progress[skill.id].masteredAt && stretchGen) feedback.append(el('button', { class: 'btn stretch-btn', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, '🔥 Try the Grade 6 Challenge'));
   };
 
   if (item.type === 'mc') {
@@ -404,6 +430,9 @@ function renderPractice() {
     setTimeout(() => inp.focus(), 30);
   }
   card.append(feedback);
+  // entry point to Advanced mode (before answering) when the skill is already mastered
+  if (canStretch && !adv) card.append(el('button', { class: 'btn stretch-btn wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, `🔥 Grade 6 Challenge  ·  ${sp.masteredAt ? 'mastered ✓' : (sp.score || 0) + '/100'}`));
+  if (adv) card.append(el('button', { class: 'btn ghost wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }, '← Back to grade level'));
   wrap.append(card);
   wrap.append(navbar('practice'));
   return wrap;
@@ -431,7 +460,7 @@ function renderProgress() {
       skills.append(el('div', { class: 'skill-line' }, [
         el('span', { class: 'skill-nm' }, s.name),
         el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${u.color}` })),
-        p.masteredAt ? el('span', { class: 'star' }, '⭐') : el('button', { class: 'mini', onclick: () => startSkill(s.id) }, stu.games.taught[s.id] ? 'practice' : '📖 learn'),
+        p.stretch?.masteredAt ? el('span', { class: 'star', title: 'Grade 6 mastered' }, '🔥') : p.masteredAt ? el('span', { class: 'star', title: 'mastered' }, '⭐') : el('button', { class: 'mini', onclick: () => startSkill(s.id) }, stu.games.taught[s.id] ? 'practice' : '📖 learn'),
       ]));
     });
   });
@@ -1261,6 +1290,8 @@ function coachReport(stu) {
     const loc = skillLoc(top[0]);
     if (loc) lines.push(`❌ Most-missed: “${loc.skill.name}” (${top[1]}×) — worth reviewing the concept and re-practicing.`);
   }
+  const stretchN = ALL_SKILLS.filter(s => stu.progress[s.id]?.stretch?.masteredAt).length;
+  if (stretchN) lines.push(`🔥 Reached Grade 6 (above grade level) in ${stretchN} skill${stretchN > 1 ? 's' : ''} — ready to be stretched further.`);
   const faded = fadedSkills(stu);
   if (faded.length) lines.push(`⏳ ${faded.length} mastered topic(s) are starting to fade — a quick refresh keeps them sharp for the FAST test.`);
   const streak = stu.games.streak?.count || 0;
