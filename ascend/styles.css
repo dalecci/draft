@@ -367,3 +367,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .tile-stat b { display: block; font-size: 19px; color: var(--primary-d); }
 .tile-stat span { font-size: 11px; color: var(--muted); font-weight: 700; }
 .tile-cta { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: 4px; }
+
+/* daily / weekly goal card */
+.goal-card { border: 2px solid var(--good); }
+.goal-card.goal-complete { background: linear-gradient(180deg, rgba(18,184,134,.10), var(--card)); }
+.goal-head { font-weight: 800; font-size: 16px; margin-bottom: 10px; }
+.goal-row { margin: 8px 0; }
+.goal-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.goal-hit { color: var(--good); }
+.data-card p { margin: 6px 0 12px; }

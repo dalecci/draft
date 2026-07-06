@@ -22,13 +22,13 @@ function _hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + 
 
 /* -------- daily quests -------- */
 const QUEST_POOL = [
-  { id: 'answer10', type: 'answer', text: 'Answer 10 questions', goal: 10, reward: 20 },
-  { id: 'correct8', type: 'correct', text: 'Get 8 correct answers', goal: 8, reward: 25 },
-  { id: 'master1', type: 'master', text: 'Master a new skill', goal: 1, reward: 40 },
-  { id: 'sprint1', type: 'sprint', text: 'Play a Math Sprint', goal: 1, reward: 20 },
-  { id: 'boss1', type: 'boss', text: 'Battle a boss', goal: 1, reward: 30 },
-  { id: 'write1', type: 'write', text: 'Write & get feedback', goal: 1, reward: 25 },
-  { id: 'correct15', type: 'correct', text: 'Get 15 correct answers', goal: 15, reward: 40 },
+  { id: 'answer10', type: 'answer', text: 'Answer 10 questions', goal: 10, reward: 8 },
+  { id: 'correct8', type: 'correct', text: 'Get 8 correct answers', goal: 8, reward: 10 },
+  { id: 'master1', type: 'master', text: 'Master a new skill', goal: 1, reward: 15 },
+  { id: 'sprint1', type: 'sprint', text: 'Play a Math Sprint', goal: 1, reward: 8 },
+  { id: 'boss1', type: 'boss', text: 'Take on a boss', goal: 1, reward: 12 },
+  { id: 'write1', type: 'write', text: 'Write & get feedback', goal: 1, reward: 10 },
+  { id: 'correct15', type: 'correct', text: 'Get 15 correct answers', goal: 15, reward: 15 },
 ];
 function dailyQuests(key) {
   const idx = [...QUEST_POOL.keys()]; let seed = _hash(key) || 7; const out = [];
@@ -66,18 +66,51 @@ function playerStats(stu) {
   return { attempts, correct, mastered, unitsCleared, acc: attempts ? correct / attempts : 0 };
 }
 const BADGES = [
+  // mastery ladder
   { id: 'first_master', emoji: '🌱', name: 'First Steps', desc: 'Master your first skill', test: (s, st) => st.mastered >= 1 },
   { id: 'five_master', emoji: '🖐️', name: 'High Five', desc: 'Master 5 skills', test: (s, st) => st.mastered >= 5 },
-  { id: 'unit_clear', emoji: '🏅', name: 'Topic Cleared', desc: 'Master a whole unit', test: (s, st) => st.unitsCleared >= 1 },
-  { id: 'all_clear', emoji: '👑', name: 'Full Sweep', desc: 'Master every unit', test: (s, st) => st.unitsCleared >= CURRICULUM.units.length },
+  { id: 'ten_master', emoji: '🔟', name: 'Double Digits', desc: 'Master 10 skills', test: (s, st) => st.mastered >= 10 },
+  { id: 'm25', emoji: '⭐', name: 'Rising Star', desc: 'Master 25 skills', test: (s, st) => st.mastered >= 25 },
+  { id: 'm50', emoji: '🌟', name: 'Halfway Hero', desc: 'Master 50 skills', test: (s, st) => st.mastered >= 50 },
+  { id: 'm100', emoji: '💯', name: 'Century Club', desc: 'Master 100 skills', test: (s, st) => st.mastered >= 100 },
+  { id: 'm150', emoji: '🚀', name: 'Launch Speed', desc: 'Master 150 skills', test: (s, st) => st.mastered >= 150 },
+  { id: 'm200', emoji: '🏆', name: 'Two Hundred', desc: 'Master 200 skills', test: (s, st) => st.mastered >= 200 },
+  { id: 'm300', emoji: '💎', name: 'Diamond Mind', desc: 'Master 300 skills', test: (s, st) => st.mastered >= 300 },
+  { id: 'm_all', emoji: '👑', name: 'Grade 5 Champion', desc: `Master all ${ALL_SKILLS.length} skills`, test: (s, st) => st.mastered >= ALL_SKILLS.length },
+  // topics cleared
+  { id: 'unit_clear', emoji: '🏅', name: 'Topic Cleared', desc: 'Master a whole topic', test: (s, st) => st.unitsCleared >= 1 },
+  { id: 'u5', emoji: '🎖️', name: 'Five Topics', desc: 'Clear 5 topics', test: (s, st) => st.unitsCleared >= 5 },
+  { id: 'u10', emoji: '🥇', name: 'Ten Topics', desc: 'Clear 10 topics', test: (s, st) => st.unitsCleared >= 10 },
+  { id: 'u24', emoji: '🏵️', name: 'Halfway There', desc: 'Clear half the topics', test: (s, st) => st.unitsCleared >= 24 },
+  { id: 'all_clear', emoji: '🎓', name: 'Full Sweep', desc: 'Clear every topic', test: (s, st) => st.unitsCleared >= CURRICULUM.units.length },
+  // volume
+  { id: 'centurion', emoji: '✍️', name: 'Centurion', desc: 'Answer 100 questions', test: (s, st) => st.attempts >= 100 },
+  { id: 'q500', emoji: '📚', name: 'Bookworm', desc: 'Answer 500 questions', test: (s, st) => st.attempts >= 500 },
+  { id: 'q1000', emoji: '🧠', name: 'Big Brain', desc: 'Answer 1,000 questions', test: (s, st) => st.attempts >= 1000 },
+  { id: 'q2500', emoji: '🦉', name: 'Wise Owl', desc: 'Answer 2,500 questions', test: (s, st) => st.attempts >= 2500 },
+  // streaks
   { id: 'streak3', emoji: '🔥', name: 'On Fire', desc: '3-day streak', test: (s) => (s.games.streak?.count || 0) >= 3 },
-  { id: 'streak7', emoji: '⚡', name: 'Unstoppable', desc: '7-day streak', test: (s) => (s.games.streak?.count || 0) >= 7 },
+  { id: 'streak7', emoji: '⚡', name: 'Week Warrior', desc: '7-day streak', test: (s) => (s.games.streak?.count || 0) >= 7 },
+  { id: 'streak14', emoji: '🌋', name: 'Two Weeks Strong', desc: '14-day streak', test: (s) => (s.games.streak?.count || 0) >= 14 },
+  { id: 'streak30', emoji: '🏔️', name: 'Iron Will', desc: '30-day streak', test: (s) => (s.games.streak?.count || 0) >= 30 },
+  // sprint
   { id: 'sprint200', emoji: '💨', name: 'Speed Demon', desc: 'Score 200+ in a Sprint', test: (s) => (s.games.sprintBest || 0) >= 200 },
+  { id: 'sprint400', emoji: '🌪️', name: 'Whirlwind', desc: 'Score 400+ in a Sprint', test: (s) => (s.games.sprintBest || 0) >= 400 },
+  { id: 'sprint700', emoji: '☄️', name: 'Meteor', desc: 'Score 700+ in a Sprint', test: (s) => (s.games.sprintBest || 0) >= 700 },
+  // boss
   { id: 'boss1', emoji: '⚔️', name: 'Boss Slayer', desc: 'Defeat a boss', test: (s) => Object.keys(s.games.bossCleared || {}).length >= 1 },
-  { id: 'centurion', emoji: '💯', name: 'Centurion', desc: 'Answer 100 questions', test: (s, st) => st.attempts >= 100 },
-  { id: 'sharp', emoji: '🎯', name: 'Sharpshooter', desc: '90%+ accuracy (20+ answers)', test: (s, st) => st.attempts >= 20 && st.acc >= 0.9 },
-  { id: 'writer', emoji: '✍️', name: 'Wordsmith', desc: 'Submit a piece of writing', test: (s) => (s.writing?.length || 0) >= 1 },
-  { id: 'level5', emoji: '🌟', name: 'All-Star', desc: 'Reach level 5', test: (s) => levelInfo(s.games.xp).level >= 5 },
+  { id: 'boss5', emoji: '🛡️', name: 'Boss Hunter', desc: 'Defeat 5 bosses', test: (s) => Object.keys(s.games.bossCleared || {}).length >= 5 },
+  { id: 'boss15', emoji: '🐲', name: 'Dragon Tamer', desc: 'Defeat 15 bosses', test: (s) => Object.keys(s.games.bossCleared || {}).length >= 15 },
+  { id: 'boss_all', emoji: '🏰', name: 'Boss Legend', desc: 'Defeat every boss', test: (s) => Object.keys(s.games.bossCleared || {}).length >= CURRICULUM.units.length },
+  // accuracy
+  { id: 'sharp', emoji: '🎯', name: 'Sharpshooter', desc: '90%+ accuracy (50+ answers)', test: (s, st) => st.attempts >= 50 && st.acc >= 0.9 },
+  { id: 'sniper', emoji: '🏹', name: 'Sniper', desc: '95%+ accuracy (150+ answers)', test: (s, st) => st.attempts >= 150 && st.acc >= 0.95 },
+  // levels
+  { id: 'level5', emoji: '🥉', name: 'All-Star', desc: 'Reach level 5', test: (s) => levelInfo(s.games.xp).level >= 5 },
+  { id: 'level10', emoji: '🥈', name: 'MVP', desc: 'Reach level 10', test: (s) => levelInfo(s.games.xp).level >= 10 },
+  { id: 'level20', emoji: '🏆', name: 'Hall of Famer', desc: 'Reach level 20', test: (s) => levelInfo(s.games.xp).level >= 20 },
+  // writing
+  { id: 'writer', emoji: '📝', name: 'Wordsmith', desc: 'Submit a piece of writing', test: (s) => (s.writing?.length || 0) >= 1 },
 ];
 function refreshBadges(stu) {
   const st = playerStats(stu);
@@ -90,16 +123,19 @@ function refreshBadges(stu) {
 /* -------- shop -------- */
 const SHOP_AVATARS = [
   { e: '🏀', cost: 0 }, { e: '🎨', cost: 0 }, { e: '🚀', cost: 0 },
-  { e: '🦊', cost: 60 }, { e: '🐼', cost: 60 }, { e: '🦄', cost: 90 }, { e: '🐲', cost: 120 },
-  { e: '🤖', cost: 120 }, { e: '👾', cost: 150 }, { e: '🦁', cost: 150 }, { e: '🐙', cost: 180 }, { e: '⚡', cost: 250 },
+  { e: '🦊', cost: 80 }, { e: '🐼', cost: 80 }, { e: '🦄', cost: 120 }, { e: '🐲', cost: 180 },
+  { e: '🤖', cost: 180 }, { e: '👾', cost: 220 }, { e: '🦁', cost: 220 }, { e: '🐙', cost: 260 }, { e: '⚡', cost: 320 },
+  { e: '🔥', cost: 400 }, { e: '🦖', cost: 500 }, { e: '🌈', cost: 600 }, { e: '👑', cost: 800 },
 ];
 const SHOP_THEMES = [
   { name: 'Grape', p: '#7048e8', d: '#5a37c9', cost: 0 },
   { name: 'Ocean', p: '#1c7ed6', d: '#1864ab', cost: 80 },
   { name: 'Forest', p: '#2f9e44', d: '#2b8a3e', cost: 80 },
   { name: 'Sunset', p: '#f76707', d: '#e8590c', cost: 120 },
-  { name: 'Bubblegum', p: '#e64980', d: '#c2255c', cost: 120 },
-  { name: 'Midnight', p: '#5f3dc4', d: '#3b2a86', cost: 200 },
+  { name: 'Bubblegum', p: '#e64980', d: '#c2255c', cost: 160 },
+  { name: 'Midnight', p: '#5f3dc4', d: '#3b2a86', cost: 260 },
+  { name: 'Galaxy', p: '#7950f2', d: '#5f3dc4', cost: 400 },
+  { name: 'Gold', p: '#f08c00', d: '#e67700', cost: 550 },
 ];
 function applyTheme(stu) {
   const t = stu && stu.games && stu.games.theme;
