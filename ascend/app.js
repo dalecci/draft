@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 27; // shown on every screen so you can confirm the running version
+const APP_BUILD = 28; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -79,6 +79,7 @@ const Store = {
     state._savedAt = now();                      // stamp BEFORE serialising so the copy carries its true time
     const json = JSON.stringify(state);
     try { localStorage.setItem(LS_KEY, json); localStorage.setItem(LS_MIRROR, json); } catch (e) {}
+    pushSnapshot(state);                          // rolling restore points — survive a bad overwrite
     if (CLOUD && sb) {
       try {
         const { data: { user } } = await sb.auth.getUser();
@@ -95,6 +96,34 @@ const Store = {
   },
 };
 async function persist() { await Store.save(STATE); }
+
+/* --------- rolling snapshot history (local point-in-time restore) --------- */
+const HIST_KEY = 'ascend_history_v3';
+function historyList() { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch (e) { return []; } }
+function pushSnapshot(state) {
+  try {
+    const hist = historyList();
+    const last = hist[hist.length - 1];
+    // keep a snapshot at most every ~20 min (plus always the first)
+    if (last && (now() - last.t) < 20 * 60 * 1000) return;
+    hist.push({ t: now(), data: JSON.parse(JSON.stringify(state)) });
+    while (hist.length > 6) hist.shift();
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); }
+    catch (e) { while (hist.length > 2) hist.shift(); try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch (e2) {} }
+  } catch (e) {}
+}
+function snapshotSummary(snap) {
+  const kids = Object.values((snap.data && snap.data.students) || {});
+  const parts = kids.map(s => { const m = ALL_SKILLS_MASTERED_COUNT(s); return `${s.name}: ${m} skills · 🪙${s.games ? s.games.coins || 0 : 0}`; });
+  return parts.join('  ·  ') || 'empty';
+}
+function ALL_SKILLS_MASTERED_COUNT(stu) { let n = 0; for (const k in (stu.progress || {})) if (stu.progress[k] && stu.progress[k].masteredAt) n++; return n; }
+function restoreSnapshot(snap) {
+  if (!snap || !snap.data || !snap.data.students) { toast('❌ Bad snapshot'); return; }
+  STATE = snap.data; Object.values(STATE.students).forEach(ensureStudentShape);
+  persist(); toast('✅ Restored earlier version');
+  go(STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login');
+}
 
 /* ------------------------------ PACING ENGINE ---------------------------- */
 function unitStats(stu, unit) {
@@ -1560,13 +1589,25 @@ function renderParentHome() {
   // data & backup
   const data = el('div', { class: 'card data-card' });
   data.append(el('h3', {}, '💾 Data & backup'));
-  data.append(el('p', { class: 'muted' }, 'Progress saves automatically on this device (kept in two local copies). It is not yet synced to the cloud — download a backup regularly, and you can restore it here or on another device.'));
+  data.append(el('p', { class: 'muted' }, 'Progress auto-saves (two local copies + cloud), and the app keeps recent restore points below. For extra safety, download a backup after a good session.'));
   const fileInp = el('input', { type: 'file', accept: 'application/json', style: 'display:none', onchange: (e) => { if (e.target.files && e.target.files[0]) importBackup(e.target.files[0]); } });
   data.append(el('div', { class: 'answer-row' }, [
     el('button', { class: 'btn primary', onclick: exportBackup }, '⬇ Download backup'),
     el('button', { class: 'btn ghost', onclick: () => fileInp.click() }, '⬆ Restore backup'),
   ]));
   data.append(fileInp);
+  // rolling restore points
+  const hist = historyList().slice().reverse();
+  if (hist.length) {
+    data.append(el('div', { class: 'restore-head' }, '⏱ Restore an earlier version'));
+    hist.forEach(snap => {
+      const when = new Date(snap.t).toLocaleString();
+      data.append(el('div', { class: 'restore-row' }, [
+        el('div', { class: 'restore-mid' }, [el('div', { class: 'restore-when' }, when), el('div', { class: 'muted' }, snapshotSummary(snap))]),
+        el('button', { class: 'mini', onclick: () => { if (window.confirm('Restore this version? It replaces the current progress on this device.')) restoreSnapshot(snap); } }, 'Restore'),
+      ]));
+    });
+  }
   wrap.append(data);
 
   wrap.append(navbar('home', true));
