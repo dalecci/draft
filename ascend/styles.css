@@ -463,3 +463,10 @@ button { font-family: inherit; cursor: pointer; border: none; }
 @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 
 .run-drop { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; font-size: 18px; width: 30%; padding: 16px; box-shadow: 0 6px 16px rgba(247,103,7,.35); }
+
+/* restore points */
+.restore-head { font-weight: 800; font-size: 13px; margin: 14px 0 6px; }
+.restore-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #f0ecf9; }
+.restore-mid { flex: 1; }
+.restore-when { font-weight: 700; font-size: 13px; }
+:root[data-theme="dark"] .restore-row { border-color: #2b2440; }
