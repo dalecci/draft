@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 23; // shown on every screen so you can confirm the running version
+const APP_BUILD = 24; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -989,17 +989,23 @@ function runnerItem() {
   const three = shuffle([correct, ...distract]);
   return { skill: it.skill, prompt: it.prompt, correct, choices: three, correctLane: three.indexOf(correct) };
 }
-function startRunner() { RUNNER = Object.assign({ phase: 'run', lane: 1, hearts: 3, score: 0, speed: 0.10, gy: 0, last: 0, locked: false }, runnerItem()); go('runner'); }
+const RUN_TRAVEL = RUN_FIELD_H - 70;
+// how many ms the gate takes to reach the runner — starts SLOW (14s), ramps to ~5s over ~40 questions
+function runnerCrossMs(score) { return Math.max(5000, 14000 - score * 230); }
+function runnerSpeed(score) { return RUN_TRAVEL / runnerCrossMs(score); }
+function startRunner() { RUNNER = Object.assign({ phase: 'run', lane: 1, hearts: 3, score: 0, gy: 0, last: 0, resolving: false }, runnerItem()); RUNNER.speed = runnerSpeed(0); go('runner'); }
 function moveRunner(d) { if (RUNNER.phase !== 'run') return; RUNNER.lane = Math.max(0, Math.min(2, RUNNER.lane + d)); if (RUNNER.dom) RUNNER.dom.guy.style.left = (RUNNER.lane * 33.333 + 16.666) + '%'; }
+function dropRunner() { if (RUNNER.phase === 'run') runnerResolve(); } // commit early once you know the answer
 function runnerResolve() {
+  if (RUNNER.resolving) return; RUNNER.resolving = true;
   const stu = STATE.students[STATE.currentUserId];
   const ok = RUNNER.lane === RUNNER.correctLane;
   handleAnswer(stu, RUNNER.skill, ok, 2);   // counts toward mastery/xp like the other games
-  if (ok) { RUNNER.score++; RUNNER.speed = Math.min(0.26, RUNNER.speed + 0.006); }
+  if (ok) { RUNNER.score++; }
   else { RUNNER.hearts--; if (RUNNER.dom) { RUNNER.dom.field.classList.add('shake'); setTimeout(() => RUNNER.dom && RUNNER.dom.field.classList.remove('shake'), 300); } }
   persist();
   if (RUNNER.hearts <= 0) { endRunner(); return; }
-  Object.assign(RUNNER, runnerItem()); RUNNER.gy = 0;
+  Object.assign(RUNNER, runnerItem()); RUNNER.gy = 0; RUNNER.speed = runnerSpeed(RUNNER.score); RUNNER.resolving = false;
   paintRunner();
 }
 function endRunner() {
@@ -1025,10 +1031,9 @@ function runnerTick(ts) {
   if (!RUNNER.last) RUNNER.last = ts;
   const dt = Math.min(48, ts - RUNNER.last); RUNNER.last = ts;
   RUNNER.gy += RUNNER.speed * dt;
-  const limit = RUN_FIELD_H - 70;
-  if (RUNNER.gy >= limit) { RUNNER.gy = 0; RUNNER.last = ts; runnerResolve(); }
+  if (RUNNER.gy >= RUN_TRAVEL) { RUNNER.gy = 0; RUNNER.last = ts; runnerResolve(); }
   else { RUNNER.dom.gate.style.transform = `translateY(${RUNNER.gy}px)`; }
-  RUNNER_RAF = requestAnimationFrame(runnerTick);
+  RUNNER_RAF = (RUNNER.phase === 'run') ? requestAnimationFrame(runnerTick) : null;
 }
 function renderRunner() {
   const stu = STATE.students[STATE.currentUserId];
@@ -1036,7 +1041,7 @@ function renderRunner() {
   wrap.append(topbar(stu, true));
   if (RUNNER.phase === 'ready') {
     wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '🏃'), el('h2', {}, 'Number Runner'),
-      el('p', { class: 'muted' }, 'Steer into the door with the RIGHT answer before it reaches you! Use ◀ ▶ or the arrow keys. 3 lives.'),
+      el('p', { class: 'muted' }, 'Steer into the door with the RIGHT answer with ◀ ▶ (or arrow keys). It starts slow and speeds up. Know it early? Press ⬇ GO (or Space / ↓) to lock it in. 3 lives.'),
       el('div', { class: 'game-best' }, `🏆 Best: ${stu.games.runnerBest || 0}`),
       el('button', { class: 'btn primary big', onclick: startRunner }, '▶ Run!')]));
     wrap.append(navbar('play')); return wrap;
@@ -1065,6 +1070,7 @@ function renderRunner() {
   wrap.append(hud); wrap.append(field);
   wrap.append(el('div', { class: 'runner-controls' }, [
     el('button', { class: 'btn primary run-btn', onclick: () => moveRunner(-1) }, '◀'),
+    el('button', { class: 'btn run-drop', onclick: () => dropRunner() }, '⬇ GO'),
     el('button', { class: 'btn primary run-btn', onclick: () => moveRunner(1) }, '▶'),
   ]));
   wrap.append(navbar('play'));
@@ -1738,7 +1744,8 @@ window.addEventListener('keydown', (e) => {
   }
   if (VIEW.name === 'runner' && RUNNER && RUNNER.phase === 'run') {
     if (e.key === 'ArrowLeft') { e.preventDefault(); moveRunner(-1); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); moveRunner(1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); moveRunner(1); }
+    else if (e.key === 'ArrowDown' || e.key === ' ' || e.code === 'Space') { e.preventDefault(); dropRunner(); }
   }
 });
 
