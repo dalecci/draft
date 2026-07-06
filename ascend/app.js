@@ -385,7 +385,7 @@ function renderPractice() {
   const canStretch = !!stretchGen && !!p.masteredAt;      // Grade 6 unlocks after on-grade mastery
   const adv = !!VIEW.stretch && canStretch;               // are we in Advanced mode right now?
 
-  if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: generateItem(adv ? stretchGen : skill.gen), start: now(), streak: 0, answered: 0 };
+  if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: generateItem(adv ? stretchGen : skill.gen, skill), start: now(), streak: 0, answered: 0 };
   const sp = p.stretch || { score: 0 };
   const card = el('div', { class: 'card practice' + (adv ? ' advanced' : '') });
   if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 GRADE 6 · Above grade level'));
@@ -548,7 +548,7 @@ function stopSprintTimer() { if (SPRINT_TIMER) { clearInterval(SPRINT_TIMER); SP
 function gameItem(pool) {
   pool = pool || ALL_SKILLS;
   let skill, it, guard = 0;
-  do { skill = pick(pool); it = generateItem(skill.gen); guard++; }
+  do { skill = pick(pool); it = generateItem(skill.gen, skill); guard++; }
   while (it.type === 'text' && guard < 12); // avoid free-text (fractions) in the arcade
   let choices;
   if (it.type === 'mc') { choices = it.choices; }
@@ -1147,7 +1147,7 @@ function renderLesson() {
   const skillId = VIEW.skill; const loc = skillLoc(skillId);
   let th = THEORY[skillId];
   if (!th || !th.concept) { // synthesize a real lesson from a generated worked example
-    const ex = generateItem(loc.skill.gen);
+    const ex = generateItem(loc.skill.gen, loc.skill);
     th = { concept: `In this section you'll practice: ${loc.skill.name}. Study the worked example, then try it yourself.`,
       worked: [`Example — ${ex.prompt}`, ex.explanation || `The answer is ${ex.answer}.`],
       vocab: [], misconception: 'Work one step at a time and check your answer before moving on.',

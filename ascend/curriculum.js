@@ -140,6 +140,10 @@ const GEN = {
   subTwoDigit() { const a = randInt(20, 99), b = randInt(1, a); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
   addThreeDigit() { const a = randInt(100, 800), b = randInt(10, 199); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); },
   subThreeDigit() { const a = randInt(200, 999), b = randInt(10, a - 100); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
+  // position-scaled add/sub/mixed: number size grows with where the skill sits (d = 0..1)
+  g2add(d) { d = d || 0; const cap = d < 0.25 ? 9 : d < 0.46 ? 99 : 999; const a = randInt(1, cap), b = randInt(1, cap); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); },
+  g2sub(d) { d = d || 0; const cap = d < 0.25 ? 9 : d < 0.46 ? 99 : 999; const a = randInt(2, cap), b = randInt(1, a); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
+  g2mixed(d) { d = d || 0; const cap = d < 0.25 ? 9 : d < 0.46 ? 99 : 999; if (Math.random() < 0.5) { const a = randInt(1, cap), b = randInt(1, cap); return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); } const a = randInt(2, cap), b = randInt(1, a); return numItem(`${a} − ${b}`, a - b, `${a} − ${b} = ${a - b}.`); },
   add10or100() { const a = randInt(100, 800); const k = pick([10, 100]); return numItem(`${a} + ${k}`, a + k, `Add ${k}: ${a + k}.`); },
   placeTensOnes() { const t = randInt(1, 9), o = randInt(0, 9); return numItem(`${t} tens and ${o} ones make what number?`, t * 10 + o, `${t} tens = ${t * 10}, plus ${o} ones = ${t * 10 + o}.`); },
   digitValue2() { const digits = [randInt(1, 9), randInt(0, 9), randInt(0, 9)]; const num = +digits.join(''); const pos = randInt(0, 2); const places = ['hundreds', 'tens', 'ones']; const val = digits[pos] * Math.pow(10, 2 - pos); return numItem(`In ${num}, what is the value of the ${digits[pos]} (in the ${places[pos]} place)?`, val, `${digits[pos]} in the ${places[pos]} place = ${val}.`); },
@@ -404,19 +408,12 @@ function pickGen2(unitId, name) {
   // financial
   if (has('producer', 'consumer', 'cost to produce')) return 'producerConsumer';
   if (has('spend', 'saving', 'deposit', 'withdraw', 'borrow', 'lend')) return 'spendSave';
-  // add/subtract by digit
-  if (has('add') && has('three-digit', '3-digit', 'up to 1,000', 'up to three')) return 'add10or100';
-  if (has('subtract') && has('three-digit', '3-digit', 'across zeros', 'up to three')) return 'subThreeDigit';
-  if (has('add') && has('three') && has('digit')) return 'addThreeDigit';
-  if (has('add') && (has('two-digit', 'two digit', 'up to two', 'multiple of 10'))) return 'addTwoDigit';
-  if (has('subtract') && (has('two-digit', 'two digit', 'up to two'))) return 'subTwoDigit';
-  if (has('add three', 'add four', 'three one-digit', 'four')) return 'addThree';
-  if (has('add') && has('sums to 10')) return 'addSmall';
-  if (has('add')) return 'addSmall';
-  if (has('subtract')) return 'subSmall';
-  if (has('addition and subtraction', 'mixed', 'which sign', 'balance', 'true', 'ways to make', 'inequal')) return 'addTwoDigit';
+  // add / subtract / mixed — all route to position-scaled generators so difficulty ramps
+  if ((has('add') && has('subtract')) || has('addition and subtraction') || has('which sign', 'inequalit')) return 'g2mixed';
+  if (has('subtract') || has('difference')) return 'g2sub';
+  if (has('add') || has('sum') || has('ways to make', 'balance')) return 'g2add';
   // unit fallback
-  const byUnit = { A: 'countNext', B: 'compare2', C: 'skipCount', D: 'wordName', E: 'evenOdd', F: 'addSmall', G: 'addSmall', H: 'subSmall', I: 'subSmall', J: 'addSmall', K: 'addSmall', L: 'placeTensOnes', M: 'addTwoDigit', N: 'addTwoDigit', O: 'subTwoDigit', P: 'subTwoDigit', Q: 'addTwoDigit', R: 'addTwoDigit', S: 'addThreeDigit', T: 'addThreeDigit', U: 'subThreeDigit', V: 'subThreeDigit', W: 'add10or100', X: 'repeatedAdd', Y: 'factFamily', Z: 'roundTen', AA: 'countCoins', BB: 'addMoney', CC: 'countCoins', DD: 'timeAfter', EE: 'months', FF: 'readData', GG: 'measureUnit', HH: 'measureUnit', II: 'name2D', JJ: 'solid3D', KK: 'tileArea', LL: 'identFrac', MM: 'spendSave' };
+  const byUnit = { A: 'countNext', B: 'compare2', C: 'skipCount', D: 'wordName', E: 'evenOdd', F: 'g2add', G: 'g2add', H: 'g2sub', I: 'g2sub', J: 'g2mixed', K: 'g2mixed', L: 'placeTensOnes', M: 'g2add', N: 'g2add', O: 'g2sub', P: 'g2sub', Q: 'g2mixed', R: 'g2mixed', S: 'g2add', T: 'g2add', U: 'g2sub', V: 'g2sub', W: 'g2mixed', X: 'repeatedAdd', Y: 'factFamily', Z: 'roundTen', AA: 'countCoins', BB: 'addMoney', CC: 'countCoins', DD: 'timeAfter', EE: 'months', FF: 'readData', GG: 'measureUnit', HH: 'measureUnit', II: 'name2D', JJ: 'solid3D', KK: 'tileArea', LL: 'identFrac', MM: 'spendSave' };
   return byUnit[unitId] || 'addSmall';
 }
 
@@ -472,6 +469,11 @@ function buildCurriculum(subject, standard, units, mapper) {
     })),
   };
   cur.allSkills = cur.units.flatMap(u => u.skills.map(s => ({ ...s, unitId: u.id, unitName: u.name, color: u.color })));
+  const n = cur.allSkills.length;
+  cur.allSkills.forEach((s, i) => { s.seq = i; s.pos = n > 1 ? i / (n - 1) : 0.5; }); // 0..1 curriculum position (drives difficulty ramp)
+  // mirror pos onto the nested unit skill objects too
+  const posById = {}; cur.allSkills.forEach(s => { posById[s.id] = s.pos; });
+  cur.units.forEach(u => u.skills.forEach(s => { s.pos = posById[s.id]; s.seq = cur.allSkills.find(a => a.id === s.id).seq; }));
   return cur;
 }
 const CURRICULA = {
@@ -487,6 +489,6 @@ let CURRICULUM = CURRICULA.g5;
 let ALL_SKILLS = CURRICULA.g5.allSkills;
 let ACTIVE_GRADE = 'g5';
 function setActiveGrade(grade) { const g = CURRICULA[grade] ? grade : 'g5'; CURRICULUM = CURRICULA[g]; ALL_SKILLS = CURRICULA[g].allSkills; ACTIVE_GRADE = g; return g; }
-function generateItem(genName) { return (GEN[genName] || GEN.addSub)(); }
+function generateItem(genName, skill) { return (GEN[genName] || GEN.addSub)(skill ? skill.pos : 0.5); }
 
 if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, STRETCH_MAP, stretchGenName, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }
