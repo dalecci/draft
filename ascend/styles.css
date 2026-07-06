@@ -430,3 +430,6 @@ button { font-family: inherit; cursor: pointer; border: none; }
 :root[data-theme="dark"] .array-box { background: #2b2440; }
 .array-row { display: flex; gap: 6px; }
 .array-dot { width: 26px; height: 26px; border-radius: 6px; background: var(--primary); }
+
+.build-tag { font-size: 11px; font-weight: 800; color: var(--muted); background: #efe9fd; border-radius: 999px; padding: 4px 9px; }
+:root[data-theme="dark"] .build-tag { background: #2b2440; }

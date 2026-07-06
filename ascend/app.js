@@ -6,6 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
+const APP_BUILD = 19; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -193,7 +194,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 18`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build ${APP_BUILD}`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
@@ -244,6 +245,7 @@ function renderPickProfile() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, "Who's using Ascend?"));
+  wrap.append(el('div', { class: 'build-stamp' }, `build ${APP_BUILD}`));
   wrap.append(profileGrid());
   wrap.append(el('button', { class: 'btn ghost', style: 'margin-top:18px', onclick: logout }, 'Sign out'));
   return wrap;
@@ -1478,6 +1480,7 @@ function topbar(user, back, parent) {
     back ? el('button', { class: 'icon-btn', onclick: () => go(parent ? 'parent-home' : 'student-home') }, '←') : el('span', { class: 'brand' }, '⛰️ Ascend'),
     (!parent && user && user.games) ? el('button', { class: 'me-chip', onclick: () => go('profile') }, [el('span', { class: 'me-av' }, user.avatar), el('b', {}, 'Lv ' + levelInfo(user.games.xp).level), el('span', { class: 'me-coin' }, '🪙' + (user.games.coins || 0))]) : null,
     el('div', { class: 'grow' }),
+    el('span', { class: 'build-tag', title: 'app version' }, 'v' + APP_BUILD),
     el('button', { class: 'chip-btn', onclick: toggleDark, title: 'Toggle dark mode' }, isDark() ? '☀️' : '🌙'),
     el('button', { class: 'chip-btn', onclick: exportBackup, title: 'Download a backup copy' }, '⬇'),
     el('button', { class: 'chip-btn', onclick: switchProfile, title: 'Switch profile' }, 'Switch'),
