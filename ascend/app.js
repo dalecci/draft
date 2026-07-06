@@ -194,24 +194,33 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 14`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 15`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
     const pass = el('input', { type: 'password', placeholder: 'Password (6+ characters)', class: 'inp' });
     const msg = el('div', { class: 'msg' });
     const doAuth = (mode) => async () => {
-      msg.textContent = '…';
-      const fn = mode === 'in' ? sb.auth.signInWithPassword : sb.auth.signUp;
-      const { error } = await fn({ email: email.value.trim(), password: pass.value });
-      if (error) { msg.textContent = error.message; return; }
-      AUTHED = true;
-      // Store.load returns this account's cloud state, or (first login) adopts the
-      // existing on-device data — so Jayden's progress migrates up automatically.
-      STATE = await Store.load(); if (!STATE || !STATE.students) STATE = seedDemo();
-      Object.values(STATE.students).forEach(ensureStudentShape);
-      STATE.currentUserId = null; await persist();  // persist uploads to cloud
-      go('pick');
+      const em = email.value.trim(), pw = pass.value;
+      if (!em || !pw) { msg.textContent = 'Enter an email and a password.'; return; }
+      if (pw.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
+      msg.textContent = 'Working…';
+      try {
+        // call the method ON sb.auth (keeping it bound) — a detached reference throws
+        const res = mode === 'in'
+          ? await sb.auth.signInWithPassword({ email: em, password: pw })
+          : await sb.auth.signUp({ email: em, password: pw });
+        if (res.error) { msg.textContent = res.error.message; return; }
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { msg.textContent = 'Account created — confirm via the email link, then Log in.'; return; }
+        AUTHED = true;
+        // Store.load returns this account's cloud state, or (first login) adopts the
+        // existing on-device data — so Jayden's progress migrates up automatically.
+        STATE = await Store.load(); if (!STATE || !STATE.students) STATE = seedDemo();
+        Object.values(STATE.students).forEach(ensureStudentShape);
+        STATE.currentUserId = null; await persist();  // persist uploads to cloud
+        go('pick');
+      } catch (e) { msg.textContent = 'Error: ' + ((e && e.message) || e); }
     };
     wrap.append(email, pass, el('button', { class: 'btn primary wide', onclick: doAuth('in') }, 'Log in'),
       el('button', { class: 'btn ghost wide', onclick: doAuth('up') }, 'Create family account'), msg);
