@@ -461,3 +461,5 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .run-btn { font-size: 26px; width: 42%; padding: 16px; }
 .runner-field.shake { animation: shake .3s; }
 @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+.run-drop { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; font-size: 18px; width: 30%; padding: 16px; box-shadow: 0 6px 16px rgba(247,103,7,.35); }
