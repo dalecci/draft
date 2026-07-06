@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 25; // shown on every screen so you can confirm the running version
+const APP_BUILD = 26; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -413,13 +413,24 @@ function renderPractice() {
     celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
-    const mastered = adv ? stu.progress[skill.id].stretch?.masteredAt : stu.progress[skill.id].masteredAt;
-    const label = mastered ? (adv ? '🔥 Grade 6 mastered — continue' : '🎉 Skill mastered — continue') : 'Next question ▶';
-    const goNext = () => { PRACTICE = null; go('practice', adv ? { skill: skill.id, stretch: true } : { skill: mastered ? undefined : skill.id }); };
+    const p2 = stu.progress[skill.id];
+    const onGradeMastered = !!p2.masteredAt, stretchMastered = !!(p2.stretch && p2.stretch.masteredAt);
+    let goNext, label, secondary = null;
+    if (adv) {
+      if (stretchMastered) { label = '🎉 Grade 6 mastered — next skill'; goNext = () => { PRACTICE = null; go('practice', { skill: undefined }); }; }
+      else { label = '🔥 Next (Grade 6) ▶'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); }; secondary = { t: '← Back to grade level', fn: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }; }
+    } else if (onGradeMastered && stretchGen && !stretchMastered) {
+      // AUTO-PUSH above grade level: mastering a skill flows straight into the Grade 6 challenge
+      label = '🔥 Grade 6 bonus →'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); };
+      secondary = { t: 'Skip to next skill →', fn: () => { PRACTICE = null; go('practice', { skill: undefined }); } };
+    } else if (onGradeMastered) {
+      label = '🎉 Skill mastered — continue'; goNext = () => { PRACTICE = null; go('practice', { skill: undefined }); };
+    } else {
+      label = 'Next question ▶'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id }); };
+    }
     PRACTICE.next = goNext;   // lets the spacebar advance
     feedback.append(el('button', { class: 'btn primary', onclick: goNext }, label + '  ␣'));
-    // after on-grade mastery, offer the Grade 6 challenge
-    if (!adv && stu.progress[skill.id].masteredAt && stretchGen) feedback.append(el('button', { class: 'btn stretch-btn', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, '🔥 Try the Grade 6 Challenge'));
+    if (secondary) feedback.append(el('button', { class: 'btn ghost', onclick: secondary.fn }, secondary.t));
   };
 
   if (item.type === 'mc') {
