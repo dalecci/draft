@@ -433,3 +433,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 .build-tag { font-size: 11px; font-weight: 800; color: var(--muted); background: #efe9fd; border-radius: 999px; padding: 4px 9px; }
 :root[data-theme="dark"] .build-tag { background: #2b2440; }
+
+/* Advanced (Grade 6 stretch) mode */
+.practice.advanced { background: linear-gradient(180deg, #fff4e6, var(--card)); border: 3px solid #f76707; box-shadow: 0 10px 30px rgba(247,103,7,.25); }
+:root[data-theme="dark"] .practice.advanced { background: linear-gradient(180deg, #3a2a1a, var(--card)); }
+.adv-banner { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; font-weight: 800; text-align: center; border-radius: 14px; padding: 10px; margin-bottom: 12px; letter-spacing: .5px; animation: advpulse 1.4s ease-in-out infinite; }
+@keyframes advpulse { 50% { filter: brightness(1.12); } }
+.practice.advanced .q { color: #d9480f; }
+:root[data-theme="dark"] .practice.advanced .q { color: #ffa94d; }
+.stretch-btn { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; box-shadow: 0 6px 16px rgba(247,103,7,.35); }
