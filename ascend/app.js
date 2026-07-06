@@ -8,7 +8,9 @@
 const CFG = window.ASCEND_CONFIG || {};
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
+let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
 if (CLOUD) sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+function switchProfile() { STATE.currentUserId = null; saveRoute(); if (CLOUD) go('pick'); else go('login'); }
 
 const LS_KEY = 'ascend_state_v3';
 const LS_MIRROR = 'ascend_mirror_v3'; // the "double save" — a second local copy
@@ -192,32 +194,50 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 11`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 12`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
-    const pass = el('input', { type: 'password', placeholder: 'Password', class: 'inp' });
+    const pass = el('input', { type: 'password', placeholder: 'Password (6+ characters)', class: 'inp' });
     const msg = el('div', { class: 'msg' });
     const doAuth = (mode) => async () => {
       msg.textContent = '…';
       const fn = mode === 'in' ? sb.auth.signInWithPassword : sb.auth.signUp;
-      const { error } = await fn({ email: email.value, password: pass.value });
+      const { error } = await fn({ email: email.value.trim(), password: pass.value });
       if (error) { msg.textContent = error.message; return; }
-      STATE = await Store.load(); if (!STATE.students) STATE = seedDemo();
-      const stu = Object.values(STATE.students)[0]; STATE.currentUserId = stu.id; await persist(); go('student-home');
+      AUTHED = true;
+      // Store.load returns this account's cloud state, or (first login) adopts the
+      // existing on-device data — so Jayden's progress migrates up automatically.
+      STATE = await Store.load(); if (!STATE || !STATE.students) STATE = seedDemo();
+      Object.values(STATE.students).forEach(ensureStudentShape);
+      STATE.currentUserId = null; await persist();  // persist uploads to cloud
+      go('pick');
     };
-    wrap.append(email, pass, el('button', { class: 'btn primary', onclick: doAuth('in') }, 'Log in'),
-      el('button', { class: 'btn ghost', onclick: doAuth('up') }, 'Create account'), msg);
+    wrap.append(email, pass, el('button', { class: 'btn primary wide', onclick: doAuth('in') }, 'Log in'),
+      el('button', { class: 'btn ghost wide', onclick: doAuth('up') }, 'Create family account'), msg);
+    wrap.append(el('p', { class: 'demo-note', style: 'margin-top:10px' }, 'One account per family. Everyone in the family shares this login, then picks their profile.'));
   } else {
     wrap.append(el('p', { class: 'demo-note' }, 'Demo mode — pick a profile to explore'));
-    const grid = el('div', { class: 'profile-grid' });
-    Object.values(STATE.students).forEach(s => grid.append(el('button', { class: 'profile', onclick: () => { STATE.currentUserId = s.id; persist(); go('student-home'); } },
-      [el('div', { class: 'avatar' }, s.avatar), el('div', {}, s.name), el('div', { class: 'role' }, 'Student')])));
-    const par = Object.values(STATE.parents)[0];
-    grid.append(el('button', { class: 'profile parent', onclick: () => { STATE.currentUserId = par.id; persist(); go('parent-home'); } },
-      [el('div', { class: 'avatar' }, par.avatar), el('div', {}, 'Parent'), el('div', { class: 'role' }, 'Family view')]));
-    wrap.append(grid);
+    wrap.append(profileGrid());
   }
+  return wrap;
+}
+function profileGrid() {
+  const grid = el('div', { class: 'profile-grid' });
+  Object.values(STATE.students).forEach(s => grid.append(el('button', { class: 'profile', onclick: () => { STATE.currentUserId = s.id; persist(); go('student-home'); } },
+    [el('div', { class: 'avatar' }, s.avatar), el('div', {}, s.name), el('div', { class: 'role' }, 'Student')])));
+  const par = Object.values(STATE.parents)[0];
+  if (par) grid.append(el('button', { class: 'profile parent', onclick: () => { STATE.currentUserId = par.id; persist(); go('parent-home'); } },
+    [el('div', { class: 'avatar' }, par.avatar), el('div', {}, par.name || 'Parent'), el('div', { class: 'role' }, 'Family view')]));
+  return grid;
+}
+function renderPickProfile() {
+  const wrap = el('div', { class: 'login' });
+  wrap.append(el('div', { class: 'logo', html: '⛰️' }));
+  wrap.append(el('h1', {}, 'Ascend'));
+  wrap.append(el('p', { class: 'tag' }, "Who's using Ascend?"));
+  wrap.append(profileGrid());
+  wrap.append(el('button', { class: 'btn ghost', style: 'margin-top:18px', onclick: logout }, 'Sign out'));
   return wrap;
 }
 
@@ -1235,7 +1255,7 @@ function topbar(user, back, parent) {
     el('div', { class: 'grow' }),
     el('button', { class: 'chip-btn', onclick: toggleDark, title: 'Toggle dark mode' }, isDark() ? '☀️' : '🌙'),
     el('button', { class: 'chip-btn', onclick: exportBackup, title: 'Download a backup copy' }, '⬇'),
-    el('button', { class: 'chip-btn', onclick: logout }, 'Switch'),
+    el('button', { class: 'chip-btn', onclick: switchProfile, title: 'Switch profile' }, 'Switch'),
   ]);
 }
 function navbar(active, parent) {
@@ -1265,13 +1285,13 @@ function importBackup(file) {
   };
   r.readAsText(file);
 }
-async function logout() { if (CLOUD && sb) await sb.auth.signOut(); STATE.currentUserId = null; await persist(); go('login'); }
+async function logout() { if (CLOUD && sb) await sb.auth.signOut(); AUTHED = false; STATE.currentUserId = null; try { localStorage.removeItem('ascend_route'); } catch (e) {} go('login'); }
 
 /* -------------------------------- ROUTER --------------------------------- */
 function render() {
   stopSprintTimer(); bossStopTimer();
   const root = $('#app'); root.innerHTML = '';
-  if (!STATE.currentUserId) return void root.append(renderLogin());
+  if (!STATE.currentUserId) return void root.append((CLOUD && AUTHED) ? renderPickProfile() : renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
   if (!isParent) applyTheme(STATE.students[STATE.currentUserId]); else applyTheme(null);
   const views = {
@@ -1312,7 +1332,7 @@ function ensureStudentShape(stu) {
   STATE = await Store.load();
   if (!STATE || !STATE.students) STATE = seedDemo();
   Object.values(STATE.students || {}).forEach(ensureStudentShape);
-  if (CLOUD && sb) { const { data: { user } } = await sb.auth.getUser(); if (!user) STATE.currentUserId = null; }
+  if (CLOUD && sb) { const { data: { user } } = await sb.auth.getUser(); if (user) { AUTHED = true; } else { STATE.currentUserId = null; } }
   // "Continue where you were": restore the last route for this user
   let restored = null;
   try { const r = JSON.parse(localStorage.getItem('ascend_route') || 'null'); if (r && r.u === STATE.currentUserId && r.v && r.v.name && r.v.name !== 'login') restored = r.v; } catch (e) {}
