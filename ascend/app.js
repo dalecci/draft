@@ -59,7 +59,7 @@ const Store = {
     if (CLOUD && sb) {
       const { data: { user } } = await sb.auth.getUser();
       if (user) {
-        const { data } = await sb.from('app_state').select('data').eq('user_id', user.id).maybeSingle();
+        const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle();
         if (data && data.data) return data.data;
       }
     }
@@ -74,7 +74,7 @@ const Store = {
     state._savedAt = now();
     if (CLOUD && sb) {
       const { data: { user } } = await sb.auth.getUser();
-      if (user) await sb.from('app_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() });
+      if (user) await sb.from('ascend_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() });
     }
     flashSaved();
   },
@@ -194,7 +194,7 @@ function renderLogin() {
   wrap.append(el('div', { class: 'logo', html: '⛰️' }));
   wrap.append(el('h1', {}, 'Ascend'));
   wrap.append(el('p', { class: 'tag' }, 'Master it. Earn your afternoon.'));
-  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 12`));
+  wrap.append(el('div', { class: 'build-stamp' }, `${CURRICULUM.subject} · ${ALL_SKILLS.length} skills · build 13`));
 
   if (CLOUD) {
     const email = el('input', { type: 'email', placeholder: 'Email', class: 'inp' });
