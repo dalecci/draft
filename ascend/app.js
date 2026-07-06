@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 22; // shown on every screen so you can confirm the running version
+const APP_BUILD = 23; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -792,6 +792,8 @@ function renderPlayHub() {
     [el('div', { class: 'mode-emoji' }, '📋'), el('div', { class: 'mode-nm' }, 'FAST Practice Test'), el('div', { class: 'mode-sub' }, 'A 10-question Florida FAST-style mock')]));
   modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#f59f00,#e64980)', onclick: () => { BUILD = null; go('build'); } },
     [el('div', { class: 'mode-emoji' }, '🧩'), el('div', { class: 'mode-nm' }, 'Build It! (interactive)'), el('div', { class: 'mode-sub' }, 'Tap & place — base-ten blocks, fraction shapes')]));
+  modes.append(el('div', { class: 'card mode-card', style: 'background:linear-gradient(135deg,#20c997,#1c7ed6)', onclick: () => { RUNNER = { phase: 'ready' }; go('runner'); } },
+    [el('div', { class: 'mode-emoji' }, '🏃'), el('div', { class: 'mode-nm' }, 'Number Runner'), el('div', { class: 'mode-sub' }, `Steer into the right answer · best ${stu.games.runnerBest || 0}`)]));
   modes.append(el('div', { class: 'card mode-card locked' },
     [el('div', { class: 'mode-emoji' }, '🤺'), el('div', { class: 'mode-nm' }, 'Duel (vs friends)'), el('div', { class: 'mode-sub' }, 'Real-time head-to-head — coming soon')]));
   wrap.append(modes);
@@ -974,6 +976,102 @@ function buildArray(area, status) {
   ]));
   area.append(el('button', { class: 'btn primary wide', onclick: () => checkBuild(BUILD.rows === BUILD.trows && BUILD.cols === BUILD.tcols) }, 'Check ✓'));
   draw();
+}
+
+/* =========================== ARCADE: NUMBER RUNNER ======================= */
+let RUNNER = { phase: 'ready' };
+let RUNNER_RAF = null;
+const RUN_FIELD_H = 340;
+function stopRunner() { if (RUNNER_RAF) { cancelAnimationFrame(RUNNER_RAF); RUNNER_RAF = null; } }
+function runnerItem() {
+  const it = gameItem(); const correct = String(it.answer);
+  const distract = it.choices.filter(c => c !== correct).slice(0, 2);
+  const three = shuffle([correct, ...distract]);
+  return { skill: it.skill, prompt: it.prompt, correct, choices: three, correctLane: three.indexOf(correct) };
+}
+function startRunner() { RUNNER = Object.assign({ phase: 'run', lane: 1, hearts: 3, score: 0, speed: 0.10, gy: 0, last: 0, locked: false }, runnerItem()); go('runner'); }
+function moveRunner(d) { if (RUNNER.phase !== 'run') return; RUNNER.lane = Math.max(0, Math.min(2, RUNNER.lane + d)); if (RUNNER.dom) RUNNER.dom.guy.style.left = (RUNNER.lane * 33.333 + 16.666) + '%'; }
+function runnerResolve() {
+  const stu = STATE.students[STATE.currentUserId];
+  const ok = RUNNER.lane === RUNNER.correctLane;
+  handleAnswer(stu, RUNNER.skill, ok, 2);   // counts toward mastery/xp like the other games
+  if (ok) { RUNNER.score++; RUNNER.speed = Math.min(0.26, RUNNER.speed + 0.006); }
+  else { RUNNER.hearts--; if (RUNNER.dom) { RUNNER.dom.field.classList.add('shake'); setTimeout(() => RUNNER.dom && RUNNER.dom.field.classList.remove('shake'), 300); } }
+  persist();
+  if (RUNNER.hearts <= 0) { endRunner(); return; }
+  Object.assign(RUNNER, runnerItem()); RUNNER.gy = 0;
+  paintRunner();
+}
+function endRunner() {
+  stopRunner();
+  const stu = STATE.students[STATE.currentUserId];
+  RUNNER.isRecord = RUNNER.score > (stu.games.runnerBest || 0);
+  stu.games.runnerBest = Math.max(stu.games.runnerBest || 0, RUNNER.score);
+  awardCoins(stu, 5 + RUNNER.score * 2); RUNNER.newBadges = refreshBadges(stu);
+  RUNNER.phase = 'over'; persist();
+  if (RUNNER.isRecord) setTimeout(() => confetti(['🏃', '⭐', '💨']), 150);
+  go('runner');
+}
+function paintRunner() {
+  if (!RUNNER.dom) return;
+  RUNNER.dom.prompt.innerHTML = RUNNER.prompt;
+  RUNNER.dom.doors.forEach((d, i) => { d.textContent = RUNNER.choices[i]; });
+  RUNNER.dom.hearts.textContent = '❤️'.repeat(RUNNER.hearts) + '🤍'.repeat(3 - RUNNER.hearts);
+  RUNNER.dom.score.textContent = RUNNER.score;
+  RUNNER.dom.gate.style.transform = 'translateY(0px)';
+}
+function runnerTick(ts) {
+  if (RUNNER.phase !== 'run' || !RUNNER.dom) return;
+  if (!RUNNER.last) RUNNER.last = ts;
+  const dt = Math.min(48, ts - RUNNER.last); RUNNER.last = ts;
+  RUNNER.gy += RUNNER.speed * dt;
+  const limit = RUN_FIELD_H - 70;
+  if (RUNNER.gy >= limit) { RUNNER.gy = 0; RUNNER.last = ts; runnerResolve(); }
+  else { RUNNER.dom.gate.style.transform = `translateY(${RUNNER.gy}px)`; }
+  RUNNER_RAF = requestAnimationFrame(runnerTick);
+}
+function renderRunner() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  if (RUNNER.phase === 'ready') {
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '🏃'), el('h2', {}, 'Number Runner'),
+      el('p', { class: 'muted' }, 'Steer into the door with the RIGHT answer before it reaches you! Use ◀ ▶ or the arrow keys. 3 lives.'),
+      el('div', { class: 'game-best' }, `🏆 Best: ${stu.games.runnerBest || 0}`),
+      el('button', { class: 'btn primary big', onclick: startRunner }, '▶ Run!')]));
+    wrap.append(navbar('play')); return wrap;
+  }
+  if (RUNNER.phase === 'over') {
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, RUNNER.isRecord ? '🏆' : '🏁'), el('h2', {}, RUNNER.isRecord ? 'New best!' : 'Nice run!'),
+      el('div', { class: 'game-score' }, RUNNER.score), el('div', { class: 'muted' }, `${RUNNER.score} correct doors`),
+      (RUNNER.newBadges && RUNNER.newBadges.length) ? el('div', { class: 'game-best' }, RUNNER.newBadges.map(b => `${b.emoji} ${b.name}`).join('  ')) : null,
+      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
+        el('button', { class: 'btn primary', onclick: startRunner }, '↻ Run again'),
+        el('button', { class: 'btn ghost', onclick: () => { RUNNER = { phase: 'ready' }; go('play-hub'); } }, 'Done')])]));
+    wrap.append(navbar('play')); return wrap;
+  }
+  // run
+  const hud = el('div', { class: 'game-hud' }, [
+    el('div', { class: 'hud-streak' }, '❤️❤️❤️'),
+    el('div', { class: 'runner-prompt' }, RUNNER.prompt),
+    el('div', { class: 'hud-score' }, [el('span', {}, 'score'), el('b', {}, '0')]),
+  ]);
+  const field = el('div', { class: 'runner-field', style: `height:${RUN_FIELD_H}px` });
+  const gate = el('div', { class: 'runner-gate' });
+  const doors = RUNNER.choices.map((c, i) => el('div', { class: 'runner-door', style: `left:${i * 33.333}%`, onclick: () => moveRunner(i - RUNNER.lane) }, c));
+  doors.forEach(d => gate.append(d));
+  const guy = el('div', { class: 'runner-guy', style: `left:${RUNNER.lane * 33.333 + 16.666}%` }, stu.avatar || '🏃');
+  field.append(gate, guy);
+  wrap.append(hud); wrap.append(field);
+  wrap.append(el('div', { class: 'runner-controls' }, [
+    el('button', { class: 'btn primary run-btn', onclick: () => moveRunner(-1) }, '◀'),
+    el('button', { class: 'btn primary run-btn', onclick: () => moveRunner(1) }, '▶'),
+  ]));
+  wrap.append(navbar('play'));
+  RUNNER.dom = { field, gate, doors, guy, prompt: hud.querySelector('.runner-prompt'), hearts: hud.querySelector('.hud-streak'), score: hud.querySelector('.hud-score b') };
+  paintRunner();
+  RUNNER.last = 0; stopRunner(); RUNNER_RAF = requestAnimationFrame(runnerTick);
+  return wrap;
 }
 
 /* ------------------------------- PROFILE --------------------------------- */
@@ -1302,6 +1400,37 @@ function coachReport(stu) {
   const sug = suggestions(stu, 3).filter(x => x.str < 0.9);
   return { headline, lines, sug };
 }
+/* ------------------------- "Ready to move up" flow ----------------------- */
+function nextGrade(g) { return { g5: 'g6' }[g] || null; }
+function gradeLabel(id) { const g = GRADES.find(x => x.id === id); return g ? g.label : id; }
+function readyToMoveUp(stu) {
+  if (!nextGrade(stu.grade)) return false;
+  const st = playerStats(stu);
+  return st.stretchMastered >= 12 || (ALL_SKILLS.length && st.mastered / ALL_SKILLS.length >= 0.6 && st.stretchMastered >= 5);
+}
+function moveUp(stu) {
+  const ng = nextGrade(stu.grade); if (!ng) return;
+  stu.grade = ng;
+  stu.plan = { start: startOfDay(now()), target: startOfDay(now() + 60 * DAY), daysPerWeek: stu.plan.daysPerWeek || 7, hoursPerDay: stu.plan.hoursPerDay || 1 };
+  PRACTICE = null; persist();
+  confetti(['🎓', '🚀', '🌟', '🔥']); toast(`🎓 ${stu.name} moved up to ${gradeLabel(ng)}!`);
+  go('parent-child', { child: stu.id });
+}
+function renderMoveUpCard(stu) {
+  const st = playerStats(stu); const ng = nextGrade(stu.grade);
+  const card = el('div', { class: 'card moveup-card' });
+  card.append(el('div', { class: 'moveup-emoji' }, '🎓'));
+  card.append(el('h3', {}, `${stu.name} is ready to move up!`));
+  card.append(el('p', {}, `He's reached Grade 6 level in ${st.stretchMastered} skill${st.stretchMastered === 1 ? '' : 's'} and mastered most of ${gradeLabel(stu.grade)}. Ready to start the real ${gradeLabel(ng)} curriculum?`));
+  let armed = false;
+  const btn = el('button', { class: 'btn primary big wide', onclick: () => {
+    if (!armed) { armed = true; btn.textContent = `✓ Yes — move ${stu.name} up to ${gradeLabel(ng)}`; return; }
+    moveUp(stu);
+  } }, `🚀 Move up to ${gradeLabel(ng)}`);
+  card.append(btn);
+  card.append(el('p', { class: 'muted', style: 'font-size:11px;margin-top:6px' }, `His ${gradeLabel(stu.grade)} progress is saved — you can switch him back anytime in Edit plan.`));
+  return card;
+}
 function renderCoachCard(stu) {
   const r = coachReport(stu);
   const card = el('div', { class: 'card coach-card' });
@@ -1338,6 +1467,12 @@ function renderPlanEditor() {
   const targetInp = el('input', { class: 'inp', type: 'date', value: new Date(p.target).toISOString().slice(0, 10) });
   const dpwInp = el('input', { class: 'inp', type: 'number', min: '1', max: '7', value: String(p.daysPerWeek) });
   const hpdInp = el('input', { class: 'inp', type: 'number', min: '0.5', max: '8', step: '0.5', value: String(p.hoursPerDay) });
+  // grade selector
+  card.append(el('label', { class: 'flabel' }, 'Grade level'));
+  let grade = stu.grade;
+  const grRow = el('div', { class: 'av-row' });
+  const drawGr = () => { grRow.innerHTML = ''; GRADES.forEach(g => grRow.append(el('button', { class: 'grade-pick' + (g.id === grade ? ' on' : ''), onclick: () => { grade = g.id; drawGr(); } }, g.label))); };
+  drawGr(); card.append(grRow);
   card.append(el('label', { class: 'flabel' }, 'Target finish date'), targetInp);
   card.append(el('label', { class: 'flabel' }, 'Days per week'), dpwInp);
   card.append(el('label', { class: 'flabel' }, 'Hours per day'), hpdInp);
@@ -1346,6 +1481,7 @@ function renderPlanEditor() {
       p.target = startOfDay(new Date(targetInp.value + 'T00:00:00').getTime());
       p.daysPerWeek = Math.max(1, Math.min(7, Number(dpwInp.value) || 5));
       p.hoursPerDay = Math.max(0.5, Number(hpdInp.value) || 1);
+      if (grade !== stu.grade) { stu.grade = grade; PRACTICE = null; }
       persist(); go('parent-child', { child: stu.id });
     } }, 'Save plan'),
   ]));
@@ -1462,6 +1598,7 @@ function renderParentChild() {
 
   // Coach's Report — written analysis + recommendations
   wrap.append(renderCoachCard(stu));
+  if (readyToMoveUp(stu)) wrap.append(renderMoveUpCard(stu));
   wrap.append(goalCard(stu));
 
   // quick actions
@@ -1550,7 +1687,7 @@ async function logout() { if (CLOUD && sb) await sb.auth.signOut(); AUTHED = fal
 
 /* -------------------------------- ROUTER --------------------------------- */
 function render() {
-  stopSprintTimer(); bossStopTimer();
+  stopSprintTimer(); bossStopTimer(); stopRunner();
   const root = $('#app'); root.innerHTML = '';
   if (!STATE.currentUserId) return void root.append((CLOUD && AUTHED) ? renderPickProfile() : renderLogin());
   const isParent = !!STATE.parents[STATE.currentUserId];
@@ -1562,10 +1699,10 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
-    'build': renderBuild, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
+    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor, 'parent-add': renderAddChild,
   };
-  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build'];
+  const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build', 'runner'];
   let name = VIEW.name;
   if (isParent && studentOnly.includes(name)) name = 'parent-home';
   if (!isParent && name.startsWith('parent')) name = 'student-home';
@@ -1590,7 +1727,7 @@ function ensureStudentShape(stu) {
   g.sprintBest = g.sprintBest || 0; g.xp = g.xp || 0; g.coins = g.coins || 0;
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
-  g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
+  g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered
@@ -1598,6 +1735,10 @@ window.addEventListener('keydown', (e) => {
   if ((e.key === ' ' || e.code === 'Space') && VIEW.name === 'practice' && PRACTICE && PRACTICE.locked && typeof PRACTICE.next === 'function') {
     e.preventDefault();
     PRACTICE.next();
+  }
+  if (VIEW.name === 'runner' && RUNNER && RUNNER.phase === 'run') {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); moveRunner(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); moveRunner(1); }
   }
 });
 
