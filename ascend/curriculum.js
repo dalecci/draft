@@ -188,6 +188,21 @@ const GEN = {
   st_area() { const a = randInt(2, 10), b = randInt(2, 10), c = randInt(2, 10), d = randInt(2, 10); return numItem(`A compound shape is a ${a}×${b} rectangle joined to a ${c}×${d} rectangle. Total area?`, a * b + c * d, `${a}×${b} + ${c}×${d} = ${a * b} + ${c * d} = ${a * b + c * d}.`); },
   st_stats() { const n = 4; const vals = Array.from({ length: n - 1 }, () => randInt(2, 20)); const meanTarget = randInt(6, 14); const missing = meanTarget * n - vals.reduce((a, b) => a + b, 0); if (missing < 0 || missing > 40) return GEN.mean(); return numItem(`The mean of ${n} numbers is ${meanTarget}. Three of them are ${vals.join(', ')}. Find the 4th.`, missing, `Total must be ${meanTarget}×${n}=${meanTarget * n}; − ${vals.reduce((a, b) => a + b)} = ${missing}.`); },
   st_lcmgcf() { const a = randInt(2, 9), b = randInt(2, 9), c = randInt(2, 9); return numItem(`Find the LCM of ${a}, ${b}, and ${c}.`, lcm(lcm(a, b), c), `LCM(${a},${b},${c}) = ${lcm(lcm(a, b), c)}.`); },
+
+  /* ------------------------- GRADE 6 generators --------------------------- */
+  g6_unitRate() { const per = randInt(2, 12), q = randInt(2, 9); const total = per * q; return numItem(`A car travels ${total} miles in ${q} hours. What is the speed in miles per hour?`, per, `${total} ÷ ${q} = ${per} mph.`); },
+  g6_ratioTable() { const a = randInt(1, 6), b = randInt(1, 6), k = randInt(2, 6); return numItem(`The ratio ${a} : ${b} is equal to ${a * k} : ___`, b * k, `Multiply both parts by ${k}: ${b} × ${k} = ${b * k}.`); },
+  g6_percentOf() { const p = pick([10, 20, 25, 50, 5, 75]), n = pick([20, 40, 60, 80, 100, 200, 24, 48]); return numItem(`What is ${p}% of ${n}?`, +(p * n / 100).toFixed(2), `${p}% = ${p / 100}; × ${n} = ${p * n / 100}.`); },
+  g6_taxTip() { const price = randInt(10, 60), p = pick([10, 15, 20, 25]); const total = +(price * (1 + p / 100)).toFixed(2); return numItem(`A $${price} meal with a ${p}% tip. What is the total? ($)`, total, `$${price} + ${p}% = $${total}.`, 0.01); },
+  g6_exponent() { const kind = pick([[2, randInt(2, 8)], [3, randInt(2, 4)], [5, randInt(2, 3)], [randInt(2, 9), 2]]); return numItem(`Evaluate:  ${kind[0]}^${kind[1]}`, Math.pow(kind[0], kind[1]), `${kind[0]}^${kind[1]} = ${Math.pow(kind[0], kind[1])}.`); },
+  g6_absValue() { const n = randInt(1, 40) * pick([-1, -1, 1]); return numItem(`Evaluate:  |${n}|`, Math.abs(n), `Absolute value is distance from 0: |${n}| = ${Math.abs(n)}.`); },
+  g6_oneStep() { const kind = Math.random() < 0.5; if (kind) { const a = randInt(2, 20), x = randInt(1, 20); return numItem(`Solve:  x + ${a} = ${x + a}`, x, `Subtract ${a}: x = ${x}.`); } const a = randInt(2, 9), x = randInt(2, 12); return numItem(`Solve:  ${a}x = ${a * x}`, x, `Divide by ${a}: x = ${x}.`); },
+  g6_inequality() { const a = randInt(2, 12), b = randInt(13, 40); return numItem(`Solve for the smallest whole number:  x + ${a} > ${b}`, (b - a) + 1, `x > ${b - a}, so the smallest whole number is ${b - a + 1}.`); },
+  g6_combineLike() { const a = randInt(2, 9), c = randInt(2, 9); return { type: 'text', prompt: `Combine like terms:  ${a}x + ${c}x  (write like 5x)`, answer: `${a + c}x`, explanation: `${a} + ${c} = ${a + c}, so ${a + c}x.` }; },
+  g6_distribute() { const a = randInt(2, 6), b = randInt(2, 9), c = randInt(2, 9); return numItem(`Use the distributive property:  ${a} × (${b} + ${c})`, a * (b + c), `${a}×${b} + ${a}×${c} = ${a * b} + ${a * c} = ${a * (b + c)}.`); },
+  g6_triangleArea() { const b = randInt(2, 20), h = randInt(2, 20); return numItem(`Area of a triangle with base ${b} and height ${h}?`, +(b * h / 2).toFixed(1), `A = ½ × b × h = ½ × ${b} × ${h} = ${b * h / 2}.`, 0.01); },
+  g6_surfaceArea() { const s = randInt(2, 12); return numItem(`Surface area of a cube with side ${s}?`, 6 * s * s, `6 faces × ${s}² = 6 × ${s * s} = ${6 * s * s}.`); },
+  g6_quadrant() { const x = randInt(-9, 9) || 3, y = randInt(-9, 9) || 4; const q = x > 0 && y > 0 ? 'I' : x < 0 && y > 0 ? 'II' : x < 0 && y < 0 ? 'III' : 'IV'; return mc(`Which quadrant is the point (${x}, ${y}) in?`, q, ['I', 'II', 'III', 'IV'].filter(z => z !== q), `x ${x > 0 ? '+' : '−'}, y ${y > 0 ? '+' : '−'} → Quadrant ${q}.`); },
 };
 
 // which base (Grade 5) generator gets an above-grade "Grade 6" stretch variant
@@ -476,13 +491,61 @@ function buildCurriculum(subject, standard, units, mapper) {
   cur.units.forEach(u => u.skills.forEach(s => { s.pos = posById[s.id]; s.seq = cur.allSkills.find(a => a.id === s.id).seq; }));
   return cur;
 }
+// Grade 6 (core topics) — real above-grade curriculum for the "move up" flow
+const UNITS6 = [
+  ['A', 'Ratios and rates', ['Understand ratios', 'Equivalent ratios', 'Unit rates', 'Ratio tables', 'Compare rates', 'Ratio word problems']],
+  ['B', 'Percents', ['Percent of a number', 'Percents, fractions, and decimals', 'Tax and tip', 'Discount and sale price', 'Percent word problems']],
+  ['C', 'Integers and negative numbers', ['Understand integers', 'Absolute value', 'Compare and order integers', 'Add integers', 'Subtract integers', 'Multiply and divide integers', 'Points on the coordinate plane']],
+  ['D', 'The number system', ['Divide fractions', 'Multiply fractions', 'Add and subtract decimals', 'Multiply decimals', 'Divide decimals', 'Greatest common factor', 'Least common multiple']],
+  ['E', 'Exponents and expressions', ['Exponents', 'Order of operations', 'Evaluate expressions', 'Write expressions', 'Combine like terms', 'The distributive property']],
+  ['F', 'Equations and inequalities', ['One-step equations: addition and subtraction', 'One-step equations: multiplication and division', 'Write equations', 'Solve inequalities', 'Dependent and independent variables']],
+  ['G', 'Geometry', ['Area of triangles', 'Area of quadrilaterals', 'Area of composite figures', 'Volume of rectangular prisms', 'Surface area', 'Nets of solids']],
+  ['H', 'Statistics', ['Mean', 'Median', 'Mode', 'Range', 'Mean absolute deviation', 'Interpret data displays']],
+];
+function pickGen6(unitId, name) {
+  const s = name.toLowerCase(); const has = (...w) => w.some(x => s.includes(x));
+  if (has('unit rate', 'compare rate')) return 'g6_unitRate';
+  if (has('equivalent ratio', 'ratio table', 'understand ratio', 'ratio word')) return 'g6_ratioTable';
+  if (has('tax', 'tip')) return 'g6_taxTip';
+  if (has('discount', 'sale')) return 'g6_taxTip';
+  if (has('percent')) return 'g6_percentOf';
+  if (has('absolute value')) return 'g6_absValue';
+  if (has('coordinate', 'points on')) return 'g6_quadrant';
+  if (has('add integers', 'subtract integers', 'multiply and divide integers', 'compare and order integers', 'understand integers', 'integer')) return 'st_integers';
+  if (has('divide fractions', 'multiply fractions')) return 'st_fracMultDiv';
+  if (has('decimal')) return 'st_decimals';
+  if (has('greatest common factor')) return 'gcfGen';
+  if (has('least common multiple')) return 'st_lcmgcf';
+  if (has('exponent')) return 'g6_exponent';
+  if (has('order of operations')) return 'st_orderOps';
+  if (has('evaluate expression')) return 'evalVar';
+  if (has('write expression', 'write equation')) return 'writeExpr';
+  if (has('combine like terms')) return 'g6_combineLike';
+  if (has('distributive')) return 'g6_distribute';
+  if (has('one-step') && has('multiplication', 'division')) return 'g6_oneStep';
+  if (has('one-step', 'equation')) return 'g6_oneStep';
+  if (has('inequalit')) return 'g6_inequality';
+  if (has('dependent', 'independent')) return 'evalVar';
+  if (has('area of triangle')) return 'g6_triangleArea';
+  if (has('surface area', 'nets')) return 'g6_surfaceArea';
+  if (has('area')) return 'area';
+  if (has('volume')) return 'volume';
+  if (has('mean absolute')) return 'g6_absValue';
+  if (has('median')) return 'median';
+  if (has('mode')) return 'mode';
+  if (has('range')) return 'range';
+  if (has('mean', 'interpret data')) return 'mean';
+  return 'st_integers';
+}
 const CURRICULA = {
   g5: buildCurriculum('Grade 5 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS5, pickGen),
   g2: buildCurriculum('Grade 2 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS2, pickGen2),
+  g6: buildCurriculum('Grade 6 Mathematics', 'Core topics · above grade level', UNITS6, pickGen6),
 };
 const GRADES = [
   { id: 'g2', label: 'Grade 2', short: 'G2' },
   { id: 'g5', label: 'Grade 5', short: 'G5' },
+  { id: 'g6', label: 'Grade 6', short: 'G6' },
 ];
 // active curriculum (mutable) — the app rebinds these to whichever student is in view
 let CURRICULUM = CURRICULA.g5;

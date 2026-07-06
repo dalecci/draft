@@ -442,3 +442,24 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .practice.advanced .q { color: #d9480f; }
 :root[data-theme="dark"] .practice.advanced .q { color: #ffa94d; }
 .stretch-btn { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; box-shadow: 0 6px 16px rgba(247,103,7,.35); }
+
+/* Ready-to-move-up card */
+.moveup-card { text-align: center; border: 3px solid var(--good); background: linear-gradient(180deg, rgba(18,184,134,.12), var(--card)); }
+.moveup-emoji { font-size: 46px; }
+
+/* Number Runner arcade */
+.runner-prompt { flex: 1; text-align: center; font-size: 22px; font-weight: 800; }
+.runner-field { position: relative; overflow: hidden; background: linear-gradient(180deg, #e7f5ff, #d0ebff); border-radius: 18px; margin: 10px 0; box-shadow: inset 0 0 0 3px rgba(28,126,214,.25); }
+:root[data-theme="dark"] .runner-field { background: linear-gradient(180deg, #1a2740, #12203a); }
+.runner-field::before, .runner-field::after { content: ''; position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(28,126,214,.2); }
+.runner-field::before { left: 33.333%; } .runner-field::after { left: 66.666%; }
+.runner-gate { position: absolute; top: 0; left: 0; right: 0; height: 60px; will-change: transform; }
+.runner-door { position: absolute; width: 33.333%; height: 60px; display: grid; place-items: center; font-size: 24px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #7048e8, #9775fa); border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,.2); border: 2px solid rgba(255,255,255,.4); cursor: pointer; }
+.runner-guy { position: absolute; bottom: 8px; transform: translateX(-50%); font-size: 40px; transition: left .1s ease; z-index: 2; }
+.runner-controls { display: flex; gap: 14px; justify-content: center; }
+.run-btn { font-size: 26px; width: 42%; padding: 16px; }
+.runner-field.shake { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+.run-drop { background: linear-gradient(135deg, #f76707, #e64980); color: #fff; font-size: 18px; width: 30%; padding: 16px; box-shadow: 0 6px 16px rgba(247,103,7,.35); }
