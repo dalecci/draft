@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 28; // shown on every screen so you can confirm the running version
+const APP_BUILD = 29; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -1477,6 +1477,18 @@ function moveUp(stu) {
   confetti(['🎓', '🚀', '🌟', '🔥']); toast(`🎓 ${stu.name} moved up to ${gradeLabel(ng)}!`);
   go('parent-child', { child: stu.id });
 }
+function renderRewardCard(stu) {
+  const card = el('div', { class: 'card reward-card' });
+  const give = (n, set) => { stu.games.coins = set ? n : (stu.games.coins || 0) + n; persist(); confetti(['🪙', '🎉', '⭐']); toast(`🪙 ${stu.name} now has ${stu.games.coins} coins!`); go('parent-child', { child: stu.id }); };
+  card.append(el('div', { class: 'reward-top' }, [el('h3', {}, '🎁 Give a bonus'), el('div', { class: 'reward-coins' }, `🪙 ${stu.games.coins || 0}`)]));
+  card.append(el('p', { class: 'muted' }, `Reward ${stu.name} for working hard.`));
+  card.append(el('div', { class: 'reward-btns' }, [
+    el('button', { class: 'mini', onclick: () => give(100) }, '+100'),
+    el('button', { class: 'mini', onclick: () => give(500) }, '+500'),
+    el('button', { class: 'btn stretch-btn', onclick: () => give(1000, true) }, '🎁 Set to 1,000'),
+  ]));
+  return card;
+}
 function renderMoveUpCard(stu) {
   const st = playerStats(stu); const ng = nextGrade(stu.grade);
   const card = el('div', { class: 'card moveup-card' });
@@ -1673,6 +1685,7 @@ function renderParentChild() {
   wrap.append(renderCoachCard(stu));
   if (readyToMoveUp(stu)) wrap.append(renderMoveUpCard(stu));
   wrap.append(goalCard(stu));
+  wrap.append(renderRewardCard(stu));
 
   // quick actions
   const nReview = stu.misses.length;
