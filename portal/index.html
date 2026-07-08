@@ -318,6 +318,12 @@ input,textarea,select{font:inherit;color:inherit;}
 .share-opt svg{width:20px;height:20px;color:var(--gold);flex-shrink:0;}
 .share-cancel{display:block;width:100%;padding:15px;font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--ash);background:var(--cream);border:none;cursor:pointer;}
 .share-cancel:hover{color:var(--charcoal);}
+/* ===== tab permission checkboxes ===== */
+.tabperm{display:flex;align-items:center;gap:11px;padding:12px 14px;border:1px solid var(--mist);background:#fff;cursor:pointer;font-family:var(--sans);font-size:14px;color:var(--charcoal);transition:all .15s;}
+.tabperm:hover{border-color:var(--gold-pale);}
+.tabperm.on{border-color:var(--gold);background:rgba(160,132,80,.06);}
+.tabperm input{width:17px;height:17px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;}
+.tabperm input:disabled{cursor:not-allowed;}
 
 /* ============== ADMIN CALENDAR (master) ============== */
 .cal-flight.master{border-left-width:3px;font-weight:500;}
@@ -628,7 +634,13 @@ input,textarea,select{font:inherit;color:inherit;}
       {"vendor":"Covington Aircraft","amount":78500,"note":"18-day turn.","recommended":false}
     ],"recommendation":"Standard Aero. Lower and factory-authorized.","responded_at":null,"response_note":null}
   ],
-  "_meta": { "version": 3 }
+  "users": [
+    {"id":"u1","client_id":"c1","email":"smith@example.com","name":"Robert Smith","label":"Owner","primary":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]},
+    {"id":"u2","client_id":"c1","email":"assistant@example.com","name":"Karen Boyd","label":"Executive Assistant","primary":false,"tabs":["dashboard","calendar","flights","documents"]},
+    {"id":"u3","client_id":"c1","email":"pilot@example.com","name":"Capt. James Williams","label":"Chief Pilot","primary":false,"tabs":["calendar","flights","maintenance","documents"]},
+    {"id":"u4","client_id":"c2","email":"chen@example.com","name":"David Chen","label":"Owner","primary":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]}
+  ],
+  "_meta": { "version": 4 }
 }
 </script>
 
@@ -637,6 +649,20 @@ input,textarea,select{font:inherit;color:inherit;}
 const SEED = JSON.parse(document.getElementById('seed').textContent);
 const LS_KEY = 'j3t-portal-state-v1';
 const SESSION_KEY = 'j3t-portal-session';
+
+/* Owner tabs that can be granted per user (order = sidebar order) */
+const TAB_META = [
+  ['dashboard','Dashboard'],
+  ['calendar','Calendar'],
+  ['flights','Flights'],
+  ['approvals','Approvals'],
+  ['maintenance','Maintenance'],
+  ['documents','Documents'],
+  ['savings','Savings'],
+  ['costs','Costs']
+];
+const ALL_TAB_KEYS = TAB_META.map(t => t[0]);
+function tabLabel(k){ const m = TAB_META.find(t=>t[0]===k); return m ? m[1] : k; }
 
 function migrateState(s){
   // Soft migrations — upgrade fields without wiping user data
@@ -671,6 +697,13 @@ function migrateState(s){
   (s.flights||[]).forEach(f => {
     if (f.dep_fbo === undefined) f.dep_fbo = null;
     if (f.arr_fbo === undefined) f.arr_fbo = null;
+  });
+  // Users added in v4 — backfill one primary owner per client with all tabs
+  if (!s.users) s.users = [];
+  (s.clients||[]).forEach(c => {
+    if (!s.users.some(u => u.client_id === c.id && u.primary)){
+      s.users.push({ id:'u-'+Math.random().toString(36).slice(2,8), client_id:c.id, email:c.email, name:c.name, label:'Owner', primary:true, tabs:ALL_TAB_KEYS.slice() });
+    }
   });
   return s;
 }
@@ -819,6 +852,8 @@ function renderLogin(){
         <p class="demo-list-title">Demo Accounts &middot; click to autofill</p>
         <div class="demo-acc" data-fill="admin@j3taviation.com"><span class="demo-acc-name">J3T Administrator</span><span class="demo-acc-role">Admin</span></div>
         <div class="demo-acc" data-fill="smith@example.com"><span class="demo-acc-name">Robert Smith &middot; N123JT</span><span class="demo-acc-role">Owner</span></div>
+        <div class="demo-acc" data-fill="assistant@example.com"><span class="demo-acc-name">Karen Boyd &middot; Smith Assistant</span><span class="demo-acc-role">Limited</span></div>
+        <div class="demo-acc" data-fill="pilot@example.com"><span class="demo-acc-name">Capt. Williams &middot; Chief Pilot</span><span class="demo-acc-role">Limited</span></div>
         <div class="demo-acc" data-fill="chen@example.com"><span class="demo-acc-name">David Chen &middot; N456PL</span><span class="demo-acc-role">Owner</span></div>
       </div>
       <p class="auth-foot">Preview build · not for production use</p>
@@ -827,12 +862,28 @@ function renderLogin(){
 }
 
 /* ============== APP SHELL ============== */
+function resolveUser(session){
+  if (!session) return null;
+  if (session.impersonating_uid) return state.users.find(u=>u.id===session.impersonating_uid) || null;
+  if (session.impersonating) return state.users.find(u=>u.client_id===session.impersonating && u.primary) || state.users.find(u=>u.client_id===session.impersonating) || null;
+  if (session.uid) return state.users.find(u=>u.id===session.uid) || null;
+  if (session.role==='owner') return state.users.find(u=>u.client_id===session.userId && u.primary) || state.users.find(u=>u.client_id===session.userId) || null;
+  return null;
+}
+let currentPerm = ALL_TAB_KEYS.slice();
+function can(tab){ return currentPerm.includes(tab); }
+function firstPermittedTab(){ return ALL_TAB_KEYS.find(t => currentPerm.includes(t)) || 'flights'; }
+
 function renderShell(session, path, parts){
   const isAdmin = session.role === 'admin';
-  const viewingClient = isAdmin && session.impersonating ? state.clients.find(c=>c.id===session.impersonating) : null;
-  const isImpersonating = !!viewingClient;
+  const isImpersonating = isAdmin && !!session.impersonating;
+  const viewingClient = isImpersonating ? state.clients.find(c=>c.id===session.impersonating) : null;
   const effectiveRole = isImpersonating ? 'owner' : session.role;
-  const clientId = isImpersonating ? viewingClient.id : (effectiveRole==='owner' ? session.userId : null);
+  const clientId = isImpersonating ? (viewingClient && viewingClient.id) : (effectiveRole==='owner' ? session.userId : null);
+
+  // Resolve the acting user and their permitted tabs
+  const currentUser = effectiveRole==='owner' ? resolveUser(session) : null;
+  currentPerm = currentUser ? currentUser.tabs.slice() : ALL_TAB_KEYS.slice();
 
   // Sidebar links depend on role
   const adminLinks = [
@@ -844,7 +895,7 @@ function renderShell(session, path, parts){
     ['admin/data', 'Demo Data', I.docs]
   ];
   const pendingApprovals = clientId ? state.approvals.filter(a=>a.client_id===clientId && a.status==='pending').length : 0;
-  const ownerLinks = [
+  const ownerLinksAll = [
     ['dashboard', 'Dashboard', I.dash],
     ['calendar', 'Calendar', I.cal],
     ['flights', 'Flights', I.plane],
@@ -854,17 +905,19 @@ function renderShell(session, path, parts){
     ['savings', 'Savings', I.saving],
     ['costs', 'Costs', I.chart]
   ];
+  const ownerLinks = ownerLinksAll.filter(l => currentPerm.includes(l[0]));
   const links = effectiveRole === 'admin' ? adminLinks : ownerLinks;
 
-  const userName = isImpersonating ? viewingClient.name : (isAdmin ? 'J3T Administrator' : (state.clients.find(c=>c.id===session.userId)||{}).name);
-  const userRole = isImpersonating ? 'Owner (impersonated)' : (isAdmin ? 'Administrator' : 'Aircraft Owner');
+  const userName = isAdmin && !isImpersonating ? 'J3T Administrator' : (currentUser ? currentUser.name : (viewingClient ? viewingClient.name : 'Unknown'));
+  const userRole = isAdmin && !isImpersonating ? 'Administrator' : (currentUser ? (currentUser.label || 'User') : 'Aircraft Owner');
 
   const sideLinks = links.map(([p,label,icon,badge]) => raw`<a href="#${p}" data-nav="${p}" class="side-link ${path.startsWith(p)?'active':''}">${icon}<span>${label}</span>${badge>0?raw`<span class="side-badge">${badge}</span>`:''}</a>`).join('');
 
   const impersonateBanner = isImpersonating ? raw`
     <div class="side-impersonate">
       Viewing as
-      <strong>${h`${viewingClient.name}`}</strong>
+      <strong>${h`${currentUser ? currentUser.name : viewingClient.name}`}</strong>
+      ${currentUser ? raw`<span style="display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--amber);opacity:.8;">${h`${currentUser.label}`} · ${h`${viewingClient.aircraft.tail}`}</span>` : ''}
       <a href="#admin" data-nav="admin">Return to admin</a>
     </div>
   ` : '';
@@ -906,6 +959,9 @@ function renderView(role, path, parts, clientId){
     if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='documents') return adminClientDocs(parts[2]);
     if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='savings') return adminClientSavings(parts[2]);
     if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='approvals') return adminClientApprovals(parts[2]);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='users' && parts[4]==='new') return adminUserForm(parts[2], null);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='users' && parts[4]) return adminUserForm(parts[2], parts[4]);
+    if (parts[0]==='admin' && parts[1]==='clients' && parts[2] && parts[3]==='users') return adminClientUsers(parts[2]);
     if (parts[0]==='admin' && parts[1]==='clients' && parts[2]) return adminClientForm(parts[2]);
     if (path === 'admin/calendar') return adminMasterCalendar();
     if (path === 'admin/flights') return adminAllFlights();
@@ -919,6 +975,15 @@ function renderView(role, path, parts, clientId){
     return adminDashboard();
   }
   // Owner views (or admin impersonating)
+  // Tab permission gate — a blocked tab (direct URL or stale link) falls back to the first permitted tab
+  const need = (parts[0]==='trip') ? 'flights' : (ALL_TAB_KEYS.includes(parts[0]) ? parts[0] : 'dashboard');
+  if (!currentPerm.includes(need)){
+    const first = firstPermittedTab();
+    if ((parts[0]||'dashboard') !== first){
+      setTimeout(()=>{ const b=location.hash.replace(/^#\/?/,'').split('/')[0]||'dashboard'; if (!currentPerm.includes(b==='trip'?'flights':b)) location.hash = '#'+first; }, 0);
+    }
+    path = first; parts = [first];
+  }
   if (path === 'dashboard') return ownerDashboard(clientId);
   if (path === 'calendar') return ownerCalendar(clientId);
   if (path === 'flights') return ownerFlights(clientId);
@@ -969,7 +1034,7 @@ function ownerDashboard(clientId){
         <div><span class="pill ${h`${c.status}`}">${h`${c.status}`}</span></div>
       </div>
 
-      ${pendingApprovals.length > 0 ? raw`
+      ${(can('approvals') && pendingApprovals.length > 0) ? raw`
       <div class="approve-banner" onclick="navigate('#approvals')">
         <div class="approve-banner-icon">${I.approve}</div>
         <div style="flex:1;">
@@ -980,50 +1045,56 @@ function ownerDashboard(clientId){
       </div>` : ''}
 
       <div class="cards-grid">
+        ${can('flights') ? raw`
         <div class="card" onclick="navigate('#flights/${nextFlight?nextFlight.id:''}')">
           <div class="card-label"><span>Next Flight</span></div>
           ${nextFlight ? raw`
             <div class="card-value lg">${h`${nextFlight.departure.airport}`}<em>&rarr;</em>${h`${nextFlight.arrival.airport}`}</div>
             <div class="card-meta"><strong>${fmtDateShort(nextFlight.departure.date)}</strong> &middot; ${h`${nextFlight.departure.time}`} &middot; <span class="pill ${h`${nextFlight.status}`}">${h`${nextFlight.status}`}</span></div>
           ` : raw`<div class="card-value">—</div><div class="card-meta">No upcoming flights</div>`}
-        </div>
+        </div>` : ''}
 
-        <div class="card" onclick="navigate('#flights')">
+        ${can('costs') ? raw`
+        <div class="card" onclick="navigate('#costs')">
           <div class="card-label"><span>Outstanding</span></div>
           <div class="card-value">${outstandingTotal>0 ? fmtMoney(outstandingTotal) : '$0'}</div>
           <div class="card-meta">${outstanding.length} ${outstanding.length===1?'invoice':'invoices'} pending</div>
-        </div>
+        </div>` : ''}
 
-        ${nextInspection ? raw`
+        ${(can('maintenance') && nextInspection) ? raw`
         <div class="card" onclick="navigate('#maintenance')">
           <div class="card-label"><span>Next Inspection</span></div>
           <div class="card-value">${nextInspection.value}<em> ${nextInspection.unit}</em></div>
           <div class="card-meta">${h`${nextInspection.label}`}</div>
         </div>` : ''}
 
+        ${can('costs') ? raw`
         <div class="card" onclick="navigate('#costs')">
           <div class="card-label"><span>YTD Operating</span></div>
           <div class="card-value">${fmtMoney(ytdSpend)}</div>
           <div class="card-meta">${flights.filter(f=>f.status==='completed').length} flights completed</div>
-        </div>
+        </div>` : ''}
 
+        ${can('savings') ? raw`
         <div class="card card-gold" onclick="navigate('#savings')">
           <div class="card-label"><span>YTD Saved by J3T</span></div>
           <div class="card-value"><em>${fmtMoney(ytdSaved)}</em></div>
           <div class="card-meta">Recovered &amp; avoided this year</div>
-        </div>
+        </div>` : ''}
 
+        ${can('documents') ? raw`
         <div class="card" onclick="navigate('#documents')">
           <div class="card-label"><span>Documents</span></div>
           <div class="card-value">${c.docs.length}<em> on file</em></div>
           <div class="card-meta">${insuranceDue!==null && insuranceDue<60 ? raw`<span style="color:var(--amber)">Insurance expires in ${insuranceDue} days</span>` : 'All current'}</div>
-        </div>
+        </div>` : ''}
 
+        ${can('flights') ? raw`
         <div class="card" onclick="navigate('#flights/new')">
           <div class="card-label"><span>Request a Flight</span></div>
           <div class="card-value" style="font-size:24px;">New trip <em>&rarr;</em></div>
           <div class="card-meta">Submit a request, we'll confirm in 24h</div>
-        </div>
+        </div>` : ''}
       </div>
 
       ${notifs.length > 0 ? raw`
@@ -1909,6 +1980,7 @@ function adminDashboard(){
               <a href="#admin/clients/${c.id}/documents" data-nav="admin/clients/${c.id}/documents" class="btn ghost sm">Documents</a>
               <a href="#admin/clients/${c.id}/savings" data-nav="admin/clients/${c.id}/savings" class="btn ghost sm">Savings</a>
               <a href="#admin/clients/${c.id}/approvals" data-nav="admin/clients/${c.id}/approvals" class="btn ghost sm">Approvals</a>
+              <a href="#admin/clients/${c.id}/users" data-nav="admin/clients/${c.id}/users" class="btn ghost sm">Users &amp; access</a>
             </div>
           </div>
         `).join('')}
@@ -1919,8 +1991,18 @@ function adminDashboard(){
 function impersonate(clientId){
   const s = getSession();
   s.impersonating = clientId;
+  delete s.impersonating_uid;  // primary owner (all tabs)
   setSession(s);
   location.hash = '#dashboard';
+}
+function impersonateUser(clientId, userId){
+  const s = getSession();
+  s.impersonating = clientId;
+  s.impersonating_uid = userId;
+  setSession(s);
+  const u = state.users.find(x=>x.id===userId);
+  const first = (u && u.tabs && u.tabs.length) ? (ALL_TAB_KEYS.find(t=>u.tabs.includes(t)) || u.tabs[0]) : 'dashboard';
+  location.hash = '#' + first;
 }
 
 /* ============== ADMIN CLIENT FORM ============== */
@@ -2863,6 +2945,115 @@ function addApprovalPrompt(clientId){
   saveState(); toast('Approval request sent to owner'); render();
 }
 
+/* ============== ADMIN: CLIENT USERS ============== */
+const USER_LABELS = ['Owner','Co-owner','Spouse','Executive Assistant','Chief Pilot','Pilot','Accountant','Family Office','Other'];
+
+function adminClientUsers(clientId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!c) return errorView('Client not found');
+  const users = state.users.filter(u=>u.client_id===clientId);
+  return raw`
+    ${topbar('Users', c.name + ' · ' + c.aircraft.tail, [['#admin','Clients'],['#admin/clients/'+c.id,c.name]])}
+    <div class="view">
+      <div class="section-head">
+        <h2 class="section-title">Portal <em>users</em></h2>
+        <a href="#admin/clients/${c.id}/users/new" data-nav="admin/clients/${c.id}/users/new" class="btn primary">${I.plus}Add user</a>
+      </div>
+      <p style="font-family:var(--serif);font-size:15px;color:var(--ash);font-style:italic;margin-bottom:20px;">Each person gets their own login. Choose exactly which tabs they can see. Financial tabs (Costs, Savings, Approvals) can be hidden from crew or assistants.</p>
+      <div class="admin-clients">
+        ${users.map(u=>raw`
+          <div class="admin-client">
+            <div class="admin-client-head">
+              <div class="admin-avatar" style="${u.primary?'':'background:var(--ash);'}">${h`${initials(u.name)}`}</div>
+              <div>
+                <div class="admin-client-name">${h`${u.name}`}</div>
+                <div class="admin-client-co">${h`${u.label}`}${u.primary?' · Primary':''} · ${h`${u.email}`}</div>
+              </div>
+            </div>
+            <div style="padding:12px 0;margin:6px 0;border-top:1px solid var(--mist);border-bottom:1px solid var(--mist);">
+              <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Can access ${u.tabs.length} of ${ALL_TAB_KEYS.length} tabs</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                ${ALL_TAB_KEYS.map(t=>raw`<span class="pill" style="${u.tabs.includes(t)?'color:var(--gold);border-color:var(--gold-pale);background:rgba(160,132,80,.06);':'color:var(--mist);border-color:var(--mist);opacity:.55;'}">${h`${tabLabel(t)}`}</span>`).join('')}
+              </div>
+            </div>
+            <div class="admin-actions" style="flex-wrap:wrap;">
+              <button class="btn primary sm" onclick="impersonateUser('${c.id}','${u.id}')">View as ${h`${u.name.split(' ')[0]}`} &rarr;</button>
+              <a href="#admin/clients/${c.id}/users/${u.id}" data-nav="admin/clients/${c.id}/users/${u.id}" class="btn ghost sm">Edit</a>
+              ${u.primary?'':raw`<button class="btn danger sm" onclick="if(confirm('Remove this user login?')){state.users=state.users.filter(x=>x.id!=='${u.id}');saveState();render();}">Remove</button>`}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+}
+
+function adminUserForm(clientId, userId){
+  const c = state.clients.find(x=>x.id===clientId);
+  if (!c) return errorView('Client not found');
+  const isNew = !userId;
+  const u = isNew
+    ? { id:uid('u'), client_id:clientId, email:'', name:'', label:'Executive Assistant', primary:false, tabs:['dashboard','calendar','flights','documents'] }
+    : state.users.find(x=>x.id===userId);
+  if (!u) return errorView('User not found');
+
+  return raw`
+    ${topbar(isNew?'Add user':'Edit user', c.name + ' · ' + c.aircraft.tail, [['#admin','Clients'],['#admin/clients/'+c.id,c.name],['#admin/clients/'+c.id+'/users','Users']])}
+    <div class="view" style="max-width:680px;">
+      <form id="userForm">
+        <input type="hidden" id="u_id" value="${h`${u.id}`}">
+        <input type="hidden" id="u_cid" value="${h`${clientId}`}">
+        <input type="hidden" id="u_primary" value="${u.primary?'1':'0'}">
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Person</h3>
+          <div class="row2">
+            <div class="field light-field"><label>Full name</label><input id="u_name" value="${h`${u.name}`}" required></div>
+            <div class="field light-field"><label>Role / label</label>
+              <select id="u_label">
+                ${USER_LABELS.map(l=>raw`<option ${u.label===l?'selected':''}>${l}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="field light-field"><label>Login email</label><input type="email" id="u_email" value="${h`${u.email}`}" required ${u.primary?'':''}></div>
+          ${u.primary?raw`<p style="font-size:11px;color:var(--ash);font-style:italic;font-family:var(--serif);">This is the primary owner account. It always keeps full access; you can adjust the others.</p>`:''}
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Tab access</h3>
+          <p style="font-family:var(--serif);font-size:14px;color:var(--ash);font-style:italic;margin-bottom:14px;">Tick the tabs this person can open. Anything unticked is hidden from their sidebar and blocked by direct link.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;">
+            ${TAB_META.map(([key,label])=>raw`
+              <label class="tabperm ${u.tabs.includes(key)?'on':''}">
+                <input type="checkbox" data-tab="${key}" ${u.tabs.includes(key)?'checked':''} ${u.primary?'checked disabled':''} onchange="this.closest('.tabperm').classList.toggle('on',this.checked)">
+                <span>${h`${label}`}</span>
+              </label>
+            `).join('')}
+          </div>
+          ${u.primary?raw`<p style="font-size:11px;color:var(--ash);margin-top:12px;font-style:italic;">Primary owner keeps all tabs. To create a limited login, use Add user.</p>`:raw`
+            <div style="display:flex;gap:10px;margin-top:16px;">
+              <button type="button" class="btn ghost sm" onclick="setUserTabs(true)">Select all</button>
+              <button type="button" class="btn ghost sm" onclick="setUserTabs(false)">Clear all</button>
+              <button type="button" class="btn ghost sm" onclick="setUserPreset('logistics')">Logistics only</button>
+            </div>`}
+        </div>
+        <div style="display:flex;gap:12px;justify-content:space-between;">
+          ${(!isNew && !u.primary)?raw`<button type="button" class="btn danger" onclick="if(confirm('Remove this user?')){state.users=state.users.filter(x=>x.id!=='${u.id}');saveState();location.hash='#admin/clients/${clientId}/users';}">Delete</button>`:'<span></span>'}
+          <div style="display:flex;gap:12px;">
+            <a href="#admin/clients/${clientId}/users" data-nav="admin/clients/${clientId}/users" class="btn ghost">Cancel</a>
+            <button type="submit" class="btn primary">${isNew?'Create login':'Save'}</button>
+          </div>
+        </div>
+      </form>
+    </div>`;
+}
+
+function setUserTabs(on){
+  $$('#userForm [data-tab]').forEach(cb => { if (!cb.disabled){ cb.checked = on; cb.closest('.tabperm').classList.toggle('on', on); } });
+}
+function setUserPreset(preset){
+  const sets = { logistics: ['dashboard','calendar','flights','documents'] };
+  const keep = sets[preset] || [];
+  $$('#userForm [data-tab]').forEach(cb => { if (!cb.disabled){ const on = keep.includes(cb.dataset.tab); cb.checked = on; cb.closest('.tabperm').classList.toggle('on', on); } });
+}
+
 /* ============== SHARED COMPONENTS ============== */
 function topbar(title, subtitle, breadcrumbs){
   const bc = breadcrumbs ? breadcrumbs.map(([href,label])=>raw`<a href="${href}" data-nav="${href.replace('#','')}" style="color:var(--ash);">${h`${label}`}</a> <span style="color:var(--mist);">/</span> `).join('') : '';
@@ -2899,10 +3090,11 @@ function attachViewHandlers(session, path, parts){
         setSession({role:'admin', userId:'admin', impersonating:null});
         location.hash = '#admin';
       } else {
-        const client = state.clients.find(c=>c.email.toLowerCase()===email);
-        if (!client){ toast('No account found for ' + email); return; }
-        setSession({role:'owner', userId:client.id});
-        location.hash = '#dashboard';
+        const user = state.users.find(u=>u.email.toLowerCase()===email);
+        if (!user){ toast('No account found for ' + email); return; }
+        setSession({role:'owner', userId:user.client_id, uid:user.id});
+        const first = (user.tabs && user.tabs.length) ? (ALL_TAB_KEYS.find(t=>user.tabs.includes(t)) || user.tabs[0]) : 'dashboard';
+        location.hash = '#' + first;
       }
       render();
     });
@@ -3140,6 +3332,34 @@ function attachViewHandlers(session, path, parts){
       saveState();
       toast('Maintenance updated');
       location.hash = '#admin/clients/' + cid;
+    });
+  }
+
+  // User (access) form
+  const uf = document.getElementById('userForm');
+  if (uf){
+    uf.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = $('#u_id').value;
+      const cid = $('#u_cid').value;
+      const isPrimary = $('#u_primary').value === '1';
+      const existing = state.users.find(x=>x.id===id);
+      let tabs = $$('#userForm [data-tab]').filter(cb=>cb.checked).map(cb=>cb.dataset.tab);
+      if (isPrimary) tabs = ALL_TAB_KEYS.slice();
+      if (tabs.length === 0){ toast('Give the user at least one tab'); return; }
+      const email = $('#u_email').value.trim().toLowerCase();
+      // prevent duplicate email across users
+      const clash = state.users.find(u=>u.email.toLowerCase()===email && u.id!==id);
+      if (clash){ toast('That email is already used by another login'); return; }
+      const data = {
+        id, client_id:cid, email,
+        name:$('#u_name').value.trim(), label:$('#u_label').value,
+        primary: isPrimary, tabs
+      };
+      if (existing){ Object.assign(existing, data); toast('User updated'); }
+      else { state.users.push(data); toast('User login created'); }
+      saveState();
+      location.hash = '#admin/clients/' + cid + '/users';
     });
   }
 }
