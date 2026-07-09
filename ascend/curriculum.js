@@ -566,15 +566,47 @@ function pickGen6(unitId, name) {
   if (has('mean', 'interpret data')) return 'mean';
   return 'st_integers';
 }
+// Grade 3 (core topics) — real curriculum so Grade 2 kids can move UP into it
+const UNITS3 = [
+  ['A', 'Place value to 10,000', ['Place value', 'Value of a digit', 'Standard and expanded form', 'Compare numbers to 10,000', 'Round to the nearest ten and hundred']],
+  ['B', 'Addition & subtraction', ['Add within 1,000', 'Subtract within 1,000', 'Add and subtract within 1,000', 'Missing addends', 'Estimate sums and differences', 'Two-step word problems']],
+  ['C', 'Multiplication facts', ['Multiply by 2, 5, 10', 'Multiply by 3, 4', 'Multiply by 6, 7, 8, 9', 'Multiplication facts to 100', 'Multiplication word problems', 'Arrays and equal groups']],
+  ['D', 'Division facts', ['Divide by 2, 5, 10', 'Division facts', 'Relate multiplication and division', 'Division word problems', 'Fact families']],
+  ['E', 'Multiply & divide', ['Multiply multiples of 10', 'Two-step problems (× and ÷)', 'Properties of multiplication', 'Missing factors']],
+  ['F', 'Fractions', ['Understand fractions', 'Fractions on a number line', 'Equivalent fractions', 'Compare fractions', 'Fractions of a set', 'Whole numbers as fractions']],
+  ['G', 'Measurement', ['Tell time to the minute', 'Elapsed time', 'Measure length', 'Liquid volume and mass', 'Perimeter', 'Area of rectangles']],
+  ['H', 'Money', ['Count money', 'Add and subtract money', 'Make change']],
+  ['I', 'Data & graphs', ['Read picture and bar graphs', 'Line plots', 'Interpret data']],
+  ['J', 'Geometry', ['Classify shapes', 'Quadrilaterals', 'Partition shapes into equal parts']],
+];
+function pickGen3(unitId, name) {
+  const s = name.toLowerCase(); const has = (...w) => w.some(x => s.includes(x));
+  if (has('round')) return 'g3_round';
+  if (has('place value', 'value of a digit', 'expanded', 'standard')) return 'g3_place';
+  if (has('compare')) return 'g3_addsub';
+  if (has('multiply', 'multiplication', 'array', 'equal group', 'factor', 'properties of mult')) return 'g3_mult';
+  if (has('divide', 'division', 'fact famil')) return 'g3_div';
+  if (has('add') || has('subtract') || has('missing addend') || has('estimate') || has('two-step')) return has('two-step', 'word') ? 'g3_word' : 'g3_addsub';
+  if (has('fraction')) return 'g3_frac';
+  if (has('time')) return 'g3_time';
+  if (has('perimeter', 'area', 'length', 'measure', 'volume', 'mass')) return 'g3_measure';
+  if (has('money', 'change')) return 'g3_money';
+  if (has('graph', 'data', 'line plot')) return 'g3_word';
+  if (has('shape', 'quadrilateral', 'geometry', 'partition')) return 'name2D';
+  const byUnit = { A: 'g3_place', B: 'g3_addsub', C: 'g3_mult', D: 'g3_div', E: 'g3_mult', F: 'g3_frac', G: 'g3_measure', H: 'g3_money', I: 'g3_word', J: 'name2D' };
+  return byUnit[unitId] || 'g3_addsub';
+}
 const CURRICULA = {
   g5: buildCurriculum('Grade 5 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS5, pickGen),
   g2: buildCurriculum('Grade 2 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS2, pickGen2),
   g6: buildCurriculum('Grade 6 Mathematics', 'Core topics · above grade level', UNITS6, pickGen6),
+  g3: buildCurriculum('Grade 3 Mathematics', 'Core topics · above grade level', UNITS3, pickGen3),
 };
 const GRADES = [
   { id: 'g2', label: 'Grade 2', short: 'G2' },
   { id: 'g5', label: 'Grade 5', short: 'G5' },
   { id: 'g6', label: 'Grade 6', short: 'G6' },
+  { id: 'g3', label: 'Grade 3', short: 'G3' },
 ];
 // active curriculum (mutable) — the app rebinds these to whichever student is in view
 let CURRICULUM = CURRICULA.g5;

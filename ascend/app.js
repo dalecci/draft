@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 32; // shown on every screen so you can confirm the running version
+const APP_BUILD = 33; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -1486,7 +1486,7 @@ function coachReport(stu) {
   return { headline, lines, sug };
 }
 /* ------------------------- "Ready to move up" flow ----------------------- */
-function nextGrade(g) { return { g5: 'g6' }[g] || null; }
+function nextGrade(g) { return { g2: 'g3', g5: 'g6' }[g] || null; }
 function gradeLabel(id) { const g = GRADES.find(x => x.id === id); return g ? g.label : id; }
 function readyToMoveUp(stu) {
   if (!nextGrade(stu.grade)) return false;
