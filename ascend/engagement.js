@@ -56,7 +56,13 @@ function touchStreak(stu) {
 
 /* -------- currency -------- */
 function awardXP(stu, n) { stu.games.xp = (stu.games.xp || 0) + n; }
-function awardCoins(stu, n) { stu.games.coins = (stu.games.coins || 0) + n; }
+function awardCoins(stu, n, src) {
+  if (!n) return;
+  stu.games.coins = (stu.games.coins || 0) + n;
+  const log = stu.games.coinLog || (stu.games.coinLog = []);
+  log.push({ t: Date.now(), n, src: src || 'play', bal: stu.games.coins });
+  if (log.length > 80) log.shift();
+}
 
 /* -------- stats + badges -------- */
 function playerStats(stu) {
