@@ -203,6 +203,18 @@ const GEN = {
   g6_triangleArea() { const b = randInt(2, 20), h = randInt(2, 20); return numItem(`Area of a triangle with base ${b} and height ${h}?`, +(b * h / 2).toFixed(1), `A = ½ × b × h = ½ × ${b} × ${h} = ${b * h / 2}.`, 0.01); },
   g6_surfaceArea() { const s = randInt(2, 12); return numItem(`Surface area of a cube with side ${s}?`, 6 * s * s, `6 faces × ${s}² = 6 × ${s * s} = ${6 * s * s}.`); },
   g6_quadrant() { const x = randInt(-9, 9) || 3, y = randInt(-9, 9) || 4; const q = x > 0 && y > 0 ? 'I' : x < 0 && y > 0 ? 'II' : x < 0 && y < 0 ? 'III' : 'IV'; return mc(`Which quadrant is the point (${x}, ${y}) in?`, q, ['I', 'II', 'III', 'IV'].filter(z => z !== q), `x ${x > 0 ? '+' : '−'}, y ${y > 0 ? '+' : '−'} → Quadrant ${q}.`); },
+
+  /* --------------- GRADE 3 "stretch" generators (above Grade 2) ----------- */
+  g3_mult() { const a = randInt(2, 10), b = randInt(2, 10); return numItem(`${a} × ${b}`, a * b, `${a} groups of ${b} = ${a * b}.`); },
+  g3_div() { const b = randInt(2, 9), q = randInt(2, 9); return numItem(`${b * q} ÷ ${b}`, q, `${b} × ${q} = ${b * q}, so ${b * q} ÷ ${b} = ${q}.`); },
+  g3_addsub() { if (Math.random() < 0.34) { const a = randInt(100, 899), x = randInt(50, 900); return numItem(`${a} + ___ = ${a + x}`, x, `${a + x} − ${a} = ${x}.`); } const a = randInt(100, 999), b = randInt(100, 999); if (Math.random() < 0.5) return numItem(`${a} + ${b}`, a + b, `${a} + ${b} = ${a + b}.`); const hi = Math.max(a, b), lo = Math.min(a, b); return numItem(`${hi} − ${lo}`, hi - lo, `${hi} − ${lo} = ${hi - lo}.`); },
+  g3_place() { const digits = [randInt(1, 9), randInt(0, 9), randInt(0, 9), randInt(0, 9)]; const num = +digits.join(''); const pos = randInt(0, 3); const places = ['thousands', 'hundreds', 'tens', 'ones']; const val = digits[pos] * Math.pow(10, 3 - pos); return numItem(`In ${num.toLocaleString()}, what is the value of the ${digits[pos]} in the ${places[pos]} place?`, val, `${digits[pos]} in the ${places[pos]} place = ${val.toLocaleString()}.`); },
+  g3_frac() { const kind = randInt(0, 2); if (kind === 0) { const d1 = pick([2, 3, 4, 6, 8]); let d2 = pick([2, 3, 4, 6, 8]); if (d2 === d1) d2 = d1 === 2 ? 3 : 2; const big = Math.min(d1, d2); return mc(`Which fraction is bigger?`, `1/${big}`, [`1/${Math.max(d1, d2)}`], `Same top: the SMALLER bottom means bigger pieces — 1/${big} is bigger.`); } if (kind === 1) { const k = pick([2, 3, 4]); return numItem(`Equivalent fractions:  1/2 = ___/${2 * k}`, k, `Multiply top and bottom by ${k}: ${k}/${2 * k}.`); } const d = pick([2, 3, 4]), n = d * randInt(2, 6); return numItem(`What is 1/${d} of ${n}?`, n / d, `${n} ÷ ${d} = ${n / d}.`); },
+  g3_time() { const h = randInt(1, 11), m = pick([5, 10, 20, 25, 40]); const addM = pick([15, 20, 30, 45]); let nm = m + addM, nh = h; if (nm >= 60) { nm -= 60; nh = h === 12 ? 1 : h + 1; } return { type: 'text', prompt: `It is ${h}:${String(m).padStart(2, '0')}. What time will it be in ${addM} minutes?  (write like 3:45)`, answer: `${nh}:${String(nm).padStart(2, '0')}`, explanation: `${h}:${String(m).padStart(2, '0')} + ${addM} min = ${nh}:${String(nm).padStart(2, '0')}.` }; },
+  g3_money() { const a = randInt(105, 450), b = randInt(105, 450); if (Math.random() < 0.5) { const t = a + b; return numItem(`$${(a / 100).toFixed(2)} + $${(b / 100).toFixed(2)}   (answer in dollars, like 4.35)`, +(t / 100).toFixed(2), `Add dollars and cents: $${(t / 100).toFixed(2)}.`, 0.005); } const cost = randInt(105, 480); return numItem(`A toy costs $${(cost / 100).toFixed(2)}. You pay with $5.00. How much change? (like 1.25)`, +((500 - cost) / 100).toFixed(2), `$5.00 − $${(cost / 100).toFixed(2)} = $${((500 - cost) / 100).toFixed(2)}.`, 0.005); },
+  g3_measure() { const l = randInt(3, 12), w = randInt(2, 9); return Math.random() < 0.5 ? numItem(`A rectangle is ${l} long and ${w} wide. What is its PERIMETER?`, 2 * (l + w), `P = ${l}+${w}+${l}+${w} = ${2 * (l + w)}.`) : numItem(`A rectangle is ${l} long and ${w} wide. What is its AREA?`, l * w, `A = ${l} × ${w} = ${l * w}.`); },
+  g3_round() { const n = randInt(101, 989); const k = pick([10, 100]); return numItem(`Round ${n} to the nearest ${k === 10 ? 'ten' : 'hundred'}.`, Math.round(n / k) * k, `${n} rounds to ${Math.round(n / k) * k}.`); },
+  g3_word() { const kind = randInt(0, 2); if (kind === 0) { const g = randInt(2, 6), s = randInt(3, 8), extra = randInt(2, 9); return numItem(`There are ${g} boxes with ${s} toys each, plus ${extra} loose toys. How many toys in all?`, g * s + extra, `${g} × ${s} = ${g * s}, + ${extra} = ${g * s + extra}.`); } if (kind === 1) { const start = randInt(300, 900), spent = randInt(50, 250), earned = randInt(50, 250); return numItem(`You have ${start} points, lose ${spent}, then win ${earned}. How many now?`, start - spent + earned, `${start} − ${spent} + ${earned} = ${start - spent + earned}.`); } const kids = randInt(3, 6), each = randInt(4, 9); return numItem(`${kids} friends share stickers equally from a pack of ${kids * each}. How many does each get?`, each, `${kids * each} ÷ ${kids} = ${each}.`); },
 };
 
 // which base (Grade 5) generator gets an above-grade "Grade 6" stretch variant
@@ -218,7 +230,24 @@ const STRETCH_MAP = {
   mean: 'st_stats', median: 'st_stats', mode: 'st_stats', range: 'st_stats',
   lcmGen: 'st_lcmgcf', gcfGen: 'st_lcmgcf', factors: 'st_lcmgcf', multiples: 'st_lcmgcf', primeFact: 'st_lcmgcf',
 };
-function stretchGenName(baseGen) { return STRETCH_MAP[baseGen] || null; }
+// Grade 2 skills stretch UP to Grade 3 material
+const STRETCH_MAP2 = {
+  g2add: 'g3_addsub', g2sub: 'g3_addsub', g2mixed: 'g3_word',
+  addSmall: 'g3_addsub', subSmall: 'g3_addsub', addThree: 'g3_addsub', doubles: 'g3_mult', makeTen: 'g3_addsub',
+  repeatedAdd: 'g3_mult', arrays: 'g3_mult', skipCount: 'g3_mult', skipBack: 'g3_mult', evenOdd: 'g3_mult',
+  factFamily: 'g3_div',
+  countCoins: 'g3_money', makeChange: 'g3_money', addMoney: 'g3_money', makeDollar: 'g3_money', coinValue: 'g3_money',
+  timeAfter: 'g3_time', relateTime: 'g3_time', amPm: 'g3_time',
+  identFrac: 'g3_frac', fracParts: 'g3_frac',
+  tileArea: 'g3_measure', perimeter: 'g3_measure', measureUnit: 'g3_measure', sides: 'g3_measure', name2D: 'g3_measure',
+  placeTensOnes: 'g3_place', digitValue2: 'g3_place', expand2: 'g3_place', regroup: 'g3_place', wordName: 'g3_place',
+  compare2: 'g3_addsub', greatest: 'g3_addsub', least: 'g3_addsub', countNext: 'g3_addsub', countBefore: 'g3_addsub',
+  roundTen: 'g3_round', roundTenHundred: 'g3_round', estSum2: 'g3_round', estDiff2: 'g3_round',
+  readData: 'g3_word',
+};
+const STRETCH_INFO = { g2: { map: STRETCH_MAP2, label: 'Grade 3' }, g5: { map: STRETCH_MAP, label: 'Grade 6' } };
+function stretchGenName(baseGen, gradeId) { const info = STRETCH_INFO[gradeId || 'g5']; return info ? (info.map[baseGen] || null) : null; }
+function stretchLabel(gradeId) { const info = STRETCH_INFO[gradeId]; return info ? info.label : 'Advanced'; }
 
 /* --------------------- map every skill to a generator -------------------- */
 function pickGen(unitId, name) {
@@ -554,4 +583,4 @@ let ACTIVE_GRADE = 'g5';
 function setActiveGrade(grade) { const g = CURRICULA[grade] ? grade : 'g5'; CURRICULUM = CURRICULA[g]; ALL_SKILLS = CURRICULA[g].allSkills; ACTIVE_GRADE = g; return g; }
 function generateItem(genName, skill) { return (GEN[genName] || GEN.addSub)(skill ? skill.pos : 0.5); }
 
-if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, STRETCH_MAP, stretchGenName, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }
+if (typeof module !== 'undefined') { module.exports = { CURRICULA, GRADES, CURRICULUM, ALL_SKILLS, GEN, STRETCH_MAP, STRETCH_MAP2, STRETCH_INFO, stretchGenName, stretchLabel, generateItem, pickGen, pickGen2, setActiveGrade, gcd, reduceFrac }; }

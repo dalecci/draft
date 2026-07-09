@@ -112,9 +112,9 @@ const BADGES = [
   // writing
   { id: 'writer', emoji: '📝', name: 'Wordsmith', desc: 'Submit a piece of writing', test: (s) => (s.writing?.length || 0) >= 1 },
   // above grade level (Grade 6 stretch)
-  { id: 'stretch1', emoji: '🔥', name: 'Above & Beyond', desc: 'Master a skill to Grade 6 level', test: (s, st) => st.stretchMastered >= 1 },
-  { id: 'stretch10', emoji: '💎', name: 'Overachiever', desc: '10 skills at Grade 6 level', test: (s, st) => st.stretchMastered >= 10 },
-  { id: 'stretch25', emoji: '🚀', name: 'Ahead of the Class', desc: '25 skills at Grade 6 level', test: (s, st) => st.stretchMastered >= 25 },
+  { id: 'stretch1', emoji: '🔥', name: 'Above & Beyond', desc: 'Master a skill above grade level', test: (s, st) => st.stretchMastered >= 1 },
+  { id: 'stretch10', emoji: '💎', name: 'Overachiever', desc: '10 skills above grade level', test: (s, st) => st.stretchMastered >= 10 },
+  { id: 'stretch25', emoji: '🚀', name: 'Ahead of the Class', desc: '25 skills above grade level', test: (s, st) => st.stretchMastered >= 25 },
 ];
 function refreshBadges(stu) {
   const st = playerStats(stu);
