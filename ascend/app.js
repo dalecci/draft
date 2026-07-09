@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 30; // shown on every screen so you can confirm the running version
+const APP_BUILD = 31; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -185,7 +185,8 @@ function recordStretch(stu, skill, correct) {
   if (st.score >= 100 && !st.masteredAt) { st.masteredAt = now(); newly = true; }
   return newly;
 }
-function stretchGenFor(skill) { return skill ? stretchGenName(skill.gen) : null; }
+function stretchGenFor(skill) { return skill ? stretchGenName(skill.gen, ACTIVE_GRADE) : null; }
+function stLbl() { return stretchLabel(ACTIVE_GRADE); }
 
 // central hook: records the answer AND all engagement (xp, coins, quests, streak, badges)
 // `stretch` = the above-grade (Grade 6) track
@@ -210,7 +211,7 @@ function handleAnswer(stu, skill, correct, seconds, stretch) {
 // celebration: confetti + a short toast for level-ups / new badges / mastery
 function celebrate(cel) {
   if (!cel) return;
-  if (cel.stretchMastered) { confetti(['🔥', '💎', '⭐', '🚀']); toast('🔥 GRADE 6 mastered — above grade level!'); return; }
+  if (cel.stretchMastered) { confetti(['🔥', '💎', '⭐', '🚀']); toast('🔥 ' + stLbl().toUpperCase() + ' mastered — above grade level!'); return; }
   if (cel.leveledUp) { confetti(); toast(`⬆️ Level up! You're now a ${levelInfo(STATE.students[STATE.currentUserId].games.xp).title}!`); }
   else if (cel.newBadges && cel.newBadges.length) { confetti(); toast(`${cel.newBadges[0].emoji} Badge unlocked: ${cel.newBadges[0].name}!`); }
   else if (cel.mastered) { confetti(['⭐', '🏀', '✨']); toast('⭐ Skill mastered!'); }
@@ -434,13 +435,13 @@ function renderPractice() {
   if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: generateItem(adv ? stretchGen : skill.gen, skill), start: now(), streak: 0, answered: 0 };
   const sp = p.stretch || { score: 0 };
   const card = el('div', { class: 'card practice' + (adv ? ' advanced' : '') });
-  if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 GRADE 6 · Above grade level'));
+  if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 ' + stLbl().toUpperCase() + ' · Above grade level'));
   card.append(el('div', { class: 'practice-top' }, [
     el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName),
     el('button', { class: 'mini', onclick: () => go('lesson', { skill: skill.id, then: 'practice' }) }, '📖 Learn'),
   ]));
   card.append(el('h2', {}, skill.name));
-  if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 Grade 6 SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
+  if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 ' + stLbl() + ' SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
   else card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
 
   const item = PRACTICE.item;
@@ -463,11 +464,11 @@ function renderPractice() {
     const onGradeMastered = !!p2.masteredAt, stretchMastered = !!(p2.stretch && p2.stretch.masteredAt);
     let goNext, label, secondary = null;
     if (adv) {
-      if (stretchMastered) { label = '🎉 Grade 6 mastered — next skill'; goNext = () => { PRACTICE = null; go('practice', { skill: undefined }); }; }
-      else { label = '🔥 Next (Grade 6) ▶'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); }; secondary = { t: '← Back to grade level', fn: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }; }
+      if (stretchMastered) { label = '🎉 ' + stLbl() + ' mastered — next skill'; goNext = () => { PRACTICE = null; go('practice', { skill: undefined }); }; }
+      else { label = '🔥 Next (' + stLbl() + ') ▶'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); }; secondary = { t: '← Back to grade level', fn: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }; }
     } else if (onGradeMastered && stretchGen && !stretchMastered) {
       // AUTO-PUSH above grade level: mastering a skill flows straight into the Grade 6 challenge
-      label = '🔥 Grade 6 bonus →'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); };
+      label = '🔥 ' + stLbl() + ' bonus →'; goNext = () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); };
       secondary = { t: 'Skip to next skill →', fn: () => { PRACTICE = null; go('practice', { skill: undefined }); } };
     } else if (onGradeMastered) {
       label = '🎉 Skill mastered — continue'; goNext = () => { PRACTICE = null; go('practice', { skill: undefined }); };
@@ -490,7 +491,7 @@ function renderPractice() {
   }
   card.append(feedback);
   // entry point to Advanced mode (before answering) when the skill is already mastered
-  if (canStretch && !adv) card.append(el('button', { class: 'btn stretch-btn wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, `🔥 Grade 6 Challenge  ·  ${sp.masteredAt ? 'mastered ✓' : (sp.score || 0) + '/100'}`));
+  if (canStretch && !adv) card.append(el('button', { class: 'btn stretch-btn wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, `🔥 ${stLbl()} Challenge  ·  ${sp.masteredAt ? 'mastered ✓' : (sp.score || 0) + '/100'}`));
   if (adv) card.append(el('button', { class: 'btn ghost wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }, '← Back to grade level'));
   wrap.append(card);
   wrap.append(navbar('practice'));
@@ -519,7 +520,7 @@ function renderProgress() {
       skills.append(el('div', { class: 'skill-line' }, [
         el('span', { class: 'skill-nm' }, s.name),
         el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${u.color}` })),
-        p.stretch?.masteredAt ? el('span', { class: 'star', title: 'Grade 6 mastered' }, '🔥') : p.masteredAt ? el('span', { class: 'star', title: 'mastered' }, '⭐') : el('button', { class: 'mini', onclick: () => startSkill(s.id) }, stu.games.taught[s.id] ? 'practice' : '📖 learn'),
+        p.stretch?.masteredAt ? el('span', { class: 'star', title: 'mastered above grade level' }, '🔥') : p.masteredAt ? el('span', { class: 'star', title: 'mastered' }, '⭐') : el('button', { class: 'mini', onclick: () => startSkill(s.id) }, stu.games.taught[s.id] ? 'practice' : '📖 learn'),
       ]));
     });
   });
@@ -1475,7 +1476,7 @@ function coachReport(stu) {
     if (loc) lines.push(`❌ Most-missed: “${loc.skill.name}” (${top[1]}×) — worth reviewing the concept and re-practicing.`);
   }
   const stretchN = ALL_SKILLS.filter(s => stu.progress[s.id]?.stretch?.masteredAt).length;
-  if (stretchN) lines.push(`🔥 Reached Grade 6 (above grade level) in ${stretchN} skill${stretchN > 1 ? 's' : ''} — ready to be stretched further.`);
+  if (stretchN) lines.push(`🔥 Reached ${stLbl()} (above grade level) in ${stretchN} skill${stretchN > 1 ? 's' : ''} — ready to be stretched further.`);
   const faded = fadedSkills(stu);
   if (faded.length) lines.push(`⏳ ${faded.length} mastered topic(s) are starting to fade — a quick refresh keeps them sharp for the FAST test.`);
   const streak = stu.games.streak?.count || 0;
