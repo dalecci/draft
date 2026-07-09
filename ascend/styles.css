@@ -485,3 +485,8 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .perk-mid { flex: 1; }
 .perk-nm { font-weight: 700; font-size: 14px; }
 .perk-honor-card { border: 2px solid #f59f00; background: linear-gradient(180deg, rgba(245,159,0,.10), var(--card)); }
+
+/* coin ledger */
+.coinlog-sum { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; padding: 3px 0; }
+.coinlog-sum b { color: var(--warn); }
+.coinlog-row { font-size: 11px; color: var(--muted); padding: 2px 0; }

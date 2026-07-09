@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 33; // shown on every screen so you can confirm the running version
+const APP_BUILD = 34; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -198,10 +198,10 @@ function handleAnswer(stu, skill, correct, seconds, stretch) {
   ensureDailies(stu);
   awardXP(stu, correct ? (stretch ? 14 : 8) : 2);
   // coins drip slowly: 1 coin per 3 correct (per 2 on stretch) — big rewards come from mastery
-  if (correct) { const g = stu.games; g.coinTick = ((g.coinTick || 0) + 1) % (stretch ? 2 : 3); if (g.coinTick === 0) awardCoins(stu, 1); }
+  if (correct) { const g = stu.games; g.coinTick = ((g.coinTick || 0) + 1) % (stretch ? 2 : 3); if (g.coinTick === 0) awardCoins(stu, 1, 'practice'); }
   bumpQuest(stu, 'answer', 1); if (correct) bumpQuest(stu, 'correct', 1);
-  if (mastered) { awardXP(stu, 40); awardCoins(stu, 10); bumpQuest(stu, 'master', 1); }
-  if (stretchMastered) { awardXP(stu, 60); awardCoins(stu, 15); }
+  if (mastered) { awardXP(stu, 40); awardCoins(stu, 10, 'mastered a skill'); bumpQuest(stu, 'master', 1); }
+  if (stretchMastered) { awardXP(stu, 60); awardCoins(stu, 15, 'above-grade mastery'); }
   touchStreak(stu);
   const newBadges = refreshBadges(stu);
   const leveledUp = levelInfo(stu.games.xp).level > beforeLvl;
@@ -557,7 +557,7 @@ function renderWriting() {
   const evalBtn = el('button', { class: 'btn primary', onclick: () => {
     const r = evaluateWriting(ta.value);
     stu.writing.push({ ts: now(), promptId, text: ta.value, result: r });
-    ensureDailies(stu); bumpQuest(stu, 'write', 1); awardXP(stu, 15 + r.total * 2); awardCoins(stu, 4); touchStreak(stu);
+    ensureDailies(stu); bumpQuest(stu, 'write', 1); awardXP(stu, 15 + r.total * 2); awardCoins(stu, 4, 'writing'); touchStreak(stu);
     const cel = { newBadges: refreshBadges(stu) };
     persist(); celebrate(cel);
     result.innerHTML = ''; result.append(scorecard(r));
@@ -657,7 +657,7 @@ function endSprint() {
   SPRINT.best = Math.max(stu.games.sprintBest || 0, SPRINT.score);
   SPRINT.isRecord = SPRINT.score > (stu.games.sprintBest || 0);
   stu.games.sprintBest = SPRINT.best;
-  ensureDailies(stu); bumpQuest(stu, 'sprint', 1); awardCoins(stu, 4 + Math.floor(SPRINT.score / 80));
+  ensureDailies(stu); bumpQuest(stu, 'sprint', 1); awardCoins(stu, 4 + Math.floor(SPRINT.score / 80), 'Math Sprint');
   SPRINT.newBadges = (SPRINT.newBadges || []).concat(refreshBadges(stu));
   SPRINT.phase = 'over';
   persist();
@@ -758,7 +758,7 @@ function winBoss() {
   const firstTime = !stu.games.bossCleared[BOSS.unitId];
   BOSS.flawless = BOSS.lives === BOSS_LIVES;
   stu.games.bossCleared[BOSS.unitId] = true;
-  awardXP(stu, 55); awardCoins(stu, (firstTime ? 12 : 4) + (BOSS.flawless ? 6 : 0));
+  awardXP(stu, 55); awardCoins(stu, (firstTime ? 12 : 4) + (BOSS.flawless ? 6 : 0), 'Boss Challenge');
   BOSS.newBadges = BOSS.newBadges.concat(refreshBadges(stu));
   BOSS.phase = 'win'; persist(); setTimeout(() => confetti(['🏆', '💥', '⭐', '🔥']), 150); go('boss');
 }
@@ -883,7 +883,7 @@ function checkBuild(ok) {
   const stu = STATE.students[STATE.currentUserId];
   if (ok) {
     BUILD.solved = true; BUILD.correct++;
-    awardXP(stu, 8); awardCoins(stu, 1); touchStreak(stu); refreshBadges(stu); persist();
+    awardXP(stu, 8); awardCoins(stu, 1, 'Build It'); touchStreak(stu); refreshBadges(stu); persist();
     confetti(['⭐', '🎉']); toast('✅ Correct!');
     setTimeout(() => { BUILD.i++; if (BUILD.i >= BUILD.n) BUILD.done = true; else setupBuild(); refreshBuild(); }, 800);
   } else { toast('Not quite — take another look!'); }
@@ -1071,7 +1071,7 @@ function endRunner() {
   const stu = STATE.students[STATE.currentUserId];
   RUNNER.isRecord = RUNNER.score > (stu.games.runnerBest || 0);
   stu.games.runnerBest = Math.max(stu.games.runnerBest || 0, RUNNER.score);
-  awardCoins(stu, 2 + Math.floor(RUNNER.score / 2)); RUNNER.newBadges = refreshBadges(stu);
+  awardCoins(stu, 2 + Math.floor(RUNNER.score / 2), 'Number Runner'); RUNNER.newBadges = refreshBadges(stu);
   RUNNER.phase = 'over'; persist();
   if (RUNNER.isRecord) setTimeout(() => confetti(['🏃', '⭐', '💨']), 150);
   go('runner');
@@ -1176,7 +1176,7 @@ function renderProfile() {
         el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * q.progress / q.goal}%;background:var(--good)` })),
       ]),
       claimable
-        ? el('button', { class: 'mini claim', onclick: () => { awardCoins(stu, q.reward); q.claimed = true; persist(); confetti(['🪙']); toast(`🪙 +${q.reward} coins!`); go('profile'); } }, `🪙${q.reward}`)
+        ? el('button', { class: 'mini claim', onclick: () => { awardCoins(stu, q.reward, 'daily quest'); q.claimed = true; persist(); confetti(['🪙']); toast(`🪙 +${q.reward} coins!`); go('profile'); } }, `🪙${q.reward}`)
         : el('span', { class: 'quest-r' }, q.claimed ? '🪙✓' : `🪙${q.reward}`),
     ]));
   });
@@ -1257,7 +1257,7 @@ function renderShop() {
       el('button', { class: 'mini' + (afford ? ' claim' : ''), onclick: () => {
         if (!afford) { toast(`Keep earning — ${(perk.cost - (stu.games.coins || 0)).toLocaleString()} coins to go!`); return; }
         if (!window.confirm(`Spend ${perk.cost.toLocaleString()} coins on "${perk.name}"?`)) return;
-        stu.games.coins -= perk.cost;
+        stu.games.coins -= perk.cost; (stu.games.coinLog = stu.games.coinLog || []).push({ t: now(), n: -perk.cost, src: `spent: ${perk.name}`, bal: stu.games.coins });
         (stu.games.perks = stu.games.perks || []).push({ id: perk.id, e: perk.e, name: perk.name, cost: perk.cost, ts: now(), honored: false });
         persist(); confetti(['🎟', '🎉', perk.e]); toast(`${perk.e} Bought! Ask your parent to make it happen!`); go('shop');
       } }, afford ? 'Buy' : '🔒'),
@@ -1516,14 +1516,31 @@ function renderPerkCard(stu) {
 }
 function renderRewardCard(stu) {
   const card = el('div', { class: 'card reward-card' });
-  const give = (n, set) => { stu.games.coins = set ? n : (stu.games.coins || 0) + n; persist(); confetti(['🪙', '🎉', '⭐']); toast(`🪙 ${stu.name} now has ${stu.games.coins} coins!`); go('parent-child', { child: stu.id }); };
-  card.append(el('div', { class: 'reward-top' }, [el('h3', {}, '🎁 Give a bonus'), el('div', { class: 'reward-coins' }, `🪙 ${stu.games.coins || 0}`)]));
-  card.append(el('p', { class: 'muted' }, `Reward ${stu.name} for working hard.`));
+  const give = (n, set) => {
+    const label = set ? `Set ${stu.name}'s coins to ${n.toLocaleString()}?` : `Give ${stu.name} ${n.toLocaleString()} bonus coins?`;
+    if (!window.confirm(label)) return;                       // confirm every bonus so it can't be spam-tapped
+    const before = stu.games.coins || 0; const delta = set ? (n - before) : n;
+    stu.games.coins = set ? n : before + n;
+    awardCoins(stu, 0); (stu.games.coinLog = stu.games.coinLog || []).push({ t: now(), n: delta, src: '🎁 parent bonus', bal: stu.games.coins });
+    persist(); confetti(['🪙', '🎉', '⭐']); toast(`🪙 ${stu.name} now has ${stu.games.coins.toLocaleString()} coins!`); go('parent-child', { child: stu.id });
+  };
+  card.append(el('div', { class: 'reward-top' }, [el('h3', {}, '🎁 Give a bonus'), el('div', { class: 'reward-coins' }, `🪙 ${(stu.games.coins || 0).toLocaleString()}`)]));
+  card.append(el('p', { class: 'muted' }, `Reward ${stu.name} for working hard. (Each tap asks you to confirm.)`));
   card.append(el('div', { class: 'reward-btns' }, [
     el('button', { class: 'mini', onclick: () => give(100) }, '+100'),
     el('button', { class: 'mini', onclick: () => give(500) }, '+500'),
     el('button', { class: 'btn stretch-btn', onclick: () => give(1000, true) }, '🎁 Set to 1,000'),
+    el('button', { class: 'btn ghost', onclick: () => give(0, true) }, '↺ Reset to 0'),
   ]));
+  // coin history — see exactly where coins came from
+  const log = (stu.games.coinLog || []).slice().reverse();
+  if (log.length) {
+    const totals = {}; (stu.games.coinLog || []).forEach(e => { if (e.n > 0) totals[e.src] = (totals[e.src] || 0) + e.n; });
+    card.append(el('div', { class: 'restore-head' }, '🪙 Where coins came from (recent)'));
+    Object.entries(totals).sort((a, b) => b[1] - a[1]).forEach(([src, tot]) => card.append(el('div', { class: 'coinlog-sum' }, [el('span', {}, src), el('b', {}, '+' + tot.toLocaleString())])));
+    card.append(el('div', { class: 'muted', style: 'margin-top:8px;font-size:11px' }, `Log started tracking from build 34 on — earlier coins aren't itemised. Last ${Math.min(log.length, 6)} changes:`));
+    log.slice(0, 6).forEach(e => card.append(el('div', { class: 'coinlog-row' }, `${new Date(e.t).toLocaleString()} · ${e.n > 0 ? '+' : ''}${e.n} · ${e.src}`)));
+  }
   return card;
 }
 function renderMoveUpCard(stu) {
@@ -1851,7 +1868,7 @@ function ensureStudentShape(stu) {
   g.sprintBest = g.sprintBest || 0; g.xp = g.xp || 0; g.coins = g.coins || 0;
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
-  g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
+  g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinLog = g.coinLog || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered
