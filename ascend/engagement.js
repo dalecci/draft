@@ -22,13 +22,13 @@ function _hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + 
 
 /* -------- daily quests -------- */
 const QUEST_POOL = [
-  { id: 'answer10', type: 'answer', text: 'Answer 10 questions', goal: 10, reward: 8 },
-  { id: 'correct8', type: 'correct', text: 'Get 8 correct answers', goal: 8, reward: 10 },
-  { id: 'master1', type: 'master', text: 'Master a new skill', goal: 1, reward: 15 },
-  { id: 'sprint1', type: 'sprint', text: 'Play a Math Sprint', goal: 1, reward: 8 },
-  { id: 'boss1', type: 'boss', text: 'Take on a boss', goal: 1, reward: 12 },
-  { id: 'write1', type: 'write', text: 'Write & get feedback', goal: 1, reward: 10 },
-  { id: 'correct15', type: 'correct', text: 'Get 15 correct answers', goal: 15, reward: 15 },
+  { id: 'answer10', type: 'answer', text: 'Answer 10 questions', goal: 10, reward: 5 },
+  { id: 'correct8', type: 'correct', text: 'Get 8 correct answers', goal: 8, reward: 6 },
+  { id: 'master1', type: 'master', text: 'Master a new skill', goal: 1, reward: 9 },
+  { id: 'sprint1', type: 'sprint', text: 'Play a Math Sprint', goal: 1, reward: 5 },
+  { id: 'boss1', type: 'boss', text: 'Take on a boss', goal: 1, reward: 7 },
+  { id: 'write1', type: 'write', text: 'Write & get feedback', goal: 1, reward: 6 },
+  { id: 'correct15', type: 'correct', text: 'Get 15 correct answers', goal: 15, reward: 9 },
 ];
 function dailyQuests(key) {
   const idx = [...QUEST_POOL.keys()]; let seed = _hash(key) || 7; const out = [];
@@ -130,6 +130,22 @@ const SHOP_AVATARS = [
   { e: '🦊', cost: 80 }, { e: '🐼', cost: 80 }, { e: '🦄', cost: 120 }, { e: '🐲', cost: 180 },
   { e: '🤖', cost: 180 }, { e: '👾', cost: 220 }, { e: '🦁', cost: 220 }, { e: '🐙', cost: 260 }, { e: '⚡', cost: 320 },
   { e: '🔥', cost: 400 }, { e: '🦖', cost: 500 }, { e: '🌈', cost: 600 }, { e: '👑', cost: 800 },
+  // legendary tier — long-term savings goals
+  { e: '🧙', cost: 1000 }, { e: '🦅', cost: 1200 }, { e: '🐺', cost: 1500 }, { e: '🛸', cost: 1800 },
+  { e: '🐋', cost: 2200 }, { e: '🦈', cost: 2600 }, { e: '🎸', cost: 3000 }, { e: '🏰', cost: 3500 },
+  { e: '💎', cost: 4200 }, { e: '🌟', cost: 5000 },
+];
+// Real-world rewards — bought with coins, honored by the parent
+const SHOP_PERKS = [
+  { id: 'screen30', e: '📱', name: '30 min extra screen time', cost: 600 },
+  { id: 'dinner', e: '🍕', name: 'Pick tonight’s dinner', cost: 900 },
+  { id: 'icecream', e: '🍦', name: 'Ice cream trip', cost: 1200 },
+  { id: 'movie', e: '🎬', name: 'Family movie night — your pick', cost: 1500 },
+  { id: 'staylate', e: '🌙', name: 'Stay up 30 min later', cost: 1800 },
+  { id: 'sleepover', e: '🏕️', name: 'Friend sleepover', cost: 2500 },
+  { id: 'dayoffhw', e: '🎯', name: 'Day off from practice', cost: 3500 },
+  { id: 'dayoff', e: '🏖️', name: 'A full DAY OFF', cost: 5000 },
+  { id: 'bigday', e: '🎢', name: 'Big outing (park / arcade / adventure)', cost: 8000 },
 ];
 const SHOP_THEMES = [
   { name: 'Grape', p: '#7048e8', d: '#5a37c9', cost: 0 },
@@ -140,6 +156,10 @@ const SHOP_THEMES = [
   { name: 'Midnight', p: '#5f3dc4', d: '#3b2a86', cost: 260 },
   { name: 'Galaxy', p: '#7950f2', d: '#5f3dc4', cost: 400 },
   { name: 'Gold', p: '#f08c00', d: '#e67700', cost: 550 },
+  { name: 'Neon', p: '#0ca678', d: '#087f5b', cost: 900 },
+  { name: 'Ruby', p: '#e03131', d: '#c92a2a', cost: 1400 },
+  { name: 'Royal', p: '#364fc7', d: '#2b3a94', cost: 2200 },
+  { name: 'Blackout', p: '#212529', d: '#101214', cost: 3200 },
 ];
 function applyTheme(stu) {
   const t = stu && stu.games && stu.games.theme;
@@ -164,4 +184,4 @@ function confetti(emojis) {
   setTimeout(() => c.remove(), 2400);
 }
 
-if (typeof module !== 'undefined') { module.exports = { levelInfo, dailyQuests, QUEST_POOL, BADGES, SHOP_AVATARS, SHOP_THEMES, playerStats }; }
+if (typeof module !== 'undefined') { module.exports = { levelInfo, dailyQuests, QUEST_POOL, BADGES, SHOP_AVATARS, SHOP_THEMES, SHOP_PERKS, playerStats }; }
