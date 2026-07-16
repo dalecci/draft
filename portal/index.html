@@ -635,12 +635,12 @@ input,textarea,select{font:inherit;color:inherit;}
     ],"recommendation":"Standard Aero. Lower and factory-authorized.","responded_at":null,"response_note":null}
   ],
   "users": [
-    {"id":"u1","client_id":"c1","email":"smith@example.com","name":"Robert Smith","label":"Owner","primary":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]},
-    {"id":"u2","client_id":"c1","email":"assistant@example.com","name":"Karen Boyd","label":"Executive Assistant","primary":false,"tabs":["dashboard","calendar","flights","documents"]},
-    {"id":"u3","client_id":"c1","email":"pilot@example.com","name":"Capt. James Williams","label":"Chief Pilot","primary":false,"tabs":["calendar","flights","maintenance","documents"]},
-    {"id":"u4","client_id":"c2","email":"chen@example.com","name":"David Chen","label":"Owner","primary":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]}
+    {"id":"u1","client_id":"c1","email":"smith@example.com","name":"Robert Smith","label":"Owner","primary":true,"see_money":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]},
+    {"id":"u2","client_id":"c1","email":"assistant@example.com","name":"Karen Boyd","label":"Executive Assistant","primary":false,"see_money":false,"tabs":["dashboard","calendar","flights","documents"]},
+    {"id":"u3","client_id":"c1","email":"pilot@example.com","name":"Capt. James Williams","label":"Chief Pilot","primary":false,"see_money":false,"tabs":["calendar","flights","maintenance","documents"]},
+    {"id":"u4","client_id":"c2","email":"chen@example.com","name":"David Chen","label":"Owner","primary":true,"see_money":true,"tabs":["dashboard","calendar","flights","approvals","maintenance","documents","savings","costs"]}
   ],
-  "_meta": { "version": 4 }
+  "_meta": { "version": 5 }
 }
 </script>
 
@@ -702,9 +702,11 @@ function migrateState(s){
   if (!s.users) s.users = [];
   (s.clients||[]).forEach(c => {
     if (!s.users.some(u => u.client_id === c.id && u.primary)){
-      s.users.push({ id:'u-'+Math.random().toString(36).slice(2,8), client_id:c.id, email:c.email, name:c.name, label:'Owner', primary:true, tabs:ALL_TAB_KEYS.slice() });
+      s.users.push({ id:'u-'+Math.random().toString(36).slice(2,8), client_id:c.id, email:c.email, name:c.name, label:'Owner', primary:true, see_money:true, tabs:ALL_TAB_KEYS.slice() });
     }
   });
+  // see_money added in v5 — default primary owners to true, others to true unless already set
+  (s.users||[]).forEach(u => { if (u.see_money === undefined) u.see_money = u.primary ? true : true; });
   return s;
 }
 
@@ -871,7 +873,9 @@ function resolveUser(session){
   return null;
 }
 let currentPerm = ALL_TAB_KEYS.slice();
+let currentSeeMoney = true;
 function can(tab){ return currentPerm.includes(tab); }
+function canMoney(){ return currentSeeMoney; }
 function firstPermittedTab(){ return ALL_TAB_KEYS.find(t => currentPerm.includes(t)) || 'flights'; }
 
 function renderShell(session, path, parts){
@@ -884,6 +888,7 @@ function renderShell(session, path, parts){
   // Resolve the acting user and their permitted tabs
   const currentUser = effectiveRole==='owner' ? resolveUser(session) : null;
   currentPerm = currentUser ? currentUser.tabs.slice() : ALL_TAB_KEYS.slice();
+  currentSeeMoney = currentUser ? (currentUser.see_money !== false) : true;
 
   // Sidebar links depend on role
   const adminLinks = [
@@ -1126,9 +1131,10 @@ function ownerDashboard(clientId){
 
 function flightsTable(flights){
   if (flights.length===0) return raw`<div class="empty"><h3>No flights yet</h3><p>Your past trips will appear here.</p></div>`;
+  const money = canMoney();
   return raw`
     <div class="table-wrap"><table class="table">
-      <thead><tr><th>Date</th><th>Route</th><th>Crew</th><th>Status</th><th class="num">Invoice</th></tr></thead>
+      <thead><tr><th>Date</th><th>Route</th><th>Crew</th><th>Status</th>${money?raw`<th class="num">Invoice</th>`:''}</tr></thead>
       <tbody>
         ${flights.map(f=>raw`
           <tr onclick="navigate('#flights/${f.id}')">
@@ -1136,7 +1142,7 @@ function flightsTable(flights){
             <td><strong>${h`${f.departure.airport}`} &rarr; ${h`${f.arrival.airport}`}</strong></td>
             <td class="muted">${h`${f.crew.pic||'TBD'}`}</td>
             <td><span class="pill ${h`${f.status}`}">${h`${f.status}`}</span></td>
-            <td class="num">${f.invoice ? raw`${fmtMoney(f.invoice.amount)} <span class="pill ${h`${f.invoice.status}`}" style="margin-left:8px;">${h`${f.invoice.status}`}</span>` : '—'}</td>
+            ${money?raw`<td class="num">${f.invoice ? raw`${fmtMoney(f.invoice.amount)} <span class="pill ${h`${f.invoice.status}`}" style="margin-left:8px;">${h`${f.invoice.status}`}</span>` : '—'}</td>`:''}
           </tr>
         `).join('')}
       </tbody>
@@ -1283,7 +1289,7 @@ function ownerFlightDetail(flightId, clientId){
             </dl>
           </div>
 
-          ${(f.expenses && f.expenses.length>0) ? raw`
+          ${(canMoney() && f.expenses && f.expenses.length>0) ? raw`
             <div class="fd-panel">
               <h3>Expenses &middot; ${fmtMoney(expTotal)}</h3>
               <table class="table" style="border:none;">
@@ -1301,7 +1307,12 @@ function ownerFlightDetail(flightId, clientId){
         </div>
 
         <div>
-          ${f.invoice ? raw`
+          ${!canMoney() ? raw`
+            <div class="fd-panel">
+              <h3>Invoice</h3>
+              <p style="color:var(--ash);font-family:var(--serif);font-style:italic;line-height:1.6;">Financial details are restricted for your access level. Contact the owner or J3T for billing questions.</p>
+            </div>
+          ` : (f.invoice ? raw`
             <div class="fd-panel" style="background:${f.invoice.status==='paid'?'rgba(127,167,123,.05)':'rgba(217,165,83,.05)'};border-color:${f.invoice.status==='paid'?'rgba(127,167,123,.3)':'rgba(217,165,83,.3)'};">
               <h3>Invoice</h3>
               <div style="text-align:center;margin:12px 0 20px;">
@@ -1323,7 +1334,7 @@ function ownerFlightDetail(flightId, clientId){
               <h3>Invoice</h3>
               <p style="color:var(--ash);font-family:var(--serif);font-style:italic;">Invoice will be issued after flight completion.</p>
             </div>
-          `}
+          `)}
         </div>
       </div>
     </div>`;
@@ -2975,6 +2986,7 @@ function adminClientUsers(clientId){
               <div style="display:flex;flex-wrap:wrap;gap:6px;">
                 ${ALL_TAB_KEYS.map(t=>raw`<span class="pill" style="${u.tabs.includes(t)?'color:var(--gold);border-color:var(--gold-pale);background:rgba(160,132,80,.06);':'color:var(--mist);border-color:var(--mist);opacity:.55;'}">${h`${tabLabel(t)}`}</span>`).join('')}
               </div>
+              <div style="margin-top:10px;font-size:11px;color:var(--ash);">Financials: <strong style="color:${u.see_money!==false?'var(--green)':'var(--red)'};">${u.see_money!==false?'Shown':'Hidden'}</strong></div>
             </div>
             <div class="admin-actions" style="flex-wrap:wrap;">
               <button class="btn primary sm" onclick="impersonateUser('${c.id}','${u.id}')">View as ${h`${u.name.split(' ')[0]}`} &rarr;</button>
@@ -3033,6 +3045,15 @@ function adminUserForm(clientId, userId){
               <button type="button" class="btn ghost sm" onclick="setUserTabs(false)">Clear all</button>
               <button type="button" class="btn ghost sm" onclick="setUserPreset('logistics')">Logistics only</button>
             </div>`}
+        </div>
+        <div class="fd-panel" style="margin-bottom:16px;">
+          <h3>Financial visibility</h3>
+          <p style="font-family:var(--serif);font-size:14px;color:var(--ash);font-style:italic;margin-bottom:14px;">Even with the Flights tab, you can hide every dollar figure from this person — invoice amounts in the flight list, the invoice card, and the expense totals.</p>
+          <label class="tabperm ${u.see_money!==false?'on':''}" style="max-width:420px;">
+            <input type="checkbox" id="u_money" ${u.see_money!==false?'checked':''} ${u.primary?'checked disabled':''} onchange="this.closest('.tabperm').classList.toggle('on',this.checked)">
+            <span>Show money and invoice amounts</span>
+          </label>
+          ${u.primary?raw`<p style="font-size:11px;color:var(--ash);margin-top:10px;font-style:italic;">The owner always sees financials.</p>`:''}
         </div>
         <div style="display:flex;gap:12px;justify-content:space-between;">
           ${(!isNew && !u.primary)?raw`<button type="button" class="btn danger" onclick="if(confirm('Remove this user?')){state.users=state.users.filter(x=>x.id!=='${u.id}');saveState();location.hash='#admin/clients/${clientId}/users';}">Delete</button>`:'<span></span>'}
@@ -3354,7 +3375,8 @@ function attachViewHandlers(session, path, parts){
       const data = {
         id, client_id:cid, email,
         name:$('#u_name').value.trim(), label:$('#u_label').value,
-        primary: isPrimary, tabs
+        primary: isPrimary, tabs,
+        see_money: isPrimary ? true : ($('#u_money') ? $('#u_money').checked : true)
       };
       if (existing){ Object.assign(existing, data); toast('User updated'); }
       else { state.users.push(data); toast('User login created'); }
