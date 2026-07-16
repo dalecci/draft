@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 34; // shown on every screen so you can confirm the running version
+const APP_BUILD = 35; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -233,7 +233,7 @@ const $ = sel => document.querySelector(sel);
 const el = (tag, props = {}, kids = []) => { const n = document.createElement(tag); Object.entries(props).forEach(([k, v]) => { if (k === 'class') n.className = v; else if (k === 'html') n.innerHTML = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else n.setAttribute(k, v); }); (Array.isArray(kids) ? kids : [kids]).forEach(c => c && n.append(c.nodeType ? c : document.createTextNode(c))); return n; };
 
 let VIEW = { name: 'student-home' };
-function go(name, opts = {}) { VIEW = { name, ...opts }; saveRoute(); render(); }
+function go(name, opts = {}) { if (typeof stopSpeech === 'function') stopSpeech(); VIEW = { name, ...opts }; saveRoute(); render(); }
 function saveRoute() { try { if (STATE && STATE.currentUserId && VIEW.name !== 'login') localStorage.setItem('ascend_route', JSON.stringify({ u: STATE.currentUserId, v: VIEW })); } catch (e) {} }
 
 function flashSaved() { const t = $('#saveToast'); if (!t) return; t.classList.add('show'); clearTimeout(flashSaved._t); flashSaved._t = setTimeout(() => t.classList.remove('show'), 1200); }
@@ -1325,17 +1325,39 @@ function startSkill(skillId) {
   else { PRACTICE = null; go('practice', { skill: skillId }); }
 }
 
-/* --------------------------- LESSON (theory) ----------------------------- */
+/* --------------------- LESSON (animated + narrated) ---------------------- */
+const LESSON_MASCOT = { g2: '🦖', g3: '🦕', g5: '🦉', g6: '🦉', sci5: '🧪' };
+let VOICE_ON = true; // session preference for read-aloud
+function speakLesson(text) {
+  try {
+    if (!window.speechSynthesis) return;
+    const clean = String(text)
+      .replace(/[✅✋🏆⚖️🎬📖🔑⚠️💡🦖🦕🦉🧪🐜🍕🎲🚀🐱🐶▶←→]/g, ' ')
+      .replace(/−/g, ' minus ').replace(/\+/g, ' plus ').replace(/×/g, ' times ').replace(/÷/g, ' divided by ')
+      .replace(/=/g, ' equals ').replace(/≈/g, ' is about ')
+      .replace(/(\d)\/(\d)/g, '$1 out of $2').replace(/¢/g, ' cents').replace(/\$(\d)/g, '$1 dollars ');
+    const u = new SpeechSynthesisUtterance(clean);
+    u.rate = 0.92; u.pitch = 1.05;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) { /* device without speech support */ }
+}
+function stopSpeech() { try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {} }
+function lessonContent(skillId, loc) {
+  const th = THEORY[skillId]; // authored per-skill lesson (if one exists)
+  if (th && th.concept) return { concept: th.concept, steps: th.worked || [], vocab: th.vocab || [], misconception: th.misconception, why: th.why, canRegen: false };
+  if (typeof buildLesson === 'function') { // authored per-generator explained lesson (covers all of Grade 2)
+    const L = buildLesson(loc.skill);
+    if (L && L.steps.length) return { ...L, canRegen: true };
+  }
+  const ex = generateItem(loc.skill.gen, loc.skill); // fallback: synthesize from a worked example
+  return { concept: `In this section you'll practice: ${loc.skill.name}. Watch the example, then try it yourself.`,
+    steps: [`Example — ${ex.prompt}`, ex.explanation || `The answer is ${ex.answer}.`],
+    vocab: [], misconception: 'Work one step at a time and check your answer before moving on.',
+    why: `This builds toward the rest of ${loc.unit.name}.`, canRegen: true };
+}
 function renderLesson() {
   const skillId = VIEW.skill; const loc = skillLoc(skillId);
-  let th = THEORY[skillId];
-  if (!th || !th.concept) { // synthesize a real lesson from a generated worked example
-    const ex = generateItem(loc.skill.gen, loc.skill);
-    th = { concept: `In this section you'll practice: ${loc.skill.name}. Study the worked example, then try it yourself.`,
-      worked: [`Example — ${ex.prompt}`, ex.explanation || `The answer is ${ex.answer}.`],
-      vocab: [], misconception: 'Work one step at a time and check your answer before moving on.',
-      why: `This builds toward the rest of ${loc.unit.name}.` };
-  }
+  const lesson = lessonContent(skillId, loc);
   const isParent = !!STATE.parents[STATE.currentUserId];
   const stu = isParent ? STATE.students[VIEW.child] : STATE.students[STATE.currentUserId];
   const u = loc.unit;
@@ -1344,19 +1366,77 @@ function renderLesson() {
   const card = el('div', { class: 'card lesson' });
   card.append(el('div', { class: 'chip', style: `background:${u.color}22;color:${u.color}` }, `${sectionRef(skillId)} · ${u.name}`));
   card.append(el('h2', {}, '📖 ' + loc.skill.name));
-  card.append(el('div', { class: 'lesson-concept' }, th.concept || ''));
-  const w = el('div', { class: 'lesson-box' }); w.append(el('h4', {}, '📝 Worked example'));
-  (th.worked || []).forEach((s, i) => w.append(el('div', { class: 'wstep' }, [el('span', { class: 'wnum' }, String(i + 1)), el('span', {}, s)])));
-  card.append(w);
-  const v = el('div', { class: 'lesson-box' }); v.append(el('h4', {}, '🔑 Key words'));
-  (th.vocab || []).forEach(x => v.append(el('div', { class: 'vrow' }, [el('b', {}, x.t + ': '), el('span', {}, x.d)])));
-  card.append(v);
-  card.append(el('div', { class: 'lesson-warn' }, [el('b', {}, '⚠️ Watch out: '), th.misconception || '']));
-  card.append(el('div', { class: 'lesson-why' }, [el('b', {}, '💡 Why it matters: '), th.why || '']));
+
+  // the mascot teaches the idea first
+  card.append(el('div', { class: 'mascot-row' }, [
+    el('div', { class: 'mascot' }, LESSON_MASCOT[ACTIVE_GRADE] || '🦉'),
+    el('div', { class: 'bubble' }, lesson.concept || ''),
+  ]));
+  if (window.speechSynthesis) {
+    const vt = el('button', { class: 'mini' }, VOICE_ON ? '🔊 Voice on' : '🔇 Voice off');
+    vt.onclick = () => { VOICE_ON = !VOICE_ON; vt.textContent = VOICE_ON ? '🔊 Voice on' : '🔇 Voice off'; if (!VOICE_ON) stopSpeech(); };
+    card.append(el('div', { class: 'voice-row' }, [
+      el('button', { class: 'mini', onclick: () => speakLesson(lesson.concept) }, '▶ Read it to me'),
+      vt,
+    ]));
+  }
+
+  // animated step-by-step worked example — steps appear one tap at a time
+  const box = el('div', { class: 'lesson-box' });
+  box.append(el('h4', {}, '🎬 Watch how it works'));
+  const stepsWrap = el('div', {});
+  const ctl = el('div', { class: 'answer-row lesson-ctl' });
+  box.append(stepsWrap, ctl);
+  card.append(box);
+
+  let steps = (lesson.steps || []).slice(), idx = 0, finished = false;
+  const nextBtn = el('button', { class: 'btn primary' }, '▶ Show me');
+  const againBtn = el('button', { class: 'btn ghost' }, '🔁 Another example');
+  let startBtn = null;
+  const finish = () => {
+    finished = true;
+    if (startBtn) { startBtn.disabled = false; startBtn.classList.add('pulse'); startBtn.textContent = 'Got it — start practice ▶'; }
+  };
+  const reveal = () => {
+    if (idx >= steps.length) return;
+    const s = steps[idx];
+    stepsWrap.querySelectorAll('.wstep').forEach(r => r.classList.remove('now'));
+    stepsWrap.append(el('div', { class: 'wstep reveal now' }, [el('span', { class: 'wnum' }, String(idx + 1)), el('span', {}, s)]));
+    if (VOICE_ON) speakLesson(s);
+    idx++;
+    if (idx >= steps.length) {
+      nextBtn.remove();
+      if (lesson.canRegen && !ctl.contains(againBtn)) ctl.prepend(againBtn);
+      finish();
+    } else {
+      nextBtn.textContent = `Next step ▶  (${idx}/${steps.length})`;
+    }
+  };
+  nextBtn.onclick = reveal;
+  againBtn.onclick = () => {
+    stopSpeech();
+    const fresh = lessonContent(skillId, loc);
+    steps = fresh.steps.slice(); idx = 0;
+    stepsWrap.innerHTML = ''; againBtn.remove();
+    nextBtn.textContent = '▶ Show me'; ctl.append(nextBtn);
+  };
+  ctl.append(nextBtn);
+
+  if (lesson.vocab && lesson.vocab.length) {
+    const v = el('div', { class: 'lesson-box' }); v.append(el('h4', {}, '🔑 Key words'));
+    lesson.vocab.forEach(x => v.append(el('div', { class: 'vrow' }, [el('b', {}, x.t + ': '), el('span', {}, x.d)])));
+    card.append(v);
+  }
+  card.append(el('div', { class: 'lesson-warn' }, [el('b', {}, '⚠️ Watch out: '), lesson.misconception || '']));
+  card.append(el('div', { class: 'lesson-why' }, [el('b', {}, '💡 Why it matters: '), lesson.why || '']));
+
   if (!isParent && VIEW.then === 'practice') {
-    card.append(el('button', { class: 'btn primary big wide', onclick: () => { stu.games.taught[skillId] = now(); persist(); PRACTICE = null; go('practice', { skill: skillId }); } }, 'Got it — start practice ▶'));
+    startBtn = el('button', { class: 'btn primary big wide', disabled: '' }, '👀 Watch the steps first');
+    startBtn.onclick = () => { if (!finished) return; stopSpeech(); stu.games.taught[skillId] = now(); persist(); PRACTICE = null; go('practice', { skill: skillId }); };
+    card.append(startBtn);
+    if (!steps.length) finish();
   } else {
-    card.append(el('button', { class: 'btn ghost wide', onclick: () => go(isParent ? 'parent-review' : 'student-home', isParent ? { child: stu.id } : {}) }, '← Back'));
+    card.append(el('button', { class: 'btn ghost wide', onclick: () => { stopSpeech(); go(isParent ? 'parent-review' : 'student-home', isParent ? { child: stu.id } : {}); } }, '← Back'));
   }
   wrap.append(card);
   if (!isParent) wrap.append(navbar('practice'));
