@@ -397,7 +397,7 @@ function pickGen2(unitId, name) {
   if (has('roman numeral')) return 'roman';
   if (has('skip-count', 'skip count') && has('back')) return 'skipBack';
   if (has('skip-count', 'skip count', 'count forward', 'count backward')) return 'skipCount';
-  if (has('hundred chart', 'number line', 'count forward')) return 'countNext';
+  if (has('hundred chart') || (unitId === 'A' && has('number line', 'count forward'))) return 'countNext'; // "…using number lines" elsewhere = that unit's real skill
   if (has('greatest')) return 'greatest';
   if (has('least')) return 'least';
   if (has('comparing', 'compare')) return 'compare2';
@@ -415,10 +415,10 @@ function pickGen2(unitId, name) {
   if (has('estimate') && has('sum')) return 'estSum2';
   if (has('estimate') && has('difference')) return 'estDiff2';
   if (has('estimate')) return 'roundTen';
-  // place value
-  if (has('regroup')) return 'regroup';
-  if (has('value of a digit', 'identify a digit', 'place value')) return 'digitValue2';
-  if (has('expanded form')) return 'expand2';
+  // place value ("regroup tens/hundreds" drills only — NOT "add … with regrouping", which is real addition)
+  if (has('regroup tens', 'regroup hundreds')) return 'regroup';
+  if (has('value of a digit', 'identify a digit', 'place value') && !has('to add', 'to subtract')) return 'digitValue2'; // "use place value to add…" is real addition
+  if (has('expanded form') && !has('to add', 'to subtract')) return 'expand2';
   if (has('convert') && has('number')) return 'placeTensOnes';
   // money
   if (has('names and values', 'value') && has('coin')) return 'coinValue';
@@ -447,7 +447,7 @@ function pickGen2(unitId, name) {
   // fractions
   if (has('make halves', 'make thirds', 'make fourths', 'make eighths', 'equal parts', 'make')) return 'fracParts';
   if (has('identify') && (has('half', 'third', 'fourth', 'eighth'))) return 'identFrac';
-  if (has('count halves', 'count fourths', 'count')) return 'fracParts';
+  if (has('count halves', 'count fourths') || (unitId === 'LL' && has('count'))) return 'fracParts'; // bare "count…" outside Fractions is NOT a fraction skill
   if (has('fraction', 'halves', 'thirds', 'fourths', 'eighths')) return 'identFrac';
   // financial
   if (has('producer', 'consumer', 'cost to produce')) return 'producerConsumer';
