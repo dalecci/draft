@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 35; // shown on every screen so you can confirm the running version
+const APP_BUILD = 36; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -54,10 +54,30 @@ function seedDemo() {
 
 /* ------------------------------- STORE ----------------------------------- */
 // Double-save: every write goes to primary (cloud OR local) AND a local mirror.
+// PROGRESS-AWARE sync: mastered skills can't vanish by timestamp accident. A copy
+// with meaningfully more mastery beats a "newer" copy with less, and nothing may
+// overwrite a richer copy unless a parent explicitly restored (_restoredAt).
+function masteredTotal(state) {
+  let n = 0;
+  try { for (const id in (state && state.students) || {}) { const p = state.students[id].progress || {}; for (const k in p) if (p[k] && p[k].masteredAt) n++; } } catch (e) {}
+  return n;
+}
+function pickBestCopy(candidates) {
+  const at = s => (s && s._savedAt) || 0;
+  const cands = candidates.filter(Boolean);
+  if (!cands.length) return null;
+  const newest = cands.slice().sort((a, b) => at(b) - at(a))[0];
+  const richest = cands.slice().sort((a, b) => masteredTotal(b) - masteredTotal(a))[0];
+  if (richest === newest || masteredTotal(richest) <= masteredTotal(newest)) return newest;
+  // newest has LESS progress than another copy — only honor it if a parent deliberately restored it
+  if ((newest._restoredAt || 0) > at(richest)) return newest;
+  console.warn('sync: ignoring a newer copy with less progress — keeping the richer one');
+  return richest;
+}
 const Store = {
   async load() {
-    // read BOTH sources, then keep whichever was saved most recently — never let a
-    // stale copy silently overwrite newer progress.
+    // read ALL sources (both local copies + cloud), then pick the best — never
+    // let a stale device's copy silently replace real progress.
     let local = null, mirror = null, cloud = null;
     try { const raw = localStorage.getItem(LS_KEY); if (raw) local = JSON.parse(raw); } catch (e) {}
     try { const raw = localStorage.getItem(LS_MIRROR); if (raw) mirror = JSON.parse(raw); } catch (e) {}
@@ -67,28 +87,37 @@ const Store = {
         if (user) { const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle(); if (data && data.data) cloud = data.data; }
       } catch (e) { console.warn('cloud load failed', e); }
     }
+    const best = pickBestCopy([local, mirror, cloud]);
+    if (!best) return seedDemo();
     const at = s => (s && s._savedAt) || 0;
-    const newest = [local, mirror, cloud].filter(Boolean).sort((a, b) => at(b) - at(a))[0];
-    if (!newest) return seedDemo();
-    // converge: if the newest came from local but the cloud was older, push it up so the cloud is protected
-    if (CLOUD && sb && newest !== cloud && at(newest) > at(cloud)) { setTimeout(() => Store.save(newest).catch(() => {}), 0); }
-    return newest;
+    // converge: if the best copy isn't what the cloud has, push it up so every other device pulls it
+    if (CLOUD && sb && best !== cloud && (at(best) > at(cloud) || masteredTotal(best) > masteredTotal(cloud))) {
+      setTimeout(() => Store.save(best).catch(() => {}), 0);
+    }
+    return best;
   },
   async save(state) {
     const prevAt = state._savedAt || 0;         // when this state was last persisted/loaded
     state._savedAt = now();                      // stamp BEFORE serialising so the copy carries its true time
     const json = JSON.stringify(state);
     try { localStorage.setItem(LS_KEY, json); localStorage.setItem(LS_MIRROR, json); } catch (e) {}
-    pushSnapshot(state);                          // rolling restore points — survive a bad overwrite
+    pushSnapshot(state);                          // rolling + daily restore points — survive a bad overwrite
     if (CLOUD && sb) {
       try {
         const { data: { user } } = await sb.auth.getUser();
         if (user) {
-          // stale-write guard: if the cloud advanced past what we started from, another device is ahead — don't clobber it
           const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle();
-          const cloudAt = (data && data.data && data.data._savedAt) || 0;
-          if (cloudAt > prevAt + 1000) { console.warn('cloud is newer — skipping overwrite to avoid clobbering progress'); }
-          else { await sb.from('ascend_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() }); }
+          const cloudState = data && data.data;
+          const cloudAt = (cloudState && cloudState._savedAt) || 0;
+          const cm = masteredTotal(cloudState), sm = masteredTotal(state);
+          const parentRestore = (state._restoredAt || 0) > cloudAt; // an explicit restore outranks the cloud copy it replaces
+          if (cm > sm && !parentRestore) {
+            console.warn('cloud has more progress — refusing to overwrite it with a poorer copy');
+          } else if (cloudAt > prevAt + 1000 && cm >= sm && !parentRestore) {
+            console.warn('cloud is newer — skipping overwrite to avoid clobbering progress');
+          } else {
+            await sb.from('ascend_state').upsert({ user_id: user.id, data: state, updated_at: new Date().toISOString() });
+          }
         }
       } catch (e) { console.warn('cloud save failed', e); }
     }
@@ -99,15 +128,28 @@ async function persist() { await Store.save(STATE); }
 
 /* --------- rolling snapshot history (local point-in-time restore) --------- */
 const HIST_KEY = 'ascend_history_v3';
+const DAILY_KEY = 'ascend_daily_v1';
 function historyList() { try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch (e) { return []; } }
+function dailyRestoreList() { try { return JSON.parse(localStorage.getItem(DAILY_KEY) || '[]'); } catch (e) { return []; } }
 function pushSnapshot(state) {
+  // one snapshot per DAY, kept ~10 days — "restore from last night" always exists
+  try {
+    const dl = dailyRestoreList();
+    const dk = dayKey(now());
+    const entry = { d: dk, t: now(), data: JSON.parse(JSON.stringify(state)) };
+    const i = dl.findIndex(x => x.d === dk);
+    if (i >= 0) dl[i] = entry; else dl.push(entry);
+    while (dl.length > 10) dl.shift();
+    try { localStorage.setItem(DAILY_KEY, JSON.stringify(dl)); }
+    catch (e) { while (dl.length > 3) dl.shift(); try { localStorage.setItem(DAILY_KEY, JSON.stringify(dl)); } catch (e2) {} }
+  } catch (e) {}
+  // plus a rolling snapshot every ~20 min for same-day recovery
   try {
     const hist = historyList();
     const last = hist[hist.length - 1];
-    // keep a snapshot at most every ~20 min (plus always the first)
     if (last && (now() - last.t) < 20 * 60 * 1000) return;
     hist.push({ t: now(), data: JSON.parse(JSON.stringify(state)) });
-    while (hist.length > 6) hist.shift();
+    while (hist.length > 12) hist.shift();
     try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); }
     catch (e) { while (hist.length > 2) hist.shift(); try { localStorage.setItem(HIST_KEY, JSON.stringify(hist)); } catch (e2) {} }
   } catch (e) {}
@@ -121,6 +163,7 @@ function ALL_SKILLS_MASTERED_COUNT(stu) { let n = 0; for (const k in (stu.progre
 function restoreSnapshot(snap) {
   if (!snap || !snap.data || !snap.data.students) { toast('❌ Bad snapshot'); return; }
   STATE = snap.data; Object.values(STATE.students).forEach(ensureStudentShape);
+  STATE._restoredAt = now(); // a parent's explicit restore outranks richer/newer copies elsewhere
   persist(); toast('✅ Restored earlier version');
   go(STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login');
 }
@@ -1742,18 +1785,21 @@ function renderParentHome() {
     el('button', { class: 'btn ghost', onclick: () => fileInp.click() }, '⬆ Restore backup'),
   ]));
   data.append(fileInp);
-  // rolling restore points
-  const hist = historyList().slice().reverse();
-  if (hist.length) {
-    data.append(el('div', { class: 'restore-head' }, '⏱ Restore an earlier version'));
-    hist.forEach(snap => {
+  // restore points: recent (rolling ~20 min) + one per day for ~10 days
+  const addRows = (list, title) => {
+    if (!list.length) return;
+    data.append(el('div', { class: 'restore-head' }, title));
+    list.forEach(snap => {
       const when = new Date(snap.t).toLocaleString();
       data.append(el('div', { class: 'restore-row' }, [
         el('div', { class: 'restore-mid' }, [el('div', { class: 'restore-when' }, when), el('div', { class: 'muted' }, snapshotSummary(snap))]),
-        el('button', { class: 'mini', onclick: () => { if (window.confirm('Restore this version? It replaces the current progress on this device.')) restoreSnapshot(snap); } }, 'Restore'),
+        el('button', { class: 'mini', onclick: () => { if (window.confirm('Restore this version? It replaces the current progress everywhere once this device syncs.')) restoreSnapshot(snap); } }, 'Restore'),
       ]));
     });
-  }
+  };
+  addRows(historyList().slice().reverse(), '⏱ Restore an earlier version (today)');
+  const todayK = dayKey(now());
+  addRows(dailyRestoreList().slice().reverse().filter(d => d.d !== todayK), '📅 End-of-day restore points');
   wrap.append(data);
 
   wrap.append(navbar('home', true));
