@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 36; // shown on every screen so you can confirm the running version
+const APP_BUILD = 37; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -166,6 +166,51 @@ function restoreSnapshot(snap) {
   STATE._restoredAt = now(); // a parent's explicit restore outranks richer/newer copies elsewhere
   persist(); toast('✅ Restored earlier version');
   go(STATE.currentUserId ? (STATE.parents[STATE.currentUserId] ? 'parent-home' : 'student-home') : 'login');
+}
+
+/* ------------------------- SYNC STATUS (visible) -------------------------- */
+function syncStateSummary(s) {
+  if (!s) return 'no copy';
+  const kids = Object.values(s.students || {});
+  const who = kids.map(k => `${k.name}: ${ALL_SKILLS_MASTERED_COUNT(k)} skills`).join(' · ') || 'empty';
+  return `${who}${s._savedAt ? ' · saved ' + new Date(s._savedAt).toLocaleString() : ''}`;
+}
+async function cloudPeek() {
+  if (!(CLOUD && sb)) return { off: true };
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return { user: null };
+    const { data } = await sb.from('ascend_state').select('data').eq('user_id', user.id).maybeSingle();
+    return { user, state: (data && data.data) || null };
+  } catch (e) { return { err: true }; }
+}
+async function paintSyncStatus(box) {
+  box.innerHTML = '';
+  box.append(el('div', { class: 'restore-head' }, '☁️ Sync status'));
+  box.append(el('div', { class: 'muted' }, `This device: ${syncStateSummary(STATE)}`));
+  if (!(CLOUD && sb)) { box.append(el('div', { class: 'badge warn' }, '⚠️ Cloud sync is OFF on this device — progress stays local only')); return; }
+  const peek = await cloudPeek();
+  if (peek.err) { box.append(el('div', { class: 'badge warn' }, '⚠️ Cloud unreachable right now — will retry on next save')); return; }
+  if (!peek.user) { box.append(el('div', { class: 'badge warn' }, '⚠️ Not signed in to the cloud on this device — nothing syncs until you log in')); return; }
+  box.append(el('div', { class: 'muted' }, `Signed in as: ${peek.user.email || peek.user.id}`));
+  box.append(el('div', { class: 'muted' }, `Cloud copy: ${syncStateSummary(peek.state)}`));
+  box.append(el('div', { class: 'answer-row' }, [el('button', { class: 'btn primary', onclick: () => syncNow(box) }, '⟳ Sync now')]));
+}
+async function syncNow(box) {
+  toast('⟳ Syncing…');
+  const best = await Store.load();
+  const better = best && (masteredTotal(best) > masteredTotal(STATE) || (best._savedAt || 0) > (STATE._savedAt || 0));
+  if (better) {
+    const uid = STATE.currentUserId;
+    STATE = best; STATE.currentUserId = uid;
+    Object.values(STATE.students || {}).forEach(ensureStudentShape);
+    await persist();
+    toast('✅ Updated this device from the best copy');
+    render(); return;
+  }
+  await persist(); // push this device's copy up (progress guards protect richer copies)
+  toast('✅ This device is the best copy — pushed it to the cloud');
+  paintSyncStatus(box);
 }
 
 /* ------------------------------ PACING ENGINE ---------------------------- */
@@ -1785,6 +1830,11 @@ function renderParentHome() {
     el('button', { class: 'btn ghost', onclick: () => fileInp.click() }, '⬆ Restore backup'),
   ]));
   data.append(fileInp);
+  // sync status: make cloud state visible instead of failing silently
+  const syncBox = el('div', { class: 'sync-box' });
+  data.append(syncBox);
+  paintSyncStatus(syncBox);
+
   // restore points: recent (rolling ~20 min) + one per day for ~10 days
   const addRows = (list, title) => {
     if (!list.length) return;
