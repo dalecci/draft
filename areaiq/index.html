@@ -177,6 +177,9 @@ body.tv #floodLegend{font-size:13.5px}
   text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.7);pointer-events:none}
 .slab-att.sail{color:#8ceae6}
 .slab-att.flood{color:#ffb9a8}
+.subdot{background:var(--gold);border:2px solid #0b0b0d;border-radius:3px;transform:rotate(45deg);
+  box-shadow:0 0 10px rgba(216,176,74,.95),0 1px 3px rgba(0,0,0,.8);cursor:pointer}
+.subdot.pocket{background:#e8d9ac}
 #map.nolabels .zlab{opacity:0}
 .leaflet-control-attribution{background:rgba(10,10,11,.72) !important;color:#8b8577 !important;font-size:9.5px !important}
 .leaflet-control-attribution a{color:#a89f8c !important}
@@ -291,7 +294,7 @@ body.tv #matchcount{font-size:14px}
         <button class="chip on" id="subChip">Gated communities</button>
         <button class="chip sailc" id="sailChip">Sailboat water</button>
         <button class="chip floodc" id="floodChip">Flood zones (FEMA)</button>
-        <button class="chip" id="schChip">School grades</button>
+        <button class="chip" id="schChip">School grades (E·M·H)</button>
       </div>
     </div>
     <div class="sec">
@@ -311,7 +314,7 @@ body.tv #matchcount{font-size:14px}
 </aside>
 
 <button id="fabPanel">☰ Filters &amp; Layers</button>
-<button id="dataBadge">DATA v0.7 · ESTIMATES</button>
+<button id="dataBadge">DATA v0.8 · ESTIMATES</button>
 <div id="floodLegend">
   <span><i style="background:#3d7fe0"></i>AE / A — insurance required</span>
   <span><i style="background:#ef4444"></i>VE — coastal wave zone</span>
@@ -357,7 +360,7 @@ body.tv #matchcount{font-size:14px}
       <p><b>Why price ranges, not just one number.</b> In Cape Coral the same street can hold a $350K off-water home and a
       $1M+ gulf-access home. Each area's scorecard shows its <b>price mix by product type</b> so one blended median never
       tells the story alone.</p>
-      <p><b>Data version 0.7.</b> <b>Flood-zone shares and the flood overlay are real</b> — computed from FEMA's
+      <p><b>Data version 0.8.</b> <b>Flood-zone shares and the flood overlay are real</b> — computed from FEMA's
       effective flood maps (NFHL, sampled July 2026). Area boundaries are approximate and drawn for discussion. Market
       figures, rents, HOA fees, drive times, elevations, evacuation zones, and school letter grades (recent FDOE grades)
       remain ballpark estimates until county, school-district, and MLS feeds land in the next phase. Lee County is
@@ -365,7 +368,7 @@ body.tv #matchcount{font-size:14px}
       flood zone, bridge clearances, assessments, and schools for a specific property before relying on them.</b></p>
       <p><b>Fair housing.</b> This tool presents objective, third-party-sourced characteristics of places, never of people.
       Buyers set their own priorities. Equal Housing Opportunity.</p>
-      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.7 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
+      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.8 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
     </div>
   </div>
 </div>
@@ -373,8 +376,8 @@ body.tv #matchcount{font-size:14px}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 /* =========================================================
-   AREA IQ v0.7 — Cape Coral
-   DATA v0.7: boundaries approximate; metrics are estimates
+   AREA IQ v0.8 — Cape Coral
+   DATA v0.8: boundaries approximate; metrics are estimates
    ========================================================= */
 const ACCESS_CODE = 'SWFL2026';   // change the client code here
 
@@ -622,8 +625,8 @@ const ZONES = [
 /* ---------------- gated communities & named enclaves (sub-areas) ---------------- */
 const SUBS = [
 {id:'sub_sandoval',name:'Sandoval',parent:'sandoval',kind:'gated',
- poly:[[26.6070,-82.0380],[26.6070,-82.0195],[26.6270,-82.0195],[26.6270,-82.0380]],
- fx:{x:0,x5:14,ae:86,ve:0},price:'$450K – $800K',hoa:'≈$130–160/mo',util:'City water & sewer',era:'2005–2015 · Single-family & villas',
+ poly:[[26.6030,-82.0380],[26.6030,-82.0200],[26.6185,-82.0200],[26.6185,-82.0380]],
+ fx:{x:0,x5:10,ae:90,ve:0},price:'$450K – $800K',hoa:'≈$130–160/mo',util:'City water & sewer',era:'2005–2015 · Single-family & villas',
  blurb:'Resort-style gated master-plan — lagoon pool, splash park, tennis & pickleball, dog parks, miles of trails.',
  tags:['Resort amenities','Reasonable fees','Family + snowbird mix']},
 {id:'sub_capeharbour',name:'Cape Harbour',parent:'pelican',kind:'gated',
@@ -660,7 +663,12 @@ const SUBS = [
  poly:[[26.7005,-81.9110],[26.7005,-81.9040],[26.7055,-81.9040],[26.7055,-81.9110]],
  fx:{x:50,x5:0,ae:50,ve:0},price:'$200K – $300K condos',hoa:'≈$400/mo',util:'City water & sewer',era:'2006–2019 · Gated mid-rise condos',
  blurb:'Entry-price gated condos near US-41 — a favorite for first-timers and seasonal use.',
- tags:['Entry price','Gated condos','Seasonal friendly']}
+ tags:['Entry price','Gated condos','Seasonal friendly']},
+{id:'sub_caperoyal',name:'Cape Royal',parent:'sandoval',kind:'gated',
+ poly:[[26.6185,-82.0450],[26.6185,-82.0260],[26.6340,-82.0260],[26.6340,-82.0450]],
+ fx:{x:0,x5:7,ae:93,ve:0},price:'$450K – $1M+',hoa:'≈$150–250/mo (golf memberships separate)',util:'City water & sewer (verify)',era:'1990s–2020s · Golf-estate homes on oversized lots',
+ blurb:'Gated golf living right beside Sandoval — the Royal Tee’s 27 holes, eagle nests on the fairways, and oversized estate lots.',
+ tags:['Gated golf','Royal Tee 27 holes','Oversized lots']}
 ];
 
 /* ---------------- precision "laser" overlays (approx. shapes) ----------------
@@ -747,7 +755,7 @@ $('#baseBtn').addEventListener('click',()=>{
 
 function labelHTML(z){
   if(!state.schLabels) return z.short;
-  return z.short+'<span class="zl-sch">E '+z.schools.e[1]+' · M '+z.schools.m[1]+' · H '+z.schools.h[1]+'</span>';
+  return z.short+'<span class="zl-sch">'+z.schools.e[1]+' · '+z.schools.m[1]+' · '+z.schools.h[1]+'</span>';
 }
 const zoneGroup=L.layerGroup().addTo(map);
 ZONES.forEach(z=>{
@@ -767,15 +775,25 @@ function subStyle(s,selected){
     dashArray:gated?'6 4':'2 5',fillColor:gated?'#ffdf70':'#e8d9ac',fillOpacity:selected?.2:(gated?.08:.05),
     bubblingMouseEvents:false};
 }
+const subDotGroup=L.layerGroup();
 SUBS.forEach(s=>{
   s.layer=L.polygon(s.poly,subStyle(s,false)).addTo(subGroup);
   s.layer.bindTooltip(s.name,{permanent:true,direction:'center',className:'slab-sub'});
   s.layer.on('click',()=>selectSub(s.id));
+  const c=[s.poly.reduce((a,p)=>a+p[0],0)/s.poly.length, s.poly.reduce((a,p)=>a+p[1],0)/s.poly.length];
+  s.dot=L.marker(c,{icon:L.divIcon({className:'subdot'+(s.kind==='gated'?'':' pocket'),iconSize:[12,12]})});
+  s.dot.bindTooltip(s.name,{direction:'top',offset:[0,-8],className:'slab-sub'});
+  s.dot.on('click',()=>{ map.flyTo(c,Math.max(map.getZoom(),12.6),{duration:.8}); selectSub(s.id); });
+  s.dot.addTo(subDotGroup);
 });
 function syncSubs(){
-  const show=state.showSubs && map.getZoom()>=11.6;
-  if(show && !map.hasLayer(subGroup)) map.addLayer(subGroup);
-  if(!show && map.hasLayer(subGroup)) map.removeLayer(subGroup);
+  const zoomed=map.getZoom()>=11.6;
+  const showPolys=state.showSubs && zoomed;
+  const showDots=state.showSubs && !zoomed;
+  if(showPolys && !map.hasLayer(subGroup)) map.addLayer(subGroup);
+  if(!showPolys && map.hasLayer(subGroup)) map.removeLayer(subGroup);
+  if(showDots && !map.hasLayer(subDotGroup)) map.addLayer(subDotGroup);
+  if(!showDots && map.hasLayer(subDotGroup)) map.removeLayer(subDotGroup);
 }
 map.on('zoomend',()=>{ $('#map').classList.toggle('nolabels',map.getZoom()<10.8); syncSubs(); });
 syncSubs();
@@ -936,7 +954,7 @@ function select(id){
   state.sel=id; state.selSub=null; SUBS.forEach(s=>s.layer.setStyle(subStyle(s,false)));
   $('#cName').textContent=z.name;
   $('#cBadges').innerHTML='<span class="bdg">'+({SE:'Southeast',SW:'Southwest',CEN:'Central',NW:'Northwest',NE:'Northeast'})[z.quad]+' Cape</span>'+
-      '<span class="bdg est">est. data v0.7</span>';
+      '<span class="bdg est">est. data v0.8</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+z.blurb+'</div>'+
     row('💧','Utilities & assessments',z.util.line,ASSESS[z.assess])+
@@ -961,7 +979,7 @@ function selectSub(id){
   SUBS.forEach(x=>x.layer.setStyle(subStyle(x,x.id===id)));
   $('#cName').textContent=s.name;
   $('#cBadges').innerHTML='<span class="bdg gate">'+(s.kind==='gated'?'Gated community':'Named enclave')+'</span>'+
-      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.7</span>';
+      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.8</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+s.blurb+'</div>'+
     row('🏷','Price band',s.price+' (est.)','')+
@@ -1024,7 +1042,7 @@ function openCmp(){
   $('#cmpBody').innerHTML='<table class="cmp"><tr><td class="rl"></td>'+
     zs.map(z=>'<th>'+z.name+'</th>').join('')+'</tr>'+
     CMPROWS.map(r=>'<tr><td class="rl">'+r[0]+'</td>'+zs.map(z=>'<td>'+r[1](z)+'</td>').join('')+'</tr>').join('')+
-    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.7 planning estimates — verify before relying on them.</p>';
+    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.8 planning estimates — verify before relying on them.</p>';
   $('#cmpModal').classList.add('open');
 }
 $('#cmpBtn').addEventListener('click',()=>{ if(state.cmp.length>=2) openCmp();
