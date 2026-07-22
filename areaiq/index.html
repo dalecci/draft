@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Area IQ™ — Cape Coral | Melissa Slattery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#0b0b0d; --panel:rgba(17,17,19,.93); --panel-solid:#131315;
+  --gold:#d8b04a; --gold-bright:#ffdf70; --gold-dim:rgba(216,176,74,.28);
+  --ink:#f3efe6; --muted:#a49b8b; --line:rgba(216,176,74,.22);
+  --good:#7fc98a; --warn:#e0b45c; --bad:#e08a7a;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.45 Inter,system-ui,sans-serif;overflow:hidden}
+#map{position:fixed;inset:0;background:var(--bg)}
+.leaflet-container{background:var(--bg);font:inherit}
+button{font:inherit;cursor:pointer}
+
+/* ---------- top bar ---------- */
+#topbar{position:fixed;top:0;left:0;right:0;height:58px;z-index:1200;display:flex;align-items:center;gap:10px;
+  padding:0 14px;background:linear-gradient(180deg,rgba(8,8,9,.95),rgba(8,8,9,.78) 70%,transparent);pointer-events:none}
+#topbar>*{pointer-events:auto}
+.brand{display:flex;flex-direction:column;line-height:1.05;margin-right:auto;user-select:none}
+.brand .wm{font:700 21px 'Playfair Display',serif;color:var(--gold);letter-spacing:2.5px}
+.brand .wm sup{font-size:9px;letter-spacing:1px}
+.brand .sub{font:600 9.5px Inter;color:var(--muted);letter-spacing:2.6px;margin-top:2px;text-transform:uppercase}
+.tbtn{background:rgba(20,20,22,.85);border:1px solid var(--line);color:var(--ink);border-radius:10px;
+  padding:8px 12px;font-size:13px;font-weight:600;letter-spacing:.3px;white-space:nowrap}
+.tbtn:hover{border-color:var(--gold);color:var(--gold-bright)}
+.tbtn.gold{background:var(--gold);border-color:var(--gold);color:#141414}
+.tbtn.gold:hover{background:var(--gold-bright);color:#141414}
+
+/* ---------- left panel ---------- */
+#panel{position:fixed;left:14px;top:70px;z-index:1100;width:305px;max-height:calc(100dvh - 150px);
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px);
+  display:flex;flex-direction:column;overflow:hidden;transition:transform .28s ease,opacity .28s ease}
+#panel .ph{display:flex;align-items:center;justify-content:space-between;padding:13px 15px 9px}
+#panel .ph h3{font:700 12px Inter;letter-spacing:2.2px;color:var(--gold);text-transform:uppercase}
+#panel .pbody{overflow-y:auto;padding:0 15px 15px}
+#panel .pbody::-webkit-scrollbar{width:5px}
+#panel .pbody::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+.sec{margin-top:12px}
+.sec .slab{font:600 10.5px Inter;letter-spacing:1.8px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.13);color:var(--ink);
+  border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:500;transition:all .15s}
+.chip:hover{border-color:var(--gold)}
+.chip.on{background:var(--gold);border-color:var(--gold);color:#141414;font-weight:700}
+.sliderrow{display:flex;align-items:center;gap:10px}
+input[type=range]{flex:1;accent-color:var(--gold);height:22px}
+#budgetLab{font-size:12.5px;font-weight:600;color:var(--gold-bright);min-width:76px;text-align:right}
+select{width:100%;background:#1a1a1d;border:1px solid rgba(255,255,255,.15);color:var(--ink);
+  border-radius:10px;padding:9px 10px;font:500 13px Inter;outline:none}
+select:focus{border-color:var(--gold)}
+#legend{margin-top:9px;display:none}
+#legend.show{display:block}
+#legbar{height:10px;border-radius:5px;border:1px solid rgba(255,255,255,.12)}
+#legends{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+#legnote{font-size:10.5px;color:var(--muted);margin-top:3px}
+#matchrow{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+#matchcount{font-size:12.5px;color:var(--gold-bright);font-weight:600}
+#resetBtn{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline}
+#resetBtn:hover{color:var(--ink)}
+
+/* ---------- scorecard ---------- */
+#card{position:fixed;right:14px;top:70px;bottom:86px;z-index:1100;width:392px;max-width:calc(100vw - 28px);
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px);
+  transform:translateX(112%);transition:transform .3s ease;display:flex;flex-direction:column;overflow:hidden}
+#card.open{transform:none}
+#card .chead{padding:16px 18px 10px;border-bottom:1px solid rgba(255,255,255,.07)}
+#card .chead h2{font:700 21px 'Playfair Display',serif;color:var(--gold-bright);line-height:1.15}
+.badges{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.bdg{font:600 10px Inter;letter-spacing:1.2px;text-transform:uppercase;border-radius:5px;padding:3px 7px;
+  background:rgba(216,176,74,.14);color:var(--gold);border:1px solid var(--gold-dim)}
+.bdg.est{background:rgba(255,255,255,.06);color:var(--muted);border-color:rgba(255,255,255,.14)}
+#card .cbody{overflow-y:auto;padding:12px 18px 16px;flex:1}
+#card .cbody::-webkit-scrollbar{width:5px}
+#card .cbody::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+.blurb{font-size:13.5px;color:#d8d2c4;font-style:italic;margin-bottom:13px}
+.mrow{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.055)}
+.mrow:last-of-type{border-bottom:none}
+.mic{font-size:17px;width:24px;text-align:center;flex-shrink:0;padding-top:1px}
+.mtx{flex:1;min-width:0}
+.mlab{font:600 10px Inter;letter-spacing:1.6px;color:var(--muted);text-transform:uppercase}
+.mval{font-size:14px;font-weight:600;margin-top:2px}
+.msub{font-size:12px;color:var(--muted);margin-top:1px}
+.tagwrap{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+.tag{font-size:11.5px;background:rgba(216,176,74,.1);border:1px solid var(--gold-dim);color:#e8d9ac;border-radius:999px;padding:4px 10px}
+.cbtns{display:flex;gap:9px;padding:12px 18px;border-top:1px solid rgba(255,255,255,.07)}
+.cbtns .tbtn{flex:1;text-align:center}
+
+/* ---------- compare ---------- */
+#cmpTray{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:1150;display:none;
+  align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:7px 9px;backdrop-filter:blur(14px);max-width:calc(100vw - 24px);flex-wrap:wrap;justify-content:center}
+#cmpTray.show{display:flex}
+.cmpchip{display:flex;align-items:center;gap:6px;background:rgba(216,176,74,.13);border:1px solid var(--gold-dim);
+  border-radius:999px;padding:5px 6px 5px 11px;font-size:12px;font-weight:600;color:var(--gold-bright)}
+.cmpchip b{cursor:pointer;color:var(--muted);font-weight:700;padding:0 4px}
+.cmpchip b:hover{color:var(--ink)}
+#cmpModal,#infoModal{position:fixed;inset:0;z-index:2000;background:rgba(5,5,6,.82);display:none;
+  align-items:center;justify-content:center;padding:18px}
+#cmpModal.open,#infoModal.open{display:flex}
+.modal{background:var(--panel-solid);border:1px solid var(--line);border-radius:18px;max-width:960px;width:100%;
+  max-height:88dvh;display:flex;flex-direction:column;overflow:hidden}
+.modal .mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.modal .mh h3{font:700 19px 'Playfair Display',serif;color:var(--gold)}
+.xbtn{background:none;border:none;color:var(--muted);font-size:22px;line-height:1}
+.xbtn:hover{color:var(--ink)}
+.modal .mb{overflow:auto;padding:6px 20px 20px}
+table.cmp{border-collapse:collapse;width:100%;min-width:560px}
+table.cmp th,table.cmp td{padding:9px 12px;text-align:left;font-size:13px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+table.cmp th{font:700 14px Inter;color:var(--gold-bright)}
+table.cmp td.rl{font:600 10.5px Inter;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+#infoModal .mb{font-size:13.5px;color:#d8d2c4;line-height:1.65}
+#infoModal .mb p{margin:10px 0}
+#infoModal .mb b{color:var(--gold)}
+
+/* ---------- mobile FAB / badge ---------- */
+#fabPanel{position:fixed;left:14px;bottom:16px;z-index:1150;display:none;background:var(--gold);color:#141414;
+  border:none;border-radius:999px;padding:12px 18px;font-weight:700;font-size:13.5px;box-shadow:0 6px 22px rgba(0,0,0,.5)}
+#dataBadge{position:fixed;right:14px;bottom:16px;z-index:1090;background:rgba(17,17,19,.85);border:1px solid rgba(255,255,255,.14);
+  color:var(--muted);border-radius:999px;padding:6px 12px;font-size:10.5px;font-weight:600;letter-spacing:1.2px}
+#dataBadge:hover{color:var(--ink);border-color:var(--gold)}
+
+/* ---------- zone labels ---------- */
+.zlab{background:none !important;border:none !important;box-shadow:none !important;
+  color:#f7f2e2;font:600 12px Inter;letter-spacing:.5px;text-align:center;
+  text-shadow:0 1px 4px rgba(0,0,0,.95),0 0 12px rgba(0,0,0,.7);pointer-events:none;transition:opacity .2s}
+.zlab.dim{opacity:.14}
+#map.nolabels .zlab{opacity:0}
+.leaflet-control-attribution{background:rgba(10,10,11,.72) !important;color:#8b8577 !important;font-size:9.5px !important}
+.leaflet-control-attribution a{color:#a89f8c !important}
+.leaflet-bar a{background:#161618 !important;color:var(--ink) !important;border-color:rgba(255,255,255,.12) !important}
+
+/* ---------- gate ---------- */
+#gate{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(1000px 600px at 50% 32%,#17140d,#060607 75%)}
+.gatecard{text-align:center;padding:34px 26px;max-width:420px;width:92%}
+.gdiamond{width:14px;height:14px;background:var(--gold);transform:rotate(45deg);margin:0 auto 26px;box-shadow:0 0 24px rgba(216,176,74,.55)}
+.gwm{font:700 46px 'Playfair Display',serif;color:var(--gold);letter-spacing:6px}
+.gwm sup{font-size:14px;letter-spacing:2px}
+.grule{width:64px;height:1px;background:var(--gold-dim);margin:18px auto}
+.gsub{font:600 11px Inter;letter-spacing:5px;color:var(--ink);text-transform:uppercase}
+.gsub2{font:500 10.5px Inter;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-top:8px}
+#gateInput{margin-top:34px;width:230px;background:rgba(255,255,255,.05);border:1px solid rgba(216,176,74,.4);
+  color:var(--gold-bright);border-radius:12px;padding:13px;font:700 17px Inter;letter-spacing:5px;text-align:center;
+  text-transform:uppercase;outline:none}
+#gateInput:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(216,176,74,.15)}
+#gateBtn{display:block;margin:14px auto 0;width:230px;background:var(--gold);color:#141414;border:none;
+  border-radius:12px;padding:13px;font:700 13px Inter;letter-spacing:3px}
+#gateBtn:hover{background:var(--gold-bright)}
+#gateErr{color:var(--bad);font-size:12px;margin-top:12px;min-height:16px;letter-spacing:.5px}
+.gfoot{margin-top:40px;font-size:11px;color:var(--muted);letter-spacing:.6px;line-height:1.7}
+.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+
+/* ---------- TV mode ---------- */
+body.tv .zlab{font-size:16px;letter-spacing:.7px}
+body.tv #card{width:470px}
+body.tv #card .chead h2{font-size:26px}
+body.tv .mval{font-size:16.5px}
+body.tv .msub{font-size:13.5px}
+body.tv .mlab{font-size:11px}
+body.tv .blurb{font-size:15px}
+body.tv #panel{width:340px}
+body.tv .chip{font-size:14px;padding:9px 14px}
+body.tv #matchcount{font-size:14px}
+
+/* ---------- responsive ---------- */
+@media (max-width:880px){
+  .brand .wm{font-size:17px}
+  .brand .sub{font-size:8px;letter-spacing:1.8px}
+  .tbtn{padding:7px 10px;font-size:12px}
+  #panel{left:0;right:0;top:auto;bottom:0;width:100%;max-height:72dvh;border-radius:18px 18px 0 0;
+    transform:translateY(108%)}
+  #panel.open{transform:none}
+  #fabPanel{display:block}
+  #card{left:0;right:0;top:auto;bottom:0;width:100%;max-width:none;max-height:74dvh;height:auto;
+    border-radius:18px 18px 0 0;transform:translateY(108%)}
+  #card.open{transform:none}
+  #cmpTray{bottom:74px}
+  #dataBadge{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= GATE ================= -->
+<div id="gate">
+  <div class="gatecard">
+    <div class="gdiamond"></div>
+    <div class="gwm">AREA&nbsp;IQ<sup>™</sup></div>
+    <div class="grule"></div>
+    <div class="gsub">Cape Coral Edition</div>
+    <div class="gsub2">Presented by Melissa Slattery</div>
+    <input id="gateInput" type="text" placeholder="ACCESS CODE" autocomplete="off" autocapitalize="characters">
+    <button id="gateBtn">ENTER</button>
+    <div id="gateErr"></div>
+    <div class="gfoot">Private neighborhood intelligence for invited clients.<br>Southwest Florida · Equal Housing Opportunity</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="map" class=""></div>
+
+<div id="topbar">
+  <div class="brand">
+    <div class="wm">AREA IQ<sup>™</sup></div>
+    <div class="sub">Cape Coral · Melissa Slattery</div>
+  </div>
+  <button class="tbtn" id="baseBtn">Map: Dark</button>
+  <button class="tbtn" id="cmpBtn">Compare (0)</button>
+  <button class="tbtn" id="infoBtn">ⓘ</button>
+  <button class="tbtn gold" id="tvBtn">TV Mode</button>
+</div>
+
+<aside id="panel">
+  <div class="ph"><h3>Filters &amp; Layers</h3><button class="xbtn" id="panelX" style="display:none">×</button></div>
+  <div class="pbody">
+    <div class="sec">
+      <div class="slab">Must-haves</div>
+      <div class="chips" id="chipWrap"></div>
+    </div>
+    <div class="sec">
+      <div class="slab">Max median price (est.)</div>
+      <div class="sliderrow">
+        <input type="range" id="budget" min="300" max="900" step="25" value="900">
+        <span id="budgetLab">No cap</span>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="slab">Color the map by</div>
+      <select id="heatSel"></select>
+      <div id="legend">
+        <div id="legbar"></div>
+        <div id="legends"><span id="legmin"></span><span id="legmax"></span></div>
+        <div id="legnote"></div>
+      </div>
+    </div>
+    <div id="matchrow">
+      <span id="matchcount"></span>
+      <button id="resetBtn">Reset all</button>
+    </div>
+  </div>
+</aside>
+
+<button id="fabPanel">☰ Filters &amp; Layers</button>
+<button id="dataBadge">DATA v0 · ESTIMATES</button>
+
+<aside id="card">
+  <div class="chead">
+    <h2 id="cName"></h2>
+    <div class="badges" id="cBadges"></div>
+  </div>
+  <div class="cbody" id="cBody"></div>
+  <div class="cbtns">
+    <button class="tbtn" id="cCmp">+ Compare</button>
+    <button class="tbtn" id="cClose">Close</button>
+  </div>
+</aside>
+
+<div id="cmpTray"></div>
+
+<div id="cmpModal">
+  <div class="modal">
+    <div class="mh"><h3>Side-by-Side Comparison</h3><button class="xbtn" data-close="cmpModal">×</button></div>
+    <div class="mb" id="cmpBody"></div>
+  </div>
+</div>
+
+<div id="infoModal">
+  <div class="modal" style="max-width:620px">
+    <div class="mh"><h3>About Area IQ™</h3><button class="xbtn" data-close="infoModal">×</button></div>
+    <div class="mb">
+      <p><b>What this is.</b> A private presentation tool that compares Cape Coral's signature areas across the things
+      that actually change a buying decision — utilities &amp; assessments, flood &amp; insurance exposure, boating access,
+      schools, market pricing, and lifestyle.</p>
+      <p><b>Data version 0 — planning estimates.</b> Zone boundaries are approximate and drawn for discussion. Market
+      figures (prices, $/sq ft, rents), school scores, and distances are ballpark estimates that will be replaced by live
+      county, FEMA, school-district, and MLS data in the next phase. <b>Always verify utilities, flood zone, assessments,
+      and school assignment for a specific property before relying on them.</b></p>
+      <p><b>Fair housing.</b> This tool presents objective, third-party-sourced characteristics of places, never of people.
+      Buyers set their own priorities. Equal Housing Opportunity.</p>
+      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* =========================================================
+   AREA IQ v0 — Cape Coral
+   DATA v0: zone boundaries approximate; metrics are estimates
+   ========================================================= */
+const ACCESS_CODE = 'SWFL2026';   // change the client code here
+
+/* ---------------- zones ---------------- */
+const ZONES = [
+{id:'yacht',name:'Yacht Club & Gold Coast',short:'Yacht Club',quad:'SE',
+ poly:[[26.5460,-81.9620],[26.5410,-81.9520],[26.5435,-81.9405],[26.5480,-81.9368],[26.5560,-81.9330],[26.5622,-81.9300],[26.5700,-81.9268],[26.5790,-81.9245],[26.5860,-81.9232],[26.5860,-81.9405],[26.5560,-81.9405],[26.5560,-81.9620]],
+ blurb:'The original Cape — sailboat canals, mature palms, a teardown-to-trophy rebuild wave, and the Yacht Club redevelopment on its doorstep.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'AE / VE near river',elev:5,evac:'A',ian:'Major Ian surge on river canals'},
+ boat:{type:'sail',label:'Sailboat gulf access',min:'5–15 min',minN:10,note:'No bridges on most streets — straight to the river'},
+ sch:{s:6,note:'Cape Elementary track; citywide Oasis charter lottery'},
+ mkt:{med:675,ppsf:340,rent:2900},ch:{yb:1971,vac:4,hoa:'none',sea:'high'},d:{rsw:30,beach:35,pub:5},
+ tags:['Sailboat access','Redevelopment upside','Old-Florida charm','Bike to downtown'],
+ f:{city:1,gulf:1,sail:1,x:0,gated:0,sch7:0}},
+
+{id:'downtown',name:'Downtown & Bimini Basin',short:'Downtown · Bimini',quad:'SE',
+ poly:[[26.5560,-81.9620],[26.5560,-81.9405],[26.5780,-81.9405],[26.5780,-81.9620]],
+ blurb:'Walk-to-dinner Cape: the 47th Terrace restaurant district, Bimini Basin water, and the city’s biggest downtown redevelopment push.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'X / AE mix',elev:6,evac:'B',ian:'Ian flooding near the basin; drier to the north'},
+ boat:{type:'bridge',label:'Gulf access (bridges)',min:'20–35 min',minN:27,note:'Bimini Basin & canal network out to the river'},
+ sch:{s:6,note:''},
+ mkt:{med:465,ppsf:300,rent:2500},ch:{yb:1978,vac:5,hoa:'none',sea:'med'},d:{rsw:30,beach:38,pub:3},
+ tags:['Walkable dining','Bimini Square coming','Condos & canals'],
+ f:{city:1,gulf:1,sail:0,x:0,gated:0,sch7:0}},
+
+{id:'savona',name:'Savona & Beach Parkway',short:'Savona · Beach Pkwy',quad:'SE',
+ poly:[[26.5395,-81.9955],[26.5425,-81.9820],[26.5455,-81.9700],[26.5480,-81.9620],[26.5622,-81.9620],[26.5622,-81.9955]],
+ blurb:'Quiet, established waterfront streets between downtown and Pelican — big water close to the river without the downtown bustle.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'Mostly AE',elev:6,evac:'A',ian:'Ian surge on canals nearest the river'},
+ boat:{type:'bridge',label:'Gulf access (bridges)',min:'15–30 min',minN:22,note:'Some near-river streets are no-bridge — verify per canal'},
+ sch:{s:6.5,note:''},
+ mkt:{med:585,ppsf:315,rent:2700},ch:{yb:1985,vac:6,hoa:'none',sea:'med'},d:{rsw:32,beach:38,pub:5},
+ tags:['Near-river canals','Established streets','Quick beach run'],
+ f:{city:1,gulf:1,sail:0,x:0,gated:0,sch7:0}},
+
+{id:'central',name:'Cape Central & Country Club',short:'Cape Central',quad:'SE',
+ poly:[[26.5622,-81.9955],[26.5622,-81.9620],[26.5780,-81.9620],[26.5780,-81.9405],[26.5940,-81.9405],[26.5940,-81.9955]],
+ blurb:'The off-water value core — close to everything, the sensible first-home and rental belt of the old Cape.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'Mostly X',elev:8,evac:'C',ian:'Wind damage only in Ian'},
+ boat:{type:'none',label:'No boating water',min:'—',minN:null,note:'A few freshwater pockets'},
+ sch:{s:6.5,note:'Close to Oasis charter campuses'},
+ mkt:{med:365,ppsf:265,rent:2250},ch:{yb:1988,vac:5,hoa:'none',sea:'low'},d:{rsw:30,beach:40,pub:3},
+ tags:['Best value','First-time friendly','Rental demand'],
+ f:{city:1,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'fourmile',name:'Four Mile Cove Riverfront',short:'Four Mile Cove',quad:'SE',
+ poly:[[26.5860,-81.9405],[26.5860,-81.9180],[26.5950,-81.9150],[26.6050,-81.9100],[26.6160,-81.9062],[26.6160,-81.9405]],
+ blurb:'River condos and townhomes beside the Four Mile Cove eco preserve — the quickest hop over the Midpoint into Fort Myers.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'AE on river',elev:6,evac:'B',ian:'Ian surge along the riverfront'},
+ boat:{type:'bridge',label:'Riverfront & canals',min:'10–25 min',minN:17,note:'River-direct condos; bridged canals behind'},
+ sch:{s:6,note:''},
+ mkt:{med:420,ppsf:260,rent:2300},ch:{yb:1992,vac:3,hoa:'pockets',sea:'med'},d:{rsw:25,beach:35,pub:4},
+ tags:['Riverfront condos','Eco preserve trails','Commuter easy'],
+ f:{city:1,gulf:1,sail:0,x:0,gated:0,sch7:0}},
+
+{id:'pelican',name:'Pelican & Cape Harbour',short:'Pelican · Cape Harbour',quad:'SW',
+ poly:[[26.5380,-82.0170],[26.5370,-82.0050],[26.5388,-81.9968],[26.5395,-81.9955],[26.5622,-81.9955],[26.5622,-82.0170]],
+ blurb:'Prestige southwest living — Cape Harbour marina dining, Rotary Park, and wide gulf-access canals lined with newer estates.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'Mostly AE',elev:6,evac:'A',ian:'Ian surge at the south end'},
+ boat:{type:'bridge',label:'Gulf access (bridges)',min:'10–25 min',minN:17,note:'Sailboat water south of Cape Harbour — verify per street'},
+ sch:{s:7.5,note:'Gulf Elementary track — perennial SW favorite'},
+ mkt:{med:725,ppsf:355,rent:3200},ch:{yb:1999,vac:6,hoa:'none',sea:'high'},d:{rsw:35,beach:40,pub:4},
+ tags:['Marina dining','Prestige SW','Wide canals','Rotary Park'],
+ f:{city:1,gulf:1,sail:1,x:0,gated:0,sch7:1}},
+
+{id:'rosegarden',name:'Rose Garden & Tarpon Point',short:'Rose Garden · Tarpon Pt',quad:'SW',
+ poly:[[26.5340,-82.0330],[26.5352,-82.0250],[26.5370,-82.0170],[26.5622,-82.0170],[26.5622,-82.0400],[26.5480,-82.0378]],
+ blurb:'The resort tip of the Cape — Tarpon Point marina, luxury towers, and the fastest sailboat water in the city.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'AE / VE fringe',elev:5,evac:'A',ian:'Major Ian surge near the point'},
+ boat:{type:'sail',label:'Sailboat gulf access',min:'5–15 min',minN:10,note:'Fastest open-water access in the Cape'},
+ sch:{s:7.5,note:'Gulf Elementary track'},
+ mkt:{med:850,ppsf:385,rent:3600},ch:{yb:2001,vac:7,hoa:'pockets',sea:'high'},d:{rsw:36,beach:42,pub:6},
+ tags:['Resort marina','Luxury condos','Sunset water'],
+ f:{city:1,gulf:1,sail:1,x:0,gated:1,sch7:1}},
+
+{id:'surfside',name:'Surfside & Agualinda',short:'Surfside',quad:'SW',
+ poly:[[26.5622,-82.0430],[26.5622,-81.9955],[26.5940,-81.9955],[26.5940,-82.0470],[26.5750,-82.0452]],
+ blurb:'Newer southwest builds along the spreader — modern family streets with quick Veterans access and nature out the back.',
+ util:{s:'city',line:'City water & sewer'},assess:'partial',
+ flood:{mix:'X / AE mix',elev:7,evac:'B',ian:'Minor Ian water intrusion near the spreader'},
+ boat:{type:'bridge',label:'Gulf access via spreader',min:'25–45 min',minN:35,note:'Longer ride; SW lock removal has helped times'},
+ sch:{s:7,note:'Ida Baker HS track'},
+ mkt:{med:545,ppsf:300,rent:2800},ch:{yb:2006,vac:12,hoa:'none',sea:'med'},d:{rsw:35,beach:42,pub:4},
+ tags:['Newer builds','Family streets','Spreader nature'],
+ f:{city:1,gulf:1,sail:0,x:0,gated:0,sch7:1}},
+
+{id:'sandoval',name:'Sandoval & West Cape',short:'Sandoval · West Cape',quad:'SW',
+ poly:[[26.5940,-82.0470],[26.5940,-82.0085],[26.6670,-82.0085],[26.6670,-82.0560],[26.6300,-82.0530],[26.6000,-82.0482]],
+ blurb:'Resort-style gated living at Sandoval — pools, trails, amenity centers — surrounded by fast-growing West Cape blocks.',
+ util:{s:'mixed',line:'City in/near Sandoval; verify western blocks'},assess:'partial',
+ flood:{mix:'Mostly X',elev:8,evac:'C',ian:'Wind only'},
+ boat:{type:'none',label:'Freshwater / none',min:'—',minN:null,note:'Sandoval lakes; no gulf canals'},
+ sch:{s:7,note:'Ida Baker HS track'},
+ mkt:{med:520,ppsf:290,rent:2700},ch:{yb:2008,vac:15,hoa:'pockets',sea:'med'},d:{rsw:35,beach:45,pub:5},
+ tags:['Gated resort amenities','Lock & leave','Pools & trails'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:1,sch7:1}},
+
+{id:'trafalgar',name:'Trafalgar & Skyline',short:'Trafalgar · Skyline',quad:'SW',
+ poly:[[26.5940,-82.0085],[26.5940,-81.9737],[26.6670,-81.9737],[26.6670,-82.0085]],
+ blurb:'The family core — freshwater canals, parks, schools and pools. Cape suburbia at its most livable.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'Mostly X',elev:9,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater canals & lakes',min:'—',minN:null,note:'Ski-able lakes and fishing water; no gulf access'},
+ sch:{s:7.5,note:'Trafalgar / Challenger cluster + charter options'},
+ mkt:{med:425,ppsf:275,rent:2500},ch:{yb:2002,vac:8,hoa:'none',sea:'low'},d:{rsw:33,beach:45,pub:3},
+ tags:['Family core','Parks & schools','Freshwater canals'],
+ f:{city:1,gulf:0,sail:0,x:1,gated:0,sch7:1}},
+
+{id:'midcape',name:'Mid-Cape Corridor',short:'Mid-Cape',quad:'CEN',
+ poly:[[26.5940,-81.9737],[26.5940,-81.9405],[26.6160,-81.9405],[26.6160,-81.9062],[26.6300,-81.9020],[26.6500,-81.8992],[26.6670,-81.8972],[26.6670,-81.9737]],
+ blurb:'Hospital, shopping and commuter central — the practical middle of the Cape with freshwater pockets and easy cross-river access.',
+ util:{s:'city',line:'City water & sewer'},assess:'paid',
+ flood:{mix:'Mostly X',elev:8,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater pockets',min:'—',minN:null,note:''},
+ sch:{s:6.5,note:''},
+ mkt:{med:385,ppsf:265,rent:2350},ch:{yb:1994,vac:6,hoa:'none',sea:'low'},d:{rsw:28,beach:40,pub:2},
+ tags:['Hospital close','Shopping hub','Midpoint commute'],
+ f:{city:1,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'tropicana',name:'Tropicana & Embers (NW)',short:'Tropicana NW',quad:'NW',
+ poly:[[26.6670,-82.0560],[26.6670,-81.9560],[26.6875,-81.9560],[26.6875,-82.0560]],
+ blurb:'New-construction boom country — fresh spec homes, bigger-feel lots, and city utilities arriving in phases.',
+ util:{s:'mixed',line:'Mixed — utilities extension in phases; verify parcel'},assess:'future',
+ flood:{mix:'Mostly X',elev:9,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater; some W bridged',min:'—',minN:null,note:'West fringe reaches the spreader — long ride'},
+ sch:{s:6.5,note:'Hector A. Cafferata Elementary nearby'},
+ mkt:{med:415,ppsf:260,rent:2450},ch:{yb:2016,vac:30,hoa:'none',sea:'low'},d:{rsw:38,beach:50,pub:6},
+ tags:['New construction','Verify utilities','Growth path'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'diplomat',name:'Diplomat & Mariner',short:'Diplomat · Mariner',quad:'NW',
+ poly:[[26.6875,-82.0560],[26.6875,-81.9560],[26.7128,-81.9560],[26.7128,-82.0560]],
+ blurb:'Well-and-septic value with new builds filling in fast — the Mariner school track and room to breathe.',
+ util:{s:'well',line:'Mostly well & septic today'},assess:'future',
+ flood:{mix:'Mostly X',elev:10,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater canals',min:'—',minN:null,note:''},
+ sch:{s:6.5,note:'Mariner cluster'},
+ mkt:{med:395,ppsf:250,rent:2350},ch:{yb:2012,vac:35,hoa:'none',sea:'low'},d:{rsw:40,beach:52,pub:7},
+ tags:['Value new builds','Well & septic','Elbow room'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'farnorth',name:'Far North Cape',short:'Far North Cape',quad:'NW',
+ poly:[[26.7128,-82.0690],[26.7128,-81.9560],[26.7480,-81.9560],[26.7480,-82.0690]],
+ blurb:'The frontier — lowest entry prices, the most vacant land, and the longest runway of growth (which also means years of construction).',
+ util:{s:'well',line:'Well & septic; no utility timeline for much of it'},assess:'future',
+ flood:{mix:'Mostly X',elev:10,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater canals',min:'—',minN:null,note:''},
+ sch:{s:6,note:'Mariner / Island Coast tracks'},
+ mkt:{med:370,ppsf:240,rent:2250},ch:{yb:2019,vac:55,hoa:'none',sea:'low'},d:{rsw:42,beach:55,pub:9},
+ tags:['Lowest entry','Land plays','Years of build-out'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'sevenislands',name:'Seven Islands & Old Burnt Store',short:'Seven Islands',quad:'NW',
+ poly:[[26.6670,-82.0700],[26.6670,-82.0560],[26.7128,-82.0560],[26.7128,-82.0790],[26.6900,-82.0758]],
+ blurb:'Matlacha Pass sunsets and the Seven Islands project on the horizon — NW waterfront with a long, wild boat ride.',
+ util:{s:'well',line:'Mostly well & septic today'},assess:'future',
+ flood:{mix:'X / AE west edge',elev:7,evac:'B',ian:'Minor surge at the Matlacha Pass edge'},
+ boat:{type:'bridge',label:'Gulf access (long ride)',min:'45+ min',minN:50,note:'Via spreader / Matlacha Pass — verify per canal'},
+ sch:{s:6,note:''},
+ mkt:{med:520,ppsf:285,rent:2600},ch:{yb:2015,vac:40,hoa:'none',sea:'med'},d:{rsw:42,beach:55,pub:8},
+ tags:['Seven Islands upside','Kayak water','Sunset views'],
+ f:{city:0,gulf:1,sail:0,x:0,gated:0,sch7:0}},
+
+{id:'corallakes',name:'Coral Lakes & Bella Vida',short:'Coral Lakes · Bella Vida',quad:'NE',
+ poly:[[26.6670,-81.9560],[26.6670,-81.9300],[26.7000,-81.9300],[26.7000,-81.9560]],
+ blurb:'Gated family amenities — clubhouses, pools and playgrounds — with the fastest run to US-41 in the Cape.',
+ util:{s:'mixed',line:'City inside the gated communities; mixed outside'},assess:'partial',
+ flood:{mix:'Mostly X',elev:9,evac:'C',ian:'Wind only'},
+ boat:{type:'none',label:'Community lakes only',min:'—',minN:null,note:''},
+ sch:{s:6,note:'Island Coast HS track'},
+ mkt:{med:445,ppsf:255,rent:2550},ch:{yb:2012,vac:10,hoa:'gated',sea:'low'},d:{rsw:32,beach:45,pub:4},
+ tags:['Gated family','Amenity centers','US-41 quick'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:1,sch7:0}},
+
+{id:'gator',name:'Gator Circle & NE Lakes',short:'Gator Circle',quad:'NE',
+ poly:[[26.6670,-81.9300],[26.6670,-81.8972],[26.6850,-81.8950],[26.7000,-81.8940],[26.7000,-81.9300]],
+ blurb:'The cheapest single-family entry point in the Cape — freshwater lakes, big skies, and a spec-build wave underway.',
+ util:{s:'well',line:'Well & septic; utilities someday, no firm timeline'},assess:'future',
+ flood:{mix:'Mostly X',elev:9,evac:'C',ian:'Wind only'},
+ boat:{type:'fresh',label:'Freshwater canals & lakes',min:'—',minN:null,note:''},
+ sch:{s:5.5,note:'Longer bus runs are common'},
+ mkt:{med:345,ppsf:235,rent:2200},ch:{yb:2018,vac:45,hoa:'none',sea:'low'},d:{rsw:35,beach:48,pub:6},
+ tags:['Cheapest SFH entry','Freshwater lakes','Spec builds'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:0,sch7:0}},
+
+{id:'delpradon',name:'Del Prado North & Entrada',short:'Del Prado N · Entrada',quad:'NE',
+ poly:[[26.7000,-81.9560],[26.7000,-81.8940],[26.7280,-81.8930],[26.7280,-81.9560]],
+ blurb:'The NE gateway — Entrada’s gated value, Porto Vista condos, and the quickest shot to US-41 and I-75.',
+ util:{s:'mixed',line:'City along corridors; mixed elsewhere'},assess:'partial',
+ flood:{mix:'Mostly X',elev:9,evac:'C',ian:'Wind only'},
+ boat:{type:'none',label:'Community lakes only',min:'—',minN:null,note:''},
+ sch:{s:6,note:''},
+ mkt:{med:400,ppsf:250,rent:2400},ch:{yb:2016,vac:20,hoa:'pockets',sea:'low'},d:{rsw:30,beach:45,pub:3},
+ tags:['Entrada value','Condo options','I-75 access'],
+ f:{city:0,gulf:0,sail:0,x:1,gated:1,sch7:0}}
+];
+
+/* ---------------- heat metric definitions ---------------- */
+const SEA_N={low:1,med:2,high:3};
+const HEAT=[
+ {k:'med', label:'Median price (est.)', get:z=>z.mkt.med, fmt:v=>'$'+v+'K'},
+ {k:'ppsf',label:'$ / sq ft (est.)',    get:z=>z.mkt.ppsf,fmt:v=>'$'+v},
+ {k:'rent',label:'Monthly rent (est.)', get:z=>z.mkt.rent,fmt:v=>'$'+v.toLocaleString()},
+ {k:'elev',label:'Elevation (ft, est.)',get:z=>z.flood.elev,fmt:v=>v+' ft'},
+ {k:'boat',label:'Minutes to open water',get:z=>z.boat.minN,fmt:v=>'~'+v+' min',note:'Gray = no gulf access'},
+ {k:'sch', label:'School score (est.)', get:z=>z.sch.s,   fmt:v=>v+'/10'},
+ {k:'yb',  label:'Median year built',   get:z=>z.ch.yb,   fmt:v=>''+v},
+ {k:'vac', label:'Vacant lots %',       get:z=>z.ch.vac,  fmt:v=>v+'%'},
+ {k:'sea', label:'Seasonal share',      get:z=>SEA_N[z.ch.sea],fmt:v=>({1:'Low',2:'Medium',3:'High'})[v]}
+];
+/* single-hue gold ramp, dark→bright = low→high (sequential, lightness-monotone) */
+const RAMP=[[58,49,34],[107,90,46],[156,131,57],[207,174,71],[255,223,112]];
+function heatColor(t){
+  t=Math.max(0,Math.min(1,t)); const p=t*(RAMP.length-1), i=Math.min(RAMP.length-2,Math.floor(p)), f=p-i;
+  const a=RAMP[i],b=RAMP[i+1];
+  return 'rgb('+Math.round(a[0]+(b[0]-a[0])*f)+','+Math.round(a[1]+(b[1]-a[1])*f)+','+Math.round(a[2]+(b[2]-a[2])*f)+')';
+}
+
+/* ---------------- filter definitions ---------------- */
+const CHIPS=[
+ {k:'city', label:'City water & sewer', test:z=>z.f.city===1},
+ {k:'gulf', label:'Gulf access',        test:z=>z.f.gulf===1},
+ {k:'sail', label:'Sailboat (no bridges)',test:z=>z.f.sail===1},
+ {k:'x',    label:'Mostly flood zone X',test:z=>z.f.x===1},
+ {k:'nohoa',label:'No-HOA lifestyle',   test:z=>z.ch.hoa!=='gated'},
+ {k:'gated',label:'Gated options',      test:z=>z.f.gated===1},
+ {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000},
+ {k:'sch7', label:'Stronger schools',   test:z=>z.sch.s>=7}
+];
+const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,base:0};
+
+/* ---------------- gate ---------------- */
+const $=q=>document.querySelector(q);
+function unlock(){ $('#gate').style.display='none'; setTimeout(()=>map.invalidateSize(),60); }
+if(localStorage.getItem('aiq_gate')==='1'){ window.addEventListener('load',unlock); }
+function tryCode(){
+  const v=$('#gateInput').value.trim().toUpperCase();
+  if(v===ACCESS_CODE.toUpperCase()){ localStorage.setItem('aiq_gate','1'); unlock(); }
+  else{ $('#gateErr').textContent='That code isn’t right — check your invitation.';
+        const c=$('.gatecard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); }
+}
+$('#gateBtn').addEventListener('click',tryCode);
+$('#gateInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryCode(); });
+
+/* ---------------- map ---------------- */
+const map=L.map('map',{zoomControl:false,minZoom:10,maxZoom:17,zoomSnap:.25,
+  maxBounds:[[26.35,-82.45],[26.95,-81.45]]}).setView([26.635,-81.972],12);
+L.control.zoom({position:'bottomright'}).addTo(map);
+const BASES=[
+ {name:'Dark',layer:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19})},
+ {name:'Streets',layer:L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19})},
+ {name:'Satellite',layer:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Imagery © Esri',maxZoom:19})}
+];
+BASES[0].layer.addTo(map);
+$('#baseBtn').addEventListener('click',()=>{
+  map.removeLayer(BASES[state.base].layer);
+  state.base=(state.base+1)%BASES.length;
+  BASES[state.base].layer.addTo(map);
+  $('#baseBtn').textContent='Map: '+BASES[state.base].name;
+});
+
+const zoneGroup=L.layerGroup().addTo(map);
+ZONES.forEach(z=>{
+  z.layer=L.polygon(z.poly,baseStyle(false)).addTo(zoneGroup);
+  z.layer.bindTooltip(z.short,{permanent:true,direction:'center',className:'zlab'});
+  z.layer.on('click',()=>select(z.id));
+  z.layer.on('mouseover',()=>{ if(state.sel!==z.id) z.layer.setStyle({weight:2.6,color:'rgba(255,223,112,.85)'}); });
+  z.layer.on('mouseout',()=>{ if(state.sel!==z.id) applyOne(z); });
+});
+function baseStyle(){ return {color:'rgba(216,176,74,.55)',weight:1.4,fillColor:'#d8b04a',fillOpacity:.13}; }
+map.on('zoomend',()=>$('#map').classList.toggle('nolabels',map.getZoom()<10.8));
+
+/* ---------------- filtering + heat ---------------- */
+function matches(z){
+  for(const c of CHIPS){ if(state.on[c.k] && !c.test(z)) return false; }
+  if(state.maxMed<900 && z.mkt.med>state.maxMed) return false;
+  return true;
+}
+function heatDef(){ return HEAT.find(h=>h.k===state.heat)||null; }
+function applyOne(z){
+  const m=matches(z), h=heatDef(), sel=state.sel===z.id;
+  let st;
+  if(!m){ st={color:'rgba(216,176,74,.10)',weight:1,fillColor:'#d8b04a',fillOpacity:.02}; }
+  else if(h){
+    const v=h.get(z);
+    if(v==null){ st={color:'rgba(216,176,74,.35)',weight:1.2,fillColor:'#2c2c2e',fillOpacity:.4}; }
+    else{
+      const vals=ZONES.map(h.get).filter(x=>x!=null), mn=Math.min(...vals), mx=Math.max(...vals);
+      st={color:'rgba(216,176,74,.5)',weight:1.2,fillColor:heatColor((v-mn)/(mx-mn||1)),fillOpacity:.55};
+    }
+  } else st=baseStyle();
+  if(sel){ st.color='#ffdf70'; st.weight=3.2; st.fillOpacity=Math.max(st.fillOpacity,.22); }
+  z.layer.setStyle(st);
+  const tt=z.layer.getTooltip(); const el=tt&&tt.getElement();
+  if(el) el.classList.toggle('dim',!m);
+}
+function applyAll(){
+  ZONES.forEach(applyOne);
+  const n=ZONES.filter(matches).length;
+  $('#matchcount').textContent=n+' of '+ZONES.length+' areas match';
+  const h=heatDef(), leg=$('#legend');
+  if(h){
+    const vals=ZONES.map(h.get).filter(x=>x!=null), mn=Math.min(...vals), mx=Math.max(...vals);
+    leg.classList.add('show');
+    $('#legbar').style.background='linear-gradient(90deg,'+RAMP.map((c,i)=>'rgb('+c.join(',')+') '+(i*25)+'%').join(',')+')';
+    $('#legmin').textContent=h.fmt(mn); $('#legmax').textContent=h.fmt(mx);
+    $('#legnote').textContent=h.note||'';
+  } else leg.classList.remove('show');
+}
+
+/* chips UI */
+const chipWrap=$('#chipWrap');
+CHIPS.forEach(c=>{
+  const b=document.createElement('button'); b.className='chip'; b.textContent=c.label;
+  b.addEventListener('click',()=>{ state.on[c.k]=!state.on[c.k]; b.classList.toggle('on',!!state.on[c.k]); applyAll(); });
+  c.btn=b; chipWrap.appendChild(b);
+});
+$('#budget').addEventListener('input',e=>{
+  state.maxMed=+e.target.value;
+  $('#budgetLab').textContent=state.maxMed>=900?'No cap':'$'+state.maxMed+'K';
+  applyAll();
+});
+const heatSel=$('#heatSel');
+heatSel.innerHTML='<option value="">None — brand view</option>'+HEAT.map(h=>'<option value="'+h.k+'">'+h.label+'</option>').join('');
+heatSel.addEventListener('change',()=>{ state.heat=heatSel.value; applyAll(); });
+$('#resetBtn').addEventListener('click',()=>{
+  state.on={}; CHIPS.forEach(c=>c.btn.classList.remove('on'));
+  state.maxMed=900; $('#budget').value=900; $('#budgetLab').textContent='No cap';
+  state.heat=''; heatSel.value=''; applyAll();
+});
+
+/* ---------------- scorecard ---------------- */
+const ASSESS={paid:'Assessments largely in & paid',partial:'Some areas pending — verify per parcel',future:'Future assessments likely — budget for them'};
+const HOA={none:'None (classic Cape freedom)',pockets:'Pockets / condo assoc.',gated:'Gated community (HOA)'};
+const SEA_T={low:'Low — mostly year-round',med:'Medium — mixed',high:'High — snowbird heavy'};
+function row(ic,lab,val,sub){
+  return '<div class="mrow"><div class="mic">'+ic+'</div><div class="mtx"><div class="mlab">'+lab+'</div>'+
+         '<div class="mval">'+val+'</div>'+(sub?'<div class="msub">'+sub+'</div>':'')+'</div></div>';
+}
+function select(id){
+  const z=ZONES.find(x=>x.id===id); if(!z) return;
+  state.sel=id;
+  $('#cName').textContent=z.name;
+  $('#cBadges').innerHTML='<span class="bdg">'+({SE:'Southeast',SW:'Southwest',CEN:'Central',NW:'Northwest',NE:'Northeast'})[z.quad]+' Cape</span>'+
+      '<span class="bdg est">est. data v0</span>';
+  $('#cBody').innerHTML=
+    '<div class="blurb">'+z.blurb+'</div>'+
+    row('💧','Utilities & assessments',z.util.line,ASSESS[z.assess])+
+    row('🌊','Flood & storm',z.flood.mix+' · ~'+z.flood.elev+' ft elevation','Evac zone '+z.flood.evac+' · '+z.flood.ian)+
+    row('⛵','Boating',z.boat.label+(z.boat.minN?' · '+z.boat.min+' to open water':''),z.boat.note)+
+    row('🎓','Schools',z.sch.s+' / 10 (est.)',(z.sch.note?z.sch.note+' · ':'')+'Lee County is open-enrollment — verify current grades')+
+    row('💵','Market (estimates)','$'+z.mkt.med+'K median · $'+z.mkt.ppsf+'/sq ft','Long-term rent ≈ $'+z.mkt.rent.toLocaleString()+'/mo')+
+    row('🏠','Character','Built ~'+z.ch.yb+' · '+z.ch.vac+'% vacant lots','HOA: '+HOA[z.ch.hoa]+' · Seasonal: '+SEA_T[z.ch.sea])+
+    row('📍','Drive times (est.)','RSW '+z.d.rsw+'m · Beach '+z.d.beach+'m · Publix '+z.d.pub+'m','')+
+    '<div class="tagwrap">'+z.tags.map(t=>'<span class="tag">'+t+'</span>').join('')+'</div>';
+  $('#cCmp').textContent=state.cmp.includes(id)?'✓ In Compare':'+ Compare';
+  $('#card').classList.add('open');
+  applyAll();
+}
+$('#cClose').addEventListener('click',()=>{ $('#card').classList.remove('open'); state.sel=null; applyAll(); });
+$('#cCmp').addEventListener('click',()=>{ if(state.sel) toggleCmp(state.sel); });
+
+/* ---------------- compare ---------------- */
+function toggleCmp(id){
+  const i=state.cmp.indexOf(id);
+  if(i>=0) state.cmp.splice(i,1);
+  else{ if(state.cmp.length>=3){ alert('Compare holds 3 areas — remove one first.'); return; } state.cmp.push(id); }
+  renderTray();
+  if(state.sel) $('#cCmp').textContent=state.cmp.includes(state.sel)?'✓ In Compare':'+ Compare';
+}
+function renderTray(){
+  const tray=$('#cmpTray');
+  $('#cmpBtn').textContent='Compare ('+state.cmp.length+')';
+  if(!state.cmp.length){ tray.classList.remove('show'); tray.innerHTML=''; return; }
+  tray.classList.add('show');
+  tray.innerHTML=state.cmp.map(id=>{const z=ZONES.find(x=>x.id===id);
+    return '<span class="cmpchip">'+z.short+'<b data-rm="'+id+'">×</b></span>';}).join('')+
+    (state.cmp.length>=2?'<button class="tbtn gold" id="trayGo">Compare →</button>':'');
+  tray.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>toggleCmp(b.dataset.rm)));
+  const go=$('#trayGo'); if(go) go.addEventListener('click',openCmp);
+}
+const CMPROWS=[
+ ['Median (est.)',z=>'$'+z.mkt.med+'K'],
+ ['$ / sq ft (est.)',z=>'$'+z.mkt.ppsf],
+ ['Rent (est.)',z=>'$'+z.mkt.rent.toLocaleString()+'/mo'],
+ ['Utilities',z=>z.util.s==='city'?'City water & sewer':(z.util.s==='mixed'?'Mixed — verify':'Well & septic')],
+ ['Assessments',z=>ASSESS[z.assess]],
+ ['Flood',z=>z.flood.mix+' · '+z.flood.elev+' ft'],
+ ['Boating',z=>z.boat.label],
+ ['To open water',z=>z.boat.min],
+ ['Schools (est.)',z=>z.sch.s+' / 10'],
+ ['Median year built',z=>z.ch.yb],
+ ['Vacant lots',z=>z.ch.vac+'%'],
+ ['HOA',z=>HOA[z.ch.hoa]],
+ ['Seasonal share',z=>SEA_T[z.ch.sea]],
+ ['RSW / Beach',z=>z.d.rsw+'m / '+z.d.beach+'m']
+];
+function openCmp(){
+  if(state.cmp.length<2) return;
+  const zs=state.cmp.map(id=>ZONES.find(x=>x.id===id));
+  $('#cmpBody').innerHTML='<table class="cmp"><tr><td class="rl"></td>'+
+    zs.map(z=>'<th>'+z.name+'</th>').join('')+'</tr>'+
+    CMPROWS.map(r=>'<tr><td class="rl">'+r[0]+'</td>'+zs.map(z=>'<td>'+r[1](z)+'</td>').join('')+'</tr>').join('')+
+    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0 planning estimates — verify before relying on them.</p>';
+  $('#cmpModal').classList.add('open');
+}
+$('#cmpBtn').addEventListener('click',()=>{ if(state.cmp.length>=2) openCmp();
+  else alert('Tap areas on the map, then “+ Compare” on their scorecards (need at least 2).'); });
+
+/* ---------------- modals / panel / tv ---------------- */
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).classList.remove('open')));
+[$('#cmpModal'),$('#infoModal')].forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+$('#infoBtn').addEventListener('click',()=>$('#infoModal').classList.add('open'));
+$('#dataBadge').addEventListener('click',()=>$('#infoModal').classList.add('open'));
+$('#fabPanel').addEventListener('click',()=>$('#panel').classList.add('open'));
+$('#panelX').addEventListener('click',()=>$('#panel').classList.remove('open'));
+function layoutInit(){
+  const mobile=window.innerWidth<=880;
+  $('#panelX').style.display=mobile?'block':'none';
+  if(!mobile) $('#panel').classList.add('open'); else $('#panel').classList.remove('open');
+}
+window.addEventListener('resize',layoutInit); layoutInit();
+$('#tvBtn').addEventListener('click',()=>{
+  const on=document.body.classList.toggle('tv');
+  $('#tvBtn').textContent=on?'Exit TV':'TV Mode';
+  try{ if(on) document.documentElement.requestFullscreen(); else if(document.fullscreenElement) document.exitFullscreen(); }catch(e){}
+  setTimeout(()=>map.invalidateSize(),350);
+});
+
+applyAll();
+</script>
+</body>
+</html>
