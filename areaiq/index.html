@@ -283,7 +283,7 @@ body.tv #matchcount{font-size:14px}
       <div class="chips">
         <button class="chip on" id="subChip">Gated communities</button>
         <button class="chip sailc" id="sailChip">Sailboat water</button>
-        <button class="chip floodc" id="floodChip">Flood risk areas</button>
+        <button class="chip floodc" id="floodChip">Flood zones (FEMA)</button>
         <button class="chip" id="schChip">School grades</button>
       </div>
     </div>
@@ -304,7 +304,7 @@ body.tv #matchcount{font-size:14px}
 </aside>
 
 <button id="fabPanel">☰ Filters &amp; Layers</button>
-<button id="dataBadge">DATA v0.6 · ESTIMATES</button>
+<button id="dataBadge">DATA v0.7 · ESTIMATES</button>
 
 <aside id="card">
   <div class="chead">
@@ -335,22 +335,24 @@ body.tv #matchcount{font-size:14px}
       that actually change a buying decision — utilities &amp; assessments, flood &amp; insurance exposure, boating access,
       schools, market pricing, and lifestyle. Gold-dashed outlines mark <b>gated communities and named enclaves</b>;
       tap them for their own scorecards.</p>
-      <p><b>Precision overlays.</b> The <b style="color:var(--sail)">Sailboat water</b> and
-      <b style="color:var(--flood)">Flood risk</b> overlays draw the approximate <i>parts</i> of each area where those
-      conditions actually hold — not the whole area. Sailboat access in Cape Coral is canal-by-canal: one bridge on the
-      wrong street changes everything, so always verify the exact canal before writing an offer.</p>
+      <p><b>Precision overlays.</b> The <b style="color:var(--flood)">Flood zones (FEMA)</b> overlay draws the actual
+      high-risk flood polygons (AE/A in amber, VE in red) from FEMA's effective National Flood Hazard Layer, and every
+      scorecard's flood chart is computed from those same maps. The <b style="color:var(--sail)">Sailboat water</b>
+      overlay is still hand-drawn — sailboat access is canal-by-canal, one bridge changes everything — so always verify
+      the exact canal before writing an offer. Individual homes can differ from the mapped flood zone (elevation
+      certificates &amp; letters of map amendment) — always confirm per property.</p>
       <p><b>Why price ranges, not just one number.</b> In Cape Coral the same street can hold a $350K off-water home and a
       $1M+ gulf-access home. Each area's scorecard shows its <b>price mix by product type</b> so one blended median never
       tells the story alone.</p>
-      <p><b>Data version 0.6 — planning estimates.</b> Boundaries and overlay shapes are approximate and drawn for
-      discussion. Market figures, rents, HOA fees, drive times, flood-zone shares, and school letter grades (recent FDOE
-      grades, from memory) are ballpark estimates that will be replaced by live county, FEMA flood-map, school-district,
-      and MLS data in the next phase. Lee County is open-enrollment ("school choice"), so school assignment is never
-      guaranteed by address. <b>Always verify utilities, flood zone, bridge clearances, assessments, and schools for a
-      specific property before relying on them.</b></p>
+      <p><b>Data version 0.7.</b> <b>Flood-zone shares and the flood overlay are real</b> — computed from FEMA's
+      effective flood maps (NFHL, sampled July 2026). Area boundaries are approximate and drawn for discussion. Market
+      figures, rents, HOA fees, drive times, elevations, evacuation zones, and school letter grades (recent FDOE grades)
+      remain ballpark estimates until county, school-district, and MLS feeds land in the next phase. Lee County is
+      open-enrollment ("school choice"), so school assignment is never guaranteed by address. <b>Always verify utilities,
+      flood zone, bridge clearances, assessments, and schools for a specific property before relying on them.</b></p>
       <p><b>Fair housing.</b> This tool presents objective, third-party-sourced characteristics of places, never of people.
       Buyers set their own priorities. Equal Housing Opportunity.</p>
-      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.6 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
+      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.7 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
     </div>
   </div>
 </div>
@@ -358,8 +360,8 @@ body.tv #matchcount{font-size:14px}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 /* =========================================================
-   AREA IQ v0.6 — Cape Coral
-   DATA v0.6: boundaries approximate; metrics are estimates
+   AREA IQ v0.7 — Cape Coral
+   DATA v0.7: boundaries approximate; metrics are estimates
    ========================================================= */
 const ACCESS_CODE = 'SWFL2026';   // change the client code here
 
@@ -373,7 +375,7 @@ const ZONES = [
  poly:[[26.5460,-81.9620],[26.5410,-81.9520],[26.5435,-81.9405],[26.5480,-81.9368],[26.5560,-81.9330],[26.5622,-81.9300],[26.5700,-81.9268],[26.5790,-81.9245],[26.5860,-81.9232],[26.5860,-81.9405],[26.5560,-81.9405],[26.5560,-81.9620]],
  blurb:'The original Cape — sailboat canals, mature palms, a teardown-to-trophy rebuild wave, and the Yacht Club redevelopment on its doorstep.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:15,ae:70,ve:15},elev:5,evac:'A',ian:'Major Ian surge on river canals'},
+ flood:{fx:{x:0,x5:3,ae:77,ve:20},elev:5,evac:'A',ian:'Major Ian surge on river canals'},
  boat:{type:'sail',sail:'direct',label:'Sailboat gulf access',min:'5–15 min',minN:10,note:'Most river streets bridge-free; Bimini-side streets bridged — verify per canal'},
  schools:{s:6,e:['Cape Elem','A'],m:['Gulf Middle','B'],h:['Cape Coral High','B'],alt:'Oasis & McAuliffe charters (A) draw citywide'},
  mkt:{med:675,ppsf:340,rent:2900},
@@ -386,7 +388,7 @@ const ZONES = [
  poly:[[26.5560,-81.9620],[26.5560,-81.9405],[26.5780,-81.9405],[26.5780,-81.9620]],
  blurb:'Walk-to-dinner Cape: the 47th Terrace restaurant district, Bimini Basin water, and the city’s biggest downtown redevelopment push.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:45,ae:55,ve:0},elev:6,evac:'B',ian:'Ian flooding near the basin; drier to the north'},
+ flood:{fx:{x:0,x5:15,ae:84,ve:1},elev:6,evac:'B',ian:'Ian flooding near the basin; drier to the north'},
  boat:{type:'bridge',sail:'none',label:'Gulf access (bridges)',min:'20–35 min',minN:27,note:'Bimini Basin boats pass under the Coronado-area bridges out to the river'},
  schools:{s:6,e:['Cape Elem','A'],m:['Gulf Middle','B'],h:['Cape Coral High','B'],alt:''},
  mkt:{med:465,ppsf:300,rent:2500},
@@ -399,7 +401,7 @@ const ZONES = [
  poly:[[26.5395,-81.9955],[26.5425,-81.9820],[26.5455,-81.9700],[26.5480,-81.9620],[26.5622,-81.9620],[26.5622,-81.9955]],
  blurb:'Quiet, established sailboat-country between downtown and Pelican — direct-to-river canals without the downtown bustle.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:20,ae:75,ve:5},elev:6,evac:'A',ian:'Ian surge on canals nearest the river'},
+ flood:{fx:{x:0,x5:0,ae:100,ve:0},elev:6,evac:'A',ian:'Ian surge on canals nearest the river'},
  boat:{type:'sail',sail:'direct',label:'Sailboat access (most streets)',min:'10–20 min',minN:15,note:'Savona’s near-river canals run bridge-free to the river; a few inland streets bridged — verify per canal'},
  schools:{s:6.5,e:['Cape Elem','A'],m:['Gulf Middle','B'],h:['Cape Coral High','B'],alt:''},
  mkt:{med:585,ppsf:315,rent:2700},
@@ -412,7 +414,7 @@ const ZONES = [
  poly:[[26.5622,-81.9955],[26.5622,-81.9620],[26.5780,-81.9620],[26.5780,-81.9405],[26.5940,-81.9405],[26.5940,-81.9955]],
  blurb:'The off-water value core — close to everything, the sensible first-home and rental belt of the old Cape.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:85,ae:15,ve:0},elev:8,evac:'C',ian:'Wind damage only in Ian'},
+ flood:{fx:{x:2,x5:35,ae:62,ve:0},elev:8,evac:'C',ian:'Wind damage only in Ian'},
  boat:{type:'none',sail:'none',label:'No boating water',min:'—',minN:null,note:'A few freshwater pockets'},
  schools:{s:6.5,e:['Skyline Elem','B'],m:['Caloosa Middle','C'],h:['Cape Coral High','B'],alt:'Oasis charter campuses nearby (A)'},
  mkt:{med:365,ppsf:265,rent:2250},
@@ -425,7 +427,7 @@ const ZONES = [
  poly:[[26.5860,-81.9405],[26.5860,-81.9180],[26.5950,-81.9150],[26.6050,-81.9100],[26.6160,-81.9062],[26.6160,-81.9405]],
  blurb:'River condos and townhomes beside the Four Mile Cove eco preserve — the quickest hop over the Midpoint into Fort Myers.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:30,ae:65,ve:5},elev:6,evac:'B',ian:'Ian surge along the riverfront'},
+ flood:{fx:{x:0,x5:4,ae:85,ve:11},elev:6,evac:'B',ian:'Ian surge along the riverfront'},
  boat:{type:'bridge',sail:'none',label:'Riverfront & canals',min:'10–25 min',minN:17,note:'River-direct docks at many condos; bridged canals behind'},
  schools:{s:6,e:['Caloosa Elem','C'],m:['Caloosa Middle','C'],h:['Cape Coral High','B'],alt:''},
  mkt:{med:420,ppsf:260,rent:2300},
@@ -438,7 +440,7 @@ const ZONES = [
  poly:[[26.5380,-82.0170],[26.5370,-82.0050],[26.5388,-81.9968],[26.5395,-81.9955],[26.5622,-81.9955],[26.5622,-82.0170]],
  blurb:'Prestige southwest living — Cape Harbour marina dining, Rotary Park, and wide gulf-access canals lined with newer estates.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:20,ae:72,ve:8},elev:6,evac:'A',ian:'Ian surge at the south end'},
+ flood:{fx:{x:1,x5:2,ae:96,ve:1},elev:6,evac:'A',ian:'Ian surge at the south end'},
  boat:{type:'bridge',sail:'partial',label:'Gulf access (bridges)',min:'10–25 min',minN:17,note:'True sailboat water only on the Cape Harbour / El Dorado south rim — most Pelican canals pass under Cape Coral Pkwy'},
  schools:{s:7.5,e:['Gulf Elem','A'],m:['Gulf Middle','B'],h:['Ida Baker High','B'],alt:''},
  mkt:{med:725,ppsf:355,rent:3200},
@@ -451,7 +453,7 @@ const ZONES = [
  poly:[[26.5340,-82.0330],[26.5352,-82.0250],[26.5370,-82.0170],[26.5622,-82.0170],[26.5622,-82.0400],[26.5480,-82.0378]],
  blurb:'The resort tip of the Cape — Tarpon Point marina, luxury towers, and the fastest sailboat water in the city.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:10,ae:70,ve:20},elev:5,evac:'A',ian:'Major Ian surge near the point'},
+ flood:{fx:{x:0,x5:2,ae:98,ve:0},elev:5,evac:'A',ian:'Major Ian surge near the point'},
  boat:{type:'sail',sail:'direct',label:'Sailboat gulf access',min:'5–15 min',minN:10,note:'Fastest open-water access in the Cape'},
  schools:{s:7.5,e:['Gulf Elem','A'],m:['Gulf Middle','B'],h:['Ida Baker High','B'],alt:''},
  mkt:{med:850,ppsf:385,rent:3600},
@@ -464,7 +466,7 @@ const ZONES = [
  poly:[[26.5622,-82.0430],[26.5622,-81.9955],[26.5940,-81.9955],[26.5940,-82.0470],[26.5750,-82.0452]],
  blurb:'Newer southwest builds along the spreader — modern family streets with quick Veterans access and nature out the back.',
  util:{s:'city',line:'City water & sewer'},assess:'partial',
- flood:{fx:{x:55,ae:45,ve:0},elev:7,evac:'B',ian:'Minor Ian water intrusion near the spreader'},
+ flood:{fx:{x:0,x5:17,ae:82,ve:1},elev:7,evac:'B',ian:'Minor Ian water intrusion near the spreader'},
  boat:{type:'bridge',sail:'none',label:'Gulf access via spreader',min:'25–45 min',minN:35,note:'Longer ride; SW lock removal has helped times'},
  schools:{s:7,e:['Pelican Elem','B'],m:['Challenger Middle','C'],h:['Ida Baker High','B'],alt:''},
  mkt:{med:545,ppsf:300,rent:2800},
@@ -477,7 +479,7 @@ const ZONES = [
  poly:[[26.5940,-82.0470],[26.5940,-82.0085],[26.6670,-82.0085],[26.6670,-82.0560],[26.6300,-82.0530],[26.6000,-82.0482]],
  blurb:'Resort-style gated living at Sandoval — pools, trails, amenity centers — surrounded by fast-growing West Cape blocks.',
  util:{s:'city',line:'City water & sewer (SW extension complete)'},assess:'partial',
- flood:{fx:{x:85,ae:15,ve:0},elev:8,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:3,x5:26,ae:69,ve:2},elev:8,evac:'C',ian:'Wind only'},
  boat:{type:'none',sail:'none',label:'Freshwater / none',min:'—',minN:null,note:'Sandoval lakes; no gulf canals'},
  schools:{s:7,e:['Trafalgar Elem','A'],m:['Challenger Middle','C'],h:['Ida Baker High','B'],alt:''},
  mkt:{med:520,ppsf:290,rent:2700},
@@ -490,7 +492,7 @@ const ZONES = [
  poly:[[26.5940,-82.0085],[26.5940,-81.9737],[26.6670,-81.9737],[26.6670,-82.0085]],
  blurb:'The family core — freshwater canals, parks, schools and pools. Cape suburbia at its most livable.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:90,ae:10,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:49,x5:44,ae:7,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals & lakes',min:'—',minN:null,note:'Ski-able lakes and fishing water; no gulf access'},
  schools:{s:7.5,e:['Trafalgar Elem','A'],m:['Trafalgar Middle','B'],h:['Ida Baker High','B'],alt:'Oasis & McAuliffe charters (A) draw citywide'},
  mkt:{med:425,ppsf:275,rent:2500},
@@ -503,7 +505,7 @@ const ZONES = [
  poly:[[26.5940,-81.9737],[26.5940,-81.9405],[26.6160,-81.9405],[26.6160,-81.9062],[26.6300,-81.9020],[26.6500,-81.8992],[26.6670,-81.8972],[26.6670,-81.9737]],
  blurb:'Hospital, shopping and commuter central — the practical middle of the Cape with freshwater pockets and easy cross-river access.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:88,ae:12,ve:0},elev:8,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:25,x5:36,ae:37,ve:2},elev:8,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater pockets',min:'—',minN:null,note:''},
  schools:{s:6.5,e:['Skyline Elem','B'],m:['Caloosa Middle','C'],h:['Cape Coral High','B'],alt:''},
  mkt:{med:385,ppsf:265,rent:2350},
@@ -516,7 +518,7 @@ const ZONES = [
  poly:[[26.6670,-82.0560],[26.6670,-81.9560],[26.6875,-81.9560],[26.6875,-82.0560]],
  blurb:'New-construction boom country — fresh spec homes, bigger-feel lots, and city utilities in most of it after the recent extension phases.',
  util:{s:'city',line:'City in most areas (recent UEP phases) — verify parcel'},assess:'partial',
- flood:{fx:{x:90,ae:10,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:48,x5:15,ae:37,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater; some W bridged',min:'—',minN:null,note:'West fringe reaches the spreader — long ride'},
  schools:{s:6.5,e:['Hector A. Cafferata Elem','B'],m:['Mariner Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:415,ppsf:260,rent:2450},
@@ -529,7 +531,7 @@ const ZONES = [
  poly:[[26.6875,-82.0560],[26.6875,-81.9560],[26.7128,-81.9560],[26.7128,-82.0560]],
  blurb:'Well-and-septic value with new builds filling in fast — the Mariner school track and room to breathe.',
  util:{s:'mixed',line:'UEP underway in phases — verify parcel'},assess:'future',
- flood:{fx:{x:92,ae:8,ve:0},elev:10,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:52,x5:15,ae:33,ve:0},elev:10,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals',min:'—',minN:null,note:''},
  schools:{s:6.5,e:['Diplomat Elem','C'],m:['Diplomat Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:395,ppsf:250,rent:2350},
@@ -542,7 +544,7 @@ const ZONES = [
  poly:[[26.7128,-82.0690],[26.7128,-81.9560],[26.7480,-81.9560],[26.7480,-82.0690]],
  blurb:'The frontier — lowest entry prices, the most vacant land, and the longest runway of growth (which also means years of construction).',
  util:{s:'well',line:'Well & septic; no utility timeline for much of it'},assess:'future',
- flood:{fx:{x:93,ae:7,ve:0},elev:10,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:61,x5:16,ae:23,ve:1},elev:10,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals',min:'—',minN:null,note:''},
  schools:{s:6,e:['Hector A. Cafferata Elem','B'],m:['Mariner Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:370,ppsf:240,rent:2250},
@@ -555,7 +557,7 @@ const ZONES = [
  poly:[[26.6670,-82.0700],[26.6670,-82.0560],[26.7128,-82.0560],[26.7128,-82.0790],[26.6900,-82.0758]],
  blurb:'Matlacha Pass sunsets and the Seven Islands project on the horizon — NW waterfront with a long, wild boat ride.',
  util:{s:'well',line:'Mostly well & septic — extensions reaching parts; verify'},assess:'future',
- flood:{fx:{x:55,ae:40,ve:5},elev:7,evac:'B',ian:'Minor surge at the Matlacha Pass edge'},
+ flood:{fx:{x:0,x5:1,ae:98,ve:2},elev:7,evac:'B',ian:'Minor surge at the Matlacha Pass edge'},
  boat:{type:'bridge',sail:'none',label:'Gulf access (long ride)',min:'45+ min',minN:50,note:'Via spreader / Matlacha Pass — verify per canal'},
  schools:{s:6,e:['Hector A. Cafferata Elem','B'],m:['Mariner Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:520,ppsf:285,rent:2600},
@@ -568,7 +570,7 @@ const ZONES = [
  poly:[[26.6670,-81.9560],[26.6670,-81.9300],[26.7000,-81.9300],[26.7000,-81.9560]],
  blurb:'Gated family amenities — clubhouses, pools and playgrounds — with the fastest run to US-41 in the Cape.',
  util:{s:'city',line:'City utilities in the gated communities & corridors'},assess:'paid',
- flood:{fx:{x:90,ae:10,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:94,x5:0,ae:6,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'none',sail:'none',label:'Community lakes only',min:'—',minN:null,note:''},
  schools:{s:6,e:['Diplomat Elem','C'],m:['Diplomat Middle','C'],h:['Island Coast High','C'],alt:''},
  mkt:{med:445,ppsf:255,rent:2550},
@@ -581,7 +583,7 @@ const ZONES = [
  poly:[[26.6670,-81.9300],[26.6670,-81.8972],[26.6850,-81.8950],[26.7000,-81.8940],[26.7000,-81.9300]],
  blurb:'The cheapest single-family entry point in the Cape — freshwater lakes, big skies, and a spec-build wave underway.',
  util:{s:'well',line:'Well & septic; utilities someday, no firm timeline'},assess:'future',
- flood:{fx:{x:90,ae:10,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:37,x5:22,ae:41,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals & lakes',min:'—',minN:null,note:''},
  schools:{s:5.5,e:['Diplomat Elem','C'],m:['Diplomat Middle','C'],h:['Island Coast High','C'],alt:'Longer bus runs are common'},
  mkt:{med:345,ppsf:235,rent:2200},
@@ -594,7 +596,7 @@ const ZONES = [
  poly:[[26.7000,-81.9560],[26.7000,-81.8940],[26.7280,-81.8930],[26.7280,-81.9560]],
  blurb:'The NE gateway — Entrada’s gated value, Porto Vista condos, and the quickest shot to US-41 and I-75.',
  util:{s:'mixed',line:'City along corridors & in Entrada; mixed elsewhere'},assess:'partial',
- flood:{fx:{x:92,ae:8,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:83,x5:2,ae:16,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'none',sail:'none',label:'Community lakes only',min:'—',minN:null,note:''},
  schools:{s:6,e:['Diplomat Elem','C'],m:['Diplomat Middle','C'],h:['Island Coast High','C'],alt:''},
  mkt:{med:400,ppsf:250,rent:2400},
@@ -608,42 +610,42 @@ const ZONES = [
 const SUBS = [
 {id:'sub_sandoval',name:'Sandoval',parent:'sandoval',kind:'gated',
  poly:[[26.6070,-82.0380],[26.6070,-82.0195],[26.6270,-82.0195],[26.6270,-82.0380]],
- price:'$450K – $800K',hoa:'≈$130–160/mo',util:'City water & sewer',era:'2005–2015 · Single-family & villas',
+ fx:{x:0,x5:14,ae:86,ve:0},price:'$450K – $800K',hoa:'≈$130–160/mo',util:'City water & sewer',era:'2005–2015 · Single-family & villas',
  blurb:'Resort-style gated master-plan — lagoon pool, splash park, tennis & pickleball, dog parks, miles of trails.',
  tags:['Resort amenities','Reasonable fees','Family + snowbird mix']},
 {id:'sub_capeharbour',name:'Cape Harbour',parent:'pelican',kind:'gated',
  poly:[[26.5455,-82.0135],[26.5455,-82.0045],[26.5535,-82.0045],[26.5535,-82.0135]],
- price:'$400K condos – $2M+ waterfront',hoa:'Varies by assoc. (≈$500–900/mo condos)',util:'City water & sewer',era:'2000s · Marina condos, coach homes, estates',
+ fx:{x:0,x5:4,ae:96,ve:0},price:'$400K condos – $2M+ waterfront',hoa:'Varies by assoc. (≈$500–900/mo condos)',util:'City water & sewer',era:'2000s · Marina condos, coach homes, estates',
  blurb:'Boutique marina village — restaurants, shops, live music, and deep-water slips at your elevator door.',
  tags:['Marina village','Dining & events','Sailboat water']},
 {id:'sub_tarponpoint',name:'Tarpon Point',parent:'rosegarden',kind:'gated',
  poly:[[26.5372,-82.0235],[26.5372,-82.0175],[26.5425,-82.0175],[26.5425,-82.0235]],
- price:'$700K – $2M+',hoa:'$1,000+/mo towers (incl. resort amenities)',util:'City water & sewer',era:'2006–2009 · Luxury towers & marina homes',
+ fx:{x:0,x5:0,ae:100,ve:0},price:'$700K – $2M+',hoa:'$1,000+/mo towers (incl. resort amenities)',util:'City water & sewer',era:'2006–2009 · Luxury towers & marina homes',
  blurb:'Resort living — full-service marina, spa, waterfront dining, and sunset views over the pass.',
  tags:['Resort living','Deep-water marina','Lock & leave']},
 {id:'sub_goldcoast',name:'Gold Coast Estates',parent:'yacht',kind:'pocket',
  poly:[[26.5480,-81.9400],[26.5500,-81.9375],[26.5560,-81.9340],[26.5620,-81.9310],[26.5620,-81.9405],[26.5480,-81.9405]],
- price:'$900K – $3M+',hoa:'None',util:'City water & sewer',era:'Teardown era → new construction · Sailboat river estates',
+ fx:{x:0,x5:0,ae:45,ve:55},price:'$900K – $3M+',hoa:'None',util:'City water & sewer',era:'Teardown era → new construction · Sailboat river estates',
  blurb:'The Cape’s trophy row — riverfront and first-canal estates east of Del Prado.',
  tags:['Trophy row','Sailboat river','New-build wave']},
 {id:'sub_entrada',name:'Entrada',parent:'delpradon',kind:'gated',
  poly:[[26.7060,-81.9420],[26.7060,-81.9280],[26.7185,-81.9280],[26.7185,-81.9420]],
- price:'$360K – $550K',hoa:'≈$70–100/mo',util:'City water & sewer',era:'2016–2022 · Single-family',
+ fx:{x:100,x5:0,ae:0,ve:0},price:'$360K – $550K',hoa:'≈$70–100/mo',util:'City water & sewer',era:'2016–2022 · Single-family',
  blurb:'Newer gated value — pool, clubhouse, low fees, and a quick run to US-41.',
  tags:['Newer gated value','Low fees','Commuter friendly']},
 {id:'sub_corallakes',name:'Coral Lakes',parent:'corallakes',kind:'gated',
  poly:[[26.6780,-81.9510],[26.6780,-81.9420],[26.6870,-81.9420],[26.6870,-81.9510]],
- price:'$380K – $600K',hoa:'≈$250–350/mo',util:'City water & sewer',era:'2006–2015 · SFH + townhomes',
+ fx:{x:96,x5:0,ae:4,ve:0},price:'$380K – $600K',hoa:'≈$250–350/mo',util:'City water & sewer',era:'2006–2015 · SFH + townhomes',
  blurb:'Gated resort amenities — clubhouse, pool, fitness, courts, and play areas.',
  tags:['Amenity rich','Family gated','NE convenience']},
 {id:'sub_bellavida',name:'Bella Vida',parent:'corallakes',kind:'gated',
  poly:[[26.6915,-81.9470],[26.6915,-81.9380],[26.6990,-81.9380],[26.6990,-81.9470]],
- price:'$380K – $600K',hoa:'≈$300/mo (incl. lawn care)',util:'City water & sewer',era:'2007–2020 · SFH + townhomes',
+ fx:{x:100,x5:0,ae:0,ve:0},price:'$380K – $600K',hoa:'≈$300/mo (incl. lawn care)',util:'City water & sewer',era:'2007–2020 · SFH + townhomes',
  blurb:'Gated with lawn care included — clubhouse, resort pool, and family play areas.',
  tags:['Lawn included','Family gated','Newer mix']},
 {id:'sub_portovista',name:'Isles of Porto Vista',parent:'delpradon',kind:'gated',
  poly:[[26.7005,-81.9110],[26.7005,-81.9040],[26.7055,-81.9040],[26.7055,-81.9110]],
- price:'$200K – $300K condos',hoa:'≈$400/mo',util:'City water & sewer',era:'2006–2019 · Gated mid-rise condos',
+ fx:{x:50,x5:0,ae:50,ve:0},price:'$200K – $300K condos',hoa:'≈$400/mo',util:'City water & sewer',era:'2006–2019 · Gated mid-rise condos',
  blurb:'Entry-price gated condos near US-41 — a favorite for first-timers and seasonal use.',
  tags:['Entry price','Gated condos','Seasonal friendly']}
 ];
@@ -660,16 +662,7 @@ const SAIL_AREAS = [
 {name:'Sailboat — Cape Harbour Rim',
  poly:[[26.5372,-82.0048],[26.5390,-81.9968],[26.5448,-81.9985],[26.5470,-82.0060],[26.5452,-82.0132],[26.5395,-82.0115]]}
 ];
-const FLOOD_AREAS = [
-{name:'AE/VE — River Surge Band',
- poly:[[26.5790,-81.9245],[26.5700,-81.9268],[26.5622,-81.9300],[26.5480,-81.9368],[26.5412,-81.9520],[26.5395,-81.9700],[26.5390,-81.9955],[26.5370,-82.0050],[26.5340,-82.0330],[26.5480,-82.0378],[26.5622,-82.0400],[26.5622,-82.0300],[26.5560,-82.0160],[26.5545,-81.9960],[26.5535,-81.9700],[26.5560,-81.9520],[26.5622,-81.9420],[26.5700,-81.9330],[26.5790,-81.9300]]},
-{name:'AE — Riverfront',
- poly:[[26.5860,-81.9180],[26.5950,-81.9150],[26.6050,-81.9100],[26.6160,-81.9062],[26.6160,-81.9135],[26.6040,-81.9175],[26.5940,-81.9215],[26.5860,-81.9245]]},
-{name:'AE — Matlacha Edge',
- poly:[[26.6670,-82.0700],[26.6900,-82.0758],[26.7128,-82.0790],[26.7128,-82.0700],[26.6940,-82.0685],[26.6760,-82.0640],[26.6670,-82.0615]]},
-{name:'AE — Spreader Edge',
- poly:[[26.5622,-82.0430],[26.5750,-82.0452],[26.5940,-82.0470],[26.5940,-82.0405],[26.5770,-82.0390],[26.5622,-82.0365]]}
-];
+/* Flood overlay = real FEMA NFHL polygons, lazy-loaded from flood.json */
 
 /* ---------------- heat metric definitions ---------------- */
 const SEA_N={low:1,med:2,high:3};
@@ -680,7 +673,7 @@ const HEAT=[
  {k:'top',  label:'Top-end price (est.)',  get:z=>Math.max.apply(null,z.mix.map(s=>s[1])), fmt:fmtK, note:'Priciest product type in each area'},
  {k:'ppsf', label:'$ / sq ft (est.)',      get:z=>z.mkt.ppsf,fmt:v=>'$'+v},
  {k:'rent', label:'Monthly rent (est.)',   get:z=>z.mkt.rent,fmt:v=>'$'+v.toLocaleString()},
- {k:'fx',   label:'% in flood zone X (est.)',get:z=>z.flood.fx.x,fmt:v=>v+'%',note:'Higher = less flood-insurance exposure'},
+ {k:'fx',   label:'% flood-insurance optional (FEMA)',get:z=>z.flood.fx.x+z.flood.fx.x5,fmt:v=>v+'%',note:'Zones X + shaded X · AE/VE require insurance with a mortgage'},
  {k:'elev', label:'Elevation (ft, est.)',  get:z=>z.flood.elev,fmt:v=>v+' ft'},
  {k:'boat', label:'Minutes to open water', get:z=>z.boat.minN,fmt:v=>'~'+v+' min',note:'Gray = no gulf access'},
  {k:'sch',  label:'School score (est.)',   get:z=>z.schools.s,fmt:v=>v+'/10'},
@@ -701,7 +694,7 @@ const CHIPS=[
  {k:'city', label:'City water & sewer', test:z=>z.f.city===1},
  {k:'gulf', label:'Gulf access',        test:z=>z.f.gulf===1},
  {k:'sail', label:'Sailboat (no bridges)',test:z=>z.boat.sail!=='none'},
- {k:'x',    label:'Mostly flood zone X',test:z=>z.flood.fx.x>=70},
+ {k:'x',    label:'Mostly flood zone X',test:z=>(z.flood.fx.x+z.flood.fx.x5)>=70},
  {k:'nohoa',label:'No-HOA lifestyle',   test:z=>z.ch.hoa!=='gated'},
  {k:'gated',label:'Gated options',      test:z=>z.f.gated===1},
  {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000},
@@ -785,7 +778,18 @@ function laserGroup(items,color,cls){
   return g;
 }
 const sailGroup=laserGroup(SAIL_AREAS,'#4fd8d4','sail');
-const floodGroup=laserGroup(FLOOD_AREAS,'#ff8f7a','flood');
+let floodGroup=null,floodLoading=false;
+async function ensureFlood(){
+  if(floodGroup||floodLoading) return;
+  floodLoading=true;
+  try{
+    const d=await (await fetch('flood.json')).json();
+    floodGroup=L.layerGroup();
+    d.ae.forEach(rings=>L.polygon(rings,{color:'#e0b45c',weight:1,opacity:.7,fillColor:'#e0b45c',fillOpacity:.16,interactive:false}).addTo(floodGroup));
+    d.ve.forEach(rings=>L.polygon(rings,{color:'#e08a7a',weight:1.2,opacity:.85,fillColor:'#e08a7a',fillOpacity:.24,interactive:false}).addTo(floodGroup));
+  }catch(e){ alert('Flood layer failed to load — check the connection and refresh.'); }
+  floodLoading=false;
+}
 
 /* ---------------- filtering + heat ---------------- */
 function matches(z){
@@ -850,10 +854,11 @@ $('#sailChip').addEventListener('click',()=>{
   $('#sailChip').classList.toggle('on',state.showSail);
   if(state.showSail) map.addLayer(sailGroup); else map.removeLayer(sailGroup);
 });
-$('#floodChip').addEventListener('click',()=>{
+$('#floodChip').addEventListener('click',async()=>{
   state.showFlood=!state.showFlood;
   $('#floodChip').classList.toggle('on',state.showFlood);
-  if(state.showFlood) map.addLayer(floodGroup); else map.removeLayer(floodGroup);
+  if(state.showFlood){ await ensureFlood(); if(floodGroup&&state.showFlood) map.addLayer(floodGroup); }
+  else if(floodGroup) map.removeLayer(floodGroup);
 });
 $('#schChip').addEventListener('click',()=>{
   state.schLabels=!state.schLabels;
@@ -874,19 +879,22 @@ const ASSESS={paid:'Assessments largely in & paid',partial:'Some areas pending �
 const HOA={none:'None (classic Cape freedom)',pockets:'Pockets / condo assoc.',gated:'Gated community (HOA)'};
 const SEA_T={low:'Low — mostly year-round',med:'Medium — mixed',high:'High — snowbird heavy'};
 const SAIL_T={direct:'Yes — most streets',partial:'Pockets only — verify per canal',none:'No'};
+const fxLine=fx=>['x','x5','ae','ve'].filter(k=>fx[k]>0).map(k=>({x:'X',x5:'Shaded X',ae:'AE/A',ve:'VE'})[k]+' '+fx[k]+'%').join(' · ');
 function row(ic,lab,val,sub){
   return '<div class="mrow"><div class="mic">'+ic+'</div><div class="mtx"><div class="mlab">'+lab+'</div>'+
          '<div class="mval">'+val+'</div>'+(sub?'<div class="msub">'+sub+'</div>':'')+'</div></div>';
 }
+const FX_COLS={x:'var(--good)',x5:'#c9cc6f',ae:'var(--warn)',ve:'var(--bad)'};
+const FX_NAMES={x:'Zone X',x5:'Shaded X',ae:'AE / A',ve:'VE'};
 function floodBlock(z){
   const fx=z.flood.fx;
-  const seg=(v,cls)=>v>0?'<div class="fzseg '+cls+'" style="flex:'+v+'"></div>':'';
-  const lab=(v,cls,name)=>v>0?'<span><span class="fzdot" style="background:var(--'+({x:'good',ae:'warn',ve:'bad'})[cls]+')"></span>'+name+' <b>'+v+'%</b></span>':'';
-  return '<div class="mrow"><div class="mic">🌊</div><div class="mtx"><div class="mlab">Flood zones — est. share of homes</div>'+
-    '<div class="fzbar">'+seg(fx.x,'x')+seg(fx.ae,'ae')+seg(fx.ve,'ve')+'</div>'+
-    '<div class="fzlabs">'+lab(fx.x,'x','Zone X')+lab(fx.ae,'ae','Zone AE')+lab(fx.ve,'ve','Zone VE')+'</div>'+
-    '<div class="msub">~'+z.flood.elev+' ft elevation · Evac zone '+z.flood.evac+' · '+z.flood.ian+'</div>'+
-    '<div class="msub">X = flood insurance optional · AE = required with a mortgage · VE = coastal wave zone</div>'+
+  const seg=k=>fx[k]>0?'<div class="fzseg" style="flex:'+fx[k]+';background:'+FX_COLS[k]+'"></div>':'';
+  const lab=k=>fx[k]>0?'<span><span class="fzdot" style="background:'+FX_COLS[k]+'"></span>'+FX_NAMES[k]+' <b>'+fx[k]+'%</b></span>':'';
+  return '<div class="mrow"><div class="mic">🌊</div><div class="mtx"><div class="mlab">Flood zones — FEMA, share of land area</div>'+
+    '<div class="fzbar">'+['x','x5','ae','ve'].map(seg).join('')+'</div>'+
+    '<div class="fzlabs">'+['x','x5','ae','ve'].map(lab).join('')+'</div>'+
+    '<div class="msub">~'+z.flood.elev+' ft elevation (est.) · Evac zone '+z.flood.evac+' (est.) · '+z.flood.ian+'</div>'+
+    '<div class="msub">X = minimal risk · Shaded X = moderate (0.2%/yr) · AE/A = high risk — insurance required with a mortgage · VE = coastal wave zone · Source: FEMA effective flood maps (NFHL), sampled Jul 2026</div>'+
     '</div></div>';
 }
 function schoolBlock(z){
@@ -912,7 +920,7 @@ function select(id){
   state.sel=id; state.selSub=null; SUBS.forEach(s=>s.layer.setStyle(subStyle(s,false)));
   $('#cName').textContent=z.name;
   $('#cBadges').innerHTML='<span class="bdg">'+({SE:'Southeast',SW:'Southwest',CEN:'Central',NW:'Northwest',NE:'Northeast'})[z.quad]+' Cape</span>'+
-      '<span class="bdg est">est. data v0.6</span>';
+      '<span class="bdg est">est. data v0.7</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+z.blurb+'</div>'+
     row('💧','Utilities & assessments',z.util.line,ASSESS[z.assess])+
@@ -937,12 +945,13 @@ function selectSub(id){
   SUBS.forEach(x=>x.layer.setStyle(subStyle(x,x.id===id)));
   $('#cName').textContent=s.name;
   $('#cBadges').innerHTML='<span class="bdg gate">'+(s.kind==='gated'?'Gated community':'Named enclave')+'</span>'+
-      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.6</span>';
+      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.7</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+s.blurb+'</div>'+
     row('🏷','Price band',s.price+' (est.)','')+
     row('🏛','HOA / fees',s.hoa,'')+
     row('💧','Utilities',s.util,'')+
+    row('🌊','Flood zones (FEMA)',fxLine(s.fx),'Share of land area · effective maps, Jul 2026')+
     row('🏠','Product & era',s.era,'')+
     '<div class="tagwrap">'+s.tags.map(t=>'<span class="tag">'+t+'</span>').join('')+'</div>'+
     '<div class="msub" style="margin-top:8px">Tap the surrounding area for full flood, school & market context: <b style="color:var(--gold)">'+parent.name+'</b></div>';
@@ -981,7 +990,7 @@ const CMPROWS=[
  ['Rent (est.)',z=>'$'+z.mkt.rent.toLocaleString()+'/mo'],
  ['Utilities',z=>z.util.s==='city'?'City water & sewer':(z.util.s==='mixed'?'Mixed — verify':'Well & septic')],
  ['Assessments',z=>ASSESS[z.assess]],
- ['Flood mix (est.)',z=>'X '+z.flood.fx.x+'% · AE '+z.flood.fx.ae+'%'+(z.flood.fx.ve?' · VE '+z.flood.fx.ve+'%':'')],
+ ['Flood zones (FEMA)',z=>fxLine(z.flood.fx)],
  ['Elevation',z=>'~'+z.flood.elev+' ft'],
  ['Boating',z=>z.boat.label],
  ['Sailboat (no bridges)',z=>SAIL_T[z.boat.sail]],
@@ -999,7 +1008,7 @@ function openCmp(){
   $('#cmpBody').innerHTML='<table class="cmp"><tr><td class="rl"></td>'+
     zs.map(z=>'<th>'+z.name+'</th>').join('')+'</tr>'+
     CMPROWS.map(r=>'<tr><td class="rl">'+r[0]+'</td>'+zs.map(z=>'<td>'+r[1](z)+'</td>').join('')+'</tr>').join('')+
-    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.6 planning estimates — verify before relying on them.</p>';
+    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.7 planning estimates — verify before relying on them.</p>';
   $('#cmpModal').classList.add('open');
 }
 $('#cmpBtn').addEventListener('click',()=>{ if(state.cmp.length>=2) openCmp();
