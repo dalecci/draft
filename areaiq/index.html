@@ -156,6 +156,12 @@ table.cmp td.rl{font:600 10.5px Inter;letter-spacing:1.4px;text-transform:upperc
 #dataBadge{position:fixed;right:14px;bottom:16px;z-index:1090;background:rgba(17,17,19,.85);border:1px solid rgba(255,255,255,.14);
   color:var(--muted);border-radius:999px;padding:6px 12px;font-size:10.5px;font-weight:600;letter-spacing:1.2px}
 #dataBadge:hover{color:var(--ink);border-color:var(--gold)}
+#floodLegend{position:fixed;right:14px;bottom:52px;z-index:1090;display:none;flex-direction:column;gap:5px;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 13px;backdrop-filter:blur(14px);
+  font-size:11.5px;color:#d8d2c4}
+#floodLegend.show{display:flex}
+#floodLegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+body.tv #floodLegend{font-size:13.5px}
 
 /* ---------- zone & overlay labels ---------- */
 .zlab{background:none !important;border:none !important;box-shadow:none !important;
@@ -229,6 +235,7 @@ body.tv #matchcount{font-size:14px}
   #card.open{transform:none}
   #cmpTray{bottom:74px}
   #dataBadge{display:none}
+  #floodLegend{bottom:16px}
   .mixlab{flex-basis:118px}
 }
 </style>
@@ -305,6 +312,11 @@ body.tv #matchcount{font-size:14px}
 
 <button id="fabPanel">☰ Filters &amp; Layers</button>
 <button id="dataBadge">DATA v0.7 · ESTIMATES</button>
+<div id="floodLegend">
+  <span><i style="background:#3d7fe0"></i>AE / A — insurance required</span>
+  <span><i style="background:#ef4444"></i>VE — coastal wave zone</span>
+  <span><i style="background:#232325;border:1px solid #5a5a5e"></i>No tint — X / Shaded X</span>
+</div>
 
 <aside id="card">
   <div class="chead">
@@ -336,7 +348,8 @@ body.tv #matchcount{font-size:14px}
       schools, market pricing, and lifestyle. Gold-dashed outlines mark <b>gated communities and named enclaves</b>;
       tap them for their own scorecards.</p>
       <p><b>Precision overlays.</b> The <b style="color:var(--flood)">Flood zones (FEMA)</b> overlay draws the actual
-      high-risk flood polygons (AE/A in amber, VE in red) from FEMA's effective National Flood Hazard Layer, and every
+      high-risk flood polygons (AE/A in blue, VE in red — FEMA's own color convention) from FEMA's effective National
+      Flood Hazard Layer, and every
       scorecard's flood chart is computed from those same maps. The <b style="color:var(--sail)">Sailboat water</b>
       overlay is still hand-drawn — sailboat access is canal-by-canal, one bridge changes everything — so always verify
       the exact canal before writing an offer. Individual homes can differ from the mapped flood zone (elevation
@@ -785,8 +798,8 @@ async function ensureFlood(){
   try{
     const d=await (await fetch('flood.json')).json();
     floodGroup=L.layerGroup();
-    d.ae.forEach(rings=>L.polygon(rings,{color:'#e0b45c',weight:1,opacity:.7,fillColor:'#e0b45c',fillOpacity:.16,interactive:false}).addTo(floodGroup));
-    d.ve.forEach(rings=>L.polygon(rings,{color:'#e08a7a',weight:1.2,opacity:.85,fillColor:'#e08a7a',fillOpacity:.24,interactive:false}).addTo(floodGroup));
+    d.ae.forEach(rings=>L.polygon(rings,{color:'#5da2f2',weight:1,opacity:.8,fillColor:'#3d7fe0',fillOpacity:.3,interactive:false}).addTo(floodGroup));
+    d.ve.forEach(rings=>L.polygon(rings,{color:'#ff7a6b',weight:1.3,opacity:.9,fillColor:'#ef4444',fillOpacity:.42,interactive:false}).addTo(floodGroup));
   }catch(e){ alert('Flood layer failed to load — check the connection and refresh.'); }
   floodLoading=false;
 }
@@ -810,6 +823,7 @@ function applyOne(z){
       st={color:'rgba(216,176,74,.5)',weight:1.2,fillColor:heatColor((v-mn)/(mx-mn||1)),fillOpacity:.55};
     }
   } else st=baseStyle();
+  if(state.showFlood && m){ if(h){ st.fillOpacity=Math.min(st.fillOpacity,.3); } else { st.fillOpacity=.04; st.color='rgba(216,176,74,.35)'; } }
   if(sel){ st.color='#ffdf70'; st.weight=3.2; st.fillOpacity=Math.max(st.fillOpacity,.22); }
   z.layer.setStyle(st);
   const tt=z.layer.getTooltip(); const el=tt&&tt.getElement();
@@ -857,6 +871,8 @@ $('#sailChip').addEventListener('click',()=>{
 $('#floodChip').addEventListener('click',async()=>{
   state.showFlood=!state.showFlood;
   $('#floodChip').classList.toggle('on',state.showFlood);
+  $('#floodLegend').classList.toggle('show',state.showFlood);
+  applyAll();
   if(state.showFlood){ await ensureFlood(); if(floodGroup&&state.showFlood) map.addLayer(floodGroup); }
   else if(floodGroup) map.removeLayer(floodGroup);
 });
@@ -884,7 +900,7 @@ function row(ic,lab,val,sub){
   return '<div class="mrow"><div class="mic">'+ic+'</div><div class="mtx"><div class="mlab">'+lab+'</div>'+
          '<div class="mval">'+val+'</div>'+(sub?'<div class="msub">'+sub+'</div>':'')+'</div></div>';
 }
-const FX_COLS={x:'var(--good)',x5:'#c9cc6f',ae:'var(--warn)',ve:'var(--bad)'};
+const FX_COLS={x:'var(--good)',x5:'#c9cc6f',ae:'#5b9bd5',ve:'#ef6a5e'};
 const FX_NAMES={x:'Zone X',x5:'Shaded X',ae:'AE / A',ve:'VE'};
 function floodBlock(z){
   const fx=z.flood.fx;
