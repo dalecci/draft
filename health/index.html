@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0E13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="J3 Health">
+<title>J3 Health</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23FF4D4D'/%3E%3Ccircle cx='50' cy='50' r='20' fill='%230A0E13'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0A0E13; --panel:#131A22; --panel2:#1A232E; --line:rgba(255,255,255,.08);
+  --tx:#E9EEF4; --dim:#8A98A8; --teal:#2DD4BF; --red:#FF4D4D; --green:#34D399;
+  --gold:#F4C84B; --radius:18px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0; background:var(--bg); color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,sans-serif;
+  font-size:16px; line-height:1.45; min-height:100dvh}
+button{font:inherit; color:inherit; border:0; cursor:pointer; background:none}
+input,textarea{font:inherit; color:var(--tx); background:var(--panel2);
+  border:1px solid var(--line); border-radius:12px; padding:12px 14px; width:100%; font-size:16px}
+input:focus,textarea:focus{outline:2px solid var(--teal); outline-offset:0; border-color:transparent}
+.wrap{max-width:480px; margin:0 auto; padding:0 16px}
+.dim{color:var(--dim)} .small{font-size:13px} .center{text-align:center}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px; margin-bottom:14px}
+.cardtitle{font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--dim); margin-bottom:10px; display:flex; align-items:center; justify-content:space-between}
+.big{font-size:38px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.1}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border-radius:14px; padding:14px 18px; font-weight:700; font-size:16px;
+  background:var(--panel2); border:1px solid var(--line); min-height:52px}
+.btn:active{transform:scale(.97)}
+.btn.teal{background:var(--teal); color:#04211C; border:0}
+.btn.red{background:linear-gradient(135deg,#FF4D4D,#D92637); color:#fff; border:0}
+.btn.ghost{background:transparent}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.5; pointer-events:none}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.chip{display:inline-flex; align-items:center; gap:5px; background:var(--panel2);
+  border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:13px; font-weight:600}
+.chip.up{color:var(--red)} .chip.down{color:var(--green)}
+.pill{background:var(--panel2); border-radius:8px; padding:2px 8px; font-size:12px; font-weight:700; letter-spacing:.05em}
+
+/* login */
+#scrLogin{min-height:100dvh; display:flex; flex-direction:column; justify-content:center; padding:40px 0}
+.logo{text-align:center; margin-bottom:6px}
+.logo h1{margin:0; font-size:34px; font-weight:900; letter-spacing:.04em}
+.logo h1 span{color:var(--red)}
+.logo p{margin:4px 0 0; color:var(--dim); font-size:14px}
+.ulist{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:26px}
+.ucard{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:18px 12px; text-align:center; position:relative}
+.ucard:active{transform:scale(.97)}
+.ucard .av{width:54px; height:54px; border-radius:50%; margin:0 auto 10px;
+  background:linear-gradient(135deg,#1E2A36,#141C25); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; color:var(--teal)}
+.ucard .nm{font-weight:700}
+.ucard .duedot{position:absolute; top:10px; right:10px; width:10px; height:10px; border-radius:50%;
+  background:var(--red); box-shadow:0 0 8px var(--red)}
+#codeBox{margin-top:20px}
+#codeBox input{text-align:center; font-size:22px; letter-spacing:.35em; font-weight:700}
+
+/* header / nav */
+header{position:sticky; top:0; z-index:20; background:rgba(10,14,19,.85); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line)}
+header .wrap{display:flex; align-items:center; justify-content:space-between; height:56px}
+.brand{font-weight:900; letter-spacing:.05em; font-size:17px}
+.brand span{color:var(--red)}
+#userChip{display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--line);
+  border-radius:999px; padding:5px 12px 5px 6px; font-weight:700; font-size:14px}
+#userChip .av{width:28px; height:28px; border-radius:50%; background:var(--panel2);
+  display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--teal)}
+#viewBanner{background:linear-gradient(90deg,#3A2A00,#2A1F00); border-bottom:1px solid var(--line);
+  padding:8px 16px; text-align:center; font-size:14px; font-weight:600; color:var(--gold)}
+#viewBanner button{color:var(--tx); text-decoration:underline; font-weight:700; margin-left:8px}
+main{padding:16px 0 110px}
+nav{position:fixed; bottom:0; left:0; right:0; z-index:30; background:rgba(15,20,26,.92);
+  backdrop-filter:blur(14px); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom)}
+nav .wrap{display:flex}
+nav button{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:10px 0 12px; font-size:11px; font-weight:700; color:var(--dim)}
+nav button .ic{font-size:21px; line-height:1}
+nav button.on{color:var(--teal)}
+
+/* invisared card */
+#irCard{border-color:rgba(255,77,77,.35)}
+#irCard.due{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,77,0)}50%{box-shadow:0 0 22px 0 rgba(255,77,77,.25)}}
+.irstatus{font-size:22px; font-weight:800; margin-bottom:2px}
+.irstatus.due{color:var(--red)} .irstatus.done{color:var(--green)}
+
+/* water */
+.waterrow{display:flex; align-items:center; gap:14px; margin-top:6px}
+.waterbtn{width:64px; height:64px; border-radius:18px; font-size:30px; font-weight:800;
+  background:var(--panel2); border:1px solid var(--line); flex:none}
+.waterbtn.plus{background:rgba(45,212,191,.15); color:var(--teal); border-color:rgba(45,212,191,.4)}
+.waternum{flex:1; text-align:center}
+.bar{height:8px; background:var(--panel2); border-radius:99px; overflow:hidden; margin-top:12px}
+.bar i{display:block; height:100%; background:linear-gradient(90deg,#0EA5A0,var(--teal)); border-radius:99px;
+  transition:width .3s}
+
+/* tables & lists */
+.tscroll{overflow-x:auto; margin:0 -16px; padding:0 16px}
+table{border-collapse:collapse; width:100%; font-size:13px; white-space:nowrap}
+th{color:var(--dim); font-weight:600; text-align:left; padding:6px 10px 6px 0; border-bottom:1px solid var(--line)}
+td{padding:7px 10px 7px 0; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums}
+.slist{display:flex; flex-direction:column}
+.slist>div{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px}
+.slist>div:last-child{border-bottom:0}
+
+/* reports */
+details.report{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  margin-bottom:12px; overflow:hidden}
+details.report summary{list-style:none; padding:14px 16px; cursor:pointer}
+details.report summary::-webkit-details-marker{display:none}
+.rephead{display:flex; justify-content:space-between; align-items:center; font-weight:700}
+.repchips{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+.repbody{padding:2px 16px 16px; border-top:1px solid var(--line)}
+.analysis{font-size:15px}
+.analysis h4{font-size:17px; margin:12px 0 6px; color:var(--teal)}
+.analysis h5{font-size:15px; margin:10px 0 4px}
+.analysis ul{margin:6px 0; padding-left:20px}
+.analysis li{margin:3px 0}
+.analysis p{margin:8px 0}
+.analysis em{color:var(--dim); font-size:13px}
+
+/* admin */
+.aucard{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px 16px; margin-bottom:12px}
+.aurow{display:flex; align-items:center; justify-content:space-between}
+.austats{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+.aubtns{display:flex; gap:8px; margin-top:12px}
+.aubtns .btn{min-height:40px; padding:8px 14px; font-size:14px; flex:1}
+
+/* sheet */
+#sheetWrap{position:fixed; inset:0; z-index:50; display:none}
+#sheetWrap.open{display:block}
+#sheetBg{position:absolute; inset:0; background:rgba(0,0,0,.6)}
+#sheet{position:absolute; left:0; right:0; bottom:0; background:var(--panel);
+  border-radius:22px 22px 0 0; border-top:1px solid var(--line); padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+  max-width:480px; margin:0 auto; max-height:86dvh; overflow-y:auto}
+#sheet h3{margin:0 0 4px}
+.mgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px}
+.mgrid label{font-size:12px; font-weight:700; color:var(--dim); display:block; margin-bottom:4px}
+.mgrid .full{grid-column:1/-1}
+
+/* toast */
+#toast{position:fixed; left:50%; bottom:100px; transform:translateX(-50%) translateY(20px);
+  background:#1E2A36; color:var(--tx); border:1px solid var(--line); border-radius:12px;
+  padding:11px 18px; font-size:14px; font-weight:600; opacity:0; transition:.25s; z-index:99;
+  max-width:88vw; text-align:center; pointer-events:none}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+#toast.err{background:#3A1418; border-color:rgba(255,77,77,.5)}
+#toast.ok{background:#0E2B26; border-color:rgba(45,212,191,.5)}
+
+.spin{display:inline-block; width:18px; height:18px; border:2.5px solid var(--line);
+  border-top-color:var(--teal); border-radius:50%; animation:sp 1s linear infinite; vertical-align:-4px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.uplState{display:flex; align-items:center; gap:10px; font-weight:600; padding:6px 0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="scrLogin">
+  <div class="wrap">
+    <div class="logo">
+      <h1>J3 <span>HEALTH</span></h1>
+      <p>InvisaRed &middot; Weight &middot; Water</p>
+    </div>
+    <div id="ulist" class="ulist"></div>
+    <div id="codeBox" hidden>
+      <p class="center" style="margin:0 0 10px; font-weight:700" id="codeWho"></p>
+      <input id="codeIn" type="password" inputmode="numeric" autocomplete="off" placeholder="Enter your code">
+      <div class="grid2" style="margin-top:12px">
+        <button class="btn" id="codeBack">Back</button>
+        <button class="btn teal" id="codeGo">Let's go</button>
+      </div>
+    </div>
+    <p class="center dim small" style="margin-top:30px" id="loginMsg"></p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="scrMain" hidden>
+  <header>
+    <div class="wrap">
+      <div class="brand">J3 <span>HEALTH</span></div>
+      <button id="userChip"><span class="av" id="chipAv"></span><span id="chipName"></span></button>
+    </div>
+  </header>
+  <div id="viewBanner" hidden></div>
+  <main>
+    <div class="wrap">
+
+      <section id="vToday">
+        <p class="dim" style="margin:2px 0 14px" id="todayDate"></p>
+
+        <div class="card" id="irCard">
+          <div class="cardtitle"><span>🔴 InvisaRed</span><span class="dim small" style="text-transform:none; letter-spacing:0">every 2 days &middot; 15 or 30 min</span></div>
+          <div id="irStatus"></div>
+          <div id="irBtns" class="grid2" style="margin-top:14px">
+            <button class="btn red" onclick="logSession(15)">Log 15 min</button>
+            <button class="btn red" onclick="logSession(30)">Log 30 min</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardtitle"><span>⚖️ Weight</span><button class="dim small" style="text-transform:none; letter-spacing:0; text-decoration:underline" onclick="openSheet()">+ full measurements</button></div>
+          <div id="wtBody"></div>
+        </div>
+
+        <div class="card">
+          <div class="cardtitle"><span>💧 Water</span><button class="dim small" id="goalBtn" style="text-transform:none; letter-spacing:0"></button></div>
+          <div class="waterrow">
+            <button class="waterbtn" onclick="addWater(-1)">−</button>
+            <div class="waternum">
+              <div class="big" id="waterNum">0</div>
+              <div class="dim small" id="waterSub"></div>
+            </div>
+            <button class="waterbtn plus" onclick="addWater(1)">＋</button>
+          </div>
+          <div class="bar"><i id="waterBar" style="width:0%"></i></div>
+        </div>
+      </section>
+
+      <section id="vTrends" hidden>
+        <div class="card">
+          <div class="cardtitle"><span>Weight trend</span><span id="wtTotal" class="dim small" style="text-transform:none; letter-spacing:0"></span></div>
+          <div id="wtChart"></div>
+        </div>
+        <div class="card">
+          <div class="cardtitle">InvisaRed sessions</div>
+          <div id="irStats" style="margin-bottom:8px"></div>
+          <div class="slist" id="irList"></div>
+        </div>
+        <div class="card">
+          <div class="cardtitle">Water — last 14 days</div>
+          <div id="waterChart"></div>
+        </div>
+        <div class="card">
+          <div class="cardtitle">Measurements</div>
+          <div class="tscroll"><table id="mTable"></table></div>
+        </div>
+      </section>
+
+      <section id="vReports" hidden>
+        <div class="card">
+          <div class="cardtitle">🧠 AI report review</div>
+          <p class="dim small" style="margin:0 0 12px">Upload a body-comp scan, bloodwork, or any health report. The AI reads it, logs the numbers, and gives you a status report.</p>
+          <div id="uplProgress" hidden></div>
+          <button class="btn teal block" id="uplBtn" onclick="fileInput.click()">📄 Upload report</button>
+        </div>
+        <div id="repList"></div>
+      </section>
+
+      <section id="vAdmin" hidden>
+        <div class="card">
+          <div class="cardtitle">Add a person</div>
+          <div class="grid2">
+            <input id="nuName" placeholder="Name" autocomplete="off">
+            <input id="nuCode" placeholder="Code (e.g. 1234)" autocomplete="off">
+          </div>
+          <button class="btn teal block" style="margin-top:10px" onclick="addUser()">Add user</button>
+        </div>
+        <div id="auList"></div>
+      </section>
+
+    </div>
+  </main>
+  <nav>
+    <div class="wrap">
+      <button data-v="Today" class="on" onclick="go('Today')"><span class="ic">🏠</span>Today</button>
+      <button data-v="Trends" onclick="go('Trends')"><span class="ic">📈</span>Trends</button>
+      <button data-v="Reports" onclick="go('Reports')"><span class="ic">🧠</span>Reports</button>
+      <button data-v="Admin" id="navAdmin" hidden onclick="go('Admin')"><span class="ic">👑</span>Admin</button>
+    </div>
+  </nav>
+</div>
+
+<!-- MEASUREMENTS SHEET -->
+<div id="sheetWrap">
+  <div id="sheetBg" onclick="closeSheet()"></div>
+  <div id="sheet">
+    <h3 id="sheetTitle">Measurements</h3>
+    <p class="dim small" id="sheetSub" style="margin:0">Fill what you have — inches &amp; pounds. Everything is optional.</p>
+    <div class="mgrid">
+      <div><label>Weight (lb)</label><input id="mWeight" inputmode="decimal" placeholder="—"></div>
+      <div><label>Waist (in)</label><input id="mWaist" inputmode="decimal" placeholder="—"></div>
+      <div><label>Chest (in)</label><input id="mChest" inputmode="decimal" placeholder="—"></div>
+      <div><label>Hips (in)</label><input id="mHips" inputmode="decimal" placeholder="—"></div>
+      <div><label>Thigh (in)</label><input id="mThigh" inputmode="decimal" placeholder="—"></div>
+      <div><label>Arm (in)</label><input id="mArm" inputmode="decimal" placeholder="—"></div>
+      <div class="full"><label>Note</label><input id="mNote" placeholder="Optional"></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <button class="btn" onclick="closeSheet()">Skip</button>
+      <button class="btn teal" onclick="saveSheet()">Save</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" hidden accept="image/*,application/pdf">
+<div id="toast"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const SB_URL = 'https://ikypiznimyzidmyzzoys.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlreXBpem5pbXl6aWRteXp6b3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzUzODIsImV4cCI6MjA5MzMxMTM4Mn0.Ee0FWPHjLBSOIFXWmdPSjG8oT3QmKyKG14BF8oPGgjk';
+const db = supabase.createClient(SB_URL, SB_KEY);
+
+/* ================= STATE ================= */
+let me = null;        // logged-in user row
+let viewing = null;   // admin "view as" target (user row)
+let users = [];       // all users (login picker / admin)
+let pickU = null;     // user tapped on login screen
+let D = { sessions:[], meas:[], water:[], reports:[] };   // data for current uid
+let ADM = null;       // admin bulk data
+let curView = 'Today';
+
+const $ = id => document.getElementById(id);
+const uid = () => (viewing || me).id;
+const cur = () => (viewing || me);
+
+/* ================= HELPERS ================= */
+const todayStr = () => new Date().toLocaleDateString('en-CA');
+const parseNum = v => { const n = parseFloat(String(v).replace(',','.')); return isFinite(n) ? n : null; };
+const lb = n => (Math.round(n*10)/10).toFixed(1);
+function dOf(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+function dfmt(s, o){ return dOf(s).toLocaleDateString('en-US', o || {month:'short', day:'numeric'}); }
+function diffDays(a, b){ return Math.round((Date.parse(b) - Date.parse(a)) / 86400000); }
+function addDaysStr(s, n){ const d = dOf(s); d.setDate(d.getDate()+n); return d.toLocaleDateString('en-CA'); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(n){ return n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+let toastT;
+function toast(msg, kind){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show' + (kind ? ' ' + kind : '');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.className = '', 3000);
+}
+function sbErr(where, error){
+  console.error(where, error);
+  toast('⚠️ ' + where + ': ' + (error.message || error.details || 'failed'), 'err');
+}
+
+/* minimal markdown → html (for AI analysis) */
+function md(src){
+  const inline = s => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|\s)_(.+?)_(?=\s|$)/g, '$1<em>$2</em>');
+  const lines = String(src || '').split(/\r?\n/);
+  let out = '', list = false;
+  for (const ln of lines){
+    const l = ln.trim();
+    if (!l){ if(list){ out += '</ul>'; list = false; } continue; }
+    if (l.startsWith('- ') || l.startsWith('• ')){
+      if (!list){ out += '<ul>'; list = true; }
+      out += '<li>' + inline(l.slice(2)) + '</li>'; continue;
+    }
+    if (list){ out += '</ul>'; list = false; }
+    if (l.startsWith('### ')) out += '<h5>' + inline(l.slice(4)) + '</h5>';
+    else if (l.startsWith('## ')) out += '<h4>' + inline(l.slice(3)) + '</h4>';
+    else if (l.startsWith('# ')) out += '<h4>' + inline(l.slice(2)) + '</h4>';
+    else out += '<p>' + inline(l) + '</p>';
+  }
+  if (list) out += '</ul>';
+  return out;
+}
+
+/* ================= INIT / LOGIN ================= */
+async function init(){
+  const { data, error } = await db.from('health_users').select('id,name,is_admin').order('created_at');
+  if (error){ $('loginMsg').textContent = 'Could not reach the server — pull to refresh.'; sbErr('Loading users', error); return; }
+  users = data;
+  // who's due? (red dot on picker)
+  const since = addDaysStr(todayStr(), -4);
+  const s = await db.from('health_sessions').select('user_id,date').gte('date', since);
+  const lastBy = {};
+  (s.data || []).forEach(r => { if (!lastBy[r.user_id] || r.date > lastBy[r.user_id]) lastBy[r.user_id] = r.date; });
+  const dueSet = new Set(users.filter(u => !lastBy[u.id] || diffDays(lastBy[u.id], todayStr()) >= 2).map(u => u.id));
+  $('ulist').innerHTML = users.map(u => `
+    <button class="ucard" onclick="pickUser('${u.id}')">
+      ${dueSet.has(u.id) ? '<span class="duedot"></span>' : ''}
+      <div class="av">${esc(initials(u.name))}</div>
+      <div class="nm">${esc(u.name)}</div>
+    </button>`).join('');
+  // remembered login
+  const ruid = localStorage.getItem('j3h.uid'), rcode = localStorage.getItem('j3h.code');
+  if (ruid && rcode){
+    const { data: row } = await db.from('health_users').select('*').eq('id', ruid).eq('code', rcode).maybeSingle();
+    if (row){ enter(row); return; }
+    localStorage.removeItem('j3h.uid'); localStorage.removeItem('j3h.code');
+  }
+}
+
+function pickUser(id){
+  pickU = users.find(u => u.id === id);
+  $('ulist').hidden = true;
+  $('codeBox').hidden = false;
+  $('codeWho').textContent = 'Hey ' + pickU.name + ' — enter your code';
+  $('codeIn').value = '';
+  $('codeIn').focus();
+}
+$('codeBack')?.addEventListener('click', () => { $('codeBox').hidden = true; $('ulist').hidden = false; });
+$('codeGo')?.addEventListener('click', tryCode);
+$('codeIn')?.addEventListener('keydown', e => { if (e.key === 'Enter') tryCode(); });
+
+async function tryCode(){
+  const code = $('codeIn').value.trim();
+  if (!code) return;
+  const { data, error } = await db.from('health_users').select('*').eq('id', pickU.id).eq('code', code).maybeSingle();
+  if (error){ sbErr('Login', error); return; }
+  if (!data){ toast('Wrong code — try again', 'err'); $('codeIn').value = ''; return; }
+  localStorage.setItem('j3h.uid', data.id);
+  localStorage.setItem('j3h.code', data.code);
+  enter(data);
+}
+
+function enter(row){
+  me = row; viewing = null;
+  $('scrLogin').hidden = true;
+  $('scrMain').hidden = false;
+  $('chipName').textContent = me.name.split(' ')[0];
+  $('chipAv').textContent = initials(me.name);
+  $('navAdmin').hidden = !me.is_admin;
+  go('Today');
+  loadAll();
+}
+
+$('userChip').addEventListener('click', () => {
+  if (viewing){ exitView(); return; }
+  if (confirm('Switch user / sign out?')){
+    localStorage.removeItem('j3h.uid'); localStorage.removeItem('j3h.code');
+    location.reload();
+  }
+});
+
+/* ================= NAV ================= */
+function go(v){
+  curView = v;
+  ['Today','Trends','Reports','Admin'].forEach(x => {
+    $('v'+x).hidden = (x !== v);
+    const b = document.querySelector(`nav button[data-v="${x}"]`);
+    if (b) b.classList.toggle('on', x === v);
+  });
+  if (v === 'Admin' && me.is_admin) loadAdmin();
+  window.scrollTo(0,0);
+}
+
+/* ================= DATA ================= */
+async function loadAll(){
+  const id = uid();
+  const [s, m, w, r] = await Promise.all([
+    db.from('health_sessions').select('*').eq('user_id', id).order('date', {ascending:false}).limit(400),
+    db.from('health_measurements').select('*').eq('user_id', id).order('date', {ascending:false}).limit(400),
+    db.from('health_water').select('*').eq('user_id', id).order('date', {ascending:false}).limit(120),
+    db.from('health_reports').select('*').eq('user_id', id).order('date', {ascending:false}).limit(50),
+  ]);
+  for (const [name, res] of [['sessions',s],['measurements',m],['water',w],['reports',r]]){
+    if (res.error){ sbErr('Loading ' + name, res.error); return; }
+  }
+  D = { sessions:s.data, meas:m.data, water:w.data, reports:r.data };
+  renderToday(); renderTrends(); renderReports();
+}
+
+/* ================= TODAY ================= */
+function invisaState(){
+  const t = todayStr();
+  const today = D.sessions.find(x => x.date === t);
+  if (today) return { state:'done', s:today };
+  if (!D.sessions.length) return { state:'due', first:true };
+  const last = D.sessions[0].date;
+  const days = diffDays(last, t);
+  return days >= 2 ? { state:'due', days, last } : { state:'rest', last };
+}
+
+function renderToday(){
+  $('todayDate').textContent = new Date().toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+
+  /* invisared */
+  const st = invisaState();
+  const card = $('irCard');
+  card.classList.toggle('due', st.state === 'due');
+  document.title = (st.state === 'due' ? '🔴 ' : '') + 'J3 Health';
+  if (st.state === 'done'){
+    $('irStatus').innerHTML = `<div class="irstatus done">✓ Done today — ${st.s.minutes} min</div>
+      <div class="dim small">Next one ${dfmt(addDaysStr(st.s.date, 2), {weekday:'long'})}. <button class="dim" style="text-decoration:underline" onclick="undoSession('${st.s.id}')">undo</button></div>`;
+    $('irBtns').hidden = true;
+  } else if (st.state === 'due'){
+    $('irStatus').innerHTML = `<div class="irstatus due">DUE TODAY</div>
+      <div class="dim small">${st.first ? 'First session — let\'s go.' : 'Last one was ' + dfmt(st.last, {weekday:'short', month:'short', day:'numeric'}) + ' (' + st.days + ' days ago).'}</div>`;
+    $('irBtns').hidden = false;
+  } else {
+    $('irStatus').innerHTML = `<div class="irstatus">Rest day</div>
+      <div class="dim small">Last session ${dfmt(st.last, {weekday:'short'})} — next one ${dfmt(addDaysStr(st.last, 2), {weekday:'long'})}. Going early? Log it below.</div>`;
+    $('irBtns').hidden = false;
+  }
+
+  /* weight */
+  const t = todayStr();
+  const wts = D.meas.filter(x => x.weight_lb != null);
+  const todayW = wts.find(x => x.date === t);
+  const prev = wts.find(x => x.date < t);
+  if (todayW){
+    let delta = '';
+    if (prev){
+      const d = todayW.weight_lb - prev.weight_lb;
+      const cls = d <= 0 ? 'down' : 'up';
+      delta = `<span class="chip ${cls}">${d <= 0 ? '▼' : '▲'} ${lb(Math.abs(d))} lb since ${dfmt(prev.date)}</span>`;
+    }
+    $('wtBody').innerHTML = `<div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+      <button class="big" onclick="openSheet()">${lb(todayW.weight_lb)}<span style="font-size:16px; color:var(--dim)"> lb</span></button>${delta}</div>
+      <div class="dim small" style="margin-top:4px">Logged today — tap to edit</div>`;
+  } else {
+    $('wtBody').innerHTML = `<div style="display:flex; gap:10px">
+      <input id="wtQuick" inputmode="decimal" placeholder="${prev ? 'Last: ' + lb(prev.weight_lb) + ' lb' : 'Weight (lb)'}" style="flex:1">
+      <button class="btn teal" style="flex:none" onclick="quickWeight()">Save</button></div>`;
+  }
+
+  /* water */
+  const goal = cur().water_goal_oz || 64;
+  const wrow = D.water.find(x => x.date === t);
+  const oz = wrow ? wrow.oz : 0;
+  $('waterNum').textContent = oz;
+  $('waterSub').textContent = 'of ' + goal + ' oz  ·  ' + Math.round(oz/8) + ' glasses';
+  $('goalBtn').textContent = 'goal: ' + goal + ' oz ✎';
+  $('waterBar').style.width = Math.min(100, oz/goal*100) + '%';
+  $('waterBar').style.background = oz >= goal ? 'var(--green)' : '';
+}
+
+async function logSession(minutes){
+  const { data, error } = await db.from('health_sessions')
+    .insert({ user_id: uid(), date: todayStr(), minutes }).select().single();
+  if (error){ sbErr('Saving session', error); return; }
+  D.sessions.unshift(data);
+  renderToday(); renderTrends();
+  toast('🔴 ' + minutes + ' min InvisaRed logged', 'ok');
+  openSheet(true);
+}
+async function undoSession(id){
+  const { error } = await db.from('health_sessions').delete().eq('id', id);
+  if (error){ sbErr('Undo', error); return; }
+  D.sessions = D.sessions.filter(s => s.id !== id);
+  renderToday(); renderTrends();
+}
+
+async function quickWeight(){
+  const v = parseNum($('wtQuick').value);
+  if (v == null || v < 50 || v > 700){ toast('Enter a weight in lb', 'err'); return; }
+  await upsertMeas({ weight_lb: v });
+  toast('Weight saved', 'ok');
+}
+
+async function addWater(dir){
+  const t = todayStr();
+  const wrow = D.water.find(x => x.date === t);
+  const oz = Math.max(0, (wrow ? wrow.oz : 0) + dir * 8);
+  const { data, error } = await db.from('health_water')
+    .upsert({ user_id: uid(), date: t, oz }, { onConflict: 'user_id,date' }).select().single();
+  if (error){ sbErr('Saving water', error); return; }
+  if (wrow) wrow.oz = data.oz; else D.water.unshift(data);
+  renderToday(); renderTrends();
+}
+
+$('goalBtn').addEventListener('click', async () => {
+  const g = parseNum(prompt('Daily water goal (oz):', cur().water_goal_oz || 64));
+  if (g == null || g < 8) return;
+  const { error } = await db.from('health_users').update({ water_goal_oz: Math.round(g) }).eq('id', uid());
+  if (error){ sbErr('Saving goal', error); return; }
+  cur().water_goal_oz = Math.round(g);
+  renderToday();
+});
+
+/* measurements sheet */
+function openSheet(afterSession){
+  const t = todayStr();
+  const row = D.meas.find(x => x.date === t) || {};
+  $('sheetTitle').textContent = afterSession ? 'Nice — log today\'s numbers' : 'Measurements';
+  $('sheetSub').textContent = afterSession ? 'Weight + tape while you\'re at it. Everything optional.' : 'Fill what you have — inches & pounds. Everything is optional.';
+  const map = { mWeight:'weight_lb', mWaist:'waist_in', mChest:'chest_in', mHips:'hips_in', mThigh:'thigh_in', mArm:'arm_in', mNote:'note' };
+  for (const [el, f] of Object.entries(map)) $(el).value = row[f] ?? '';
+  $('sheetWrap').classList.add('open');
+}
+function closeSheet(){ $('sheetWrap').classList.remove('open'); }
+
+async function saveSheet(){
+  const fields = {};
+  const map = { mWeight:'weight_lb', mWaist:'waist_in', mChest:'chest_in', mHips:'hips_in', mThigh:'thigh_in', mArm:'arm_in' };
+  for (const [el, f] of Object.entries(map)){
+    const v = parseNum($(el).value);
+    if (v != null) fields[f] = v;
+  }
+  const note = $('mNote').value.trim();
+  if (note) fields.note = note;
+  if (!Object.keys(fields).length){ closeSheet(); return; }
+  await upsertMeas(fields);
+  closeSheet();
+  toast('Measurements saved', 'ok');
+}
+
+async function upsertMeas(fields){
+  const t = todayStr();
+  const row = D.meas.find(x => x.date === t);
+  if (row){
+    const { data, error } = await db.from('health_measurements').update(fields).eq('id', row.id).select().single();
+    if (error){ sbErr('Saving', error); return; }
+    Object.assign(row, data);
+  } else {
+    const { data, error } = await db.from('health_measurements')
+      .insert({ user_id: uid(), date: t, ...fields }).select().single();
+    if (error){ sbErr('Saving', error); return; }
+    D.meas.unshift(data);
+  }
+  renderToday(); renderTrends();
+}
+
+/* ================= TRENDS ================= */
+function renderTrends(){
+  /* weight chart */
+  const wts = D.meas.filter(x => x.weight_lb != null).slice().reverse();  // asc
+  const pts = wts.slice(-20).map(x => ({ d: x.date, v: Number(x.weight_lb) }));
+  if (pts.length >= 2){
+    const first = wts[0].weight_lb, last = wts[wts.length-1].weight_lb, d = last - first;
+    $('wtTotal').textContent = (d <= 0 ? '▼ ' : '▲ ') + lb(Math.abs(d)) + ' lb since ' + dfmt(wts[0].date);
+    $('wtChart').innerHTML = lineChart(pts);
+  } else {
+    $('wtTotal').textContent = '';
+    $('wtChart').innerHTML = '<p class="dim small center" style="padding:16px 0">Log weight a couple times and the trend shows up here.</p>';
+  }
+
+  /* invisared stats + list */
+  const mo = todayStr().slice(0,7);
+  const moSes = D.sessions.filter(s => s.date.startsWith(mo));
+  const moMin = moSes.reduce((a,s) => a + s.minutes, 0);
+  $('irStats').innerHTML = `<span class="chip">This month: <b>${moSes.length}</b> sessions</span> <span class="chip"><b>${moMin}</b> min total</span>`;
+  $('irList').innerHTML = D.sessions.slice(0,8).map(s =>
+    `<div><span>${dfmt(s.date, {weekday:'short', month:'short', day:'numeric'})}</span><b>${s.minutes} min</b></div>`).join('')
+    || '<p class="dim small center" style="padding:10px 0">No sessions yet.</p>';
+
+  /* water bars */
+  $('waterChart').innerHTML = waterChart();
+
+  /* measurements table */
+  const rows = D.meas.slice(0, 12);
+  if (rows.length){
+    $('mTable').innerHTML = '<tr><th>Date</th><th>Weight</th><th>Waist</th><th>Chest</th><th>Hips</th><th>Thigh</th><th>Arm</th></tr>' +
+      rows.map(m => `<tr><td>${dfmt(m.date)}</td><td>${m.weight_lb != null ? lb(m.weight_lb) : '·'}</td><td>${m.waist_in ?? '·'}</td><td>${m.chest_in ?? '·'}</td><td>${m.hips_in ?? '·'}</td><td>${m.thigh_in ?? '·'}</td><td>${m.arm_in ?? '·'}</td></tr>`).join('');
+  } else {
+    $('mTable').innerHTML = '<tr><td class="dim small">No measurements yet.</td></tr>';
+  }
+}
+
+function lineChart(pts){
+  const W = 340, H = 150, P = { l: 6, r: 44, t: 14, b: 22 };
+  const vs = pts.map(p => p.v);
+  let min = Math.min(...vs), max = Math.max(...vs);
+  if (max - min < 2){ max += 1; min -= 1; }
+  const pad = (max - min) * 0.12; min -= pad; max += pad;
+  const X = i => P.l + (W - P.l - P.r) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
+  const Y = v => P.t + (H - P.t - P.b) * (1 - (v - min) / (max - min));
+  const line = pts.map((p,i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+  const area = line + ` L${X(pts.length-1).toFixed(1)},${H-P.b} L${X(0).toFixed(1)},${H-P.b} Z`;
+  const lastX = X(pts.length-1), lastY = Y(pts[pts.length-1].v);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%; display:block">
+    <defs><linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity=".28"/><stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#wg)"/>
+    <path d="${line}" fill="none" stroke="#2DD4BF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${lastX}" cy="${lastY}" r="4" fill="#2DD4BF"/>
+    <text x="${lastX + 6}" y="${Math.max(12, lastY - 8)}" fill="#E9EEF4" font-size="13" font-weight="700">${lb(pts[pts.length-1].v)}</text>
+    <text x="${P.l}" y="${H-6}" fill="#8A98A8" font-size="10">${dfmt(pts[0].d)}</text>
+    <text x="${lastX}" y="${H-6}" fill="#8A98A8" font-size="10" text-anchor="end">${dfmt(pts[pts.length-1].d)}</text>
+  </svg>`;
+}
+
+function waterChart(){
+  const goal = cur().water_goal_oz || 64;
+  const t = todayStr();
+  const byDate = Object.fromEntries(D.water.map(w => [w.date, w.oz]));
+  const days = [];
+  for (let i = 13; i >= 0; i--) days.push(addDaysStr(t, -i));
+  const maxV = Math.max(goal, ...days.map(d => byDate[d] || 0)) * 1.1;
+  const W = 340, H = 120, P = { l: 4, r: 4, t: 8, b: 18 };
+  const bw = (W - P.l - P.r) / 14;
+  const gy = P.t + (H - P.t - P.b) * (1 - goal / maxV);
+  let bars = '';
+  days.forEach((d, i) => {
+    const v = byDate[d] || 0;
+    const h = (H - P.t - P.b) * (v / maxV);
+    const x = P.l + i * bw;
+    bars += `<rect x="${(x + bw*0.15).toFixed(1)}" y="${(H - P.b - h).toFixed(1)}" width="${(bw*0.7).toFixed(1)}" height="${Math.max(h,1).toFixed(1)}" rx="3" fill="${v >= goal ? '#34D399' : '#2DD4BF'}" opacity="${v ? 1 : .18}"/>`;
+    if (i % 2 === 1) bars += `<text x="${(x + bw/2).toFixed(1)}" y="${H-4}" fill="#8A98A8" font-size="8.5" text-anchor="middle">${dfmt(d, {day:'numeric'})}</text>`;
+  });
+  const avg = Math.round(days.reduce((a,d) => a + (byDate[d] || 0), 0) / 14);
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%; display:block">
+    <line x1="${P.l}" y1="${gy.toFixed(1)}" x2="${W-P.r}" y2="${gy.toFixed(1)}" stroke="#8A98A8" stroke-width="1" stroke-dasharray="4 4" opacity=".6"/>
+    <text x="${W-P.r}" y="${(gy - 4).toFixed(1)}" fill="#8A98A8" font-size="9" text-anchor="end">goal ${goal} oz</text>
+    ${bars}</svg>
+    <p class="dim small" style="margin:8px 0 0">Average: <b>${avg} oz/day</b></p>`;
+}
+
+/* ================= REPORTS ================= */
+const fileInput = $('fileInput');
+fileInput.addEventListener('change', () => {
+  if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+function uplStatus(html){
+  const el = $('uplProgress');
+  el.hidden = !html;
+  el.innerHTML = html ? `<div class="uplState"><span class="spin"></span><span>${html}</span></div>` : '';
+  $('uplBtn').disabled = !!html;
+}
+
+async function fileToB64(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function compressImage(file, maxDim, q){
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+  catch { bmp = await createImageBitmap(file); }
+  const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * scale);
+  c.height = Math.round(bmp.height * scale);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', q));
+  return { blob, b64: await fileToB64(blob) };
+}
+
+function recentContext(){
+  const wts = D.meas.filter(x => x.weight_lb != null).slice(0, 10).map(x => ({ date: x.date, weight_lb: Number(x.weight_lb) }));
+  const t = todayStr();
+  const last7 = D.water.filter(w => diffDays(w.date, t) < 7);
+  const water7 = Math.round(last7.reduce((a,w) => a + w.oz, 0) / 7);
+  const ses14 = D.sessions.filter(s => diffDays(s.date, t) < 14).map(s => ({ date: s.date, minutes: s.minutes }));
+  const latest = D.meas[0] || {};
+  const meas = {};
+  ['waist_in','chest_in','hips_in','thigh_in','arm_in'].forEach(k => { if (latest[k] != null) meas[k] = Number(latest[k]); });
+  return { weights: wts, water_avg_oz_per_day_7d: water7, invisared_sessions_14d: ses14, latest_measurements: meas };
+}
+
+async function handleFile(file){
+  try {
+    const isPdf = file.type === 'application/pdf';
+    if (isPdf && file.size > 15 * 1024 * 1024){ toast('PDF too big (15 MB max)', 'err'); return; }
+
+    uplStatus('Preparing file…');
+    let b64, mediaType, blob, ext;
+    if (isPdf){ b64 = await fileToB64(file); mediaType = 'application/pdf'; blob = file; ext = 'pdf'; }
+    else { const c = await compressImage(file, 1800, 0.87); b64 = c.b64; mediaType = 'image/jpeg'; blob = c.blob; ext = 'jpg'; }
+
+    uplStatus('Uploading…');
+    const path = uid() + '/' + Date.now() + '.' + ext;
+    const up = await db.storage.from('health-reports').upload(path, blob, { contentType: mediaType });
+    const filePath = up.error ? null : path;
+    if (up.error) console.warn('storage upload failed', up.error);
+
+    uplStatus('🧠 AI is reading your report… (~20 sec)');
+    const prior = D.reports.slice(0, 3).map(r => ({ date: r.date, metrics: r.metrics }));
+    const { data, error } = await db.functions.invoke('health-brain', { body: {
+      action: 'analyze_report', file_base64: b64, media_type: mediaType,
+      user_name: cur().name, today: todayStr(), prior_reports: prior, recent: recentContext(),
+    }});
+    if (error) throw new Error('Brain: ' + error.message);
+    if (data.error) throw new Error('Brain: ' + data.error);
+    const res = data.result;
+
+    uplStatus('Saving…');
+    const { data: row, error: insErr } = await db.from('health_reports').insert({
+      user_id: uid(), date: res.report_date || todayStr(),
+      file_path: filePath, file_type: mediaType,
+      metrics: res.metrics, analysis: res.status_report,
+    }).select().single();
+    if (insErr) throw insErr;
+    D.reports.unshift(row);
+
+    /* if the report has a weight and today has none, log it */
+    const w = res.metrics && res.metrics.weight_lb;
+    if (w && !D.meas.find(x => x.date === todayStr() && x.weight_lb != null)) await upsertMeas({ weight_lb: w });
+
+    uplStatus('');
+    renderReports(true);
+    toast('✓ Report analyzed', 'ok');
+  } catch (e){
+    uplStatus('');
+    console.error(e);
+    toast('⚠️ ' + (e.message || 'Upload failed'), 'err');
+  }
+}
+
+function metricChips(m, prevM){
+  if (!m) return '';
+  const chips = [];
+  const dd = (k, cur) => {
+    if (!prevM || prevM[k] == null) return '';
+    const d = cur - prevM[k];
+    if (!d) return '';
+    return ` <span style="color:${d < 0 ? 'var(--green)' : 'var(--red)'}">${d < 0 ? '▼' : '▲'}${Math.abs(Math.round(d*10)/10)}</span>`;
+  };
+  if (m.weight_lb != null) chips.push(`<span class="chip">⚖️ ${lb(m.weight_lb)} lb${dd('weight_lb', m.weight_lb)}</span>`);
+  if (m.body_fat_pct != null) chips.push(`<span class="chip">${m.body_fat_pct}% fat${dd('body_fat_pct', m.body_fat_pct)}</span>`);
+  if (m.visceral_fat != null) chips.push(`<span class="chip">visceral ${m.visceral_fat}${dd('visceral_fat', m.visceral_fat)}</span>`);
+  if (m.muscle_mass_lb != null) chips.push(`<span class="chip">💪 ${lb(m.muscle_mass_lb)} lb${dd('muscle_mass_lb', m.muscle_mass_lb)}</span>`);
+  if (m.bmi != null) chips.push(`<span class="chip">BMI ${m.bmi}</span>`);
+  if (m.metabolic_age != null) chips.push(`<span class="chip">meta-age ${m.metabolic_age}</span>`);
+  return `<div class="repchips">${chips.join('')}</div>`;
+}
+
+function renderReports(openFirst){
+  const list = $('repList');
+  if (!D.reports.length){
+    list.innerHTML = '<p class="dim small center" style="padding:10px">No reports yet — upload your first one above.</p>';
+    return;
+  }
+  list.innerHTML = D.reports.map((r, i) => {
+    const prevM = D.reports[i+1] ? D.reports[i+1].metrics : null;
+    const url = r.file_path ? db.storage.from('health-reports').getPublicUrl(r.file_path).data.publicUrl : null;
+    return `<details class="report" ${openFirst && i === 0 ? 'open' : ''}>
+      <summary>
+        <div class="rephead"><span>${r.file_type === 'application/pdf' ? '📄' : '📷'} ${dfmt(r.date, {month:'long', day:'numeric', year:'numeric'})}</span><span class="dim">▾</span></div>
+        ${metricChips(r.metrics, prevM)}
+      </summary>
+      <div class="repbody">
+        <div class="analysis">${md(r.analysis)}</div>
+        <div style="display:flex; gap:14px; margin-top:10px">
+          ${url ? `<a href="${url}" target="_blank" class="dim small" style="color:var(--teal)">View original</a>` : ''}
+          <button class="dim small" style="text-decoration:underline" onclick="delReport('${r.id}')">Delete</button>
+        </div>
+      </div>
+    </details>`;
+  }).join('');
+}
+
+async function delReport(id){
+  if (!confirm('Delete this report?')) return;
+  const r = D.reports.find(x => x.id === id);
+  const { error } = await db.from('health_reports').delete().eq('id', id);
+  if (error){ sbErr('Delete', error); return; }
+  if (r && r.file_path) db.storage.from('health-reports').remove([r.file_path]);
+  D.reports = D.reports.filter(x => x.id !== id);
+  renderReports();
+}
+
+/* ================= ADMIN ================= */
+async function loadAdmin(){
+  $('auList').innerHTML = '<p class="dim small center">Loading…</p>';
+  const t = todayStr();
+  const [u, s, m, w, r] = await Promise.all([
+    db.from('health_users').select('*').order('created_at'),
+    db.from('health_sessions').select('user_id,date,minutes').order('date', {ascending:false}).limit(1000),
+    db.from('health_measurements').select('user_id,date,weight_lb').not('weight_lb','is',null).order('date', {ascending:false}).limit(1000),
+    db.from('health_water').select('user_id,date,oz').eq('date', t),
+    db.from('health_reports').select('user_id'),
+  ]);
+  for (const res of [u,s,m,w,r]) if (res.error){ sbErr('Admin load', res.error); return; }
+  ADM = { users: u.data, sessions: s.data, meas: m.data, water: w.data, reports: r.data };
+  users = u.data.map(x => ({ id: x.id, name: x.name, is_admin: x.is_admin }));
+
+  $('auList').innerHTML = ADM.users.map(x => {
+    const ses = ADM.sessions.filter(z => z.user_id === x.id);
+    const wts = ADM.meas.filter(z => z.user_id === x.id);
+    const wat = ADM.water.find(z => z.user_id === x.id);
+    const reps = ADM.reports.filter(z => z.user_id === x.id).length;
+    const lastS = ses[0];
+    const due = !lastS || diffDays(lastS.date, t) >= 2;
+    const doneToday = lastS && lastS.date === t;
+    let wtTxt = '—';
+    if (wts.length){
+      wtTxt = lb(wts[0].weight_lb) + ' lb';
+      if (wts.length > 1){
+        const d = wts[0].weight_lb - wts[wts.length-1].weight_lb;
+        wtTxt += ` <span style="color:${d <= 0 ? 'var(--green)' : 'var(--red)'}">(${d <= 0 ? '▼' : '▲'}${lb(Math.abs(d))})</span>`;
+      }
+    }
+    return `<div class="aucard">
+      <div class="aurow">
+        <b>${esc(x.name)}${x.is_admin ? ' 👑' : ''}</b>
+        <span class="pill">code ${esc(x.code)}</span>
+      </div>
+      <div class="austats">
+        <span class="chip">⚖️ ${wtTxt}</span>
+        <span class="chip">💧 ${wat ? wat.oz : 0} oz today</span>
+        <span class="chip" style="${doneToday ? 'color:var(--green)' : due ? 'color:var(--red)' : ''}">🔴 ${doneToday ? 'done today' : due ? 'DUE' : 'last ' + dfmt(lastS.date)}</span>
+        <span class="chip">🧠 ${reps} report${reps === 1 ? '' : 's'}</span>
+      </div>
+      <div class="aubtns">
+        <button class="btn" onclick="viewAs('${x.id}')">View</button>
+        <button class="btn" onclick="editCode('${x.id}')">Edit code</button>
+        ${x.id !== me.id ? `<button class="btn" style="color:var(--red)" onclick="delUser('${x.id}')">Remove</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addUser(){
+  const name = $('nuName').value.trim();
+  const code = $('nuCode').value.trim();
+  if (!name || !code){ toast('Name and code required', 'err'); return; }
+  const { error } = await db.from('health_users').insert({ name, code });
+  if (error){ sbErr('Adding user', error); return; }
+  $('nuName').value = ''; $('nuCode').value = '';
+  toast('✓ ' + name + ' added — give them code ' + code, 'ok');
+  loadAdmin();
+}
+
+async function editCode(id){
+  const u = ADM.users.find(x => x.id === id);
+  const code = prompt('New code for ' + u.name + ':', u.code);
+  if (!code || !code.trim()) return;
+  const { error } = await db.from('health_users').update({ code: code.trim() }).eq('id', id);
+  if (error){ sbErr('Updating code', error); return; }
+  if (id === me.id){ me.code = code.trim(); localStorage.setItem('j3h.code', me.code); }
+  loadAdmin();
+}
+
+async function delUser(id){
+  const u = ADM.users.find(x => x.id === id);
+  if (!confirm('Remove ' + u.name + ' and ALL their data? This cannot be undone.')) return;
+  const { error } = await db.from('health_users').delete().eq('id', id);
+  if (error){ sbErr('Removing user', error); return; }
+  toast(u.name + ' removed');
+  loadAdmin();
+}
+
+function viewAs(id){
+  viewing = ADM.users.find(x => x.id === id);
+  $('viewBanner').hidden = false;
+  $('viewBanner').innerHTML = `👀 Viewing <b>${esc(viewing.name)}</b><button onclick="exitView()">exit</button>`;
+  go('Today');
+  loadAll();
+}
+function exitView(){
+  viewing = null;
+  $('viewBanner').hidden = true;
+  go('Admin');
+  loadAll();
+}
+
+init();
+</script>
+</body>
+</html>
