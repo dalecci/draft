@@ -162,6 +162,13 @@ table.cmp td.rl{font:600 10.5px Inter;letter-spacing:1.4px;text-transform:upperc
 #floodLegend.show{display:flex}
 #floodLegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px;vertical-align:-1px}
 body.tv #floodLegend{font-size:13.5px}
+#hint{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:1080;display:none;
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 18px;
+  backdrop-filter:blur(14px);font-size:12.5px;color:var(--gold-bright);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+#hint.show{display:block}
+#map.far .zlab{font-size:10px;letter-spacing:.3px}
+#map.far .zlab .zl-sch{font-size:9px}
+body.tv #map.far .zlab{font-size:13px}
 
 /* ---------- zone & overlay labels ---------- */
 .zlab{background:none !important;border:none !important;box-shadow:none !important;
@@ -314,12 +321,13 @@ body.tv #matchcount{font-size:14px}
 </aside>
 
 <button id="fabPanel">☰ Filters &amp; Layers</button>
-<button id="dataBadge">DATA v0.8 · ESTIMATES</button>
+<button id="dataBadge">DATA v0.9 · ESTIMATES</button>
 <div id="floodLegend">
   <span><i style="background:#3d7fe0"></i>AE / A — insurance required</span>
   <span><i style="background:#ef4444"></i>VE — coastal wave zone</span>
   <span><i style="background:#232325;border:1px solid #5a5a5e"></i>No tint — X / Shaded X</span>
 </div>
+<div id="hint">Tap any area — or a gold diamond — for its full scorecard</div>
 
 <aside id="card">
   <div class="chead">
@@ -360,15 +368,17 @@ body.tv #matchcount{font-size:14px}
       <p><b>Why price ranges, not just one number.</b> In Cape Coral the same street can hold a $350K off-water home and a
       $1M+ gulf-access home. Each area's scorecard shows its <b>price mix by product type</b> so one blended median never
       tells the story alone.</p>
-      <p><b>Data version 0.8.</b> <b>Flood-zone shares and the flood overlay are real</b> — computed from FEMA's
-      effective flood maps (NFHL, sampled July 2026). Area boundaries are approximate and drawn for discussion. Market
-      figures, rents, HOA fees, drive times, elevations, evacuation zones, and school letter grades (recent FDOE grades)
-      remain ballpark estimates until county, school-district, and MLS feeds land in the next phase. Lee County is
-      open-enrollment ("school choice"), so school assignment is never guaranteed by address. <b>Always verify utilities,
-      flood zone, bridge clearances, assessments, and schools for a specific property before relying on them.</b></p>
+      <p><b>Data version 0.9 — what's real vs. estimated.</b><br>
+      <b>Real:</b> flood zones &amp; flood overlay (FEMA effective NFHL, sampled Jul 2026) · "For sale now" market pulse —
+      active listings, days on market, list prices, price cuts by ZIP (© realtor.com research data, Jun 2026;
+      ZIP-level, so neighboring areas in the same ZIP share values).<br>
+      <b>Estimates (v0):</b> area boundaries, price mix by product, rents, HOA fees, school letter grades (recent FDOE),
+      utilities status, drive times, elevations, evacuation zones — these get replaced by county, school-district and
+      MLS feeds next. Lee County is open-enrollment ("school choice"), so school assignment is never guaranteed by
+      address. <b>Always verify utilities, flood zone, bridge clearances, assessments, and schools per property.</b></p>
       <p><b>Fair housing.</b> This tool presents objective, third-party-sourced characteristics of places, never of people.
       Buyers set their own priorities. Equal Housing Opportunity.</p>
-      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.8 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
+      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.9 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
     </div>
   </div>
 </div>
@@ -376,8 +386,8 @@ body.tv #matchcount{font-size:14px}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 /* =========================================================
-   AREA IQ v0.8 — Cape Coral
-   DATA v0.8: boundaries approximate; metrics are estimates
+   AREA IQ v0.9 — Cape Coral
+   DATA v0.9: boundaries approximate; metrics are estimates
    ========================================================= */
 const ACCESS_CODE = 'SWFL2026';   // change the client code here
 
@@ -685,6 +695,20 @@ const SAIL_AREAS = [
 ];
 /* Flood overlay = real FEMA NFHL polygons, lazy-loaded from flood.json */
 
+/* ---------------- market pulse — realtor.com research data, ZIP-level ---------------- */
+const MARKET={asOf:'Jun 2026',zips:{
+ '33904':{alc:483,dom:81,mlp:419,ppsf:269,nlc:72,cutPct:34,pend:123},
+ '33909':{alc:447,dom:77,mlp:345,ppsf:207,nlc:92,cutPct:44,pend:179},
+ '33914':{alc:601,dom:92,mlp:550,ppsf:293,nlc:124,cutPct:35,pend:147},
+ '33990':{alc:197,dom:73,mlp:399,ppsf:244,nlc:62,cutPct:34,pend:70},
+ '33991':{alc:299,dom:73,mlp:489,ppsf:246,nlc:72,cutPct:46,pend:108},
+ '33993':{alc:744,dom:79,mlp:410,ppsf:233,nlc:212,cutPct:34,pend:215}}};
+const ZONE_ZIP={yacht:'33904',downtown:'33904',savona:'33904',central:'33904',fourmile:'33990',
+ pelican:'33914',rosegarden:'33914',surfside:'33914',sandoval:'33991',trafalgar:'33991',
+ midcape:'33990',tropicana:'33993',diplomat:'33993',farnorth:'33993',sevenislands:'33993',
+ corallakes:'33909',gator:'33909',delpradon:'33909'};
+const zmk=z=>MARKET.zips[ZONE_ZIP[z.id]]||null;
+
 /* ---------------- heat metric definitions ---------------- */
 const SEA_N={low:1,med:2,high:3};
 const fmtK=v=>v>=1000?('$'+(v/1000).toFixed(1).replace('.0','')+'M'):('$'+v+'K');
@@ -694,6 +718,8 @@ const HEAT=[
  {k:'top',  label:'Top-end price (est.)',  get:z=>Math.max.apply(null,z.mix.map(s=>s[1])), fmt:fmtK, note:'Priciest product type in each area'},
  {k:'ppsf', label:'$ / sq ft (est.)',      get:z=>z.mkt.ppsf,fmt:v=>'$'+v},
  {k:'rent', label:'Monthly rent (est.)',   get:z=>z.mkt.rent,fmt:v=>'$'+v.toLocaleString()},
+ {k:'alc',  label:'Homes for sale (ZIP)',  get:z=>zmk(z).alc,fmt:v=>v+' homes',note:'ZIP-level, realtor.com '+MARKET.asOf+' — neighboring areas share values'},
+ {k:'dom',  label:'Days on market (ZIP)',  get:z=>zmk(z).dom,fmt:v=>v+' days',note:'ZIP-level median, realtor.com '+MARKET.asOf},
  {k:'fx',   label:'% flood-insurance optional (FEMA)',get:z=>z.flood.fx.x+z.flood.fx.x5,fmt:v=>v+'%',note:'Zones X + shaded X · AE/VE require insurance with a mortgage'},
  {k:'elev', label:'Elevation (ft, est.)',  get:z=>z.flood.elev,fmt:v=>v+' ft'},
  {k:'boat', label:'Minutes to open water', get:z=>z.boat.minN,fmt:v=>'~'+v+' min',note:'Gray = no gulf access'},
@@ -795,7 +821,9 @@ function syncSubs(){
   if(showDots && !map.hasLayer(subDotGroup)) map.addLayer(subDotGroup);
   if(!showDots && map.hasLayer(subDotGroup)) map.removeLayer(subDotGroup);
 }
-map.on('zoomend',()=>{ $('#map').classList.toggle('nolabels',map.getZoom()<10.8); syncSubs(); });
+map.on('zoomend',()=>{ $('#map').classList.toggle('nolabels',map.getZoom()<10.8);
+  $('#map').classList.toggle('far',map.getZoom()<11.5); syncSubs(); });
+$('#map').classList.toggle('far',map.getZoom()<11.5);
 syncSubs();
 
 /* laser overlays: halo + bright core outline, labels, non-interactive */
@@ -942,6 +970,12 @@ function schoolBlock(z){
     '<div class="msub">'+(s.alt?s.alt+' · ':'')+'Lee County is open-enrollment — assignment isn’t guaranteed; verify current grades</div>'+
     '</div></div>';
 }
+function marketBlock(z){
+  const m=zmk(z); if(!m) return '';
+  return row('🏡','For sale now — ZIP '+ZONE_ZIP[z.id]+' · '+MARKET.asOf,
+    m.alc+' active listings · '+m.dom+' days median on market',
+    'Median list $'+m.mlp+'K · $'+m.ppsf+'/sq ft · '+m.cutPct+'% price-reduced · '+m.nlc+' new · '+m.pend+' pending · © realtor.com (ZIP-level)');
+}
 function mixBlock(z){
   const rows=z.mix.map(s=>'<div class="mixrow"><div class="mixlab">'+s[0]+'</div>'+
     '<div class="mixbar"><div class="mixfill" style="width:'+s[2]+'%"></div></div>'+
@@ -954,7 +988,7 @@ function select(id){
   state.sel=id; state.selSub=null; SUBS.forEach(s=>s.layer.setStyle(subStyle(s,false)));
   $('#cName').textContent=z.name;
   $('#cBadges').innerHTML='<span class="bdg">'+({SE:'Southeast',SW:'Southwest',CEN:'Central',NW:'Northwest',NE:'Northeast'})[z.quad]+' Cape</span>'+
-      '<span class="bdg est">est. data v0.8</span>';
+      '<span class="bdg est">est. data v0.9</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+z.blurb+'</div>'+
     row('💧','Utilities & assessments',z.util.line,ASSESS[z.assess])+
@@ -962,6 +996,7 @@ function select(id){
     row('⛵','Boating',z.boat.label+(z.boat.minN?' · '+z.boat.min+' to open water':''),
         'Sailboat (no bridges): '+SAIL_T[z.boat.sail]+(z.boat.note?' · '+z.boat.note:''))+
     schoolBlock(z)+
+    marketBlock(z)+
     row('💵','Market (estimates)','$'+z.mkt.med+'K blended median · $'+z.mkt.ppsf+'/sq ft','Long-term rent ≈ $'+z.mkt.rent.toLocaleString()+'/mo')+
     mixBlock(z)+
     row('🏠','Character','Built ~'+z.ch.yb+' · '+z.ch.vac+'% vacant lots','HOA: '+HOA[z.ch.hoa]+' · Seasonal: '+SEA_T[z.ch.sea])+
@@ -970,6 +1005,8 @@ function select(id){
   $('#cCmp').style.display='';
   $('#cCmp').textContent=state.cmp.includes(id)?'✓ In Compare':'+ Compare';
   $('#card').classList.add('open');
+  hideHint();
+  try{history.replaceState(null,'','#z='+id)}catch(e){}
   applyAll();
 }
 function selectSub(id){
@@ -979,7 +1016,7 @@ function selectSub(id){
   SUBS.forEach(x=>x.layer.setStyle(subStyle(x,x.id===id)));
   $('#cName').textContent=s.name;
   $('#cBadges').innerHTML='<span class="bdg gate">'+(s.kind==='gated'?'Gated community':'Named enclave')+'</span>'+
-      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.8</span>';
+      '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.9</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+s.blurb+'</div>'+
     row('🏷','Price band',s.price+' (est.)','')+
@@ -991,6 +1028,8 @@ function selectSub(id){
     '<div class="msub" style="margin-top:8px">Tap the surrounding area for full flood, school & market context: <b style="color:var(--gold)">'+parent.name+'</b></div>';
   $('#cCmp').style.display='none';
   $('#card').classList.add('open');
+  hideHint();
+  try{history.replaceState(null,'','#c='+id)}catch(e){}
 }
 $('#cClose').addEventListener('click',()=>{
   $('#card').classList.remove('open'); state.sel=null; state.selSub=null;
@@ -1022,6 +1061,8 @@ const CMPROWS=[
  ['Entry → top (est.)',z=>fmtK(Math.min.apply(null,z.mix.map(s=>s[1])))+' → '+fmtK(Math.max.apply(null,z.mix.map(s=>s[1])))],
  ['$ / sq ft (est.)',z=>'$'+z.mkt.ppsf],
  ['Rent (est.)',z=>'$'+z.mkt.rent.toLocaleString()+'/mo'],
+ ['For sale now (ZIP)',z=>{const m=zmk(z);return m?m.alc+' active · '+m.cutPct+'% cut':'—'}],
+ ['Days on market (ZIP)',z=>{const m=zmk(z);return m?m.dom+' days median':'—'}],
  ['Utilities',z=>z.util.s==='city'?'City water & sewer':(z.util.s==='mixed'?'Mixed — verify':'Well & septic')],
  ['Assessments',z=>ASSESS[z.assess]],
  ['Flood zones (FEMA)',z=>fxLine(z.flood.fx)],
@@ -1042,7 +1083,7 @@ function openCmp(){
   $('#cmpBody').innerHTML='<table class="cmp"><tr><td class="rl"></td>'+
     zs.map(z=>'<th>'+z.name+'</th>').join('')+'</tr>'+
     CMPROWS.map(r=>'<tr><td class="rl">'+r[0]+'</td>'+zs.map(z=>'<td>'+r[1](z)+'</td>').join('')+'</tr>').join('')+
-    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.8 planning estimates — verify before relying on them.</p>';
+    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.9 planning estimates — verify before relying on them.</p>';
   $('#cmpModal').classList.add('open');
 }
 $('#cmpBtn').addEventListener('click',()=>{ if(state.cmp.length>=2) openCmp();
@@ -1068,7 +1109,13 @@ $('#tvBtn').addEventListener('click',()=>{
   setTimeout(()=>map.invalidateSize(),350);
 });
 
+function hideHint(){ const h=$('#hint'); if(h.classList.contains('show')){ h.classList.remove('show'); localStorage.setItem('aiq_hint','1'); } }
 applyAll();
+if(!localStorage.getItem('aiq_hint')) $('#hint').classList.add('show');
+try{
+  const h=location.hash.match(/^#(z|c)=([a-z_]+)/);
+  if(h){ if(h[1]==='z') select(h[2]); else selectSub(h[2]); }
+}catch(e){}
 </script>
 </body>
 </html>
