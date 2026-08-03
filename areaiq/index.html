@@ -195,6 +195,12 @@ body.tv #map.far .zlab{font-size:13px}
 .roadlab.t span,.roadlab.p span{font-size:10.5px;letter-spacing:1.4px;color:#fffdf5}
 #map.rfar .roadlab.s{display:none}
 body.tv .roadlab span{font-size:12px}
+.leaflet-popup-content-wrapper{background:var(--panel-solid);color:var(--ink);border:1px solid var(--line);border-radius:12px}
+.leaflet-popup-tip{background:var(--panel-solid);border:1px solid var(--line)}
+.lpop b{color:var(--gold-bright);font-size:15px}
+.lpop .lsub{font-size:12px;color:var(--muted);margin-top:3px}
+.lpop a{display:inline-block;margin-top:7px;color:var(--gold);font-size:12.5px;font-weight:600}
+.lpop .lattr{font-size:10px;color:var(--muted);margin-top:7px;opacity:.8}
 body.tv .roadlab.t span,body.tv .roadlab.p span{font-size:13.5px}
 #map.nolabels .zlab{opacity:0}
 .leaflet-control-attribution{background:rgba(10,10,11,.72) !important;color:#8b8577 !important;font-size:9.5px !important}
@@ -308,6 +314,7 @@ body.tv #matchcount{font-size:14px}
       <div class="slab">Overlays</div>
       <div class="chips">
         <button class="chip on" id="subChip">Gated communities</button>
+        <button class="chip" id="listChip">Homes for sale</button>
         <button class="chip" id="roadChip">Main roads</button>
         <button class="chip sailc" id="sailChip">Sailboat water</button>
         <button class="chip floodc" id="floodChip">Flood zones (FEMA)</button>
@@ -375,6 +382,10 @@ body.tv #matchcount{font-size:14px}
       overlay is still hand-drawn — sailboat access is canal-by-canal, one bridge changes everything — so always verify
       the exact canal before writing an offer. Individual homes can differ from the mapped flood zone (elevation
       certificates &amp; letters of map amendment) — always confirm per property.</p>
+      <p><b>Homes for sale.</b> Every area shows a live <b>market pulse</b> — active listings, median
+      days on market, list prices and price cuts — from realtor.com's research data (ZIP-level, monthly).
+      Individual homes appear as map pins once an <b>MLS/IDX data feed</b> is connected; that licence is
+      issued by the MLS to the agent, and the app is built and waiting for it (see SETUP-MLS.md).</p>
       <p><b>Why price ranges, not just one number.</b> In Cape Coral the same street can hold a $350K off-water home and a
       $1M+ gulf-access home. Each area's scorecard shows its <b>price mix by product type</b> so one blended median never
       tells the story alone.</p>
@@ -707,6 +718,65 @@ const SAIL_AREAS = [
 ];
 /* Flood overlay = real FEMA NFHL polygons, lazy-loaded from flood.json */
 
+/* ---------------- LIVE LISTINGS (MLS/IDX) ----------------
+   Set endpoint to your feed proxy once the MLS data licence is approved.
+   The proxy (Supabase Edge Function — see mls-proxy.ts) holds the credentials
+   server-side and returns: [{id,lat,lng,price,beds,baths,sqft,dom,addr,status,url}]
+   Never put MLS credentials in this file — it is public.                      */
+const LISTINGS={
+  endpoint:'',                     // e.g. 'https://xxxx.supabase.co/functions/v1/mls'
+  attribution:'Listing data © the applicable MLS. Displayed under IDX licence.',
+  refreshMins:30
+};
+let listData=null,listGroup=null,listLoading=false,listCounts=null;
+function zoneAt(lat,lng){
+  for(const z of ZONES){
+    let c=false, p=z.poly;
+    for(let i=0,j=p.length-1;i<p.length;j=i++){
+      if(((p[i][0]>lat)!==(p[j][0]>lat)) && (lng<(p[j][1]-p[i][1])*(lat-p[i][0])/(p[j][0]-p[i][0])+p[i][1])) c=!c;
+    }
+    if(c) return z.id;
+  }
+  return null;
+}
+const priceBand=p=>p<350000?'#7fc98a':p<600000?'#d8b04a':p<1000000?'#e8974f':'#e0654f';
+async function ensureListings(){
+  if(listGroup||listLoading) return;
+  if(!LISTINGS.endpoint){
+    toast('MLS feed not connected yet — ZIP-level market data is showing instead. See ⓘ for setup.');
+    state.showList=false; $('#listChip').classList.remove('on');
+    return;
+  }
+  listLoading=true;
+  try{
+    const res=await fetch(LISTINGS.endpoint);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    listData=Array.isArray(d)?d:(d.listings||[]);
+    const g=L.layerGroup(); listCounts={};
+    listData.forEach(l=>{
+      if(typeof l.lat!=='number'||typeof l.lng!=='number') return;
+      const zid=zoneAt(l.lat,l.lng); if(zid) listCounts[zid]=(listCounts[zid]||0)+1;
+      L.circleMarker([l.lat,l.lng],{radius:5,color:'#0b0b0d',weight:1.5,
+        fillColor:priceBand(l.price||0),fillOpacity:.95})
+       .bindPopup('<div class="lpop"><b>'+fmtK(Math.round((l.price||0)/1000))+'</b>'+
+         (l.beds?' · '+l.beds+' bd':'')+(l.baths?' · '+l.baths+' ba':'')+
+         (l.sqft?' · '+l.sqft.toLocaleString()+' sq ft':'')+
+         '<div class="lsub">'+(l.addr||'')+'</div>'+
+         (l.dom!=null?'<div class="lsub">'+l.dom+' days on market</div>':'')+
+         (l.url?'<a href="'+l.url+'" target="_blank" rel="noopener">View listing →</a>':'')+
+         '<div class="lattr">'+LISTINGS.attribution+'</div></div>').addTo(g);
+    });
+    listGroup=g;
+    if(state.sel) select(state.sel);
+  }catch(e){
+    listGroup=null; state.showList=false;
+    $('#listChip').classList.remove('on');
+    toast('Listings feed unavailable right now — try again shortly.');
+  }
+  listLoading=false;
+}
+
 /* ---------------- market pulse — realtor.com research data, ZIP-level ---------------- */
 const MARKET={asOf:'Jun 2026',zips:{
  '33904':{alc:483,dom:81,mlp:419,ppsf:269,nlc:72,cutPct:34,pend:123},
@@ -757,7 +827,7 @@ const CHIPS=[
  {k:'gated',label:'Gated options',      test:z=>z.f.gated===1},
  {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000}
 ];
-const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,selSub:null,base:0,showSubs:true,showSail:false,showFlood:false,showRoads:false,schLabels:false};
+const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,selSub:null,base:0,showSubs:true,showSail:false,showFlood:false,showRoads:false,showList:false,schLabels:false};
 
 /* ---------------- gate ---------------- */
 const $=q=>document.querySelector(q);
@@ -957,6 +1027,12 @@ $('#subChip').addEventListener('click',()=>{
   $('#subChip').classList.toggle('on',state.showSubs);
   syncSubs();
 });
+$('#listChip').addEventListener('click',async()=>{
+  state.showList=!state.showList;
+  $('#listChip').classList.toggle('on',state.showList);
+  if(state.showList){ await ensureListings(); if(listGroup&&state.showList) map.addLayer(listGroup); }
+  else if(listGroup) map.removeLayer(listGroup);
+});
 $('#roadChip').addEventListener('click',async()=>{
   state.showRoads=!state.showRoads;
   $('#roadChip').classList.toggle('on',state.showRoads);
@@ -1026,7 +1102,11 @@ function schoolBlock(z){
 }
 function marketBlock(z){
   const m=zmk(z); if(!m) return '';
-  return row('🏡','For sale now — ZIP '+ZONE_ZIP[z.id]+' · '+MARKET.asOf,
+  const live=listCounts&&listCounts[z.id]!=null
+    ? row('🏡','Active listings in this area (live MLS)',listCounts[z.id]+' homes for sale',
+        'Turn on “Homes for sale” to see them on the map · '+LISTINGS.attribution)
+    : '';
+  return live+row('📊','Market pulse — ZIP '+ZONE_ZIP[z.id]+' · '+MARKET.asOf,
     m.alc+' active listings · '+m.dom+' days median on market',
     'Median list $'+m.mlp+'K · $'+m.ppsf+'/sq ft · '+m.cutPct+'% price-reduced · '+m.nlc+' new · '+m.pend+' pending · © realtor.com (ZIP-level)');
 }
