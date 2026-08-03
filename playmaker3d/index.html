@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0e17"/>
+<title>Playmaker 3D · Wave</title>
+<style>
+  :root{--blue:#3b74ff;--red:#e2483f;--ball:#f0a830;--ink:#0a0e17;--line:rgba(255,255,255,.14);--text:#eaf0fb;--mute:rgba(234,240,251,.6)}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif}
+  #c{position:fixed;inset:0;display:block}
+  .hud{position:fixed;pointer-events:none;z-index:5}
+  .brand{top:16px;left:18px}
+  .brand .kick{font-size:.66rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:#7fa0ff}
+  .brand h1{font-size:1.5rem;font-weight:800;line-height:1;margin-top:3px}
+  .brand .sub{font-size:.78rem;color:var(--mute);margin-top:3px}
+  /* camera presets */
+  .cams{top:16px;right:16px;display:flex;gap:6px;pointer-events:auto;flex-wrap:wrap;justify-content:flex-end;max-width:60vw}
+  .cam{font:inherit;font-size:.72rem;font-weight:700;color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line);
+    padding:8px 12px;border-radius:9px;cursor:pointer;backdrop-filter:blur(8px);transition:.14s}
+  .cam:hover{border-color:#3b74ff;color:#9bb6ff}
+  .cam.on{background:linear-gradient(135deg,#3b74ff,#1d3fb8);border-color:transparent;color:#fff}
+  /* bottom control bar */
+  .bar{left:50%;bottom:20px;transform:translateX(-50%);pointer-events:auto;width:min(560px,92vw);
+    background:rgba(12,16,26,.82);border:1px solid var(--line);border-radius:16px;padding:12px 14px;backdrop-filter:blur(14px);
+    box-shadow:0 20px 50px -20px #000}
+  .scrub{display:flex;align-items:center;gap:10px}
+  .scrub input[type=range]{flex:1;-webkit-appearance:none;height:6px;border-radius:999px;
+    background:linear-gradient(90deg,#3b74ff var(--p,0%),rgba(255,255,255,.12) var(--p,0%));outline:none}
+  .scrub input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 2px 6px #000}
+  .steplab{font-size:.72rem;font-weight:800;color:var(--mute);white-space:nowrap;min-width:74px;text-align:right}
+  .steplab b{color:#fff}
+  .row{display:flex;align-items:center;gap:8px;margin-top:11px}
+  .btn{font:inherit;font-weight:800;color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--line);
+    border-radius:10px;cursor:pointer;transition:.14s;display:grid;place-items:center}
+  .btn:hover{border-color:#3b74ff;color:#9bb6ff}
+  .btn.play{width:52px;height:44px;font-size:1.2rem;background:linear-gradient(135deg,#3b74ff,#1d3fb8);border-color:transparent;color:#fff;box-shadow:0 8px 18px -8px #3b74ff}
+  .btn.sq{width:44px;height:44px;font-size:1.05rem}
+  .spacer{flex:1}
+  .seg{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{font:inherit;font-size:.74rem;font-weight:800;color:var(--mute);background:none;border:none;padding:9px 11px;cursor:pointer}
+  .seg button.on{background:#3b74ff;color:#fff}
+  .toggle{font-size:.72rem;font-weight:800;color:var(--mute);display:flex;align-items:center;gap:6px;cursor:pointer;padding:0 4px}
+  .toggle.on{color:#9bb6ff}
+  .legend{bottom:20px;left:18px;display:flex;flex-direction:column;gap:6px;font-size:.72rem;color:var(--mute)}
+  .legend div{display:flex;align-items:center;gap:7px}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .hint{bottom:20px;right:18px;font-size:.7rem;color:var(--mute);text-align:right;max-width:180px}
+  .overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:var(--ink);transition:opacity .4s;text-align:center;padding:20px}
+  .overlay.hide{opacity:0;pointer-events:none}
+  .spin{width:42px;height:42px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#3b74ff;animation:sp 1s linear infinite;margin:0 auto 14px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(max-width:560px){.brand h1{font-size:1.2rem}.legend,.hint{display:none}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud brand"><div class="kick">Playmaker 3D</div><h1 id="playTitle">Wave</h1><div class="sub" id="playSub">Loading play…</div></div>
+<div class="hud cams" id="cams">
+  <button class="cam on" data-cam="broadcast">Broadcast</button>
+  <button class="cam" data-cam="baseline">Baseline</button>
+  <button class="cam" data-cam="side">Side</button>
+  <button class="cam" data-cam="overhead">Overhead</button>
+</div>
+<div class="hud legend">
+  <div><span class="dot" style="background:#3b74ff"></span> Offense</div>
+  <div><span class="dot" style="background:#e2483f"></span> Defense</div>
+  <div><span class="dot" style="background:#f0a830"></span> Ball</div>
+</div>
+<div class="hud hint">Drag to orbit · scroll to zoom</div>
+<div class="hud bar">
+  <div class="scrub">
+    <span class="steplab">Step <b id="stepNow">1</b> / <span id="stepTot">8</span></span>
+    <input type="range" id="scrub" min="0" max="1000" value="0"/>
+  </div>
+  <div class="row">
+    <button class="btn sq" id="restart" title="Restart">⟲</button>
+    <button class="btn play" id="play" title="Play/Pause">▶</button>
+    <div class="seg" id="speed">
+      <button data-s="0.5">0.5×</button><button data-s="1" class="on">1×</button><button data-s="2">2×</button>
+    </div>
+    <div class="spacer"></div>
+    <div class="toggle on" id="loop">↻ Loop</div>
+  </div>
+</div>
+<div class="overlay" id="overlay"><div><div class="spin"></div><div id="ovtext">Loading the Wave play…</div></div></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const SUPA='https://vlcpgwxeybpzwidjackz.supabase.co';
+const KEY='sb_publishable_gtHRqI4H2q9VwyE7sG0BKA_qJSXkJMU';
+const COURT_W=500, COURT_H=470, SCALE=0.1;         // svg units -> feet
+const HOOP=[250,55];                                // svg hoop center
+const wx=x=>(x-COURT_W/2)*SCALE;
+const wz=y=>(y-COURT_H/2)*SCALE;
+
+/* ---------------- scene ---------------- */
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a0e17);
+scene.fog=new THREE.Fog(0x0a0e17, 70, 150);
+const camera=new THREE.PerspectiveCamera(48, innerWidth/innerHeight, 0.1, 500);
+const controls=new OrbitControls(camera,canvas);
+controls.enableDamping=true; controls.dampingFactor=.08;
+controls.maxPolarAngle=Math.PI*0.49; controls.minDistance=14; controls.maxDistance=110;
+controls.target.set(0,3,-6);
+
+scene.add(new THREE.HemisphereLight(0xbcd2ff,0x1a1f2b,0.85));
+const key=new THREE.DirectionalLight(0xffffff,1.15);
+key.position.set(18,42,26); key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);
+const sc=40; Object.assign(key.shadow.camera,{left:-sc,right:sc,top:sc,bottom:-sc,near:1,far:140});
+key.shadow.bias=-0.0004; scene.add(key);
+const fill=new THREE.DirectionalLight(0x88aaff,0.25); fill.position.set(-20,20,-30); scene.add(fill);
+
+/* ---------------- court ---------------- */
+function courtTexture(){
+  const S=2, cv=document.createElement('canvas'); cv.width=COURT_W*S; cv.height=COURT_H*S;
+  const x=cv.getContext('2d'); x.scale(S,S);
+  // wood
+  const g=x.createLinearGradient(0,0,COURT_W,COURT_H);
+  g.addColorStop(0,'#c98a4b'); g.addColorStop(.5,'#b9793d'); g.addColorStop(1,'#a86a32');
+  x.fillStyle=g; x.fillRect(0,0,COURT_W,COURT_H);
+  for(let i=0;i<COURT_W;i+=7){x.strokeStyle=`rgba(70,40,15,${.04+Math.random()*.05})`;x.lineWidth=.6;x.beginPath();x.moveTo(i,0);x.lineTo(i,COURT_H);x.stroke();}
+  x.strokeStyle='rgba(255,255,255,.9)'; x.lineWidth=2; x.lineJoin='round';
+  const L=(x1,y1,x2,y2)=>{x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();};
+  x.strokeRect(2,2,496,466);                          // boundary
+  x.strokeRect(170,2,160,188);                        // lane
+  // FT circle (top solid, bottom dashed)
+  x.beginPath();x.arc(250,190,60,Math.PI,0,false);x.stroke();
+  x.setLineDash([7,6]);x.beginPath();x.arc(250,190,60,0,Math.PI,false);x.stroke();x.setLineDash([]);
+  // 3pt line: verticals + sampled arc
+  L(30,2,30,140); L(470,2,470,140);
+  const cx=250,cy=229.5,r=237.5;
+  const a1=Math.atan2(140-cy,30-cx), a2=Math.atan2(140-cy,470-cx);
+  x.beginPath();
+  for(let k=0;k<=60;k++){const a=a1+(a2-a1)*(k/60);const px=cx+Math.cos(a)*r,py=cy+Math.sin(a)*r;k?x.lineTo(px,py):x.moveTo(px,py);}
+  x.stroke();
+  L(0,468,500,468);                                   // half court
+  // backboard + rim
+  x.lineWidth=3;L(220,40,280,40);
+  x.strokeStyle='#ff5a1f';x.lineWidth=2.4;x.beginPath();x.arc(250,55,9,0,7);x.stroke();
+  const tex=new THREE.CanvasTexture(cv); tex.anisotropy=8; tex.colorSpace=THREE.SRGBColorSpace; return tex;
+}
+const floorMat=new THREE.MeshStandardMaterial({map:courtTexture(),roughness:.72,metalness:.05});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(COURT_W*SCALE,COURT_H*SCALE),floorMat);
+floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+// surrounding dark apron
+const apron=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0x0c1017,roughness:1}));
+apron.rotation.x=-Math.PI/2; apron.position.y=-0.05; scene.add(apron);
+
+/* hoop structure */
+function buildHoop(){
+  const grp=new THREE.Group(); const hx=wx(HOOP[0]), hz=wz(HOOP[1]);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,10,16),new THREE.MeshStandardMaterial({color:0x2a2f3a,metalness:.6,roughness:.4}));
+  pole.position.set(hx,5,hz-2.4); pole.castShadow=true; grp.add(pole);
+  const board=new THREE.Mesh(new THREE.BoxGeometry(6,3.5,.15),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.82,roughness:.2}));
+  board.position.set(hx,10.5,hz-1.2); board.castShadow=true; grp.add(board);
+  const sq=new THREE.Mesh(new THREE.BoxGeometry(2,1.5,.05),new THREE.MeshBasicMaterial({color:0xff5a1f,wireframe:true}));
+  sq.position.set(hx,10.1,hz-1.11); grp.add(sq);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.75,.06,12,32),new THREE.MeshStandardMaterial({color:0xff5a1f,metalness:.5,roughness:.4}));
+  rim.rotation.x=Math.PI/2; rim.position.set(hx,10,hz); rim.castShadow=true; grp.add(rim);
+  const netMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.35,wireframe:true});
+  const net=new THREE.Mesh(new THREE.CylinderGeometry(.72,.4,1.6,14,3,true),netMat);
+  net.position.set(hx,9.2,hz); grp.add(net);
+  scene.add(grp);
+}
+buildHoop();
+
+/* ---------------- players ---------------- */
+function numberSprite(txt,color){
+  const cv=document.createElement('canvas');cv.width=cv.height=128;const c=cv.getContext('2d');
+  c.beginPath();c.arc(64,64,60,0,7);c.fillStyle=color;c.fill();
+  c.lineWidth=7;c.strokeStyle='rgba(255,255,255,.9)';c.stroke();
+  c.fillStyle='#fff';c.font='bold 76px Inter,Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,64,70);
+  const t=new THREE.CanvasTexture(cv);t.colorSpace=THREE.SRGBColorSpace;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:true}));
+  s.scale.set(1.7,1.7,1.7); s.position.y=7.4; return s;
+}
+function makePlayer(team,label){
+  const grp=new THREE.Group();
+  const jersey=team==='off'?0x3b74ff:0xe2483f;
+  const dark=team==='off'?0x1d3fb8:0x9a2520;
+  const skin=0xd9a066;
+  const legs=new THREE.Mesh(new THREE.CylinderGeometry(.85,.7,2.7,18),new THREE.MeshStandardMaterial({color:dark,roughness:.7}));
+  legs.position.y=1.35; legs.castShadow=true; grp.add(legs);
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.95,1.7,6,16),new THREE.MeshStandardMaterial({color:jersey,roughness:.55}));
+  torso.position.y=3.9; torso.castShadow=true; grp.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.62,20,20),new THREE.MeshStandardMaterial({color:skin,roughness:.6}));
+  head.position.y=5.7; head.castShadow=true; grp.add(head);
+  const shadow=new THREE.Mesh(new THREE.CircleGeometry(1.15,24),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.28}));
+  shadow.rotation.x=-Math.PI/2; shadow.position.y=.02; grp.add(shadow);
+  grp.add(numberSprite(label,jersey));
+  grp.userData={team}; scene.add(grp); return grp;
+}
+/* ball */
+function makeBall(){
+  const grp=new THREE.Group();
+  const b=new THREE.Mesh(new THREE.SphereGeometry(.5,24,24),new THREE.MeshStandardMaterial({color:0xf0a830,roughness:.5}));
+  b.castShadow=true; grp.add(b);
+  const seamMat=new THREE.MeshBasicMaterial({color:0x5a3410});
+  for(let i=0;i<2;i++){const s=new THREE.Mesh(new THREE.TorusGeometry(.5,.02,8,32),seamMat);s.rotation.y=i*Math.PI/2;grp.add(s);}
+  const s2=new THREE.Mesh(new THREE.TorusGeometry(.5,.02,8,32),seamMat);s2.rotation.x=Math.PI/2;grp.add(s2);
+  const shadow=new THREE.Mesh(new THREE.CircleGeometry(.5,20),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.3}));
+  shadow.rotation.x=-Math.PI/2; grp.userData={shadow};
+  scene.add(shadow); shadow.position.y=.02;
+  scene.add(grp); return grp;
+}
+
+/* ---------------- play data + animation ---------------- */
+let PLAY=null, STEPS=[], ENT={}, ballObj=null, ballShadow=null;
+let nStep=0, tSeg=0, playing=false, speed=1, loop=true;
+const SEG_SECS=1.5;   // seconds per step transition
+
+function offense(id){return /^[1-9]$/.test(id);}
+function isBall(id){return id==='ball';}
+
+function pathPts(step,id){const p=step&&step.paths&&step.paths[id];return (p&&p.length>1)?p:null;}
+function lenTable(pts){const L=[0];for(let i=1;i<pts.length;i++)L.push(L[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y));return L;}
+function ptOnPath(pts,t){const L=lenTable(pts),tot=L[L.length-1];if(tot===0)return pts[0];const d=t*tot;let i=1;while(i<L.length&&L[i]<d)i++;const s=(d-L[i-1])/((L[i]-L[i-1])||1);return{x:pts[i-1].x+(pts[i].x-pts[i-1].x)*s,y:pts[i-1].y+(pts[i].y-pts[i-1].y)*s};}
+const ease=t=>t*t*(3-2*t);
+
+// position of entity at global progress (step index + segment t)
+function entityPos(id,step,t){
+  const cur=STEPS[step].positions[id];
+  const nxt=STEPS[step+1]?STEPS[step+1].positions[id]:cur;
+  if(!nxt) return cur;
+  const te=ease(Math.max(0,Math.min(1,t)));
+  const pts=pathPts(STEPS[step+1],id);
+  if(pts) return ptOnPath(pts,te);
+  return {x:cur.x+(nxt.x-cur.x)*te, y:cur.y+(nxt.y-cur.y)*te};
+}
+
+function layout(){
+  const step=Math.min(nStep,STEPS.length-1);
+  Object.keys(ENT).forEach(id=>{
+    const p=entityPos(id,step,tSeg), o=ENT[id];
+    const nx=wx(p.x), nz=wz(p.y);
+    // facing + bob
+    const dx=nx-o.position.x, dz=nz-o.position.z, moving=Math.hypot(dx,dz)>0.002;
+    o.position.x=nx; o.position.z=nz;
+    if(moving) o.userData.face=Math.atan2(dx,dz);
+    if(o.userData.face!=null) o.rotation.y=o.userData.face;
+    const spd=playing?Math.hypot(dx,dz):0;
+    o.userData.ph=(o.userData.ph||0)+spd*3;
+    o.position.y=Math.abs(Math.sin(o.userData.ph))*0.18;
+  });
+  // ball
+  const step2=Math.min(nStep,STEPS.length-1);
+  const bp=entityPos('ball',step2,tSeg);
+  const bx=wx(bp.x), bz=wz(bp.y);
+  // arc on passes (long ball travel)
+  let arc=0; const bnext=STEPS[step2+1]&&STEPS[step2+1].positions.ball, bcur=STEPS[step2].positions.ball;
+  if(bnext&&bcur){const dist=Math.hypot(bnext.x-bcur.x,bnext.y-bcur.y);if(dist>40)arc=Math.sin(Math.PI*ease(tSeg))*(dist*0.02);}
+  ballObj.position.set(bx,0.6+arc,bz);
+  ballObj.rotation.x+=0.15; ballObj.rotation.z+=0.08;
+  ballShadow.position.set(bx,0.02,bz);
+  const sc=1/(1+arc*0.12); ballShadow.scale.setScalar(sc);
+}
+
+/* camera presets */
+const CAMS={
+  broadcast:{p:[0,30,42],t:[0,3,-6]},
+  baseline:{p:[0,17,-42],t:[0,4,-12]},
+  side:{p:[50,22,-6],t:[0,3,-6]},
+  overhead:{p:[0,62,-6.01],t:[0,0,-6]}
+};
+function setCam(name){
+  const c=CAMS[name]; if(!c)return;
+  camera.position.set(...c.p); controls.target.set(...c.t);
+  document.querySelectorAll('.cam').forEach(b=>b.classList.toggle('on',b.dataset.cam===name));
+}
+
+/* ---------------- UI ---------------- */
+const $=id=>document.getElementById(id);
+const totalSegs=()=>Math.max(1,STEPS.length-1);
+function progress(){return (nStep+tSeg)/totalSegs();}
+function setProgress(f){f=Math.max(0,Math.min(1,f));const g=f*totalSegs();nStep=Math.min(Math.floor(g),STEPS.length-1);tSeg=g-nStep;if(nStep>=STEPS.length-1){nStep=STEPS.length-1;tSeg=0;}}
+function syncUI(){
+  const f=progress();
+  $('scrub').value=Math.round(f*1000);
+  $('scrub').style.setProperty('--p',(f*100)+'%');
+  $('stepNow').textContent=Math.min(nStep+1,STEPS.length);
+}
+$('play').onclick=()=>{ if(nStep>=STEPS.length-1&&tSeg>=1-1e-3){nStep=0;tSeg=0;} playing=!playing; $('play').textContent=playing?'❚❚':'▶'; };
+$('restart').onclick=()=>{nStep=0;tSeg=0;playing=true;$('play').textContent='❚❚';};
+$('scrub').oninput=e=>{playing=false;$('play').textContent='▶';setProgress(e.target.value/1000);layout();syncUI();};
+$('speed').onclick=e=>{const b=e.target.closest('button');if(!b)return;speed=+b.dataset.s;[...$('speed').children].forEach(x=>x.classList.toggle('on',x===b));};
+$('loop').onclick=()=>{loop=!loop;$('loop').classList.toggle('on',loop);};
+document.getElementById('cams').onclick=e=>{const b=e.target.closest('.cam');if(b)setCam(b.dataset.cam);};
+
+/* ---------------- load ---------------- */
+async function load(){
+  const title=new URLSearchParams(location.search).get('play')||'Wave';
+  $('playTitle').textContent=title;
+  try{
+    const r=await fetch(`${SUPA}/rest/v1/playmaker_plays?title=eq.${encodeURIComponent(title)}&select=*`,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});
+    const rows=await r.json();
+    if(!rows.length) throw new Error('Play "'+title+'" not found');
+    PLAY=rows[0]; STEPS=(PLAY.steps||[]).filter(s=>s&&s.positions);
+    if(!STEPS.length) throw new Error('This play has no steps yet');
+  }catch(err){ $('ovtext').innerHTML='⚠️ '+err.message; return; }
+  $('playSub').textContent=(PLAY.folder?PLAY.folder+' · ':'')+STEPS.length+' steps';
+  $('stepTot').textContent=STEPS.length;
+  // build entities from the first step
+  const ids=Object.keys(STEPS[0].positions);
+  ids.forEach(id=>{
+    if(isBall(id)) return;
+    ENT[id]=makePlayer(offense(id)?'off':'def', id.replace('X',''));
+  });
+  ballObj=makeBall(); ballShadow=ballObj.userData.shadow;
+  nStep=0;tSeg=0; layout(); syncUI(); setCam('broadcast');
+  $('overlay').classList.add('hide');
+  playing=true; $('play').textContent='❚❚';
+}
+
+/* ---------------- loop ---------------- */
+let last=performance.now(), lastW=0, lastH=0;
+function tick(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(innerWidth!==lastW||innerHeight!==lastH){lastW=innerWidth;lastH=innerHeight;resize();}
+  if(playing&&STEPS.length){
+    tSeg+=dt*speed/SEG_SECS;
+    while(tSeg>=1){
+      tSeg-=1; nStep++;
+      if(nStep>=STEPS.length-1){
+        nStep=STEPS.length-1; tSeg=0;
+        if(loop){nStep=0;tSeg=0;} else {playing=false;$('play').textContent='▶';}
+        break;
+      }
+    }
+    layout(); syncUI();
+  }
+  controls.update();
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);}
+addEventListener('resize',resize); resize();
+requestAnimationFrame(tick);
+load();
+</script>
+</body>
+</html>
