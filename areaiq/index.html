@@ -188,9 +188,14 @@ body.tv #map.far .zlab{font-size:13px}
   box-shadow:0 0 10px rgba(216,176,74,.95),0 1px 3px rgba(0,0,0,.8);cursor:pointer}
 .subdot.pocket{background:#e8d9ac}
 .roadlab{background:none !important;border:none !important;box-shadow:none !important;
-  color:#f2e7c8;font:700 10px Inter;letter-spacing:1.4px;text-transform:uppercase;text-align:center;
-  white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.98),0 0 9px rgba(0,0,0,.85);pointer-events:none}
-body.tv .roadlab{font-size:12.5px}
+  display:flex;align-items:center;justify-content:center;pointer-events:none}
+.roadlab span{display:inline-block;color:#fff6de;font:700 9.5px Inter;letter-spacing:1.1px;
+  text-transform:uppercase;white-space:nowrap;
+  text-shadow:0 0 4px #0b0b0d,0 0 4px #0b0b0d,0 1px 3px rgba(0,0,0,.98),0 0 10px rgba(0,0,0,.9)}
+.roadlab.t span,.roadlab.p span{font-size:10.5px;letter-spacing:1.4px;color:#fffdf5}
+#map.rfar .roadlab.s{display:none}
+body.tv .roadlab span{font-size:12px}
+body.tv .roadlab.t span,body.tv .roadlab.p span{font-size:13.5px}
 #map.nolabels .zlab{opacity:0}
 .leaflet-control-attribution{background:rgba(10,10,11,.72) !important;color:#8b8577 !important;font-size:9.5px !important}
 .leaflet-control-attribution a{color:#a89f8c !important}
@@ -830,8 +835,10 @@ function syncSubs(){
   if(!showDots && map.hasLayer(subDotGroup)) map.removeLayer(subDotGroup);
 }
 map.on('zoomend',()=>{ $('#map').classList.toggle('nolabels',map.getZoom()<10.8);
-  $('#map').classList.toggle('far',map.getZoom()<11.5); syncSubs(); });
+  $('#map').classList.toggle('far',map.getZoom()<11.5);
+  $('#map').classList.toggle('rfar',map.getZoom()<12); syncSubs(); });
 $('#map').classList.toggle('far',map.getZoom()<11.5);
+$('#map').classList.toggle('rfar',map.getZoom()<12);
 syncSubs();
 
 /* laser overlays: halo + bright core outline, labels, non-interactive */
@@ -850,7 +857,7 @@ async function ensureRoads(){
   if(roadGroup||roadLoading) return;
   roadLoading=true;
   try{
-    const res=await fetch('roads.json?v=1');
+    const res=await fetch('roads.json?v=2');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const d=await res.json();
     const g=L.layerGroup();
@@ -858,7 +865,9 @@ async function ensureRoads(){
     const W={t:4.2,p:3.4,s:2.2};
     d.roads.forEach(r=>L.polyline(r.pts,{renderer:rc,color:'#0b0b0d',weight:(W[r.c]||2.2)+2.4,opacity:.55,interactive:false}).addTo(g));
     d.roads.forEach(r=>L.polyline(r.pts,{renderer:rc,color:'#f5ead2',weight:W[r.c]||2.2,opacity:.88,interactive:false}).addTo(g));
-    d.labels.forEach(l=>L.marker(l.at,{icon:L.divIcon({className:'roadlab',html:l.n,iconSize:[130,14],iconAnchor:[65,7]}),interactive:false}).addTo(g));
+    d.labels.forEach(l=>L.marker(l.at,{icon:L.divIcon({className:'roadlab '+l.c,
+      html:'<span style="transform:rotate('+l.a+'deg)">'+l.n+'</span>',
+      iconSize:[150,16],iconAnchor:[75,8]}),interactive:false,keyboard:false}).addTo(g));
     roadGroup=g;
   }catch(e){
     roadGroup=null; state.showRoads=false;
