@@ -187,6 +187,10 @@ body.tv #map.far .zlab{font-size:13px}
 .subdot{background:var(--gold);border:2px solid #0b0b0d;border-radius:3px;transform:rotate(45deg);
   box-shadow:0 0 10px rgba(216,176,74,.95),0 1px 3px rgba(0,0,0,.8);cursor:pointer}
 .subdot.pocket{background:#e8d9ac}
+.roadlab{background:none !important;border:none !important;box-shadow:none !important;
+  color:#f2e7c8;font:700 10px Inter;letter-spacing:1.4px;text-transform:uppercase;text-align:center;
+  white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.98),0 0 9px rgba(0,0,0,.85);pointer-events:none}
+body.tv .roadlab{font-size:12.5px}
 #map.nolabels .zlab{opacity:0}
 .leaflet-control-attribution{background:rgba(10,10,11,.72) !important;color:#8b8577 !important;font-size:9.5px !important}
 .leaflet-control-attribution a{color:#a89f8c !important}
@@ -299,6 +303,7 @@ body.tv #matchcount{font-size:14px}
       <div class="slab">Overlays</div>
       <div class="chips">
         <button class="chip on" id="subChip">Gated communities</button>
+        <button class="chip" id="roadChip">Main roads</button>
         <button class="chip sailc" id="sailChip">Sailboat water</button>
         <button class="chip floodc" id="floodChip">Flood zones (FEMA)</button>
         <button class="chip" id="schChip">School grades (E·M·H, est.)</button>
@@ -391,7 +396,7 @@ body.tv #matchcount{font-size:14px}
    DATA v0.9: boundaries approximate; metrics are estimates
    ========================================================= */
 const ACCESS_CODE = 'SWFL2026';   // change the client code here
-const BRAND={agent:'Melissa Slattery',brokerage:''}; // set brokerage name before client-facing use (FL ad rules)
+const BRAND={agent:'Melissa Slattery',brokerage:'Tuiso Realty'}; // brokerage shown per FL ad rules
 
 /* ---------------- zones ----------------
    mix   = price mix by product type: [label, med $K, share %]
@@ -747,7 +752,7 @@ const CHIPS=[
  {k:'gated',label:'Gated options',      test:z=>z.f.gated===1},
  {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000}
 ];
-const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,selSub:null,base:0,showSubs:true,showSail:false,showFlood:false,schLabels:false};
+const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,selSub:null,base:0,showSubs:true,showSail:false,showFlood:false,showRoads:false,schLabels:false};
 
 /* ---------------- gate ---------------- */
 const $=q=>document.querySelector(q);
@@ -840,6 +845,28 @@ function laserGroup(items,color,cls){
   return g;
 }
 const sailGroup=laserGroup(SAIL_AREAS,'#4fd8d4','sail');
+let roadGroup=null,roadLoading=false;
+async function ensureRoads(){
+  if(roadGroup||roadLoading) return;
+  roadLoading=true;
+  try{
+    const res=await fetch('roads.json?v=1');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    const g=L.layerGroup();
+    const rc=L.canvas({padding:.3});
+    const W={t:4.2,p:3.4,s:2.2};
+    d.roads.forEach(r=>L.polyline(r.pts,{renderer:rc,color:'#0b0b0d',weight:(W[r.c]||2.2)+2.4,opacity:.55,interactive:false}).addTo(g));
+    d.roads.forEach(r=>L.polyline(r.pts,{renderer:rc,color:'#f5ead2',weight:W[r.c]||2.2,opacity:.88,interactive:false}).addTo(g));
+    d.labels.forEach(l=>L.marker(l.at,{icon:L.divIcon({className:'roadlab',html:l.n,iconSize:[130,14],iconAnchor:[65,7]}),interactive:false}).addTo(g));
+    roadGroup=g;
+  }catch(e){
+    roadGroup=null; state.showRoads=false;
+    $('#roadChip').classList.remove('on');
+    toast('Roads layer couldn’t load — check the connection and try again.');
+  }
+  roadLoading=false;
+}
 let floodGroup=null,floodLoading=false;
 async function ensureFlood(){
   if(floodGroup||floodLoading) return;
@@ -920,6 +947,12 @@ $('#subChip').addEventListener('click',()=>{
   state.showSubs=!state.showSubs;
   $('#subChip').classList.toggle('on',state.showSubs);
   syncSubs();
+});
+$('#roadChip').addEventListener('click',async()=>{
+  state.showRoads=!state.showRoads;
+  $('#roadChip').classList.toggle('on',state.showRoads);
+  if(state.showRoads){ await ensureRoads(); if(roadGroup&&state.showRoads) map.addLayer(roadGroup); }
+  else if(roadGroup) map.removeLayer(roadGroup);
 });
 $('#sailChip').addEventListener('click',()=>{
   state.showSail=!state.showSail;
