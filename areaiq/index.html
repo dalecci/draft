@@ -219,7 +219,7 @@ body.tv .zlab{font-size:16px;letter-spacing:.7px}
 body.tv .zlab .zl-sch{font-size:14px}
 body.tv .slab-sub{font-size:12.5px}
 body.tv .slab-att{font-size:12.5px}
-body.tv #card{width:470px}
+@media (min-width:881px){ body.tv #card{width:470px} }
 body.tv #card .chead h2{font-size:26px}
 body.tv .mval{font-size:16.5px}
 body.tv .msub{font-size:13.5px}
@@ -227,7 +227,7 @@ body.tv .mlab{font-size:11px}
 body.tv .blurb{font-size:15px}
 body.tv .schgr{font-size:24px}
 body.tv .fzlabs{font-size:13px}
-body.tv #panel{width:340px}
+@media (min-width:881px){ body.tv #panel{width:340px} }
 body.tv .chip{font-size:14px;padding:9px 14px}
 body.tv #matchcount{font-size:14px}
 
@@ -263,7 +263,7 @@ body.tv #matchcount{font-size:14px}
     <input id="gateInput" type="text" placeholder="ACCESS CODE" autocomplete="off" autocapitalize="characters">
     <button id="gateBtn">ENTER</button>
     <div id="gateErr"></div>
-    <div class="gfoot">Private neighborhood intelligence for invited clients.<br>Southwest Florida · Equal Housing Opportunity</div>
+    <div class="gfoot">Private neighborhood intelligence for invited clients.<br><span id="gBrok"></span>Southwest Florida · Equal Housing Opportunity</div>
   </div>
 </div>
 
@@ -289,7 +289,7 @@ body.tv #matchcount{font-size:14px}
       <div class="chips" id="chipWrap"></div>
     </div>
     <div class="sec">
-      <div class="slab">Max median price (est.)</div>
+      <div class="slab">Budget — any product type under… (est.)</div>
       <div class="sliderrow">
         <input type="range" id="budget" min="300" max="900" step="25" value="900">
         <span id="budgetLab">No cap</span>
@@ -301,7 +301,7 @@ body.tv #matchcount{font-size:14px}
         <button class="chip on" id="subChip">Gated communities</button>
         <button class="chip sailc" id="sailChip">Sailboat water</button>
         <button class="chip floodc" id="floodChip">Flood zones (FEMA)</button>
-        <button class="chip" id="schChip">School grades (E·M·H)</button>
+        <button class="chip" id="schChip">School grades (E·M·H, est.)</button>
       </div>
     </div>
     <div class="sec">
@@ -323,7 +323,7 @@ body.tv #matchcount{font-size:14px}
 <button id="fabPanel">☰ Filters &amp; Layers</button>
 <button id="dataBadge">DATA v0.9 · ESTIMATES</button>
 <div id="floodLegend">
-  <span><i style="background:#3d7fe0"></i>AE / A — insurance required</span>
+  <span><i style="background:#3d7fe0"></i>AE / A — flood ins. typically required</span>
   <span><i style="background:#ef4444"></i>VE — coastal wave zone</span>
   <span><i style="background:#232325;border:1px solid #5a5a5e"></i>No tint — X / Shaded X</span>
 </div>
@@ -376,9 +376,10 @@ body.tv #matchcount{font-size:14px}
       utilities status, drive times, elevations, evacuation zones — these get replaced by county, school-district and
       MLS feeds next. Lee County is open-enrollment ("school choice"), so school assignment is never guaranteed by
       address. <b>Always verify utilities, flood zone, bridge clearances, assessments, and schools per property.</b></p>
-      <p><b>Fair housing.</b> This tool presents objective, third-party-sourced characteristics of places, never of people.
-      Buyers set their own priorities. Equal Housing Opportunity.</p>
-      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.9 · © 2026 Melissa Slattery · Not an offer, appraisal, or investment advice.</p>
+      <p><b>Fair housing.</b> This tool presents characteristics of places — a mix of official data (FEMA, realtor.com)
+      and agent-curated estimates — never characteristics of people. Buyers set their own priorities.
+      Equal Housing Opportunity.</p>
+      <p style="color:var(--muted);font-size:12px">Area IQ™ · Cape Coral Edition v0.9 · © 2026 Melissa Slattery<span id="mBrok"></span> · Not an offer, appraisal, or investment advice.</p>
     </div>
   </div>
 </div>
@@ -390,6 +391,7 @@ body.tv #matchcount{font-size:14px}
    DATA v0.9: boundaries approximate; metrics are estimates
    ========================================================= */
 const ACCESS_CODE = 'SWFL2026';   // change the client code here
+const BRAND={agent:'Melissa Slattery',brokerage:''}; // set brokerage name before client-facing use (FL ad rules)
 
 /* ---------------- zones ----------------
    mix   = price mix by product type: [label, med $K, share %]
@@ -440,13 +442,13 @@ const ZONES = [
  poly:[[26.5622,-81.9955],[26.5622,-81.9620],[26.5780,-81.9620],[26.5780,-81.9405],[26.5940,-81.9405],[26.5940,-81.9955]],
  blurb:'The off-water value core — close to everything, the sensible first-home and rental belt of the old Cape.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
- flood:{fx:{x:2,x5:35,ae:62,ve:0},elev:8,evac:'C',ian:'Wind damage only in Ian'},
+ flood:{fx:{x:2,x5:35,ae:63,ve:0},elev:8,evac:'C',ian:'Wind damage only in Ian'},
  boat:{type:'none',sail:'none',label:'No boating water',min:'—',minN:null,note:'A few freshwater pockets'},
  schools:{s:6.5,e:['Skyline Elem','B'],m:['Caloosa Middle','C'],h:['Cape Coral High','B'],alt:'Oasis charter campuses nearby (A)'},
  mkt:{med:365,ppsf:265,rent:2250},
  mix:[['Off-water homes',355,80],['Freshwater canal',395,15],['Condos',230,5]],
  ch:{yb:1988,vac:5,hoa:'none',sea:'low'},d:{rsw:30,beach:40,pub:3},
- tags:['Best value','First-time friendly','Rental demand'],
+ tags:['Best value','Entry-price inventory','Rental demand'],
  f:{city:1,gulf:0,gated:0}},
 
 {id:'fourmile',name:'Four Mile Cove Riverfront',short:'Four Mile Cove',quad:'SE',
@@ -498,7 +500,7 @@ const ZONES = [
  mkt:{med:545,ppsf:300,rent:2800},
  mix:[['Off-water homes',460,45],['Freshwater canal',520,20],['Gulf-access (spreader)',700,35]],
  ch:{yb:2006,vac:12,hoa:'none',sea:'med'},d:{rsw:35,beach:42,pub:4},
- tags:['Newer builds','Family streets','Spreader nature'],
+ tags:['Newer builds','Quiet residential streets','Spreader nature'],
  f:{city:1,gulf:1,gated:0}},
 
 {id:'sandoval',name:'Sandoval & West Cape',short:'Sandoval · West Cape',quad:'SW',
@@ -516,7 +518,7 @@ const ZONES = [
 
 {id:'trafalgar',name:'Trafalgar & Skyline',short:'Trafalgar · Skyline',quad:'SW',
  poly:[[26.5940,-82.0085],[26.5940,-81.9737],[26.6670,-81.9737],[26.6670,-82.0085]],
- blurb:'The family core — freshwater canals, parks, schools and pools. Cape suburbia at its most livable.',
+ blurb:'Freshwater canals, parks, schools and pools — Cape suburbia at its most livable.',
  util:{s:'city',line:'City water & sewer'},assess:'paid',
  flood:{fx:{x:49,x5:44,ae:7,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals & lakes',min:'—',minN:null,note:'Ski-able lakes and fishing water; no gulf access'},
@@ -524,7 +526,7 @@ const ZONES = [
  mkt:{med:425,ppsf:275,rent:2500},
  mix:[['Off-water homes',390,50],['Freshwater canal',460,45],['Big lakefront',600,5]],
  ch:{yb:2002,vac:8,hoa:'none',sea:'low'},d:{rsw:33,beach:45,pub:3},
- tags:['Family core','Parks & schools','Freshwater canals'],
+ tags:['Parks & pools','Schools nearby','Freshwater canals'],
  f:{city:1,gulf:0,gated:0}},
 
 {id:'midcape',name:'Mid-Cape Corridor',short:'Mid-Cape',quad:'CEN',
@@ -570,7 +572,7 @@ const ZONES = [
  poly:[[26.7128,-82.0690],[26.7128,-81.9560],[26.7480,-81.9560],[26.7480,-82.0690]],
  blurb:'The frontier — lowest entry prices, the most vacant land, and the longest runway of growth (which also means years of construction).',
  util:{s:'well',line:'Well & septic; no utility timeline for much of it'},assess:'future',
- flood:{fx:{x:61,x5:16,ae:23,ve:1},elev:10,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:60,x5:16,ae:23,ve:1},elev:10,evac:'C',ian:'Wind only'},
  boat:{type:'fresh',sail:'none',label:'Freshwater canals',min:'—',minN:null,note:''},
  schools:{s:6,e:['Hector A. Cafferata Elem','B'],m:['Mariner Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:370,ppsf:240,rent:2250},
@@ -583,7 +585,7 @@ const ZONES = [
  poly:[[26.6670,-82.0700],[26.6670,-82.0560],[26.7128,-82.0560],[26.7128,-82.0790],[26.6900,-82.0758]],
  blurb:'Matlacha Pass sunsets and the Seven Islands project on the horizon — NW waterfront with a long, wild boat ride.',
  util:{s:'well',line:'Mostly well & septic — extensions reaching parts; verify'},assess:'future',
- flood:{fx:{x:0,x5:1,ae:98,ve:2},elev:7,evac:'B',ian:'Minor surge at the Matlacha Pass edge'},
+ flood:{fx:{x:0,x5:1,ae:97,ve:2},elev:7,evac:'B',ian:'Minor surge at the Matlacha Pass edge'},
  boat:{type:'bridge',sail:'none',label:'Gulf access (long ride)',min:'45+ min',minN:50,note:'Via spreader / Matlacha Pass — verify per canal'},
  schools:{s:6,e:['Hector A. Cafferata Elem','B'],m:['Mariner Middle','C'],h:['Mariner High','B'],alt:''},
  mkt:{med:520,ppsf:285,rent:2600},
@@ -594,7 +596,7 @@ const ZONES = [
 
 {id:'corallakes',name:'Coral Lakes & Bella Vida',short:'Coral Lakes · Bella Vida',quad:'NE',
  poly:[[26.6670,-81.9560],[26.6670,-81.9300],[26.7000,-81.9300],[26.7000,-81.9560]],
- blurb:'Gated family amenities — clubhouses, pools and playgrounds — with the fastest run to US-41 in the Cape.',
+ blurb:'Gated amenity living — clubhouses, pools and playgrounds — with the fastest run to US-41 in the Cape.',
  util:{s:'city',line:'City utilities in the gated communities & corridors'},assess:'paid',
  flood:{fx:{x:94,x5:0,ae:6,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'none',sail:'none',label:'Community lakes only',min:'—',minN:null,note:''},
@@ -602,7 +604,7 @@ const ZONES = [
  mkt:{med:445,ppsf:255,rent:2550},
  mix:[['Gated single-family',450,70],['Townhomes',330,30]],
  ch:{yb:2012,vac:10,hoa:'gated',sea:'low'},d:{rsw:32,beach:45,pub:4},
- tags:['Gated family','Amenity centers','US-41 quick'],
+ tags:['Gated amenities','Clubhouse & pools','US-41 quick'],
  f:{city:1,gulf:0,gated:1}},
 
 {id:'gator',name:'Gator Circle & NE Lakes',short:'Gator Circle',quad:'NE',
@@ -622,7 +624,7 @@ const ZONES = [
  poly:[[26.7000,-81.9560],[26.7000,-81.8940],[26.7280,-81.8930],[26.7280,-81.9560]],
  blurb:'The NE gateway — Entrada’s gated value, Porto Vista condos, and the quickest shot to US-41 and I-75.',
  util:{s:'mixed',line:'City along corridors & in Entrada; mixed elsewhere'},assess:'partial',
- flood:{fx:{x:83,x5:2,ae:16,ve:0},elev:9,evac:'C',ian:'Wind only'},
+ flood:{fx:{x:82,x5:2,ae:16,ve:0},elev:9,evac:'C',ian:'Wind only'},
  boat:{type:'none',sail:'none',label:'Community lakes only',min:'—',minN:null,note:''},
  schools:{s:6,e:['Diplomat Elem','C'],m:['Diplomat Middle','C'],h:['Island Coast High','C'],alt:''},
  mkt:{med:400,ppsf:250,rent:2400},
@@ -638,7 +640,7 @@ const SUBS = [
  poly:[[26.6030,-82.0380],[26.6030,-82.0200],[26.6185,-82.0200],[26.6185,-82.0380]],
  fx:{x:0,x5:10,ae:90,ve:0},price:'$450K – $800K',hoa:'≈$130–160/mo',util:'City water & sewer',era:'2005–2015 · Single-family & villas',
  blurb:'Resort-style gated master-plan — lagoon pool, splash park, tennis & pickleball, dog parks, miles of trails.',
- tags:['Resort amenities','Reasonable fees','Family + snowbird mix']},
+ tags:['Resort amenities','Reasonable fees','Mixed full-time/seasonal occupancy']},
 {id:'sub_capeharbour',name:'Cape Harbour',parent:'pelican',kind:'gated',
  poly:[[26.5455,-82.0135],[26.5455,-82.0045],[26.5535,-82.0045],[26.5535,-82.0135]],
  fx:{x:0,x5:4,ae:96,ve:0},price:'$400K condos – $2M+ waterfront',hoa:'Varies by assoc. (≈$500–900/mo condos)',util:'City water & sewer',era:'2000s · Marina condos, coach homes, estates',
@@ -663,16 +665,16 @@ const SUBS = [
  poly:[[26.6780,-81.9510],[26.6780,-81.9420],[26.6870,-81.9420],[26.6870,-81.9510]],
  fx:{x:96,x5:0,ae:4,ve:0},price:'$380K – $600K',hoa:'≈$250–350/mo',util:'City water & sewer',era:'2006–2015 · SFH + townhomes',
  blurb:'Gated resort amenities — clubhouse, pool, fitness, courts, and play areas.',
- tags:['Amenity rich','Family gated','NE convenience']},
+ tags:['Amenity rich','Clubhouse & courts','NE convenience']},
 {id:'sub_bellavida',name:'Bella Vida',parent:'corallakes',kind:'gated',
  poly:[[26.6915,-81.9470],[26.6915,-81.9380],[26.6990,-81.9380],[26.6990,-81.9470]],
  fx:{x:100,x5:0,ae:0,ve:0},price:'$380K – $600K',hoa:'≈$300/mo (incl. lawn care)',util:'City water & sewer',era:'2007–2020 · SFH + townhomes',
  blurb:'Gated with lawn care included — clubhouse, resort pool, and family play areas.',
- tags:['Lawn included','Family gated','Newer mix']},
+ tags:['Lawn included','Resort pool & play areas','Newer mix']},
 {id:'sub_portovista',name:'Isles of Porto Vista',parent:'delpradon',kind:'gated',
  poly:[[26.7005,-81.9110],[26.7005,-81.9040],[26.7055,-81.9040],[26.7055,-81.9110]],
  fx:{x:50,x5:0,ae:50,ve:0},price:'$200K – $300K condos',hoa:'≈$400/mo',util:'City water & sewer',era:'2006–2019 · Gated mid-rise condos',
- blurb:'Entry-price gated condos near US-41 — a favorite for first-timers and seasonal use.',
+ blurb:'Entry-price gated condos near US-41 — a favorite for entry-price buyers and seasonal use.',
  tags:['Entry price','Gated condos','Seasonal friendly']},
 {id:'sub_caperoyal',name:'Cape Royal',parent:'sandoval',kind:'gated',
  poly:[[26.6185,-82.0450],[26.6185,-82.0260],[26.6340,-82.0260],[26.6340,-82.0450]],
@@ -720,13 +722,12 @@ const HEAT=[
  {k:'rent', label:'Monthly rent (est.)',   get:z=>z.mkt.rent,fmt:v=>'$'+v.toLocaleString()},
  {k:'alc',  label:'Homes for sale (ZIP)',  get:z=>zmk(z).alc,fmt:v=>v+' homes',note:'ZIP-level, realtor.com '+MARKET.asOf+' — neighboring areas share values'},
  {k:'dom',  label:'Days on market (ZIP)',  get:z=>zmk(z).dom,fmt:v=>v+' days',note:'ZIP-level median, realtor.com '+MARKET.asOf},
- {k:'fx',   label:'% flood-insurance optional (FEMA)',get:z=>z.flood.fx.x+z.flood.fx.x5,fmt:v=>v+'%',note:'Zones X + shaded X · AE/VE require insurance with a mortgage'},
+ {k:'fx',   label:'% in FEMA zones X / Shaded X',get:z=>z.flood.fx.x+z.flood.fx.x5,fmt:v=>v+'%',note:'Minimal/moderate zones · AE/VE typically need flood insurance with a mortgage'},
  {k:'elev', label:'Elevation (ft, est.)',  get:z=>z.flood.elev,fmt:v=>v+' ft'},
- {k:'boat', label:'Minutes to open water', get:z=>z.boat.minN,fmt:v=>'~'+v+' min',note:'Gray = no gulf access'},
- {k:'sch',  label:'School score (est.)',   get:z=>z.schools.s,fmt:v=>v+'/10'},
- {k:'yb',   label:'Median year built',     get:z=>z.ch.yb,   fmt:v=>''+v},
- {k:'vac',  label:'Vacant lots %',         get:z=>z.ch.vac,  fmt:v=>v+'%'},
- {k:'sea',  label:'Seasonal share',        get:z=>SEA_N[z.ch.sea],fmt:v=>({1:'Low',2:'Medium',3:'High'})[v]}
+ {k:'boat', label:'Minutes to open water (est.)', get:z=>z.boat.minN,fmt:v=>'~'+v+' min',note:'Gray = no gulf access'},
+ {k:'yb',   label:'Median year built (est.)',get:z=>z.ch.yb, fmt:v=>''+v},
+ {k:'vac',  label:'Vacant lots % (est.)',  get:z=>z.ch.vac,  fmt:v=>v+'%'},
+ {k:'sea',  label:'Seasonal share (est.)', get:z=>SEA_N[z.ch.sea],fmt:v=>({1:'Low',2:'Medium',3:'High'})[v]}
 ];
 /* single-hue gold ramp, dark→bright = low→high (sequential, lightness-monotone) */
 const RAMP=[[58,49,34],[107,90,46],[156,131,57],[207,174,71],[255,223,112]];
@@ -744,18 +745,20 @@ const CHIPS=[
  {k:'x',    label:'Mostly flood zone X',test:z=>(z.flood.fx.x+z.flood.fx.x5)>=70},
  {k:'nohoa',label:'No-HOA lifestyle',   test:z=>z.ch.hoa!=='gated'},
  {k:'gated',label:'Gated options',      test:z=>z.f.gated===1},
- {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000},
- {k:'sch7', label:'Stronger schools',   test:z=>z.schools.s>=7}
+ {k:'newer',label:'Newer builds (2000+)',test:z=>z.ch.yb>=2000}
 ];
 const state={on:{},maxMed:900,heat:'',cmp:[],sel:null,selSub:null,base:0,showSubs:true,showSail:false,showFlood:false,schLabels:false};
 
 /* ---------------- gate ---------------- */
 const $=q=>document.querySelector(q);
+let _ls=null; try{_ls=window.localStorage}catch(e){}
+const sGet=k=>{try{return _ls&&_ls.getItem(k)}catch(e){return null}};
+const sSet=(k,v)=>{try{_ls&&_ls.setItem(k,v)}catch(e){}};
 function unlock(){ $('#gate').style.display='none'; setTimeout(()=>map.invalidateSize(),60); }
-if(localStorage.getItem('aiq_gate')==='1'){ window.addEventListener('load',unlock); }
+if(sGet('aiq_gate')==='1'){ window.addEventListener('load',unlock); }
 function tryCode(){
   const v=$('#gateInput').value.trim().toUpperCase();
-  if(v===ACCESS_CODE.toUpperCase()){ localStorage.setItem('aiq_gate','1'); unlock(); }
+  if(v===ACCESS_CODE.toUpperCase()){ unlock(); sSet('aiq_gate','1'); }
   else{ $('#gateErr').textContent='That code isn’t right — check your invitation.';
         const c=$('.gatecard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); }
 }
@@ -781,7 +784,7 @@ $('#baseBtn').addEventListener('click',()=>{
 
 function labelHTML(z){
   if(!state.schLabels) return z.short;
-  return z.short+'<span class="zl-sch">'+z.schools.e[1]+' · '+z.schools.m[1]+' · '+z.schools.h[1]+'</span>';
+  return z.short+'<span class="zl-sch">≈ '+z.schools.e[1]+' · '+z.schools.m[1]+' · '+z.schools.h[1]+'</span>';
 }
 const zoneGroup=L.layerGroup().addTo(map);
 ZONES.forEach(z=>{
@@ -842,18 +845,27 @@ async function ensureFlood(){
   if(floodGroup||floodLoading) return;
   floodLoading=true;
   try{
-    const d=await (await fetch('flood.json')).json();
-    floodGroup=L.layerGroup();
-    d.ae.forEach(rings=>L.polygon(rings,{color:'#5da2f2',weight:1,opacity:.8,fillColor:'#3d7fe0',fillOpacity:.3,interactive:false}).addTo(floodGroup));
-    d.ve.forEach(rings=>L.polygon(rings,{color:'#ff7a6b',weight:1.3,opacity:.9,fillColor:'#ef4444',fillOpacity:.42,interactive:false}).addTo(floodGroup));
-  }catch(e){ alert('Flood layer failed to load — check the connection and refresh.'); }
+    const res=await fetch('flood.json?v=9');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    const g=L.layerGroup();
+    d.ae.forEach(rings=>L.polygon(rings,{color:'#5da2f2',weight:1,opacity:.8,fillColor:'#3d7fe0',fillOpacity:.3,interactive:false}).addTo(g));
+    d.ve.forEach(rings=>L.polygon(rings,{color:'#ff7a6b',weight:1.3,opacity:.9,fillColor:'#ef4444',fillOpacity:.42,interactive:false}).addTo(g));
+    floodGroup=g;
+  }catch(e){
+    floodGroup=null; state.showFlood=false;
+    $('#floodChip').classList.remove('on');
+    $('#floodLegend').classList.remove('show');
+    applyAll();
+    toast('Flood layer couldn’t load — check the connection and try again.');
+  }
   floodLoading=false;
 }
 
 /* ---------------- filtering + heat ---------------- */
 function matches(z){
   for(const c of CHIPS){ if(state.on[c.k] && !c.test(z)) return false; }
-  if(state.maxMed<900 && z.mkt.med>state.maxMed) return false;
+  if(state.maxMed<900 && !z.mix.some(s=>s[1]<=state.maxMed)) return false;
   return true;
 }
 function heatDef(){ return HEAT.find(h=>h.k===state.heat)||null; }
@@ -939,7 +951,7 @@ $('#resetBtn').addEventListener('click',()=>{
 /* ---------------- scorecards ---------------- */
 const ASSESS={paid:'Assessments largely in & paid',partial:'Some areas pending — verify per parcel',future:'Future assessments likely — budget for them'};
 const HOA={none:'None (classic Cape freedom)',pockets:'Pockets / condo assoc.',gated:'Gated community (HOA)'};
-const SEA_T={low:'Low — mostly year-round',med:'Medium — mixed',high:'High — snowbird heavy'};
+const SEA_T={low:'Low — mostly year-round occupancy',med:'Medium — mixed occupancy',high:'High seasonal occupancy'};
 const SAIL_T={direct:'Yes — most streets',partial:'Pockets only — verify per canal',none:'No'};
 const fxLine=fx=>['x','x5','ae','ve'].filter(k=>fx[k]>0).map(k=>({x:'X',x5:'Shaded X',ae:'AE/A',ve:'VE'})[k]+' '+fx[k]+'%').join(' · ');
 function row(ic,lab,val,sub){
@@ -956,7 +968,7 @@ function floodBlock(z){
     '<div class="fzbar">'+['x','x5','ae','ve'].map(seg).join('')+'</div>'+
     '<div class="fzlabs">'+['x','x5','ae','ve'].map(lab).join('')+'</div>'+
     '<div class="msub">~'+z.flood.elev+' ft elevation (est.) · Evac zone '+z.flood.evac+' (est.) · '+z.flood.ian+'</div>'+
-    '<div class="msub">X = minimal risk · Shaded X = moderate (0.2%/yr) · AE/A = high risk — insurance required with a mortgage · VE = coastal wave zone · Source: FEMA effective flood maps (NFHL), sampled Jul 2026</div>'+
+    '<div class="msub">X = minimal risk · Shaded X = moderate (0.2%/yr) · AE/A = high risk — flood insurance typically required with a mortgage · VE = coastal wave zone · Source: FEMA effective flood maps (NFHL), sampled Jul 2026</div>'+
     '</div></div>';
 }
 function schoolBlock(z){
@@ -991,7 +1003,7 @@ function select(id){
       '<span class="bdg est">est. data v0.9</span>';
   $('#cBody').innerHTML=
     '<div class="blurb">'+z.blurb+'</div>'+
-    row('💧','Utilities & assessments',z.util.line,ASSESS[z.assess])+
+    row('💧','Utilities & assessments (est.)',z.util.line,ASSESS[z.assess]+' · Status est. — verify parcel with the City')+
     floodBlock(z)+
     row('⛵','Boating',z.boat.label+(z.boat.minN?' · '+z.boat.min+' to open water':''),
         'Sailboat (no bridges): '+SAIL_T[z.boat.sail]+(z.boat.note?' · '+z.boat.note:''))+
@@ -1005,6 +1017,7 @@ function select(id){
   $('#cCmp').style.display='';
   $('#cCmp').textContent=state.cmp.includes(id)?'✓ In Compare':'+ Compare';
   $('#card').classList.add('open');
+  $('#cBody').scrollTop=0;
   hideHint();
   try{history.replaceState(null,'','#z='+id)}catch(e){}
   applyAll();
@@ -1012,8 +1025,9 @@ function select(id){
 function selectSub(id){
   const s=SUBS.find(x=>x.id===id); if(!s) return;
   const parent=ZONES.find(z=>z.id===s.parent);
-  state.selSub=id;
+  state.selSub=id; state.sel=null;
   SUBS.forEach(x=>x.layer.setStyle(subStyle(x,x.id===id)));
+  applyAll();
   $('#cName').textContent=s.name;
   $('#cBadges').innerHTML='<span class="bdg gate">'+(s.kind==='gated'?'Gated community':'Named enclave')+'</span>'+
       '<span class="bdg">inside '+parent.short+'</span><span class="bdg est">est. data v0.9</span>';
@@ -1028,6 +1042,7 @@ function selectSub(id){
     '<div class="msub" style="margin-top:8px">Tap the surrounding area for full flood, school & market context: <b style="color:var(--gold)">'+parent.name+'</b></div>';
   $('#cCmp').style.display='none';
   $('#card').classList.add('open');
+  $('#cBody').scrollTop=0;
   hideHint();
   try{history.replaceState(null,'','#c='+id)}catch(e){}
 }
@@ -1041,7 +1056,7 @@ $('#cCmp').addEventListener('click',()=>{ if(state.sel) toggleCmp(state.sel); })
 function toggleCmp(id){
   const i=state.cmp.indexOf(id);
   if(i>=0) state.cmp.splice(i,1);
-  else{ if(state.cmp.length>=3){ alert('Compare holds 3 areas — remove one first.'); return; } state.cmp.push(id); }
+  else{ if(state.cmp.length>=3){ toast('Compare holds 3 areas — remove one first.'); return; } state.cmp.push(id); }
   renderTray();
   if(state.sel) $('#cCmp').textContent=state.cmp.includes(state.sel)?'✓ In Compare':'+ Compare';
 }
@@ -1063,19 +1078,19 @@ const CMPROWS=[
  ['Rent (est.)',z=>'$'+z.mkt.rent.toLocaleString()+'/mo'],
  ['For sale now (ZIP)',z=>{const m=zmk(z);return m?m.alc+' active · '+m.cutPct+'% cut':'—'}],
  ['Days on market (ZIP)',z=>{const m=zmk(z);return m?m.dom+' days median':'—'}],
- ['Utilities',z=>z.util.s==='city'?'City water & sewer':(z.util.s==='mixed'?'Mixed — verify':'Well & septic')],
- ['Assessments',z=>ASSESS[z.assess]],
+ ['Utilities (est.)',z=>z.util.s==='city'?'City water & sewer':(z.util.s==='mixed'?'Mixed — verify':'Well & septic')],
+ ['Assessments (est.)',z=>ASSESS[z.assess]],
  ['Flood zones (FEMA)',z=>fxLine(z.flood.fx)],
- ['Elevation',z=>'~'+z.flood.elev+' ft'],
+ ['Elevation (est.)',z=>'~'+z.flood.elev+' ft'],
  ['Boating',z=>z.boat.label],
  ['Sailboat (no bridges)',z=>SAIL_T[z.boat.sail]],
- ['To open water',z=>z.boat.min],
+ ['To open water (est.)',z=>z.boat.min],
  ['Schools E/M/H (est.)',z=>z.schools.e[1]+' / '+z.schools.m[1]+' / '+z.schools.h[1]],
- ['Median year built',z=>z.ch.yb],
- ['Vacant lots',z=>z.ch.vac+'%'],
- ['HOA',z=>HOA[z.ch.hoa]],
- ['Seasonal share',z=>SEA_T[z.ch.sea]],
- ['RSW / Beach',z=>z.d.rsw+'m / '+z.d.beach+'m']
+ ['Median year built (est.)',z=>z.ch.yb],
+ ['Vacant lots (est.)',z=>z.ch.vac+'%'],
+ ['HOA (est.)',z=>HOA[z.ch.hoa]],
+ ['Seasonal share (est.)',z=>SEA_T[z.ch.sea]],
+ ['RSW / Beach (est.)',z=>z.d.rsw+'m / '+z.d.beach+'m']
 ];
 function openCmp(){
   if(state.cmp.length<2) return;
@@ -1083,11 +1098,11 @@ function openCmp(){
   $('#cmpBody').innerHTML='<table class="cmp"><tr><td class="rl"></td>'+
     zs.map(z=>'<th>'+z.name+'</th>').join('')+'</tr>'+
     CMPROWS.map(r=>'<tr><td class="rl">'+r[0]+'</td>'+zs.map(z=>'<td>'+r[1](z)+'</td>').join('')+'</tr>').join('')+
-    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">All figures are v0.9 planning estimates — verify before relying on them.</p>';
+    '</table><p style="color:var(--muted);font-size:11.5px;margin-top:10px">Flood (FEMA) and For-sale (realtor.com) rows are official data; all other figures are v0 planning estimates — verify before relying on them.</p>';
   $('#cmpModal').classList.add('open');
 }
 $('#cmpBtn').addEventListener('click',()=>{ if(state.cmp.length>=2) openCmp();
-  else alert('Tap areas on the map, then “+ Compare” on their scorecards (need at least 2).'); });
+  else toast('Tap areas on the map, then “+ Compare” on their scorecards — need at least 2.'); });
 
 /* ---------------- modals / panel / tv ---------------- */
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$('#'+b.dataset.close).classList.remove('open')));
@@ -1096,8 +1111,11 @@ $('#infoBtn').addEventListener('click',()=>$('#infoModal').classList.add('open')
 $('#dataBadge').addEventListener('click',()=>$('#infoModal').classList.add('open'));
 $('#fabPanel').addEventListener('click',()=>$('#panel').classList.add('open'));
 $('#panelX').addEventListener('click',()=>$('#panel').classList.remove('open'));
+let _lastMobile=null;
 function layoutInit(){
   const mobile=window.innerWidth<=880;
+  if(mobile===_lastMobile) return;
+  _lastMobile=mobile;
   $('#panelX').style.display=mobile?'block':'none';
   if(!mobile) $('#panel').classList.add('open'); else $('#panel').classList.remove('open');
 }
@@ -1109,9 +1127,19 @@ $('#tvBtn').addEventListener('click',()=>{
   setTimeout(()=>map.invalidateSize(),350);
 });
 
-function hideHint(){ const h=$('#hint'); if(h.classList.contains('show')){ h.classList.remove('show'); localStorage.setItem('aiq_hint','1'); } }
+function hideHint(){ const h=$('#hint'); if(h.classList.contains('show')){ h.classList.remove('show'); sSet('aiq_hint','1'); } }
+function toast(m){ const h=$('#hint'); h.textContent=m; h.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>h.classList.remove('show'),3400); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){
+  $('#cmpModal').classList.remove('open'); $('#infoModal').classList.remove('open');
+  if($('#card').classList.contains('open')){ $('#card').classList.remove('open');
+    state.sel=null; state.selSub=null; SUBS.forEach(s=>s.layer.setStyle(subStyle(s,false))); applyAll(); } } });
+document.addEventListener('fullscreenchange',()=>{ const on=!!document.fullscreenElement;
+  document.body.classList.toggle('tv',on); $('#tvBtn').textContent=on?'Exit TV':'TV Mode';
+  setTimeout(()=>map.invalidateSize(),300); });
+if(BRAND.brokerage){ $('#gBrok').textContent=BRAND.brokerage+' · '; $('#mBrok').textContent=' · '+BRAND.brokerage; }
 applyAll();
-if(!localStorage.getItem('aiq_hint')) $('#hint').classList.add('show');
+if(!sGet('aiq_hint')) $('#hint').classList.add('show');
 try{
   const h=location.hash.match(/^#(z|c)=([a-z_]+)/);
   if(h){ if(h[1]==='z') select(h[2]); else selectSub(h[2]); }
