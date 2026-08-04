@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Softwave Therapy — Vibrant Health & Wellness, Cape Coral FL</title>
+<meta name="description" content="FDA-cleared Softwave therapy in Cape Coral. Non-invasive, patented shockwave technology that stimulates healing, reduces pain and improves tissue function — trusted by top medical institutions." />
+<meta name="theme-color" content="#065C8C" />
+<link rel="icon" type="image/png" href="img/mark.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .sw-hero { background: linear-gradient(135deg, #FFF4EC 0%, var(--blue-tint) 100%); padding: 4.5rem 0; overflow: hidden; }
+  .sw-hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 3.5rem; align-items: center; }
+  @media (max-width: 860px) { .sw-hero-grid { grid-template-columns: 1fr; } }
+  .sw-wave {
+    border-radius: var(--radius-lg); background: var(--blue-deep); box-shadow: var(--shadow-lg);
+    padding: 2.4rem; color: #fff; position: relative; overflow: hidden;
+  }
+  .sw-wave svg.wave { width: 100%; height: auto; display: block; }
+  .sw-wave .pulse-label { font-family: var(--font-display); font-style: italic; font-size: 1.15rem; color: #FFD9A8; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; counter-reset: step; }
+  @media (max-width: 780px) { .steps { grid-template-columns: 1fr; } }
+  .step {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 1.8rem 1.6rem; position: relative;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .step:hover { transform: translateY(-5px); box-shadow: var(--shadow-pop); }
+  .step::before {
+    counter-increment: step; content: counter(step, decimal-leading-zero);
+    font-family: var(--font-display); font-style: italic; font-size: 2rem; font-weight: 700;
+    display: block; margin-bottom: .6rem;
+    background: linear-gradient(135deg, var(--orange), var(--pink));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .cond-grid { display: flex; flex-wrap: wrap; gap: .7rem; }
+  .cond {
+    padding: .55rem 1.1rem; border-radius: 999px; background: #fff; border: 1px solid var(--line);
+    font-weight: 600; font-size: .92rem; color: var(--ink);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .cond:hover { transform: translateY(-2px); border-color: var(--orange); box-shadow: var(--shadow); }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="wrap">
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.71 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+      <a href="tel:+12397896959">(239) 789-6959</a>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="open-status">&nbsp;</span>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      1216 SW 4th St, Cape Coral, FL
+    </span>
+  </div>
+</div>
+
+<!-- Nav -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="logo">
+      <img src="img/mark.png" alt="Vibrant Health & Wellness logo" />
+      <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="index.html">Home</a>
+      <a href="team.html">Our Team</a>
+      <a href="services.html">Services</a>
+      <a href="softwave.html" class="active">Softwave</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://drkassandrafrancis.janeapp.com/" class="btn btn-primary" target="_blank" rel="noopener">Book Now</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="sw-hero">
+  <div class="wrap sw-hero-grid">
+    <div class="reveal">
+      <span class="eyebrow" style="color:var(--orange);">FDA-cleared technology</span>
+      <h1>Healing at the <span class="grad-word">speed of sound.</span></h1>
+      <p style="font-size:1.15rem;">SoftWave Therapy is a cutting-edge, non-invasive treatment that uses patented shockwave technology to stimulate healing, reduce pain, and improve tissue function — trusted by top medical institutions nationwide.</p>
+      <div style="display:flex; gap:.8rem; flex-wrap:wrap; margin-top:1.4rem;">
+        <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-primary">Book a Softwave session</a>
+        <a href="#how" class="btn btn-ghost">How it works</a>
+      </div>
+    </div>
+    <div class="sw-wave reveal" style="transition-delay:.1s">
+      <div class="pulse-label">One pulse. Thousands of cells activated.</div>
+      <svg class="wave" viewBox="0 0 400 140" fill="none" aria-hidden="true">
+        <path d="M0 70 H60 L75 30 L95 110 L115 45 L130 90 L145 70 H200 L215 20 L240 120 L260 40 L275 95 L290 70 H400" stroke="url(#swgrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <animate attributeName="stroke-dasharray" from="0 1200" to="1200 0" dur="2.6s" repeatCount="indefinite" />
+        </path>
+        <defs>
+          <linearGradient id="swgrad" x1="0" y1="0" x2="400" y2="0" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0E86C8"/><stop offset=".4" stop-color="#0FB5A6"/><stop offset=".7" stop-color="#F5A623"/><stop offset="1" stop-color="#F76F35"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <p style="color:rgba(255,255,255,.75); font-size:.92rem; margin:0.6rem 0 0;">Electrohydraulic shockwaves reach injured tissue and kick-start your body's own repair response — no needles, no surgery, no downtime.</p>
+    </div>
+  </div>
+</section>
+
+<div class="ribbon"></div>
+
+<!-- Benefits -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Why patients love it</span>
+      <h2>Big relief. <span class="grad-word">Zero downtime.</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <h3>Non-invasive & drug-free</h3>
+        <p>No needles, no incisions, no medication. Softwave works by waking up your body's own healing response — not masking the pain.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.1s">
+        <h3>Fast sessions, fast results</h3>
+        <p>A typical treatment takes just minutes, and many patients report meaningful pain relief beginning with their very first visit.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.2s">
+        <h3>Backed by real medicine</h3>
+        <p>FDA-cleared and used by leading medical institutions for musculoskeletal conditions, chronic wounds, and inflammation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how" style="background: var(--bg-2); scroll-margin-top: 90px;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">How it works</span>
+      <h2>Three steps to recovery.</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <h3>We map the pain</h3>
+        <p>The applicator doubles as a diagnostic tool — as we move across the area, your feedback pinpoints exactly where the injured tissue lives.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.1s">
+        <h3>Waves go to work</h3>
+        <p>Patented electrohydraulic shockwaves penetrate deep into the tissue, increasing blood flow and recruiting your body's own stem cells to the area.</p>
+      </div>
+      <div class="step reveal" style="transition-delay:.2s">
+        <h3>Your body heals</h3>
+        <p>Over the following days and weeks, the regenerative response continues — reducing inflammation and rebuilding healthier tissue.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Conditions -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">What it helps</span>
+      <h2>Commonly treated conditions.</h2>
+      <p>Softwave shines on stubborn musculoskeletal problems — especially the ones that haven't responded to anything else.</p>
+    </div>
+    <div class="cond-grid reveal">
+      <span class="cond">Back pain</span>
+      <span class="cond">Neck pain</span>
+      <span class="cond">Shoulder pain & rotator cuff</span>
+      <span class="cond">Knee pain</span>
+      <span class="cond">Plantar fasciitis</span>
+      <span class="cond">Tennis & golfer's elbow</span>
+      <span class="cond">Tendon & ligament injuries</span>
+      <span class="cond">Sports injuries</span>
+      <span class="cond">Chronic inflammation</span>
+      <span class="cond">Slow-healing wounds</span>
+      <span class="cond">Muscle strains</span>
+      <span class="cond">Joint pain</span>
+    </div>
+    <p class="reveal" style="text-align:center; margin-top:2rem;">Not sure if Softwave is right for you? <a href="contact.html"><strong>Ask us</strong></a> — we'll give you a straight answer.</p>
+  </div>
+</section>
+
+<!-- CTA banner -->
+<section style="padding-top:0;">
+  <div class="wrap">
+    <div class="cta-banner reveal">
+      <h2>Feel the <span class="grad-word">wave</span> for yourself.</h2>
+      <p>Book a Softwave session and find out why patients call it a game-changer for stubborn pain.</p>
+      <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-gold">
+        Book a Softwave session
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="index.html" class="logo" style="margin-bottom:1rem;">
+          <img src="img/mark.png" alt="" />
+          <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+        </a>
+        <p style="color:rgba(255,255,255,.6); font-size:.92rem; max-width:24rem;">Whole-body chiropractic and wellness care in Cape Coral, Florida. Built for families, athletes, and everyone in between.</p>
+        <div class="foot-social">
+          <a href="https://www.instagram.com/vibranthealthswfl/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.facebook.com/vibranthealthswfl" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h5>Visit</h5>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">1216 SW 4th St, Ste 6</a>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">Cape Coral, FL 33991</a>
+        <a href="tel:+12397896959">(239) 789-6959</a>
+        <a href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a href="services.html">Services</a>
+        <a href="team.html">Our team</a>
+        <a href="softwave.html">Softwave therapy</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div>
+        <h5>Get started</h5>
+        <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book online</a>
+        <a href="contact.html">Hours & location</a>
+        <a href="index.html#testimonials">Patient stories</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span data-year></span> Vibrant Health and Wellness. All rights reserved.</span>
+      <span>Cape Coral, FL · Southwest Florida</span>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

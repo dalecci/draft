@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Contact — Vibrant Health & Wellness, Cape Coral FL</title>
+<meta name="description" content="Get in touch with Vibrant Health and Wellness in Cape Coral, FL. Call (239) 789-6959, email frontdesk@vibranthealthswfl.com, or book online in under two minutes." />
+<meta name="theme-color" content="#065C8C" />
+<link rel="icon" type="image/png" href="img/mark.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .contact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+  @media (max-width: 860px) { .contact-cards { grid-template-columns: 1fr; } }
+  .ccard {
+    --c: var(--blue-bright);
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 2rem 1.8rem; text-align: center;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .ccard:hover { transform: translateY(-6px); box-shadow: var(--shadow-pop); }
+  .ccard .svc-icon { margin: 0 auto 1.1rem; }
+  .ccard h3 { margin-bottom: .3rem; }
+  .ccard p { margin-bottom: .3rem; font-size: .95rem; }
+  .ccard a.big { font-weight: 800; font-size: 1.12rem; color: var(--c); }
+  .map-big { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid var(--line); aspect-ratio: 16/7; }
+  .map-big iframe { width: 100%; height: 100%; border: 0; display: block; }
+  @media (max-width: 720px) { .map-big { aspect-ratio: 4/3; } }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="wrap">
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.71 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+      <a href="tel:+12397896959">(239) 789-6959</a>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="open-status">&nbsp;</span>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      1216 SW 4th St, Cape Coral, FL
+    </span>
+  </div>
+</div>
+
+<!-- Nav -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="logo">
+      <img src="img/mark.png" alt="Vibrant Health & Wellness logo" />
+      <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="index.html">Home</a>
+      <a href="team.html">Our Team</a>
+      <a href="services.html">Services</a>
+      <a href="softwave.html">Softwave</a>
+      <a href="contact.html" class="active">Contact</a>
+      <a href="https://drkassandrafrancis.janeapp.com/" class="btn btn-primary" target="_blank" rel="noopener">Book Now</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="prism-bg" aria-hidden="true">
+    <i style="left:8%;  top:30%; background:var(--pink);   animation-delay:0s;"></i>
+    <i style="left:30%; top:75%; background:var(--teal);   animation-delay:1.2s;"></i>
+    <i style="left:70%; top:20%; background:var(--yellow); animation-delay:.6s;"></i>
+    <i style="left:88%; top:65%; background:var(--purple); animation-delay:2s;"></i>
+  </div>
+  <div class="wrap reveal">
+    <span class="eyebrow">Get in touch</span>
+    <h1>Say <span class="grad-word">hello.</span></h1>
+    <p>Questions, bookings, or just want to know if we can help with what you've got going on — reach out any way you like. A real human answers.</p>
+  </div>
+</section>
+
+<!-- Contact cards -->
+<section style="padding-top: 2.5rem;">
+  <div class="wrap">
+    <div class="contact-cards">
+      <div class="ccard reveal" style="--c:var(--blue-bright);">
+        <div class="svc-icon" style="color:var(--blue-bright);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.71 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.71A2 2 0 0 1 22 16.92z"/></svg></div>
+        <h3>Call us</h3>
+        <p>Mon–Thu during office hours</p>
+        <a class="big" href="tel:+12397896959">(239) 789-6959</a>
+      </div>
+      <div class="ccard reveal" style="--c:var(--teal); transition-delay:.1s">
+        <div class="svc-icon" style="color:var(--teal);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+        <h3>Email us</h3>
+        <p>We'll get back to you quickly</p>
+        <a class="big" href="mailto:frontdesk@vibranthealthswfl.com" style="font-size:.98rem;">frontdesk@vibranthealthswfl.com</a>
+      </div>
+      <div class="ccard reveal" style="--c:var(--pink); transition-delay:.2s">
+        <div class="svc-icon" style="color:var(--pink);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <h3>Book online</h3>
+        <p>Under two minutes, any time</p>
+        <a class="big" href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Open booking page →</a>
+      </div>
+    </div>
+
+    <div class="visit-grid">
+      <div class="visit-info reveal">
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div>
+            <strong>Address</strong>
+            <span>1216 SW 4th St, Suite 6<br>Cape Coral, FL 33991</span>
+          </div>
+        </div>
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div style="flex:1;">
+            <strong>Hours</strong>
+            <ul class="hours-list">
+              <li data-day="1"><span>Monday</span><span>9:00 AM – 5:30 PM</span></li>
+              <li data-day="2"><span>Tuesday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="3"><span>Wednesday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="4"><span>Thursday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="5"><span>Friday</span><span>Closed</span></li>
+              <li data-day="6"><span>Saturday</span><span>Closed</span></li>
+              <li data-day="0"><span>Sunday</span><span>Closed</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          <div>
+            <strong>Follow along</strong>
+            <span>
+              <a href="https://www.instagram.com/vibranthealthswfl/" target="_blank" rel="noopener">@vibranthealthswfl on Instagram</a><br>
+              <a href="https://www.facebook.com/vibranthealthswfl" target="_blank" rel="noopener">Vibrant Health on Facebook</a>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="map-frame reveal" style="aspect-ratio:auto; min-height:100%;">
+        <iframe
+          src="https://www.google.com/maps?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Vibrant Health and Wellness — Cape Coral, FL"
+          style="min-height:420px;"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA banner -->
+<section>
+  <div class="wrap">
+    <div class="cta-banner reveal">
+      <h2>The fastest way in? <span class="grad-word">Book online.</span></h2>
+      <p>Pick your service, pick your time, done. New patients welcome.</p>
+      <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-gold">
+        Book your appointment
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="index.html" class="logo" style="margin-bottom:1rem;">
+          <img src="img/mark.png" alt="" />
+          <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+        </a>
+        <p style="color:rgba(255,255,255,.6); font-size:.92rem; max-width:24rem;">Whole-body chiropractic and wellness care in Cape Coral, Florida. Built for families, athletes, and everyone in between.</p>
+        <div class="foot-social">
+          <a href="https://www.instagram.com/vibranthealthswfl/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.facebook.com/vibranthealthswfl" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h5>Visit</h5>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">1216 SW 4th St, Ste 6</a>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">Cape Coral, FL 33991</a>
+        <a href="tel:+12397896959">(239) 789-6959</a>
+        <a href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a href="services.html">Services</a>
+        <a href="team.html">Our team</a>
+        <a href="softwave.html">Softwave therapy</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div>
+        <h5>Get started</h5>
+        <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book online</a>
+        <a href="contact.html">Hours & location</a>
+        <a href="index.html#testimonials">Patient stories</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span data-year></span> Vibrant Health and Wellness. All rights reserved.</span>
+      <span>Cape Coral, FL · Southwest Florida</span>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

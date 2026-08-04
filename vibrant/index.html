@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Vibrant Health & Wellness — Cape Coral Chiropractic, Softwave & Whole-Body Care</title>
+<meta name="description" content="Realize your vibrant life. Dr. Kassie Francis, DC and the Vibrant team offer chiropractic, pediatric care, Softwave therapy, bioresonance, massage, hyperbaric oxygen and more in Cape Coral, FL." />
+<meta name="theme-color" content="#065C8C" />
+<link rel="icon" type="image/png" href="img/mark.png" />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Vibrant Health & Wellness — Cape Coral, FL" />
+<meta property="og:description" content="Whole-body chiropractic care, Softwave therapy, bioresonance, massage, hyperbaric oxygen and more. Book online with the Vibrant team." />
+<meta property="og:image" content="img/vibrant-wall.jpg" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Chiropractor",
+  "name": "Vibrant Health and Wellness",
+  "image": "https://vibranthealthswfl.com/img/logo.png",
+  "telephone": "+1-239-789-6959",
+  "email": "frontdesk@vibranthealthswfl.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "1216 SW 4th St Suite 6",
+    "addressLocality": "Cape Coral",
+    "addressRegion": "FL",
+    "postalCode": "33991",
+    "addressCountry": "US"
+  },
+  "url": "https://vibranthealthswfl.com",
+  "priceRange": "$$",
+  "openingHoursSpecification": [
+    {"@type":"OpeningHoursSpecification","dayOfWeek":"Monday","opens":"09:00","closes":"17:30"},
+    {"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday","Thursday"],"opens":"08:30","closes":"18:00"}
+  ],
+  "sameAs": [
+    "https://www.instagram.com/vibranthealthswfl/",
+    "https://www.facebook.com/vibranthealthswfl"
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+
+<style>
+  /* Homepage hero */
+  .hero { padding: 4.2rem 0 5rem; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--blue-tint) 0%, #fff 90%); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 4rem; align-items: center; position: relative; }
+  .hero-sub { font-size: 1.18rem; max-width: 33rem; margin-bottom: 2rem; }
+  .hero-cta { display: flex; gap: .8rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .hero-trust { display: flex; gap: 1.2rem; align-items: center; color: var(--ink-soft); font-size: .92rem; flex-wrap: wrap; }
+  .hero-visual { position: relative; }
+  .hero-frame { aspect-ratio: 4/3.4; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); transform: rotate(1.2deg); transition: transform .5s ease; }
+  .hero-visual:hover .hero-frame { transform: rotate(0deg) scale(1.01); }
+  .hero-frame img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-badge {
+    position: absolute; bottom: -18px; left: -14px;
+    background: rgba(255,255,255,.97); backdrop-filter: blur(6px);
+    padding: .9rem 1.15rem; border-radius: 16px;
+    display: flex; align-items: center; gap: .8rem;
+    box-shadow: var(--shadow-pop); z-index: 2;
+    animation: bob 5s ease-in-out infinite alternate;
+  }
+  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+  .hero-badge .dot { width: 10px; height: 10px; border-radius: 50%; background: #22B07A; box-shadow: 0 0 0 4px rgba(34,176,122,.2); }
+  .hero-badge strong { font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--ink); }
+  .hero-badge small { color: var(--ink-soft); font-size: .8rem; display: block; }
+  .hero-chip {
+    position: absolute; top: 16px; right: -10px; z-index: 2;
+    background: #fff; border-radius: 999px; padding: .55rem 1rem;
+    font-weight: 800; font-size: .85rem; color: var(--blue-deep);
+    box-shadow: var(--shadow-pop); display: inline-flex; gap: .45rem; align-items: center;
+    animation: bob 6s 1s ease-in-out infinite alternate;
+  }
+  @media (max-width: 900px) {
+    .hero { padding: 2.6rem 0 3.4rem; }
+    .hero-grid { grid-template-columns: 1fr; gap: 2.6rem; }
+    .hero-visual { max-width: 520px; margin: 0 auto; }
+    .hero-badge { left: 6px; bottom: -14px; }
+    .hero-chip { right: 6px; }
+  }
+
+  /* Team preview */
+  .teamprev-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 4rem; align-items: center; }
+  .teamprev-photo { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); background: #000; }
+  .teamprev-photo img { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 860px) { .teamprev-grid { grid-template-columns: 1fr; gap: 2.4rem; } }
+
+  /* Approach (dark band) */
+  .approach { background: var(--blue-deep); color: rgba(255,255,255,.9); overflow: hidden; }
+  .approach h2, .approach h3 { color: #fff; }
+  .approach p { color: rgba(255,255,255,.75); }
+  .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.2rem; margin-top: 2.6rem; }
+  .ap-card { padding: 1.6rem 0 0; border-top: 3px solid; }
+  .ap-card:nth-child(1) { border-color: var(--teal); }
+  .ap-card:nth-child(2) { border-color: var(--yellow); }
+  .ap-card:nth-child(3) { border-color: var(--pink); }
+  .ap-num { font-family: var(--font-display); font-style: italic; font-size: 1.35rem; margin-bottom: .5rem; }
+  .ap-card:nth-child(1) .ap-num { color: var(--teal); }
+  .ap-card:nth-child(2) .ap-num { color: var(--yellow); }
+  .ap-card:nth-child(3) .ap-num { color: var(--pink); }
+  .ap-card h3 { font-size: 1.28rem; margin-bottom: .4rem; }
+  .ap-card p { font-size: .96rem; }
+  @media (max-width: 720px) { .approach-grid { grid-template-columns: 1fr; gap: 1.4rem; } }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="wrap">
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.71 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+      <a href="tel:+12397896959">(239) 789-6959</a>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="open-status">&nbsp;</span>
+    </span>
+    <span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      1216 SW 4th St, Cape Coral, FL
+    </span>
+  </div>
+</div>
+
+<!-- Nav -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="index.html" class="logo">
+      <img src="img/mark.png" alt="Vibrant Health & Wellness logo" />
+      <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="index.html" class="active">Home</a>
+      <a href="team.html">Our Team</a>
+      <a href="services.html">Services</a>
+      <a href="softwave.html">Softwave</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://drkassandrafrancis.janeapp.com/" class="btn btn-primary" target="_blank" rel="noopener">Book Now</a>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="prism-bg" aria-hidden="true">
+    <i style="left:4%;  top:18%; background:var(--pink);   animation-delay:0s;"></i>
+    <i style="left:12%; top:70%; background:var(--teal);   animation-delay:1.2s;"></i>
+    <i style="left:46%; top:10%; background:var(--yellow); animation-delay:.6s;"></i>
+    <i style="left:55%; top:82%; background:var(--purple); animation-delay:2s;"></i>
+    <i style="left:90%; top:24%; background:var(--green);  animation-delay:1.6s;"></i>
+    <i style="left:78%; top:6%;  background:var(--orange); animation-delay:.3s;"></i>
+  </div>
+  <div class="wrap hero-grid">
+    <div class="reveal">
+      <span class="eyebrow">Whole-body care · Cape Coral, FL</span>
+      <h1>Realize your <span class="grad-word">vibrant</span> life.</h1>
+      <p class="hero-sub">Chiropractic, Softwave, bioresonance, massage, hyperbaric oxygen and more — one team, one roof, working together to find the root cause so you can feel like yourself again.</p>
+      <div class="hero-cta">
+        <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-primary">
+          Book your first visit
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="services.html" class="btn btn-ghost">Explore services</a>
+      </div>
+      <div class="hero-trust">
+        <span class="stars">★ ★ ★ ★ ★</span>
+        <span>Loved by families across Southwest Florida</span>
+      </div>
+    </div>
+    <div class="reveal hero-visual" style="transition-delay:.1s">
+      <div class="hero-frame">
+        <img src="img/vibrant-wall.jpg" alt="The colorful prism wall inside Vibrant Health & Wellness in Cape Coral" loading="eager" />
+      </div>
+      <div class="hero-chip">✨ 9 services under one roof</div>
+      <div class="hero-badge">
+        <span class="dot"></span>
+        <div>
+          <strong>Now accepting new patients</strong>
+          <small>Book online in under two minutes</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust bar -->
+<div class="trustbar">
+  <div class="wrap grid">
+    <div><div class="trust-num" data-count="8">0</div><div class="trust-label">Specialists on staff</div></div>
+    <div><div class="trust-num" data-count="9">0</div><div class="trust-label">Services in-house</div></div>
+    <div><div class="trust-num" data-count="5.0" data-suffix="★">0★</div><div class="trust-label">Google rating</div></div>
+    <div><div class="trust-num">All ages</div><div class="trust-label">Newborn to senior</div></div>
+  </div>
+</div>
+
+<!-- Specialties marquee -->
+<div class="marquee" aria-label="What we help with">
+  <div class="marquee-track">
+    <span>Back Pain ✦ Neck Pain ✦ Sports Injuries ✦ Headaches ✦ Prenatal ✦ Pediatric ✦ Nutrition ✦ Recovery ✦&nbsp;</span>
+    <span aria-hidden="true">Back Pain ✦ Neck Pain ✦ Sports Injuries ✦ Headaches ✦ Prenatal ✦ Pediatric ✦ Nutrition ✦ Recovery ✦&nbsp;</span>
+  </div>
+</div>
+
+<!-- Services -->
+<section id="services">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">What we do</span>
+      <h2>One roof. The <span class="grad-word">whole</span> body.</h2>
+      <p>We understand the frustration of short-term fixes. That's why every specialist here collaborates on your plan — addressing root causes, not just symptoms.</p>
+    </div>
+    <div class="services-grid">
+      <div class="svc reveal" style="--c:var(--blue-bright);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M16 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/></svg></div>
+        <h3>Chiropractic Care</h3>
+        <p>Known for tackling the tough cases — connecting the dots to find the root cause of pain and dysfunction.</p>
+        <a class="svc-link" href="services.html#chiropractic">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--pink);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2 4 4 0 0 1 7 2c0 5.5-7 10-7 10z"/></svg></div>
+        <h3>Pediatric & Prenatal</h3>
+        <p>Gentle care for expecting moms, infants and kids that supports brain development and healthy growth.</p>
+        <a class="svc-link" href="services.html#pediatric">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--orange);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg></div>
+        <h3>Softwave Therapy</h3>
+        <p>FDA-cleared shockwave technology that stimulates healing and reduces pain — trusted by top medical institutions.</p>
+        <a class="svc-link" href="softwave.html">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--purple);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="21"/></svg></div>
+        <h3>Bioresonance Scanning</h3>
+        <p>Advanced scans that detect energetic imbalances, powering a personalized protocol for optimal wellness.</p>
+        <a class="svc-link" href="services.html#bioresonance">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--teal);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <h3>Massage & Lymphatic</h3>
+        <p>Deep tissue and certified lymphatic therapy to release tension, reduce swelling and boost circulation.</p>
+        <a class="svc-link" href="services.html#massage">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--green);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5M9.5 9.5h5"/></svg></div>
+        <h3>Hyperbaric Oxygen</h3>
+        <p>Relax in a pressurized chamber while pure oxygen boosts blood flow, reduces swelling and repairs tissue.</p>
+        <a class="svc-link" href="services.html#hyperbaric">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--cyan);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4.5L17.5 21 12 16.5 6.5 21l2-7.5L3 9h7z"/></svg></div>
+        <h3>Cryotherapy</h3>
+        <p>Controlled cold that fights inflammation, speeds recovery and rejuvenates skin — therapeutic and aesthetic.</p>
+        <a class="svc-link" href="services.html#cryotherapy">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--indigo);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M12 13v8M8 18h8"/></svg></div>
+        <h3>Cranial Sacral</h3>
+        <p>Gentle, hands-on release of tension in the central nervous system to calm, relax and restore.</p>
+        <a class="svc-link" href="services.html#cranial">Learn more →</a>
+      </div>
+      <div class="svc reveal" style="--c:var(--yellow);">
+        <div class="svc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20v-6a6 6 0 0 1 12 0v6"/><path d="M9 8c0-2 1.5-3 3-5 1.5 2 3 3 3 5"/></svg></div>
+        <h3>Footbath Detox</h3>
+        <p>A warm, relaxing soak that helps your body release what it doesn't need — reset from the ground up.</p>
+        <a class="svc-link" href="services.html#footbath">Learn more →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team preview -->
+<section style="background: var(--bg-2);">
+  <div class="wrap teamprev-grid">
+    <div class="teamprev-photo reveal">
+      <img src="img/team-doctors.jpg" alt="Dr. Vicki, Dr. Kassie and Dr. Carrie — the doctors of Vibrant Health & Wellness" loading="lazy" />
+    </div>
+    <div class="reveal">
+      <span class="eyebrow">Meet the team</span>
+      <h2>Three doctors. One <span class="grad-word">mission</span>.</h2>
+      <p>Dr. Kassie, Dr. Carrie and Dr. Vicki bring decades of combined experience in chiropractic, pediatric and women's health — backed by a full team of massage, lymphatic and bioresonance specialists.</p>
+      <ul class="check-list">
+        <li>Advanced training in chiropractic care and natural health</li>
+        <li>Personalized plans built around <em>you</em>, not a template</li>
+        <li>A commitment to lasting results — not quick fixes</li>
+      </ul>
+      <a href="team.html" class="btn btn-outline">Meet the full team</a>
+    </div>
+  </div>
+</section>
+
+<!-- Approach -->
+<section class="approach">
+  <div class="wrap">
+    <div class="section-head left reveal">
+      <span class="eyebrow" style="color: var(--yellow);">Our approach</span>
+      <h2>Three things we do differently.</h2>
+    </div>
+    <div class="approach-grid">
+      <div class="ap-card reveal">
+        <div class="ap-num">01</div>
+        <h3>We educate, not lecture.</h3>
+        <p>You'll leave every appointment understanding what's happening in your body — so you can make informed decisions about your health.</p>
+      </div>
+      <div class="ap-card reveal" style="transition-delay:.1s">
+        <div class="ap-num">02</div>
+        <h3>We work as one team.</h3>
+        <p>Chiropractors, massage therapists and bioresonance specialists collaborate on your plan — not in isolation.</p>
+      </div>
+      <div class="ap-card reveal" style="transition-delay:.2s">
+        <div class="ap-num">03</div>
+        <h3>We aim for the root.</h3>
+        <p>Symptom relief matters — but life-changing results come from finding and fixing the underlying cause.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Hyperbaric feature -->
+<section>
+  <div class="wrap feature">
+    <div class="feature-media reveal">
+      <span class="feature-tag">🫁 Hyperbaric Oxygen</span>
+      <img src="img/hyperbaric.jpg" alt="The hyperbaric oxygen chamber at Vibrant Health & Wellness" loading="lazy" />
+    </div>
+    <div class="reveal">
+      <span class="eyebrow">Featured therapy</span>
+      <h2>Breathe deep. <span class="grad-word">Heal deeper.</span></h2>
+      <p>Step inside and let pure oxygen do the heavy lifting. Hyperbaric therapy accelerates healing, fights inflammation, and restores your body from the inside out.</p>
+      <ul class="check-list">
+        <li>Improves blood flow and oxygen delivery to tissues</li>
+        <li>Reduces swelling and supports injury recovery</li>
+        <li>Relax comfortably — sessions feel like quiet time in a cozy pod</li>
+      </ul>
+      <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-primary">Book a session</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footbath feature -->
+<section style="padding-top: 0;">
+  <div class="wrap feature flip">
+    <div class="feature-media reveal">
+      <span class="feature-tag">🦶 Footbath Detox</span>
+      <img src="img/footbath.jpg" alt="The footbath detox room at Vibrant Health & Wellness" loading="lazy" />
+    </div>
+    <div class="reveal">
+      <span class="eyebrow">Featured therapy</span>
+      <h2>Reset from the <span class="grad-word">ground up.</span></h2>
+      <p>A warm, relaxing soak that helps your body release what it doesn't need — so you can feel lighter, clearer, and more like yourself.</p>
+      <ul class="check-list">
+        <li>Supports your body's natural detox process</li>
+        <li>Boosts energy and helps the body reset</li>
+        <li>Simple, gentle, and genuinely relaxing</li>
+      </ul>
+      <a href="https://drkassandrafrancis.janeapp.com/#/foot-detox" target="_blank" rel="noopener" class="btn btn-primary">Try a footbath detox</a>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials" id="testimonials">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Patient stories</span>
+      <h2>Real results, <span class="grad-word">real people.</span></h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi reveal">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <blockquote>"The BEST family chiropractic office! My wife and I took our newborn to watch magic happen right before our very eyes. The kindness, love and respect the team gives is unmatched."</blockquote>
+        <cite>Justin Ladd <span>Google review</span></cite>
+      </div>
+      <div class="testi reveal" style="transition-delay:.1s">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <blockquote>"To say that Dr. Kassie is amazing is an understatement. She has a set of skills I'm unsure any other doctor has. She truly cares about every person that comes in the office."</blockquote>
+        <cite>Jade Stevens <span>Google review</span></cite>
+      </div>
+      <div class="testi reveal" style="transition-delay:.2s">
+        <div class="stars">★ ★ ★ ★ ★</div>
+        <blockquote>"Dr. Kassie and her staff are amazing! She is so knowledgeable and truly loves what she does. She has been so patient with all my 'first time mom' questions and made me feel more confident."</blockquote>
+        <cite>Samantha Benkert <span>Google review</span></cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Good to know</span>
+      <h2>Frequently asked questions.</h2>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq">
+        <summary>What services do you offer?</summary>
+        <div class="faq-body"><p>Nine services under one roof: chiropractic, pediatric & prenatal chiropractic, Softwave therapy, bioresonance scanning, massage & lymphatic therapy, cranial sacral, cryotherapy, hyperbaric oxygen therapy, and footbath detox. <a href="services.html">See them all →</a></p></div>
+      </details>
+      <details class="faq">
+        <summary>How do I get started?</summary>
+        <div class="faq-body"><p>The easiest way is to <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">book online</a> — it takes about two minutes. Prefer to talk to a human? Call us at <a href="tel:+12397896959">(239) 789-6959</a> and we'll get you set up.</p></div>
+      </details>
+      <details class="faq">
+        <summary>What should I expect on my first visit?</summary>
+        <div class="faq-body"><p>A conversation first, care second. We'll take time to understand your history and goals, do a thorough evaluation, and explain what we find in plain English — then build a plan together. No pressure, no mystery.</p></div>
+      </details>
+      <details class="faq">
+        <summary>Can my infant receive chiropractic care?</summary>
+        <div class="faq-body"><p>Absolutely — pediatric care is one of our specialties. Adjustments for infants are extremely gentle (about the pressure you'd use to check a ripe tomato) and support healthy development from day one. Our team is wonderful with little ones.</p></div>
+      </details>
+      <details class="faq">
+        <summary>What makes you different?</summary>
+        <div class="faq-body"><p>Most offices offer one kind of care. We bring chiropractors, massage and lymphatic therapists, and bioresonance specialists together on one plan — so instead of bouncing between offices, your whole care team is already talking to each other.</p></div>
+      </details>
+      <details class="faq">
+        <summary>How can I contact you?</summary>
+        <div class="faq-body"><p>Call <a href="tel:+12397896959">(239) 789-6959</a>, email <a href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a>, or stop by at 1216 SW 4th St, Suite 6, Cape Coral, FL 33991.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Visit -->
+<section id="visit" style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Visit us</span>
+      <h2>Come see us in <span class="grad-word">Cape Coral.</span></h2>
+    </div>
+    <div class="visit-grid">
+      <div class="visit-info reveal">
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div>
+            <strong>Address</strong>
+            <span>1216 SW 4th St, Suite 6<br>Cape Coral, FL 33991</span>
+          </div>
+        </div>
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.37 1.9.71 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.58 2.81.71A2 2 0 0 1 22 16.92z"/></svg>
+          <div>
+            <strong>Phone</strong>
+            <span><a href="tel:+12397896959">(239) 789-6959</a></span>
+          </div>
+        </div>
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <div>
+            <strong>Email</strong>
+            <span><a href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a></span>
+          </div>
+        </div>
+        <div class="visit-row">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div style="flex:1;">
+            <strong>Hours</strong>
+            <ul class="hours-list">
+              <li data-day="1"><span>Monday</span><span>9:00 AM – 5:30 PM</span></li>
+              <li data-day="2"><span>Tuesday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="3"><span>Wednesday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="4"><span>Thursday</span><span>8:30 AM – 6:00 PM</span></li>
+              <li data-day="5"><span>Friday</span><span>Closed</span></li>
+              <li data-day="6"><span>Saturday</span><span>Closed</span></li>
+              <li data-day="0"><span>Sunday</span><span>Closed</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="map-frame reveal">
+        <iframe
+          src="https://www.google.com/maps?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991&output=embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Vibrant Health and Wellness — Cape Coral, FL"></iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA banner -->
+<section>
+  <div class="wrap">
+    <div class="cta-banner reveal">
+      <h2>Ready to feel <span class="grad-word">vibrant</span> again?</h2>
+      <p>Book online in under two minutes. New patients welcome — we'll take care of the rest.</p>
+      <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn btn-gold">
+        Book your appointment
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="index.html" class="logo" style="margin-bottom:1rem;">
+          <img src="img/mark.png" alt="" />
+          <span>Vibrant <span class="logo-sub">Health & Wellness</span></span>
+        </a>
+        <p style="color:rgba(255,255,255,.6); font-size:.92rem; max-width:24rem;">Whole-body chiropractic and wellness care in Cape Coral, Florida. Built for families, athletes, and everyone in between.</p>
+        <div class="foot-social">
+          <a href="https://www.instagram.com/vibranthealthswfl/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.facebook.com/vibranthealthswfl" target="_blank" rel="noopener" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h5>Visit</h5>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">1216 SW 4th St, Ste 6</a>
+        <a href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">Cape Coral, FL 33991</a>
+        <a href="tel:+12397896959">(239) 789-6959</a>
+        <a href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a href="services.html">Services</a>
+        <a href="team.html">Our team</a>
+        <a href="softwave.html">Softwave therapy</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div>
+        <h5>Get started</h5>
+        <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book online</a>
+        <a href="contact.html">Hours & location</a>
+        <a href="index.html#testimonials">Patient stories</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span data-year></span> Vibrant Health and Wellness. All rights reserved.</span>
+      <span>Cape Coral, FL · Southwest Florida</span>
+    </div>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
