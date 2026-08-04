@@ -50,14 +50,16 @@
 <style>
   /* Homepage hero */
   .hero { padding: 4.2rem 0 5rem; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--blue-tint) 0%, #fff 90%); }
-  .hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 4rem; align-items: center; position: relative; }
+  .hero-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 3.2rem; align-items: center; position: relative; }
+  .hero .wrap { max-width: 1240px; }
+  .hero h1 { font-size: clamp(2.4rem, 5vw, 3.9rem); }
   .hero-sub { font-size: 1.18rem; max-width: 33rem; margin-bottom: 2rem; }
   .hero-cta { display: flex; gap: .8rem; flex-wrap: wrap; margin-bottom: 2rem; }
   .hero-trust { display: flex; gap: 1.2rem; align-items: center; color: var(--ink-soft); font-size: .92rem; flex-wrap: wrap; }
   .hero-visual { position: relative; }
-  .hero-frame { aspect-ratio: 4/3.4; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); transform: rotate(1.2deg); transition: transform .5s ease; }
+  .hero-frame { aspect-ratio: 16/9.5; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg); transform: rotate(.8deg); transition: transform .5s ease; background: var(--blue-tint); }
   .hero-visual:hover .hero-frame { transform: rotate(0deg) scale(1.01); }
-  .hero-frame img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
   .hero-badge {
     position: absolute; bottom: -18px; left: -14px;
     background: rgba(255,255,255,.97); backdrop-filter: blur(6px);
@@ -80,7 +82,7 @@
   @media (max-width: 900px) {
     .hero { padding: 2.6rem 0 3.4rem; }
     .hero-grid { grid-template-columns: 1fr; gap: 2.6rem; }
-    .hero-visual { max-width: 520px; margin: 0 auto; }
+    .hero-visual { width: 100%; margin: 0 auto; }
     .hero-badge { left: 6px; bottom: -14px; }
     .hero-chip { right: 6px; }
   }
@@ -152,14 +154,6 @@
 
 <!-- Hero -->
 <section class="hero">
-  <div class="prism-bg" aria-hidden="true">
-    <i style="left:4%;  top:18%; background:var(--pink);   animation-delay:0s;"></i>
-    <i style="left:12%; top:70%; background:var(--teal);   animation-delay:1.2s;"></i>
-    <i style="left:46%; top:10%; background:var(--yellow); animation-delay:.6s;"></i>
-    <i style="left:55%; top:82%; background:var(--purple); animation-delay:2s;"></i>
-    <i style="left:90%; top:24%; background:var(--green);  animation-delay:1.6s;"></i>
-    <i style="left:78%; top:6%;  background:var(--orange); animation-delay:.3s;"></i>
-  </div>
   <div class="wrap hero-grid">
     <div class="reveal">
       <span class="eyebrow">Whole-body care · Cape Coral, FL</span>
@@ -179,7 +173,9 @@
     </div>
     <div class="reveal hero-visual" style="transition-delay:.1s">
       <div class="hero-frame">
-        <img src="img/vibrant-wall.jpg" alt="The colorful prism wall inside Vibrant Health & Wellness in Cape Coral" loading="eager" />
+        <video autoplay muted loop playsinline preload="metadata" poster="img/hero-poster.jpg" aria-label="Gentle pediatric chiropractic care at Vibrant Health & Wellness">
+          <source src="img/hero.mp4" type="video/mp4" />
+        </video>
       </div>
       <div class="hero-chip">✨ 9 services under one roof</div>
       <div class="hero-badge">
