@@ -324,12 +324,19 @@
   @media (max-width: 720px) { .map-frame { aspect-ratio: 4/3; } }
 
   /* Final CTA */
-  .final { text-align: center; border-top: 1px solid var(--line-soft); }
-  .final .kicker { color: var(--blue); }
+  .final { text-align: center; border-top: 1px solid var(--line-soft); position: relative; overflow: hidden; }
+  .final::before {
+    content: ''; position: absolute; top: -180px; left: 50%; transform: translateX(-50%);
+    width: 760px; height: 560px; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(214, 69, 128, .1), transparent 65%);
+  }
+  .final .wrap { position: relative; }
+  .final .kicker { color: var(--pink); }
   .final h2 { font-size: clamp(2rem, 5.4vw, 3.6rem); letter-spacing: .1em; margin-bottom: 1.6rem; }
+  .final h2 .pink { color: var(--pink); }
   .final p { max-width: 32rem; margin: 0 auto 2.6rem; }
-  .final .btn.solid { background: var(--blue-deep); border-color: var(--blue-deep); color: #FFFDF9; }
-  .final .btn.solid:hover { background: transparent; color: var(--blue-deep); }
+  .final .btn.solid { background: var(--pink); border-color: var(--pink); color: #FFFDF9; }
+  .final .btn.solid:hover { background: transparent; color: var(--pink); }
 
   /* Footer */
   footer { border-top: 1px solid var(--line-soft); padding: 3.4rem 0 2.4rem; }
@@ -707,7 +714,7 @@
 <section class="final">
   <div class="wrap reveal">
     <span class="kicker">New Patients Welcome</span>
-    <h2>Ready To Feel<br />Vibrant Again?</h2>
+    <h2>Ready To Feel<br /><span class="pink">Vibrant Again?</span></h2>
     <p>Book online in under two minutes. New patients welcome — we'll take care of the rest.</p>
     <a class="btn solid" href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book Your Appointment</a>
   </div>
