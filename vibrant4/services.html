@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Services — Vibrant Health & Wellness, Cape Coral FL</title>
-<meta name="description" content="Chiropractic, pediatric & prenatal care, Softwave therapy, bioresonance, massage & lymphatic therapy, cranial sacral, cryotherapy, hyperbaric oxygen and footbath detox — all under one roof in Cape Coral, FL." />
+<meta name="description" content="Back pain, neck pain, sciatica, headaches, prenatal and pediatric care — nine services under one roof in Cape Coral, FL. Chiropractic, Softwave, bioresonance, massage and more." />
 <meta name="theme-color" content="#F2EEE7" />
 <link rel="icon" type="image/png" href="img/mark.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,11 +21,23 @@
     <span>Vibrant</span>
   </a>
   <div class="nav-links" id="navLinks">
-    <a href="services.html" class="active">Services</a>
+    <div class="has-drop">
+      <a href="services.html" class="active">Services <span class="caret">▾</span></a>
+      <div class="drop">
+        <a style="--dot:var(--blue)" href="services/chiropractic.html">Chiropractic</a>
+        <a style="--dot:var(--pink)" href="services/pediatric.html">Pediatric &amp; Prenatal</a>
+        <a style="--dot:var(--orange)" href="services/softwave.html">Softwave</a>
+        <a style="--dot:var(--purple)" href="services/bioresonance.html">Bioresonance</a>
+        <a style="--dot:var(--green)" href="services/massage.html">Massage &amp; Lymphatic</a>
+        <a style="--dot:var(--blue-deep)" href="services/cranial-sacral.html">Cranial Sacral</a>
+        <a style="--dot:var(--blue)" href="services/cryotherapy.html">Cryotherapy</a>
+        <a style="--dot:var(--green)" href="services/hyperbaric.html">Hyperbaric Oxygen</a>
+        <a style="--dot:var(--gold)" href="services/footbath.html">Footbath Detox</a>
+        <a class="drop-all" style="--dot:var(--ink)" href="services.html">All Services →</a>
+      </div>
+    </div>
     <a href="team.html">Our Team</a>
-    <a href="index.html#testimonials">Stories</a>
-    <a href="index.html#faq">FAQ</a>
-    <a href="index.html#visit">Visit</a>
+    <a href="contact.html">Contact</a>
     <a href="tel:+12397896959">(239) 789-6959</a>
     <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener" class="btn">Book Now</a>
   </div>
@@ -34,26 +46,78 @@
   </button>
 </nav>
 
-<!-- Page hero -->
-<header class="page-hero">
+<!-- Page hero (short) -->
+<header class="page-hero" style="padding-bottom: 3rem;">
   <div class="wrap reveal">
     <span class="kicker">Our Services</span>
     <h1>Nine Ways To<br />Feel Vibrant.</h1>
-    <p class="lead">Instead of bouncing between offices, every service you need lives under one roof — and every specialist collaborates on your plan. Long-term healing, not short-term fixes.</p>
+    <p class="lead">Every service under one roof — and every specialist collaborating on your plan.</p>
   </div>
 </header>
 
-<!-- Specialties -->
-<div class="specialties" style="border-top: 1px solid var(--line-soft);">
-  <div class="wrap reveal">
-    <span class="kicker">We Specialize In</span>
-    <p>Back Pain<span>✦</span>Neck Pain<span>✦</span>Sports Injuries<span>✦</span>Headaches<span>✦</span>Prenatal<span>✦</span>Pediatric<span>✦</span>Nutrition<span>✦</span>Recovery</p>
-  </div>
+<!-- Photo strip -->
+<div class="photo-strip reveal">
+  <div><img src="img/svc-chiro.jpg" alt="Chiropractic care at Vibrant" loading="eager" /></div>
+  <div><img src="img/svc-softwave.jpg" alt="Softwave therapy at Vibrant" loading="eager" /></div>
+  <div><img src="img/svc-massage-warm.jpg" alt="Massage therapy at Vibrant" loading="eager" /></div>
 </div>
 
-<!-- Service rows -->
+<!-- Conditions we treat best -->
 <section>
   <div class="wrap">
+    <div class="shead reveal">
+      <span class="kicker">Start With Your Symptom</span>
+      <h2>What We Treat Best.</h2>
+      <p>Don't let these issues control your life. If it's on this list, you're in the right place — tap a condition and we'll show you the care built for it.</p>
+    </div>
+    <div class="cond-grid reveal">
+      <a class="cond-card" style="--dot: var(--blue);" href="services/chiropractic.html">
+        <h3>Back Pain</h3><span>Chiropractic Care →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--blue);" href="services/chiropractic.html">
+        <h3>Neck Pain</h3><span>Chiropractic Care →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--blue);" href="services/chiropractic.html">
+        <h3>Sciatica</h3><span>Chiropractic Care →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--blue-deep);" href="services/cranial-sacral.html">
+        <h3>Headaches &amp; Migraines</h3><span>Cranial Sacral →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--orange);" href="services/softwave.html">
+        <h3>Sports Injuries</h3><span>Softwave Therapy →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--orange);" href="services/softwave.html">
+        <h3>Arthritis &amp; Joint Pain</h3><span>Softwave Therapy →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--orange);" href="services/softwave.html">
+        <h3>Plantar Fasciitis &amp; Tendonitis</h3><span>Softwave Therapy →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--pink);" href="services/pediatric.html">
+        <h3>Prenatal Discomfort</h3><span>Pediatric &amp; Prenatal →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--pink);" href="services/pediatric.html">
+        <h3>Colic, Reflux &amp; Baby Sleep</h3><span>Pediatric &amp; Prenatal →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--green);" href="services/hyperbaric.html">
+        <h3>Chronic Inflammation</h3><span>Hyperbaric Oxygen →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--green);" href="services/massage.html">
+        <h3>Swelling &amp; Lymphedema</h3><span>Massage &amp; Lymphatic →</span>
+      </a>
+      <a class="cond-card" style="--dot: var(--purple);" href="services/bioresonance.html">
+        <h3>Fatigue &amp; Mystery Symptoms</h3><span>Bioresonance →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Service rows -->
+<section style="background: var(--bg-2);">
+  <div class="wrap">
+    <div class="shead reveal">
+      <span class="kicker">The Full Menu</span>
+      <h2>Every Service. One Roof.</h2>
+    </div>
     <div class="svc-rows reveal">
 
       <a class="svc-row" href="services/chiropractic.html" style="--dot: var(--blue);">
@@ -128,7 +192,7 @@
   <div class="wrap reveal">
     <span class="kicker">Not Sure Where To Start?</span>
     <h2>We'll Point You<br /><span class="pink">The Right Way.</span></h2>
-    <p>Don't let pain control your life. Book a first visit and our whole-body team will build the right plan — no guesswork required.</p>
+    <p>Book a first visit and our whole-body team will build the right plan — no guesswork required.</p>
     <a class="btn solid" href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book Your First Visit</a>
   </div>
 </section>
@@ -157,6 +221,7 @@
         <h5>Explore</h5>
         <a href="services.html">Services</a>
         <a href="team.html">Our Team</a>
+        <a href="contact.html">Contact</a>
         <a href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book Online</a>
         <a href="https://www.instagram.com/vibranthealthswfl/" target="_blank" rel="noopener">Instagram</a>
         <a href="https://www.facebook.com/vibranthealthswfl" target="_blank" rel="noopener">Facebook</a>
