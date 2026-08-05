@@ -45,6 +45,13 @@
     --text-dim: #989084;
     --line: rgba(30, 27, 24, .16);
     --line-soft: rgba(30, 27, 24, .09);
+    --blue: #0E86C8;
+    --blue-deep: #065C8C;
+    --gold: #D9A441;
+    --green: #2FA36B;
+    --orange: #E2703A;
+    --pink: #D64580;
+    --purple: #7A4FD0;
     --font-display: 'Marcellus', Georgia, serif;
     --font-body: 'Jost', system-ui, sans-serif;
   }
@@ -241,6 +248,21 @@
   .feature li { padding: .95rem 0; border-bottom: 1px solid var(--line-soft); font-size: .95rem; letter-spacing: .03em; display: flex; gap: 1rem; align-items: baseline; }
   .feature li::before { content: '—'; color: var(--text-dim); }
 
+  /* Team band */
+  .team-band { position: relative; overflow: hidden; background: #000; }
+  .team-band img { width: 100%; max-height: 640px; object-fit: cover; object-position: center 20%; opacity: .9; }
+  .team-overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    background: linear-gradient(90deg, rgba(10, 8, 6, .68) 0%, rgba(10, 8, 6, .25) 45%, transparent 70%);
+    padding: 3rem;
+  }
+  @media (max-width: 720px) { .team-overlay { padding: 1.6rem; justify-content: flex-end; background: linear-gradient(180deg, transparent 30%, rgba(10, 8, 6, .8) 100%); } }
+  .team-overlay .kicker { color: rgba(255, 255, 255, .72); }
+  .team-overlay h2 { font-size: clamp(1.5rem, 3.4vw, 2.4rem); margin-bottom: .8rem; color: #fff; }
+  .team-overlay p { max-width: 26rem; margin-bottom: 1.6rem; color: rgba(255, 252, 247, .88); }
+  .team-overlay .btn { border-color: #fff; color: #fff; }
+  .team-overlay .btn:hover { background: #fff; color: var(--ink); }
+
   /* Approach */
   .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
   @media (max-width: 820px) { .approach-grid { grid-template-columns: 1fr; gap: 2rem; } }
@@ -259,9 +281,10 @@
     color: var(--ink); max-width: 52rem; margin: 0 auto 2rem;
   }
   .quote cite { font-style: normal; font-size: .72rem; letter-spacing: .32em; text-transform: uppercase; color: var(--text-dim); }
+  .quote .stars { color: var(--gold); letter-spacing: .34em; font-size: .85rem; margin-bottom: 1.4rem; }
   .quote-dots { display: flex; gap: .8rem; justify-content: center; margin-top: 2.5rem; }
-  .quote-dots button { width: 26px; height: 1px; background: var(--line); border: 0; padding: 0; cursor: pointer; transition: background .3s ease; }
-  .quote-dots button.active { background: var(--ink); }
+  .quote-dots button { width: 26px; height: 2px; background: var(--line); border: 0; padding: 0; cursor: pointer; transition: background .3s ease; }
+  .quote-dots button.active { background: var(--blue); }
 
   /* FAQ */
   .faq-list { max-width: 780px; margin: 0 auto; border-top: 1px solid var(--line-soft); }
@@ -275,21 +298,24 @@
   }
   .faq summary:hover { opacity: .7; }
   .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: '+'; font-family: var(--font-body); font-weight: 200; font-size: 1.5rem; line-height: 1; color: var(--text-dim); transition: transform .3s ease; flex-shrink: 0; }
-  .faq[open] summary::after { transform: rotate(45deg); }
+  .faq summary::after { content: '+'; font-family: var(--font-body); font-weight: 200; font-size: 1.5rem; line-height: 1; color: var(--text-dim); transition: transform .3s ease, color .3s ease; flex-shrink: 0; }
+  .faq[open] summary::after { transform: rotate(45deg); color: var(--blue); }
+  .faq-body a { color: var(--blue-deep); border-bottom-color: rgba(14, 134, 200, .35); }
   .faq-body { padding: 0 .2rem 1.6rem; max-width: 44rem; }
   .faq-body a { border-bottom: 1px solid var(--line); }
 
   /* Visit */
   .visit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; border-top: 1px solid var(--line-soft); padding-top: 3.5rem; }
   @media (max-width: 820px) { .visit-grid { grid-template-columns: 1fr; gap: 2.4rem; } }
-  .visit-col h3 { font-size: .8rem; letter-spacing: .32em; margin-bottom: 1.4rem; color: var(--text-dim); }
+  .visit-col h3 { font-size: .8rem; letter-spacing: .32em; margin-bottom: 1.4rem; color: var(--text-dim); display: flex; align-items: center; gap: .7rem; }
+  .visit-col h3::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--dot, var(--blue)); flex-shrink: 0; }
   .visit-col p, .visit-col li { font-size: .98rem; letter-spacing: .03em; }
   .visit-col ul { list-style: none; }
   .visit-col li { display: flex; justify-content: space-between; gap: 1.4rem; padding: .3rem 0; }
   .visit-col li span:last-child { color: var(--text-dim); }
   .visit-col li.today span { color: var(--ink); }
-  .visit-col .status { margin-top: .9rem; font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); }
+  .visit-col .status { margin-top: .9rem; font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--green); font-weight: 500; }
+  .visit-col .status.closed { color: var(--orange); }
   .visit-col a.plain { color: var(--text); transition: color .3s ease; }
   .visit-col a.plain:hover { color: var(--ink); }
   .visit-col .textlink { display: inline-block; margin-top: 1.4rem; }
@@ -299,8 +325,11 @@
 
   /* Final CTA */
   .final { text-align: center; border-top: 1px solid var(--line-soft); }
+  .final .kicker { color: var(--blue); }
   .final h2 { font-size: clamp(2rem, 5.4vw, 3.6rem); letter-spacing: .1em; margin-bottom: 1.6rem; }
   .final p { max-width: 32rem; margin: 0 auto 2.6rem; }
+  .final .btn.solid { background: var(--blue-deep); border-color: var(--blue-deep); color: #FFFDF9; }
+  .final .btn.solid:hover { background: transparent; color: var(--blue-deep); }
 
   /* Footer */
   footer { border-top: 1px solid var(--line-soft); padding: 3.4rem 0 2.4rem; }
@@ -313,6 +342,8 @@
   footer a { display: block; color: var(--text); padding: .18rem 0; font-size: .94rem; transition: color .3s ease; }
   footer a:hover { color: var(--ink); }
   footer .blurb { font-size: .94rem; max-width: 24rem; }
+  .foot-dots { display: flex; gap: .55rem; margin-top: 1.3rem; }
+  .foot-dots i { width: 8px; height: 8px; border-radius: 50%; }
   .foot-copy { border-top: 1px solid var(--line-soft); padding-top: 1.6rem; display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--text-dim); }
 
   /* Reveal */
@@ -471,21 +502,16 @@
 </section>
 
 <!-- Team -->
-<section id="team" style="background: var(--bg-2);">
-  <div class="wrap feature">
-    <div class="feature-media reveal">
-      <img src="img/team-doctors.jpg" alt="Dr. Vicki, Dr. Kassie and Dr. Carrie — the doctors of Vibrant Health & Wellness" loading="lazy" style="aspect-ratio: 4/3.4; object-position: center 25%;" />
-    </div>
-    <div class="reveal">
-      <span class="kicker">Meet The Team</span>
-      <h2>Three Doctors.<br />One Mission.</h2>
-      <p>Dr. Kassie, Dr. Carrie and Dr. Vicki bring decades of combined experience in chiropractic, pediatric and women's health — backed by a full team of massage, lymphatic and bioresonance specialists.</p>
-      <ul>
-        <li>Advanced training in chiropractic care and natural health</li>
-        <li>Personalized plans built around you, not a template</li>
-        <li>A commitment to lasting results — not quick fixes</li>
-      </ul>
-      <a class="btn" href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book With The Team</a>
+<section id="team" style="padding: 0;">
+  <div class="team-band">
+    <img src="img/team-doctors.jpg" alt="Dr. Vicki, Dr. Kassie and Dr. Carrie — the doctors of Vibrant Health & Wellness" loading="lazy" />
+    <div class="team-overlay">
+      <div class="reveal">
+        <span class="kicker">Meet The Team</span>
+        <h2>Three Doctors. One Mission.</h2>
+        <p>Dr. Kassie, Dr. Carrie and Dr. Vicki bring decades of combined experience in chiropractic, pediatric and women's health — backed by a full team of massage, lymphatic and bioresonance specialists.</p>
+        <a class="btn" href="https://drkassandrafrancis.janeapp.com/" target="_blank" rel="noopener">Book With The Team</a>
+      </div>
     </div>
   </div>
 </section>
@@ -563,14 +589,17 @@
     <span class="kicker reveal">Patient Stories · Real Results, Real People</span>
     <div class="quote-stage reveal" id="quoteStage">
       <div class="quote active">
+        <div class="stars">★★★★★</div>
         <blockquote>"The BEST family chiropractic office! My wife and I took our newborn to watch magic happen right before our very eyes. The kindness, love and respect the team gives is unmatched."</blockquote>
         <cite>Justin Ladd · Google Review</cite>
       </div>
       <div class="quote">
+        <div class="stars">★★★★★</div>
         <blockquote>"To say that Dr. Kassie is amazing is an understatement. She has a set of skills I'm unsure any other doctor has. She truly cares about every person that comes in the office."</blockquote>
         <cite>Jade Stevens · Google Review</cite>
       </div>
       <div class="quote">
+        <div class="stars">★★★★★</div>
         <blockquote>"Dr. Kassie and her staff are amazing! She is so knowledgeable and truly loves what she does. She has been so patient with all my 'first time mom' questions and made me feel more confident."</blockquote>
         <cite>Samantha Benkert · Google Review</cite>
       </div>
@@ -623,12 +652,12 @@
       <h2>Come See Us In Cape Coral.</h2>
     </div>
     <div class="visit-grid reveal">
-      <div class="visit-col">
+      <div class="visit-col" style="--dot: var(--blue);">
         <h3>Location</h3>
         <p>1216 SW 4th St, Suite 6<br />Cape Coral, FL 33991</p>
         <a class="textlink" href="https://maps.google.com/?q=1216+SW+4th+St+Suite+6,+Cape+Coral,+FL+33991" target="_blank" rel="noopener">Get Directions</a>
       </div>
-      <div class="visit-col">
+      <div class="visit-col" style="--dot: var(--green);">
         <h3>Hours</h3>
         <ul>
           <li data-day="1"><span>Monday</span><span>9:00 – 5:30</span></li>
@@ -639,7 +668,7 @@
         </ul>
         <div class="status" id="open-status"></div>
       </div>
-      <div class="visit-col">
+      <div class="visit-col" style="--dot: var(--orange);">
         <h3>Contact</h3>
         <p><a class="plain" href="tel:+12397896959">(239) 789-6959</a><br />
         <a class="plain" href="mailto:frontdesk@vibranthealthswfl.com">frontdesk@vibranthealthswfl.com</a></p>
@@ -672,6 +701,9 @@
           <span>Vibrant Health &amp; Wellness</span>
         </a>
         <p class="blurb">Whole-body chiropractic and wellness care in Cape Coral, Florida. Built for families, athletes, and everyone in between.</p>
+        <div class="foot-dots" aria-hidden="true">
+          <i style="background:var(--blue)"></i><i style="background:var(--green)"></i><i style="background:var(--gold)"></i><i style="background:var(--orange)"></i><i style="background:var(--pink)"></i><i style="background:var(--purple)"></i>
+        </div>
       </div>
       <div>
         <h5>Visit</h5>
@@ -734,6 +766,7 @@
     var next = null;
     for (var i = 1; i <= 7; i++) { var k = (d + i) % 7; if (hours[k]) { next = k; break; } }
     statusEl.textContent = 'Closed · opens ' + (next === (d + 1) % 7 ? 'tomorrow' : names[next]) + ' at ' + fmt(hours[next][0]);
+    statusEl.classList.add('closed');
   }
 
   // Reveal on scroll
