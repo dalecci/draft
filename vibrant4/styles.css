@@ -276,6 +276,13 @@ section { padding: 7rem 0; }
   .team-text { padding: 2.6rem 1.6rem; }
   .team-band img { max-height: 420px; }
 }
+.team-band.compact .team-text { padding: 2.2rem 2.2rem; }
+.team-band.compact .team-text h2 { font-size: 1.25rem; margin-bottom: .6rem; }
+.team-band.compact .team-text p { font-size: .9rem; margin-bottom: 1.2rem; }
+.team-band.compact .team-text .kicker { margin-bottom: .9rem; }
+.team-band.compact .team-text .btn { padding: .75rem 1.7rem; font-size: .7rem; }
+.team-band.compact img { max-height: 340px; }
+@media (max-width: 880px) { .team-band.compact img { max-height: 260px; } }
 
 /* ---------- Approach ---------- */
 .approach-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
