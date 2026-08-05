@@ -377,8 +377,6 @@ footer .blurb { font-size: .94rem; max-width: 24rem; }
 .member { background: var(--panel); display: flex; flex-direction: column; }
 .member-photo { aspect-ratio: 1/1.05; overflow: hidden; background: var(--bg-2); }
 .member-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; filter: saturate(.88); transition: transform 1s cubic-bezier(.2,.6,.2,1); }
-.member-photo.circle { display: flex; justify-content: center; align-items: flex-start; padding-top: 4.5%; background: #fff; }
-.member-photo.circle img { width: 95%; height: auto; aspect-ratio: 1/1; border-radius: 50%; object-fit: cover; object-position: center 15%; }
 .member:hover .member-photo img { transform: scale(1.04); }
 .member-body { padding: 1.7rem 1.6rem 1.8rem; display: flex; flex-direction: column; flex: 1; }
 .member h3 { font-size: 1.25rem; letter-spacing: .12em; margin-bottom: .3rem; }
