@@ -14,12 +14,23 @@
     hv.load();
   }
 
-  // Nav
+  // Nav — rAF-throttled, class touched only on state change (avoids forced reflow)
   var nav = document.getElementById('nav');
   if (nav && !nav.classList.contains('solid')) {
-    var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 30); };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+    var scrolledState = null;
+    var ticking = false;
+    var applyScroll = function () {
+      ticking = false;
+      var s = window.scrollY > 30;
+      if (s !== scrolledState) {
+        scrolledState = s;
+        nav.classList.toggle('scrolled', s);
+      }
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(applyScroll); }
+    }, { passive: true });
+    applyScroll();
   }
   var toggle = document.getElementById('navToggle');
   var links = document.getElementById('navLinks');
