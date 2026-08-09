@@ -34,9 +34,21 @@
   }
   var toggle = document.getElementById('navToggle');
   var links = document.getElementById('navLinks');
+  var isMobileNav = function () { return window.matchMedia('(max-width: 980px)').matches; };
   if (toggle && links) {
     toggle.addEventListener('click', function () { links.classList.toggle('open'); });
-    links.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', function () { links.classList.remove('open'); }); });
+    links.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        var dropParent = a.parentElement;
+        // On mobile, tapping "Services" toggles its dropdown instead of navigating
+        if (dropParent && dropParent.classList && dropParent.classList.contains('has-drop') && isMobileNav()) {
+          e.preventDefault();
+          dropParent.classList.toggle('open');
+          return;
+        }
+        links.classList.remove('open');
+      });
+    });
   }
 
   // Hours: Mon 9–5:30 · Tue–Thu 8:30–6 · Fri–Sun closed
