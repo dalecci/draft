@@ -50,12 +50,40 @@
   .sw-cards .ap-card { border-top-color: rgba(226, 112, 58, .4); }
 
   /* Results split */
-  .results-media { overflow: hidden; }
-  .results-media img { width: 100%; aspect-ratio: 4/3.4; object-fit: cover; filter: saturate(.9); transition: transform 1.2s cubic-bezier(.2,.6,.2,1); }
-  .results-media:hover img { transform: scale(1.045); }
-  .team-quote { border-top: 1px solid var(--line-soft); margin-top: 2rem; padding-top: 1.6rem; }
-  .team-quote p:first-child { font-family: var(--font-display); font-size: 1.15rem; line-height: 1.5; color: var(--ink); }
-  .team-quote p:last-child { font-size: .74rem; letter-spacing: .3em; text-transform: uppercase; color: var(--text-dim); margin: 0; }
+  .results-media { position: relative; margin: 14px 0 0 14px; }
+  .results-media::before {
+    content: ''; position: absolute; top: -14px; left: -14px; right: 14px; bottom: 14px;
+    border: 1px solid var(--orange); opacity: .55; pointer-events: none;
+  }
+  .results-media img { width: 100%; aspect-ratio: 4/3.4; object-fit: cover; filter: saturate(.9); transition: transform 1.2s cubic-bezier(.2,.6,.2,1); display: block; }
+  .results-media .stat-tag {
+    position: absolute; left: -14px; bottom: 38px; background: var(--orange); color: #fff;
+    padding: .9rem 1.4rem; box-shadow: 0 14px 34px rgba(226, 112, 58, .35);
+  }
+  .results-media .stat-tag b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.7rem; line-height: 1.1; letter-spacing: .04em; }
+  .results-media .stat-tag span { font-size: .62rem; letter-spacing: .26em; text-transform: uppercase; opacity: .9; }
+
+  .res-list { list-style: none; margin: 2rem 0 0; counter-reset: res; }
+  .res-list li {
+    counter-increment: res;
+    display: grid; grid-template-columns: 3.2rem 1fr; align-items: baseline; gap: 1rem;
+    padding: 1.05rem .6rem; border-bottom: 1px solid var(--line-soft);
+    transition: background .3s ease, transform .3s ease;
+  }
+  .res-list li:first-child { border-top: 1px solid var(--line-soft); }
+  .res-list li::before {
+    content: '0' counter(res);
+    font-family: var(--font-display); font-size: 1.25rem; color: var(--orange); letter-spacing: .08em;
+  }
+  .res-list li:hover { background: rgba(255, 253, 249, .9); transform: translateX(5px); }
+  .res-list li span { font-size: 1.02rem; color: var(--ink); letter-spacing: .02em; }
+
+  .team-quote {
+    margin-top: 2.2rem; background: var(--panel); border: 1px solid var(--line-soft);
+    border-left: 3px solid var(--orange); padding: 1.5rem 1.7rem;
+  }
+  .team-quote p:first-child { font-family: var(--font-display); font-size: 1.18rem; line-height: 1.5; color: var(--ink); margin-bottom: .5rem; }
+  .team-quote p:last-child { font-size: .72rem; letter-spacing: .3em; text-transform: uppercase; color: var(--text-dim); margin: 0; }
 </style>
 </head>
 <body>
@@ -145,16 +173,17 @@
   <div class="wrap feature">
     <div class="results-media reveal">
       <img src="../img/svc-softwave.jpg" alt="A SoftWave therapy session at Vibrant Health & Wellness" loading="lazy" />
+      <div class="stat-tag"><b>60–80%</b><span>Pain Reduction</span></div>
     </div>
     <div class="reveal">
       <span class="kicker" style="color: var(--orange);">The Payoff</span>
       <h2>Results You<br />Can Expect.</h2>
-      <ul>
-        <li>Significant pain reduction</li>
-        <li>Faster healing from injuries</li>
-        <li>Reduced inflammation</li>
-        <li>Improved tissue and joint function</li>
-        <li>Noticeable results in as few as one session</li>
+      <ul class="res-list">
+        <li><span>Significant pain reduction</span></li>
+        <li><span>Faster healing from injuries</span></li>
+        <li><span>Reduced inflammation</span></li>
+        <li><span>Improved tissue and joint function</span></li>
+        <li><span>Noticeable results in as few as one session</span></li>
       </ul>
       <div class="team-quote">
         <p>"We solve the mystery behind your symptoms — and build a plan that actually lasts."</p>
