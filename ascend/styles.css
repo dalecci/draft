@@ -528,3 +528,4 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .interest-chip.on { background: linear-gradient(135deg, #7048e8, #9775fa); color: #fff; box-shadow: 0 4px 12px rgba(112,72,232,.35); }
 :root[data-theme="dark"] .interest-chip { background: #2b2440; color: #cabffa; }
 :root[data-theme="dark"] .interest-chip.on { background: linear-gradient(135deg, #7048e8, #9775fa); color: #fff; }
+.build-status.warn { color: var(--warn); }
