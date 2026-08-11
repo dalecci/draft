@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 38; // shown on every screen so you can confirm the running version
+const APP_BUILD = 39; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -278,11 +278,41 @@ function stLbl() { return stretchLabel(ACTIVE_GRADE); }
 
 // central hook: records the answer AND all engagement (xp, coins, quests, streak, badges)
 // `stretch` = the above-grade (Grade 6) track
+/* ---- focus meter: real in-app activity, counted honestly (no surveillance) */
+function focusToday(stu) {
+  const g = stu.games, dk = dayKey(now());
+  if (!g.focus || g.focus.day !== dk) g.focus = { day: dk, activeMs: 0, idleMs: 0, q: 0 };
+  return g.focus;
+}
+function trackFocus(stu, seconds) {
+  const f = focusToday(stu);
+  const active = Math.min(seconds, 90), idle = Math.max(0, seconds - 90); // >90s on one question = drifting
+  f.activeMs += active * 1000; f.idleMs += idle * 1000; f.q++;
+}
+function focusPct(stu) { const f = focusToday(stu); const tot = f.activeMs + f.idleMs; return tot ? Math.round(100 * f.activeMs / tot) : 100; }
+
+/* ---- adaptive band: keep every kid at ~80-85% correct (learning-zone) ----- */
+function tuneDifficulty(stu, skill, correct, stretch) {
+  if (stretch) return;
+  const p = stu.progress[skill.id]; if (!p) return;
+  const w = p.win = (p.win || []); w.push(correct ? 1 : 0); if (w.length > 10) w.shift();
+  if (w.length < 6) return;
+  const acc = w.reduce((a, b) => a + b, 0) / w.length;
+  let adj = p.adj || 0;
+  if (acc > 0.92) adj = Math.min(0.18, adj + 0.03);       // cruising — push harder
+  else if (acc < 0.6) adj = Math.max(-0.18, adj - 0.04);  // struggling — ease off, rebuild confidence
+  else adj += adj > 0 ? -0.01 : adj < 0 ? 0.01 : 0;       // in the zone — drift home
+  p.adj = Math.round(adj * 100) / 100;
+}
+function practicePos(stu, skill) { const p = stu.progress[skill.id]; return Math.max(0, Math.min(1, skill.pos + ((p && p.adj) || 0))); }
+
 function handleAnswer(stu, skill, correct, seconds, stretch) {
   const beforeLvl = levelInfo(stu.games.xp).level;
   let mastered = false, stretchMastered = false;
   if (stretch) stretchMastered = recordStretch(stu, skill, correct);
   else mastered = recordAnswer(stu, skill, correct, seconds);
+  trackFocus(stu, seconds);
+  tuneDifficulty(stu, skill, correct, stretch);
   ensureDailies(stu);
   awardXP(stu, correct ? (stretch ? 14 : 8) : 2);
   // coins drip slowly: 1 coin per 3 correct (per 2 on stretch) — big rewards come from mastery
@@ -459,6 +489,12 @@ function renderStudentHome() {
     el('div', { class: 'play-sub' }, gold || cleared ? `${gold} 🏅 jackpots · ${cleared}/${LADDER_SEQ.length} rungs cleared` : `Prove your level · 100% = ${LADDER_JACKPOT} 🪙 jackpot`),
   ]));
   wrap.append(ladCard);
+  if (!(stu.games.interests || []).length) {
+    wrap.append(el('div', { class: 'card play-card', onclick: () => go('profile') }, [
+      el('div', { class: 'play-emoji' }, '❤️'),
+      el('div', {}, [el('div', { class: 'play-title' }, 'What do you love?'), el('div', { class: 'play-sub' }, 'Pick favorites → your math becomes about THEM')]),
+    ]));
+  }
   wrap.append(goalCard(stu));
 
   // assignments from a parent/coach
@@ -491,7 +527,7 @@ function renderStudentHome() {
   if (dailyGoalMet(stu)) wrap.append(el('div', { class: 'card afternoon' }, '🏀 Daily goal complete — afternoon unlocked! Go train.'));
   const strip = el('div', { class: 'card daily-strip', onclick: () => go('profile') });
   strip.append(el('div', { class: 'ds-flame' }, `🔥 ${stu.games.streak?.count || 0}`));
-  strip.append(el('div', { class: 'ds-mid' }, [el('div', { class: 'ds-txt' }, `Daily quests ${done}/3`), el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * done / 3}%;background:var(--good)` }))]));
+  strip.append(el('div', { class: 'ds-mid' }, [el('div', { class: 'ds-txt' }, `Daily quests ${done}/3${focusToday(stu).q >= 3 ? ` · 🎯 focus ${focusPct(stu)}%` : ''}`), el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * done / 3}%;background:var(--good)` }))]));
   strip.append(el('div', { class: 'ds-coin' }, `🪙 ${stu.games.coins || 0}`));
   wrap.append(strip);
 
@@ -534,7 +570,7 @@ function renderPractice() {
   const canStretch = !!stretchGen && !!p.masteredAt;      // Grade 6 unlocks after on-grade mastery
   const adv = !!VIEW.stretch && canStretch;               // are we in Advanced mode right now?
 
-  if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: generateItem(adv ? stretchGen : skill.gen, skill), start: now(), streak: 0, answered: 0 };
+  if (!PRACTICE || PRACTICE.skillId !== skill.id || PRACTICE.adv !== adv) PRACTICE = { skillId: skill.id, adv, item: adv ? generateItem(stretchGen, skill) : generateItemAt(skill.gen, practicePos(stu, skill)), start: now(), streak: 0, answered: 0 };
   const sp = p.stretch || { score: 0 };
   const card = el('div', { class: 'card practice' + (adv ? ' advanced' : '') });
   if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 ' + stLbl().toUpperCase() + ' · Above grade level'));
@@ -545,6 +581,13 @@ function renderPractice() {
   card.append(el('h2', {}, skill.name));
   if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 ' + stLbl() + ' SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
   else card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
+  const ft = focusToday(stu);
+  if (ft.q >= 3) {
+    const fp = focusPct(stu), fmin = Math.round(ft.activeMs / 60000);
+    card.append(el('div', { class: 'focus-line' + (fp < 60 ? ' slow' : '') },
+      fp < 60 ? `🐢 Focus ${fp}% — lots of waiting between answers. Lock in, finish faster, get your time back!`
+        : `🎯 Focus today: ${fp}% · ${fmin} min of real work`));
+  }
 
   const item = PRACTICE.item;
   card.append(el('div', { class: 'q', html: item.prompt }));
@@ -563,6 +606,10 @@ function renderPractice() {
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
     const p2 = stu.progress[skill.id];
+    const win = p2.win || [];
+    if (!ok && !adv && win.length >= 6 && win.reduce((a, b) => a + b, 0) / win.length < 0.6) {
+      feedback.append(el('button', { class: 'btn ghost', onclick: () => { PRACTICE = null; go('lesson', { skill: skill.id, then: 'practice' }) } }, '📖 Re-watch the lesson — it helps'));
+    }
     const onGradeMastered = !!p2.masteredAt, stretchMastered = !!(p2.stretch && p2.stretch.masteredAt);
     let goNext, label, secondary = null;
     if (adv) {
@@ -1448,6 +1495,26 @@ function renderProfile() {
       el('div', { class: 'muted' }, `${lv.into}/${lv.span} XP to next level`),
     ]),
   ]));
+  // interests — the kid picks what their word problems are about
+  const ints = stu.games.interests = stu.games.interests || [];
+  const iCard = el('div', { class: 'card' });
+  iCard.append(el('h3', {}, '❤️ What do you love?'));
+  iCard.append(el('p', { class: 'muted' }, 'Pick up to 4 — your math problems will be about them!'));
+  const iRow = el('div', { class: 'interest-row' });
+  Object.entries(INTEREST_PACKS).forEach(([key, p]) => {
+    const on = ints.includes(key);
+    const chip = el('button', { class: 'interest-chip' + (on ? ' on' : '') }, `${p.emoji} ${p.label}`);
+    chip.onclick = () => {
+      const i = ints.indexOf(key);
+      if (i >= 0) ints.splice(i, 1);
+      else { if (ints.length >= 4) { toast('Pick 4 max — unpick one first!'); return; } ints.push(key); }
+      persist(); go('profile');
+    };
+    iRow.append(chip);
+  });
+  iCard.append(iRow);
+  wrap.append(iCard);
+
   const chips = el('div', { class: 'stat-row' });
   chips.append(stat('Streak', `🔥${stu.games.streak?.count || 0}`, 'days'));
   chips.append(stat('Coins', `🪙${stu.games.coins || 0}`, 'to spend'));
@@ -2141,6 +2208,7 @@ function renderParentChild() {
       el('div', { class: 'pace-expected', style: `left:${Math.round(100 * pace.expected / pace.total)}%`, title: 'expected today' }),
     ]),
     el('div', { class: 'legend' }, [el('span', {}, `● actual ${pace.mastered}`), el('span', { class: 'muted' }, `▮ expected ${pace.expected}`)]),
+    focusToday(stu).q >= 3 ? el('div', { class: 'muted' }, `🎯 Today: ${Math.round(focusToday(stu).activeMs / 60000)} focused minutes · ${focusPct(stu)}% focus · ${focusToday(stu).q} questions`) : null,
   ]));
 
   // Coach's Report — written analysis + recommendations
@@ -2244,6 +2312,7 @@ function render() {
   // bind the active curriculum to whichever student is in context (student self, or the parent's current child)
   const ctxStu = isParent ? STATE.students[VIEW.child] : STATE.students[STATE.currentUserId];
   setActiveGrade((ctxStu && ctxStu.grade) || 'g5');
+  setFlavor(ctxStu ? flavorFor(ctxStu) : null); // word problems star what this kid loves
   if (!isParent) applyTheme(STATE.students[STATE.currentUserId]); else applyTheme(null);
   const views = {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
@@ -2278,7 +2347,7 @@ function ensureStudentShape(stu) {
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
   g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinLog = g.coinLog || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
-  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {};
+  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {}; g.interests = g.interests || [];
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered

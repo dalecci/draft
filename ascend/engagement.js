@@ -174,6 +174,28 @@ function applyTheme(stu) {
   document.documentElement.style.setProperty('--primary-d', d);
 }
 
+/* -------- interests: word problems star what THIS kid loves -------- */
+const INTEREST_PACKS = {
+  dino: { label: 'Dinosaurs', emoji: '🦖', names: ['Rex', 'Dina', 'Spike', 'Tria'], things: ['dino eggs', 'fossils', 'dino stickers', 'T-Rex toys'], places: ['the dino park', 'the fossil dig'] },
+  bball: { label: 'Basketball', emoji: '🏀', names: ['Jordan', 'Skye', 'Coach D', 'Lexi'], things: ['basketballs', 'trading cards', 'team jerseys'], places: ['the court', 'the arena'] },
+  soccer: { label: 'Soccer', emoji: '⚽', names: ['Leo', 'Mia', 'Ronny', 'Coach Sam'], things: ['soccer balls', 'cleats', 'team stickers'], places: ['the pitch', 'the stadium'] },
+  space: { label: 'Space', emoji: '🚀', names: ['Astro Ava', 'Commander Max', 'Luna'], things: ['moon rocks', 'star charts', 'rocket parts'], places: ['the launch pad', 'the space station'] },
+  gaming: { label: 'Video games', emoji: '🎮', names: ['PixelPete', 'MaxLevel', 'GlitchGirl'], things: ['power-ups', 'gold coins', 'game cards'], places: ['the arcade', 'level 7'] },
+  animals: { label: 'Animals', emoji: '🐾', names: ['Buddy', 'Whiskers', 'Coco'], things: ['puppy treats', 'kitten toys', 'bird seeds'], places: ['the pet shop', 'the zoo'] },
+  cars: { label: 'Cars & trucks', emoji: '🏎️', names: ['Turbo Tom', 'Dash', 'Mechanic Mo'], things: ['toy cars', 'race wheels', 'race flags'], places: ['the racetrack', 'the garage'] },
+  minecraft: { label: 'Minecraft', emoji: '⛏️', names: ['Steve', 'Alexa the Builder', 'Miner Mia'], things: ['diamond blocks', 'emeralds', 'torches'], places: ['the mine', 'the village'] },
+  art: { label: 'Art & crafts', emoji: '🎨', names: ['Piper', 'Vincent', 'Frida'], things: ['paint sets', 'glitter pens', 'sticker sheets'], places: ['the art room', 'the craft fair'] },
+  ocean: { label: 'Ocean', emoji: '🌊', names: ['Marina', 'Finn', 'Captain Coral'], things: ['seashells', 'pearls', 'starfish'], places: ['the reef', 'the aquarium'] },
+  candy: { label: 'Sweets', emoji: '🍭', names: ['Charlie', 'Lolly', 'Chef Coco'], things: ['gumballs', 'chocolate bars', 'lollipops'], places: ['the candy shop', 'the bakery'] },
+  music: { label: 'Music & dance', emoji: '🎵', names: ['Melody', 'DJ Ray', 'Harmony'], things: ['guitar picks', 'concert tickets', 'dance ribbons'], places: ['the stage', 'the studio'] },
+};
+function flavorFor(stu) {
+  const picks = ((stu.games && stu.games.interests) || []).map(k => INTEREST_PACKS[k]).filter(Boolean);
+  if (!picks.length) return null;
+  const merge = key => picks.flatMap(p => p[key]);
+  return { names: merge('names'), things: merge('things'), places: merge('places') };
+}
+
 /* -------- confetti (pure DOM, self-cleaning) -------- */
 function confetti(emojis) {
   emojis = emojis || ['⭐', '🎉', '🏀', '💜', '✨', '🔥'];
