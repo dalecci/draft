@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 41; // shown on every screen so you can confirm the running version
+const APP_BUILD = 42; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -351,6 +351,20 @@ function celebrate(cel) {
 }
 function toast(msg) { const t = $('#celebrateToast'); if (!t) return; t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200); }
 
+/* ----------------------- MISCONCEPTION HANDLING --------------------------- */
+let REPAIR_CTX = null; // { misId, item, skillId } — set right before go('repair')
+function noteMisconception(stu, item, rawVal) {
+  if (typeof detectMisconception !== 'function') return null;
+  const mis = detectMisconception(item, rawVal);
+  if (!mis) return null;
+  const rec = stu.games.miscons[mis.id] = stu.games.miscons[mis.id] || { count: 0, last: 0, repairs: 0 };
+  rec.count++; rec.last = now();
+  if (stu.misses[0]) stu.misses[0].mis = mis.id; // tag the miss we just recorded
+  // launch the fix-it lesson on the 2nd sighting, then every 2nd after — unless just repaired
+  const due = rec.count >= 2 && rec.count % 2 === 0 && (now() - (rec.repairedAt || 0)) > 10 * 60 * 1000;
+  return { mis, due };
+}
+
 /* --------------------------- ANSWER CHECKING ----------------------------- */
 function checkAnswer(item, raw) {
   const val = String(raw).trim();
@@ -613,13 +627,20 @@ function renderPractice() {
     PRACTICE.locked = true;
     const secs = Math.max(2, Math.round((now() - PRACTICE.start) / 1000));
     const ok = checkAnswer(item, val);
-    if (!ok && !adv) recordMiss(stu, skill, item, val);
+    let misHit = null;
+    if (!ok && !adv) { recordMiss(stu, skill, item, val); misHit = noteMisconception(stu, item, val); }
     const cel = handleAnswer(stu, skill, ok, secs, adv);
     if (!adv) { const asg = openAssignment(stu, skill.id); if (asg) { asg.remaining = Math.max(0, asg.remaining - 1); if (ok) asg.correct++; if (asg.remaining <= 0) asg.status = 'done'; } }
     persist();
     celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
+    if (misHit) {
+      feedback.append(el('div', { class: 'mis-tag' }, `🔍 I think I see it: ${misHit.mis.name.toLowerCase()}.`));
+      if (misHit.due) {
+        feedback.append(el('button', { class: 'btn primary', onclick: () => { REPAIR_CTX = { misId: misHit.mis.id, item, skillId: skill.id }; PRACTICE = null; go('repair', { skill: skill.id }); } }, '🔧 Quick fix-it lesson ▶'));
+      }
+    }
     const p2 = stu.progress[skill.id];
     const win = p2.win || [];
     if (!ok && !adv && win.length >= 6 && win.reduce((a, b) => a + b, 0) / win.length < 0.6) {
@@ -729,7 +750,7 @@ function renderLadder() {
       const ok = checkAnswer(item, val);
       const secs = Math.max(1, Math.min(600, Math.round((now() - (L.qStart || now())) / 1000)));
       trackFocus(stu, secs, Math.max(60, Math.min(240, 3 * medianSeconds(stu)))); // ladder work counts toward focus, with a generous mixed-question allowance
-      if (ok) L.correct++; else L.misses.push(entry.skill);
+      if (ok) L.correct++; else { L.misses.push(entry.skill); if (typeof detectMisconception === 'function') { const m = detectMisconception(item, val); if (m) { const r = stu.games.miscons[m.id] = stu.games.miscons[m.id] || { count: 0, last: 0, repairs: 0 }; r.count++; r.last = now(); } } }
       feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
       feedback.innerHTML = (ok ? '✅ Correct!' : '❌ Not quite.') + `<div class="expl">${item.explanation || ''}</div>`;
       const nxt = () => { L.locked = false; L.i++; L.qStart = now(); if (L.i >= L.items.length) finishLadderTest(stu); go('ladder'); };
@@ -1724,6 +1745,49 @@ function startSkill(skillId) {
   else { PRACTICE = null; go('practice', { skill: skillId }); }
 }
 
+/* ------------------------ REPAIR (fix-it lesson) -------------------------- */
+function renderRepair() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  const mis = REPAIR_CTX && misconceptionById(REPAIR_CTX.misId);
+  if (!mis) { go('practice', { skill: VIEW.skill }); return wrap; }
+  const R = mis.repair(REPAIR_CTX.item);
+  const card = el('div', { class: 'card lesson' });
+  card.append(el('div', { class: 'chip', style: 'background:#f7670722;color:#f76707' }, '🔧 Fix-it: ' + mis.name));
+  card.append(el('div', { class: 'mascot-row' }, [
+    el('div', { class: 'mascot' }, LESSON_MASCOT[ACTIVE_GRADE] || '🦉'),
+    el('div', { class: 'bubble' }, R.concept),
+  ]));
+  if (window.speechSynthesis) card.append(el('div', { class: 'voice-row' }, [el('button', { class: 'mini', onclick: () => speakLesson(R.concept) }, '▶ Read it to me')]));
+  const box = el('div', { class: 'lesson-box' });
+  box.append(el('h4', {}, '🎬 Watch the fix'));
+  const stepsWrap = el('div', {}); const ctl = el('div', { class: 'answer-row lesson-ctl' });
+  box.append(stepsWrap, ctl); card.append(box);
+  let idx = 0; const steps = R.steps || [];
+  const doneBtn = el('button', { class: 'btn primary big wide', disabled: '' }, '👀 Watch the steps first');
+  doneBtn.onclick = () => {
+    if (idx < steps.length) return;
+    const rec = stu.games.miscons[mis.id]; if (rec) { rec.repairedAt = now(); rec.repairs = (rec.repairs || 0) + 1; }
+    persist(); stopSpeech(); PRACTICE = null; go('practice', { skill: REPAIR_CTX.skillId });
+  };
+  const nextBtn = el('button', { class: 'btn primary' }, '▶ Show me');
+  nextBtn.onclick = () => {
+    if (idx >= steps.length) return;
+    stepsWrap.querySelectorAll('.wstep').forEach(r => r.classList.remove('now'));
+    stepsWrap.append(el('div', { class: 'wstep reveal now' }, [el('span', { class: 'wnum' }, String(idx + 1)), el('span', {}, steps[idx])]));
+    if (VOICE_ON) speakLesson(steps[idx]);
+    idx++;
+    if (idx >= steps.length) { nextBtn.remove(); doneBtn.disabled = false; doneBtn.classList.add('pulse'); doneBtn.textContent = 'Got it — back to practice ▶'; }
+    else nextBtn.textContent = `Next step ▶  (${idx}/${steps.length})`;
+  };
+  ctl.append(nextBtn);
+  card.append(doneBtn);
+  wrap.append(card);
+  wrap.append(navbar('practice'));
+  return wrap;
+}
+
 /* --------------------- LESSON (animated + narrated) ---------------------- */
 const LESSON_MASCOT = { g2: '🦖', g3: '🦕', g5: '🦉', g6: '🦉', sci5: '🧪' };
 let VOICE_ON = true; // session preference for read-aloud
@@ -2201,6 +2265,24 @@ function renderAddChild() {
   return wrap;
 }
 
+/* ------------------- PARENT: RECURRING MISCONCEPTIONS --------------------- */
+function renderMisconsCard(stu) {
+  const entries = Object.entries(stu.games.miscons || {}).filter(([, r]) => r.count >= 2).sort((a, b) => b[1].count - a[1].count).slice(0, 3);
+  if (!entries.length) return null;
+  const card = el('div', { class: 'card' });
+  card.append(el('h3', {}, '🔍 Recurring mix-ups'));
+  card.append(el('p', { class: 'muted' }, 'Not "wrong answers" — specific, fixable habits the app spotted in how ' + stu.name + ' answers. Each comes with a 5-minute real-world fix you can do together.'));
+  entries.forEach(([id, r]) => {
+    const m = misconceptionById(id); if (!m) return;
+    card.append(el('div', { class: 'lesson-warn' }, [
+      el('b', {}, `${m.name} — seen ${r.count}× `),
+      r.repairs ? el('span', { class: 'badge good' }, `fix-it lesson done ×${r.repairs}`) : null,
+      el('div', { class: 'muted', style: 'margin-top:4px' }, '👉 Try at home: ' + m.tip),
+    ]));
+  });
+  return card;
+}
+
 /* -------------------- PARENT: LEVEL LADDER + PLEDGES ---------------------- */
 function renderLadderCard(stu) {
   const card = el('div', { class: 'card' });
@@ -2252,6 +2334,7 @@ function renderParentChild() {
 
   // Coach's Report — written analysis + recommendations
   wrap.append(renderCoachCard(stu));
+  const misCard = renderMisconsCard(stu); if (misCard) wrap.append(misCard);
   wrap.append(renderLadderCard(stu));
   const perkCard = renderPerkCard(stu); if (perkCard) wrap.append(perkCard);
   if (readyToMoveUp(stu)) wrap.append(renderMoveUpCard(stu));
@@ -2357,7 +2440,7 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
-    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview, 'ladder': renderLadder,
+    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview, 'ladder': renderLadder, 'repair': renderRepair,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor, 'parent-add': renderAddChild,
   };
   const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build', 'runner'];
@@ -2386,7 +2469,7 @@ function ensureStudentShape(stu) {
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
   g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinLog = g.coinLog || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
-  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {}; g.interests = g.interests || [];
+  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {}; g.interests = g.interests || []; g.miscons = g.miscons || {};
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered

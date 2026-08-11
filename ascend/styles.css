@@ -529,3 +529,4 @@ button { font-family: inherit; cursor: pointer; border: none; }
 :root[data-theme="dark"] .interest-chip { background: #2b2440; color: #cabffa; }
 :root[data-theme="dark"] .interest-chip.on { background: linear-gradient(135deg, #7048e8, #9775fa); color: #fff; }
 .build-status.warn { color: var(--warn); }
+.mis-tag { font-size: 13px; font-weight: 700; color: var(--warn); margin: 6px 0; }
