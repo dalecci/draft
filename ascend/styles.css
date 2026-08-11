@@ -519,3 +519,12 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .coinlog-sum { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; padding: 3px 0; }
 .coinlog-sum b { color: var(--warn); }
 .coinlog-row { font-size: 11px; color: var(--muted); padding: 2px 0; }
+
+/* focus meter + interests */
+.focus-line { font-size: 12px; font-weight: 700; color: var(--good); margin: 4px 0 8px; }
+.focus-line.slow { color: var(--warn); }
+.interest-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.interest-chip { background: #efe9fd; color: var(--primary-d); border-radius: 999px; padding: 9px 14px; font-weight: 700; font-size: 13px; }
+.interest-chip.on { background: linear-gradient(135deg, #7048e8, #9775fa); color: #fff; box-shadow: 0 4px 12px rgba(112,72,232,.35); }
+:root[data-theme="dark"] .interest-chip { background: #2b2440; color: #cabffa; }
+:root[data-theme="dark"] .interest-chip.on { background: linear-gradient(135deg, #7048e8, #9775fa); color: #fff; }
