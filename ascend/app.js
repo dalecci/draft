@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 39; // shown on every screen so you can confirm the running version
+const APP_BUILD = 40; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -1214,19 +1214,19 @@ function setupBuild() {
   else if (BUILD.kind === 'clock') { BUILD.thr = randInt(1, 12); BUILD.tmin = pick([0, 15, 30, 45]); BUILD.hr = 12; BUILD.min = 0; }
   else if (BUILD.kind === 'coins') { BUILD.target = randInt(6, 99); BUILD.coins = []; }
   else if (BUILD.kind === 'array') { BUILD.trows = randInt(2, 5); BUILD.tcols = randInt(2, 5); BUILD.rows = 1; BUILD.cols = 1; }
-  BUILD.solved = false;
+  BUILD.solved = false; BUILD.lastHint = null;
 }
 function startBuild(kind) { BUILD = { kind, i: 0, n: 6, correct: 0 }; setupBuild(); go('build'); }
 function refreshBuild() { const root = $('#app'); root.innerHTML = ''; root.append(renderBuild()); }
-function checkBuild(ok) {
+function checkBuild(ok, hint) {
   if (BUILD.solved) return;
   const stu = STATE.students[STATE.currentUserId];
   if (ok) {
-    BUILD.solved = true; BUILD.correct++;
+    BUILD.solved = true; BUILD.lastHint = null; BUILD.correct++;
     awardXP(stu, 8); awardCoins(stu, 1, 'Build It'); touchStreak(stu); refreshBadges(stu); persist();
     confetti(['⭐', '🎉']); toast('✅ Correct!');
     setTimeout(() => { BUILD.i++; if (BUILD.i >= BUILD.n) BUILD.done = true; else setupBuild(); refreshBuild(); }, 800);
-  } else { toast('Not quite — take another look!'); }
+  } else { BUILD.lastHint = hint || 'Not quite — take another look!'; toast('❌ Not quite'); } // reveal what they built only AFTER they commit
   refreshBuild();
 }
 function renderBuild() {
@@ -1276,14 +1276,15 @@ function buildBaseTen(area, status) {
       col.append(el('div', { class: 'ten-lbl' }, `${label} (${BUILD[key]})`));
       mat.append(col);
     });
-    const cur = BUILD.h * 100 + BUILD.t * 10 + BUILD.o;
-    status.innerHTML = `You built: <b>${cur}</b>`;
-    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+    const hint = BUILD.lastHint; BUILD.lastHint = null; // a hint shows once, until they change something
+    status.innerHTML = BUILD.solved ? `✅ ${target} = ${BUILD.h} hundreds + ${BUILD.t} tens + ${BUILD.o} ones!`
+      : hint ? '🤔 ' + hint : 'Build it with blocks, then tap Check — no peeking at totals!';
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
   area.append(mat); area.append(status);
   area.append(el('div', { class: 'answer-row', style: 'margin-top:10px' }, [
     el('button', { class: 'btn ghost', onclick: () => { BUILD.h = BUILD.t = BUILD.o = 0; refreshBuild(); } }, '↺ Clear'),
-    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.h * 100 + BUILD.t * 10 + BUILD.o === target) }, 'Check ✓'),
+    el('button', { class: 'btn primary grow', onclick: () => { const cur = BUILD.h * 100 + BUILD.t * 10 + BUILD.o; checkBuild(cur === target, `You built ${cur} — ${cur > target ? 'too big. Take some away.' : 'too small. Add more.'}`); } }, 'Check ✓'),
   ]));
   draw();
 }
@@ -1294,13 +1295,15 @@ function buildFraction(area, status) {
   const draw = () => {
     bar.innerHTML = '';
     for (let i = 0; i < den; i++) bar.append(el('div', { class: 'frac-seg' + (BUILD.shaded.has(i) ? ' on' : ''), onclick: () => { BUILD.shaded.has(i) ? BUILD.shaded.delete(i) : BUILD.shaded.add(i); draw(); } }));
-    status.innerHTML = `Shaded: <b>${BUILD.shaded.size}/${den}</b>`;
-    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+    const hint = BUILD.lastHint; BUILD.lastHint = null;
+    status.innerHTML = BUILD.solved ? `✅ That's ${num}/${den}!`
+      : hint ? '🤔 ' + hint : 'Tap parts to shade them, then Check. Count carefully!';
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
   area.append(bar); area.append(status);
   area.append(el('div', { class: 'answer-row', style: 'margin-top:10px' }, [
     el('button', { class: 'btn ghost', onclick: () => { BUILD.shaded = new Set(); refreshBuild(); } }, '↺ Clear'),
-    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.shaded.size === num) }, 'Check ✓'),
+    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.shaded.size === num, `You shaded ${BUILD.shaded.size} of ${den} parts.`) }, 'Check ✓'),
   ]));
   draw();
 }
@@ -1325,15 +1328,16 @@ function buildClock(area, status) {
   const face = el('div', { class: 'clock-face' });
   const draw = () => {
     face.innerHTML = clockSVG((BUILD.hr % 12) * 30 + BUILD.min * 0.5, BUILD.min * 6);
-    status.innerHTML = BUILD.solved ? '✅ Nice!' : 'Move the hands, then tap Check'; // no digital readout — he must read the clock
-    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+    const hint = BUILD.lastHint; BUILD.lastHint = null;
+    status.innerHTML = BUILD.solved ? '✅ Nice!' : hint ? '🤔 ' + hint : 'Move the hands, then tap Check'; // no digital readout — he must read the clock
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
   area.append(face); area.append(status);
   area.append(el('div', { class: 'clock-steppers' }, [
     stepper('Hour', () => { BUILD.hr = BUILD.hr === 1 ? 12 : BUILD.hr - 1; draw(); }, () => { BUILD.hr = BUILD.hr === 12 ? 1 : BUILD.hr + 1; draw(); }),
     stepper('Minute', () => { BUILD.min = (BUILD.min + 55) % 60; draw(); }, () => { BUILD.min = (BUILD.min + 5) % 60; draw(); }),
   ]));
-  area.append(el('button', { class: 'btn primary wide', onclick: () => checkBuild(BUILD.hr === BUILD.thr && BUILD.min === BUILD.tmin) }, 'Check ✓'));
+  area.append(el('button', { class: 'btn primary wide', onclick: () => checkBuild(BUILD.hr === BUILD.thr && BUILD.min === BUILD.tmin, 'Short hand = hour. Long hand = minutes — count by 5s around the face.') }, 'Check ✓'));
   draw();
 }
 function buildCoins(area, status) {
@@ -1344,9 +1348,10 @@ function buildCoins(area, status) {
   const draw = () => {
     jar.innerHTML = '';
     BUILD.coins.forEach((v, idx) => { const c = COINS.find(x => x[1] === v); jar.append(el('div', { class: 'coin', style: `background:${c[2]}`, title: 'tap to remove', onclick: () => { BUILD.coins.splice(idx, 1); draw(); } }, v + '¢')); });
-    const sum = BUILD.coins.reduce((a, b) => a + b, 0);
-    status.innerHTML = `Total: <b>${sum}¢</b>`;
-    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+    const hint = BUILD.lastHint; BUILD.lastHint = null;
+    status.innerHTML = BUILD.solved ? `✅ ${target}¢ exactly!`
+      : hint ? '🤔 ' + hint : (BUILD.coins.length ? `${BUILD.coins.length} coin${BUILD.coins.length === 1 ? '' : 's'} in the jar — add them up in your head!` : 'Tap coins below to add them to the jar.');
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
   area.append(jar); area.append(status);
   const pal = el('div', { class: 'coin-palette' });
@@ -1354,7 +1359,7 @@ function buildCoins(area, status) {
   area.append(pal);
   area.append(el('div', { class: 'answer-row', style: 'margin-top:10px' }, [
     el('button', { class: 'btn ghost', onclick: () => { BUILD.coins = []; refreshBuild(); } }, '↺ Clear'),
-    el('button', { class: 'btn primary grow', onclick: () => checkBuild(BUILD.coins.reduce((a, b) => a + b, 0) === target) }, 'Check ✓'),
+    el('button', { class: 'btn primary grow', onclick: () => { const sum = BUILD.coins.reduce((a, b) => a + b, 0); checkBuild(sum === target, `Your coins add up to ${sum}¢ — ${sum > target ? 'too much. Swap or remove a coin.' : 'not enough yet.'}`); } }, 'Check ✓'),
   ]));
   draw();
 }
@@ -1364,15 +1369,17 @@ function buildArray(area, status) {
   const draw = () => {
     box.innerHTML = '';
     for (let r = 0; r < BUILD.rows; r++) { const row = el('div', { class: 'array-row' }); for (let c = 0; c < BUILD.cols; c++) row.append(el('div', { class: 'array-dot' })); box.append(row); }
-    status.innerHTML = `You built: <b>${BUILD.rows} × ${BUILD.cols} = ${BUILD.rows * BUILD.cols}</b>`;
-    status.className = 'build-status' + (BUILD.solved ? ' ok' : '');
+    const hint = BUILD.lastHint; BUILD.lastHint = null;
+    status.innerHTML = BUILD.solved ? `✅ ${BUILD.trows} rows × ${BUILD.tcols} columns = ${BUILD.trows * BUILD.tcols}!`
+      : hint ? '🤔 ' + hint : 'Count the rows and the dots in each row, then Check.';
+    status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
   area.append(box); area.append(status);
   area.append(el('div', { class: 'clock-steppers' }, [
     stepper('Rows', () => { if (BUILD.rows > 1) { BUILD.rows--; draw(); } }, () => { if (BUILD.rows < 8) { BUILD.rows++; draw(); } }),
     stepper('Columns', () => { if (BUILD.cols > 1) { BUILD.cols--; draw(); } }, () => { if (BUILD.cols < 8) { BUILD.cols++; draw(); } }),
   ]));
-  area.append(el('button', { class: 'btn primary wide', onclick: () => checkBuild(BUILD.rows === BUILD.trows && BUILD.cols === BUILD.tcols) }, 'Check ✓'));
+  area.append(el('button', { class: 'btn primary wide', onclick: () => checkBuild(BUILD.rows === BUILD.trows && BUILD.cols === BUILD.tcols, `You built ${BUILD.rows} row${BUILD.rows === 1 ? '' : 's'} of ${BUILD.cols}.`) }, 'Check ✓'));
   draw();
 }
 
