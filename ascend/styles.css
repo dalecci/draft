@@ -532,3 +532,9 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .mis-tag { font-size: 13px; font-weight: 700; color: var(--warn); margin: 6px 0; }
 .warmup-card { border-left: 6px solid var(--good); }
 .ev-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; align-items: center; }
+
+/* comfort: reduced motion + bigger text + read-aloud */
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+html[data-bigtext="1"] { font-size: 115%; }
+.say-btn { margin-left: 8px; vertical-align: middle; }

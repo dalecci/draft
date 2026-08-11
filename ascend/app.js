@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 46; // shown on every screen so you can confirm the running version
+const APP_BUILD = 47; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -657,7 +657,7 @@ function renderPractice() {
     el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName),
     el('button', { class: 'mini', onclick: () => { if (stu.games.taught[skill.id]) { const pp = stu.progress[skill.id]; if (pp) pp.assistUntil = now() + 5 * 60 * 1000; } go('lesson', { skill: skill.id, then: 'practice' }); } }, '📖 Learn'),
   ]));
-  card.append(el('h2', {}, skill.name));
+  card.append(el('h2', {}, [skill.name, window.speechSynthesis ? el('button', { class: 'mini say-btn', title: 'Read the question to me', onclick: () => speakItemPrompt(item) }, '🔊') : null]));
   if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 ' + stLbl() + ' SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
   else card.append(el('div', { class: 'smart' }, [el('span', {}, 'SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${p.score || 0}%;background:${skill.color}` })), el('b', {}, `${p.score || 0}`)]));
   const ft = focusToday(stu);
@@ -1612,6 +1612,15 @@ function renderProfile() {
       el('div', { class: 'muted' }, `${lv.into}/${lv.span} XP to next level`),
     ]),
   ]));
+  // comfort settings — calm motion, bigger text (saved on this device)
+  wrap.append(el('div', { class: 'card' }, [
+    el('h3', {}, '🛋️ Comfort'),
+    el('div', { class: 'answer-row' }, [
+      el('button', { class: 'btn ' + (comfortPref('calm') ? 'primary' : 'ghost'), onclick: () => toggleComfort('calm') }, comfortPref('calm') ? '🐢 Calm mode: ON' : '🐢 Calm mode (less motion)'),
+      el('button', { class: 'btn ' + (comfortPref('bigtext') ? 'primary' : 'ghost'), onclick: () => toggleComfort('bigtext') }, comfortPref('bigtext') ? '🔍 Bigger text: ON' : '🔍 Bigger text'),
+    ]),
+  ]));
+
   // interests — the kid picks what their word problems are about
   const ints = stu.games.interests = stu.games.interests || [];
   const iCard = el('div', { class: 'card' });
@@ -1862,6 +1871,7 @@ function renderWarmup() {
     el('div', { class: 'chip', style: 'background:#12b88622;color:#12b886' }, `🔥 Warm-up · keeping "${cur.skill.name}" strong`),
     el('span', { class: 'mini' }, `${WARMUP.i + 1}/${WARMUP.items.length}`),
   ]));
+  if (window.speechSynthesis) card.append(el('button', { class: 'mini say-btn', onclick: () => speakItemPrompt(item) }, '🔊 Read it'));
   card.append(el('div', { class: 'q', html: item.prompt }));
   const feedback = el('div', { class: 'feedback' });
   const submit = (val) => {
@@ -2311,6 +2321,16 @@ function renderCoachCard(stu) {
   return card;
 }
 
+/* --------------------- comfort settings (per device) ----------------------- */
+function comfortPref(k) { try { return localStorage.getItem('ascend_' + k) === '1'; } catch (e) { return false; } }
+function toggleComfort(k) { try { localStorage.setItem('ascend_' + k, comfortPref(k) ? '0' : '1'); } catch (e) {} applyComfort(); render(); }
+function applyComfort() {
+  const de = document.documentElement;
+  de.dataset.motion = comfortPref('calm') ? 'reduce' : '';
+  de.dataset.bigtext = comfortPref('bigtext') ? '1' : '';
+}
+function speakItemPrompt(item) { const div = document.createElement('div'); div.innerHTML = String(item.prompt); speakLesson(div.textContent || ''); }
+
 /* ------------------------------ dark mode -------------------------------- */
 function isDark() { try { return localStorage.getItem('ascend_dark') === '1'; } catch (e) { return false; } }
 function applyDark() { document.documentElement.dataset.theme = isDark() ? 'dark' : 'light'; }
@@ -2686,7 +2706,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 (async function boot() {
-  applyDark();
+  applyDark(); applyComfort();
   STATE = await Store.load();
   if (!STATE || !STATE.students) STATE = seedDemo();
   Object.values(STATE.students || {}).forEach(ensureStudentShape);
