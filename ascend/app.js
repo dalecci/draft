@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 43; // shown on every screen so you can confirm the running version
+const APP_BUILD = 44; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -2204,14 +2204,60 @@ function renderMoveUpCard(stu) {
   card.append(el('p', { class: 'muted', style: 'font-size:11px;margin-top:6px' }, `His ${gradeLabel(stu.grade)} progress is saved — you can switch him back anytime in Edit plan.`));
   return card;
 }
+/* ------- evidence report v2: states, plain English, real-world actions ---- */
+function realWorldTip(unitName) {
+  const s = unitName.toLowerCase();
+  if (/money|financial|coin/.test(s)) return 'Play store with real coins: price three toys, pay, and have them count YOUR change back.';
+  if (/time|calendar|clock/.test(s)) return 'Ask "what time is it?" on an analog clock at dinner, and "what time in 20 minutes?"';
+  if (/fraction/.test(s)) return 'Cut a sandwich or pizza together and talk halves, fourths, and who got the bigger piece (and why).';
+  if (/place value|counting|names of numbers|compar/.test(s)) return 'License-plate game in the car: read the number, then ask what the tens (or hundreds) digit is worth.';
+  if (/measure|length|unit/.test(s)) return 'Grab a ruler and measure three things — then ask which unit fits a pencil vs the couch.';
+  if (/data|graph/.test(s)) return 'Tally the family\'s shoe colors or cereal picks, then ask "how many more?" questions.';
+  if (/shape|geometr|two-dimensional|three-dimensional|area|perimeter/.test(s)) return 'Shape hunt in the kitchen: find a cylinder, a cube, and something with exactly 4 right angles.';
+  if (/multiplic|division|repeated|array/.test(s)) return 'Set the table as an array: 2 rows of 4 plates — how many in all? Rearrange and ask again.';
+  if (/estimat|round/.test(s)) return 'At the store, estimate the cart total to the nearest ten dollars before checkout — closest guess wins.';
+  return 'Sneak one question from this topic into everyday life — car rides and dinner tables beat worksheets.';
+}
+function evidenceSummary(stu) {
+  return withGrade(stu, () => {
+    let secure = 0, awaiting = 0, fragile = 0, emerging = 0;
+    for (const s of ALL_SKILLS) {
+      const p = stu.progress[s.id]; if (!p || !p.attempts) continue;
+      if (p.retired) secure++;
+      else if (p.review && p.review.fragile) fragile++;
+      else if (p.masteredAt) awaiting++;
+      else emerging++;
+    }
+    return { secure, awaiting, fragile, emerging };
+  });
+}
 function renderCoachCard(stu) {
   const r = coachReport(stu);
+  const ev = evidenceSummary(stu);
+  const topMis = Object.entries(stu.games.miscons || {}).filter(([, x]) => x.count >= 2).sort((a, b) => b[1].count - a[1].count)[0];
+  const cur = withGrade(stu, () => currentSkill(stu));
+  const curLoc = cur ? withGrade(stu, () => skillLoc(cur.id)) : null;
   const card = el('div', { class: 'card coach-card' });
   card.append(el('div', { class: 'coach-head' }, [el('span', { class: 'coach-ic' }, '🧭'), el('h3', {}, "Coach's Report"), el('span', { class: 'coach-live' }, 'live')]));
   card.append(el('div', { class: 'coach-headline' }, r.headline));
+  // evidence by state — "genuinely secure" vs "recently completed" are different things
+  card.append(el('div', { class: 'ev-row' }, [
+    el('span', { class: 'badge good' }, `🏛 ${ev.secure} secure (survived 30-day reviews)`),
+    el('span', { class: 'mini' }, `⭐ ${ev.awaiting} mastered, reviews in progress`),
+    ev.fragile ? el('span', { class: 'badge warn' }, `🕰 ${ev.fragile} fragile`) : null,
+    el('span', { class: 'mini' }, `🌱 ${ev.emerging} being learned`),
+  ]));
   const box = el('div', { class: 'coach-lines' });
   r.lines.forEach(l => box.append(el('div', { class: 'coach-line' }, l)));
+  if (topMis && typeof misconceptionById === 'function') {
+    const m = misconceptionById(topMis[0]);
+    if (m) box.append(el('div', { class: 'coach-line' }, `🔍 ${stu.name} still sometimes shows "${m.name.toLowerCase()}" (${topMis[1].count}× recently). The app is running fix-it lessons; the home activity below beats them all.`));
+  }
+  if (curLoc) box.append(el('div', { class: 'coach-line' }, `📖 Working on now: "${cur.name}" in ${curLoc.unit.name}.`));
   card.append(box);
+  // ONE real-world action, chosen for the weakest area — 5 minutes, no worksheet
+  const focusUnit = topMis && curLoc ? curLoc.unit.name : (curLoc ? curLoc.unit.name : null);
+  if (focusUnit) card.append(el('div', { class: 'lesson-why' }, [el('b', {}, '🏡 This week, away from the screen: '), realWorldTip(focusUnit)]));
   if (r.sug.length) {
     card.append(el('div', { class: 'sug-head' }, '👉 Recommended this week:'));
     r.sug.forEach(x => { const loc = skillLoc(x.s.id); card.append(el('div', { class: 'sug-row' }, [
