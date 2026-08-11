@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 40; // shown on every screen so you can confirm the running version
+const APP_BUILD = 41; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -278,15 +278,30 @@ function stLbl() { return stretchLabel(ACTIVE_GRADE); }
 
 // central hook: records the answer AND all engagement (xp, coins, quests, streak, badges)
 // `stretch` = the above-grade (Grade 6) track
-/* ---- focus meter: real in-app activity, counted honestly (no surveillance) */
+/* ---- focus meter: real in-app activity, counted honestly (no surveillance).
+   Time allowances are PER QUESTION TYPE, from this kid's own history — a long
+   hand calculation gets a long allowance; 'what comes after 7' does not. ---- */
+function expectedSecsFor(stu, skillId) {
+  const xs = [];
+  for (const l of stu.log) { if (l.skillId === skillId && l.seconds > 1 && l.seconds < 600) { xs.push(l.seconds); if (xs.length >= 40) break; } }
+  if (xs.length >= 5) { xs.sort((a, b) => a - b); return xs[Math.floor(xs.length / 2)]; }
+  return medianSeconds(stu); // not enough history on this skill yet — use their overall pace
+}
+function focusLimitFor(stu, skillId) {
+  const xs = [];
+  for (const l of stu.log) { if (l.skillId === skillId && l.seconds > 1 && l.seconds < 600) { xs.push(l.seconds); if (xs.length >= 40) break; } }
+  if (xs.length >= 5) { xs.sort((a, b) => a - b); return Math.max(45, Math.min(240, 3 * xs[Math.floor(xs.length / 2)])); }
+  return Math.max(90, Math.min(240, 3 * medianSeconds(stu))); // little history on this skill yet — assume it needs hand work, be generous
+}
 function focusToday(stu) {
   const g = stu.games, dk = dayKey(now());
   if (!g.focus || g.focus.day !== dk) g.focus = { day: dk, activeMs: 0, idleMs: 0, q: 0 };
   return g.focus;
 }
-function trackFocus(stu, seconds) {
+function trackFocus(stu, seconds, limit) {
   const f = focusToday(stu);
-  const active = Math.min(seconds, 90), idle = Math.max(0, seconds - 90); // >90s on one question = drifting
+  limit = limit || 90; // beyond the allowance for THIS kind of question = drifting
+  const active = Math.min(seconds, limit), idle = Math.max(0, seconds - limit);
   f.activeMs += active * 1000; f.idleMs += idle * 1000; f.q++;
 }
 function focusPct(stu) { const f = focusToday(stu); const tot = f.activeMs + f.idleMs; return tot ? Math.round(100 * f.activeMs / tot) : 100; }
@@ -311,7 +326,7 @@ function handleAnswer(stu, skill, correct, seconds, stretch) {
   let mastered = false, stretchMastered = false;
   if (stretch) stretchMastered = recordStretch(stu, skill, correct);
   else mastered = recordAnswer(stu, skill, correct, seconds);
-  trackFocus(stu, seconds);
+  trackFocus(stu, seconds, focusLimitFor(stu, skill.id));
   tuneDifficulty(stu, skill, correct, stretch);
   ensureDailies(stu);
   awardXP(stu, correct ? (stretch ? 14 : 8) : 2);
@@ -676,11 +691,12 @@ function ladderTestItems(gid) {
     return out;
   });
 }
-function startLadderTest(gid) { LADDER = { mode: 'test', grade: gid, items: ladderTestItems(gid), i: 0, correct: 0, misses: [] }; go('ladder'); }
+function startLadderTest(gid) { LADDER = { mode: 'test', grade: gid, items: ladderTestItems(gid), i: 0, correct: 0, misses: [], t0: now(), qStart: now() }; go('ladder'); }
 function finishLadderTest(stu) {
   const L = LADDER, pct = Math.round(100 * L.correct / L.items.length);
   const info = ladderInfo(stu, L.grade);
   info.tries = (info.tries || 0) + 1; info.at = now();
+  info.lastSecs = Math.max(1, Math.round((now() - (L.t0 || now())) / 1000));
   const firstClear = pct >= LADDER_PASS && !info.cleared, firstHundred = pct >= 100 && !info.hundred;
   if (pct > (info.best || 0)) info.best = pct;
   if (pct >= LADDER_PASS) info.cleared = true;
@@ -711,10 +727,12 @@ function renderLadder() {
     const submit = (val) => {
       if (L.locked) return; L.locked = true;
       const ok = checkAnswer(item, val);
+      const secs = Math.max(1, Math.min(600, Math.round((now() - (L.qStart || now())) / 1000)));
+      trackFocus(stu, secs, Math.max(60, Math.min(240, 3 * medianSeconds(stu)))); // ladder work counts toward focus, with a generous mixed-question allowance
       if (ok) L.correct++; else L.misses.push(entry.skill);
       feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
       feedback.innerHTML = (ok ? '✅ Correct!' : '❌ Not quite.') + `<div class="expl">${item.explanation || ''}</div>`;
-      const nxt = () => { L.locked = false; L.i++; if (L.i >= L.items.length) finishLadderTest(stu); go('ladder'); };
+      const nxt = () => { L.locked = false; L.i++; L.qStart = now(); if (L.i >= L.items.length) finishLadderTest(stu); go('ladder'); };
       feedback.append(el('button', { class: 'btn primary', onclick: nxt }, L.i + 1 >= L.items.length ? 'Finish ▶' : 'Next ▶'));
     };
     if (item.type === 'mc') {
@@ -737,6 +755,8 @@ function renderLadder() {
     const card = el('div', { class: 'card game-splash' });
     card.append(el('div', { class: 'game-logo' }, d.pct >= 100 ? '🏅' : d.pct >= LADDER_PASS ? '🎉' : '💪'));
     card.append(el('h2', {}, `${d.pct}% on the ${gradeLabel(L.grade)} test`));
+    const li = ladderInfo(stu, L.grade);
+    if (li.lastSecs) card.append(el('p', { class: 'muted' }, `⏱ ${Math.floor(li.lastSecs / 60)}:${String(li.lastSecs % 60).padStart(2, '0')} for ${L.items.length} questions`));
     if (d.pct >= 100) card.append(el('p', {}, `PERFECT! ${d.firstHundred ? `Jackpot: +${LADDER_JACKPOT} coins! 🪙` : 'Already jackpotted this rung — legend status stands.'}`));
     else if (d.pct >= LADDER_PASS) card.append(el('p', {}, `Rung cleared! ${d.firstClear ? `+${LADDER_CLEAR_COINS} coins. ` : ''}Get 100% for the ${LADDER_JACKPOT}-coin jackpot — you're only ${L.misses.length} question${L.misses.length === 1 ? '' : 's'} away.`));
     else card.append(el('p', {}, `You need ${LADDER_PASS}% to clear this rung. Patch your ${L.misses.length} holes below and take it again — new questions every time.`));
@@ -778,6 +798,8 @@ function renderLadder() {
     const submit = (val) => {
       if (L.locked) return; L.locked = true;
       const ok = checkAnswer(item, val);
+      trackFocus(stu, Math.max(1, Math.min(600, Math.round((now() - (L.qStart || now())) / 1000))), Math.max(60, Math.min(240, 3 * medianSeconds(stu))));
+      L.qStart = now();
       if (ok) L.correct++;
       feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
       feedback.innerHTML = (ok ? '✅ Correct!' : '❌ Not quite.') + `<div class="expl">${item.explanation || ''}</div>`;
@@ -836,7 +858,7 @@ function renderLadder() {
   wrap.append(navbar('practice'));
   return wrap;
 }
-function startLadderFix(gid, hole) { LADDER = { mode: 'fix', grade: gid, hole, i: 0, correct: 0, n: 5, item: withGradeId(gid, () => generateItem(hole.gen, hole)) }; go('ladder'); }
+function startLadderFix(gid, hole) { LADDER = { mode: 'fix', grade: gid, hole, i: 0, correct: 0, n: 5, item: withGradeId(gid, () => generateItem(hole.gen, hole)), qStart: now() }; go('ladder'); }
 
 /* --------------------------- STUDENT: PROGRESS --------------------------- */
 function renderProgress() {
@@ -960,7 +982,7 @@ function gameItem(pool) {
   return { skill, prompt: it.prompt, answer: String(it.answer), choices, explanation: it.explanation };
 }
 function startSprint() {
-  SPRINT = { phase: 'playing', timeLeft: SPRINT_SECONDS, score: 0, streak: 0, best: 0, answered: 0, correct: 0, item: gameItem() };
+  SPRINT = { phase: 'playing', timeLeft: SPRINT_SECONDS, score: 0, streak: 0, best: 0, answered: 0, correct: 0, item: gameItem(), qStart: now() };
   go('sprint');
 }
 function sprintTick() {
@@ -975,12 +997,13 @@ function sprintAnswer(choice, btn) {
   const ok = choice === SPRINT.item.answer;
   SPRINT.answered++; if (ok) SPRINT.correct++;
   if (!ok) recordMiss(stu, SPRINT.item.skill, SPRINT.item, choice);
-  const cel = handleAnswer(stu, SPRINT.item.skill, ok, 3); // counts toward mastery, xp, quests, reports
+  const secs = Math.max(1, Math.min(60, Math.round((now() - (SPRINT.qStart || now())) / 1000)));
+  const cel = handleAnswer(stu, SPRINT.item.skill, ok, secs); // real measured time, not a constant
   if (cel.newBadges && cel.newBadges.length) SPRINT.newBadges = (SPRINT.newBadges || []).concat(cel.newBadges);
   if (ok) { SPRINT.streak++; const mult = 1 + Math.floor(SPRINT.streak / 3); SPRINT.score += 10 * mult; if (btn) btn.classList.add('right'); }
   else { SPRINT.streak = 0; if (btn) btn.classList.add('wrong'); }
   if (SPRINT.dom) { SPRINT.dom.score.textContent = SPRINT.score; SPRINT.dom.streak.textContent = '🔥' + SPRINT.streak; }
-  setTimeout(() => { SPRINT.locked = false; SPRINT.item = gameItem(); paintSprintQuestion(); }, ok ? 220 : 650);
+  setTimeout(() => { SPRINT.locked = false; SPRINT.item = gameItem(); SPRINT.qStart = now(); paintSprintQuestion(); }, ok ? 220 : 650);
 }
 function paintSprintQuestion() {
   if (!SPRINT.dom) return;
@@ -1071,7 +1094,7 @@ function bossTick() {
 }
 function startBoss(unit) {
   const stu = STATE.students[STATE.currentUserId];
-  BOSS = { phase: 'active', unitId: unit.id, target: BOSS_TARGET, streak: 0, lives: BOSS_LIVES, item: gameItem(unitSkills(unit.id)), asked: 0, correct: 0, newBadges: [] };
+  BOSS = { phase: 'active', unitId: unit.id, target: BOSS_TARGET, streak: 0, lives: BOSS_LIVES, item: gameItem(unitSkills(unit.id)), asked: 0, correct: 0, newBadges: [], qStart: now() };
   ensureDailies(stu); bumpQuest(stu, 'boss', 1); persist();
   go('boss');
 }
@@ -1081,7 +1104,7 @@ function bossResolve(result, btn) {
   const stu = STATE.students[STATE.currentUserId];
   const answered = result !== 'timeout';
   const ok = result === true;
-  if (answered) { BOSS.asked++; if (ok) BOSS.correct++; if (!ok) recordMiss(stu, BOSS.item.skill, BOSS.item, 'boss'); const cel = handleAnswer(stu, BOSS.item.skill, ok, 3); if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = BOSS.newBadges.concat(cel.newBadges); }
+  if (answered) { BOSS.asked++; if (ok) BOSS.correct++; if (!ok) recordMiss(stu, BOSS.item.skill, BOSS.item, 'boss'); const secs = Math.max(1, Math.min(90, Math.round((now() - (BOSS.qStart || now())) / 1000))); const cel = handleAnswer(stu, BOSS.item.skill, ok, secs); if (cel.newBadges && cel.newBadges.length) BOSS.newBadges = BOSS.newBadges.concat(cel.newBadges); }
   if (ok) { BOSS.streak++; if (btn) btn.classList.add('right'); }
   else { BOSS.lives = Math.max(0, BOSS.lives - 1); BOSS.streak = 0; if (btn) btn.classList.add('wrong'); }
   persist();
@@ -1089,7 +1112,7 @@ function bossResolve(result, btn) {
     BOSS.locked = false;
     if (BOSS.streak >= BOSS.target) { winBoss(); return; }
     if (BOSS.lives <= 0) { BOSS.phase = 'lose'; go('boss'); return; }
-    BOSS.item = gameItem(unitSkills(BOSS.unitId)); go('boss');
+    BOSS.item = gameItem(unitSkills(BOSS.unitId)); BOSS.qStart = now(); go('boss');
   }, ok ? 320 : 680);
 }
 function answerBoss(choice, btn) { bossResolve(choice === BOSS.item.answer, btn); }
@@ -1214,19 +1237,26 @@ function setupBuild() {
   else if (BUILD.kind === 'clock') { BUILD.thr = randInt(1, 12); BUILD.tmin = pick([0, 15, 30, 45]); BUILD.hr = 12; BUILD.min = 0; }
   else if (BUILD.kind === 'coins') { BUILD.target = randInt(6, 99); BUILD.coins = []; }
   else if (BUILD.kind === 'array') { BUILD.trows = randInt(2, 5); BUILD.tcols = randInt(2, 5); BUILD.rows = 1; BUILD.cols = 1; }
-  BUILD.solved = false; BUILD.lastHint = null;
+  BUILD.solved = false; BUILD.lastHint = null; BUILD.tstart = now(); BUILD.taskTries = 0; BUILD.wasStar = false;
+  if (BUILD.kind === 'coins') { let c = BUILD.target, m = 0; [25, 10, 5, 1].forEach(v => { m += Math.floor(c / v); c %= v; }); BUILD.minCoins = m; }
 }
-function startBuild(kind) { BUILD = { kind, i: 0, n: 6, correct: 0 }; setupBuild(); go('build'); }
+function startBuild(kind) { BUILD = { kind, i: 0, n: 6, correct: 0, stars: 0, firstTries: 0, totalSecs: 0 }; setupBuild(); go('build'); }
 function refreshBuild() { const root = $('#app'); root.innerHTML = ''; root.append(renderBuild()); }
 function checkBuild(ok, hint) {
   if (BUILD.solved) return;
   const stu = STATE.students[STATE.currentUserId];
   if (ok) {
     BUILD.solved = true; BUILD.lastHint = null; BUILD.correct++;
-    awardXP(stu, 8); awardCoins(stu, 1, 'Build It'); touchStreak(stu); refreshBadges(stu); persist();
-    confetti(['⭐', '🎉']); toast('✅ Correct!');
+    const secs = Math.max(1, Math.min(900, Math.round((now() - (BUILD.tstart || now())) / 1000)));
+    BUILD.totalSecs += secs;
+    trackFocus(stu, secs, 300); // building by hand is slow work — generous allowance
+    awardXP(stu, 8); awardCoins(stu, 1, 'Build It');
+    if (BUILD.taskTries === 0) { BUILD.firstTries++; awardCoins(stu, 1, '🎯 Build It first try'); }
+    if (BUILD.kind === 'coins' && BUILD.coins.length === BUILD.minCoins) { BUILD.stars++; BUILD.wasStar = true; awardCoins(stu, 2, '🌟 fewest coins possible'); }
+    touchStreak(stu); refreshBadges(stu); persist();
+    confetti(BUILD.wasStar ? ['🌟', '🪙', '🎉'] : ['⭐', '🎉']); toast(BUILD.wasStar ? '🌟 Fewest coins! +2 bonus' : '✅ Correct!');
     setTimeout(() => { BUILD.i++; if (BUILD.i >= BUILD.n) BUILD.done = true; else setupBuild(); refreshBuild(); }, 800);
-  } else { BUILD.lastHint = hint || 'Not quite — take another look!'; toast('❌ Not quite'); } // reveal what they built only AFTER they commit
+  } else { BUILD.taskTries++; BUILD.lastHint = hint || 'Not quite — take another look!'; toast('❌ Not quite'); } // reveal what they built only AFTER they commit
   refreshBuild();
 }
 function renderBuild() {
@@ -1242,7 +1272,9 @@ function renderBuild() {
     wrap.append(grid); wrap.append(navbar('play')); return wrap;
   }
   if (BUILD.done) {
+    const mm = Math.floor(BUILD.totalSecs / 60), ss = String(BUILD.totalSecs % 60).padStart(2, '0');
     wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '🎉'), el('h2', {}, `${BUILD.correct}/${BUILD.n} built!`),
+      el('div', { class: 'muted' }, `🎯 ${BUILD.firstTries}/${BUILD.n} on the first try${BUILD.kind === 'coins' ? ` · 🌟 ${BUILD.stars} fewest-coin stars` : ''} · ⏱ ${mm}:${ss}`),
       el('div', { class: 'muted' }, 'Nice building! +XP & coins earned.'),
       el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
         el('button', { class: 'btn primary', onclick: () => startBuild(BUILD.kind) }, '↻ Again'),
@@ -1349,7 +1381,7 @@ function buildCoins(area, status) {
     jar.innerHTML = '';
     BUILD.coins.forEach((v, idx) => { const c = COINS.find(x => x[1] === v); jar.append(el('div', { class: 'coin', style: `background:${c[2]}`, title: 'tap to remove', onclick: () => { BUILD.coins.splice(idx, 1); draw(); } }, v + '¢')); });
     const hint = BUILD.lastHint; BUILD.lastHint = null;
-    status.innerHTML = BUILD.solved ? `✅ ${target}¢ exactly!`
+    status.innerHTML = BUILD.solved ? (BUILD.wasStar ? `✅ ${target}¢ in the FEWEST coins possible! 🌟 +2 bonus` : `✅ ${target}¢ exactly! You used ${BUILD.coins.length} coins — it can be done in ${BUILD.minCoins}. 🌟 next time?`)
       : hint ? '🤔 ' + hint : (BUILD.coins.length ? `${BUILD.coins.length} coin${BUILD.coins.length === 1 ? '' : 's'} in the jar — add them up in your head!` : 'Tap coins below to add them to the jar.');
     status.className = 'build-status' + (BUILD.solved ? ' ok' : hint ? ' warn' : '');
   };
@@ -1398,19 +1430,19 @@ const RUN_TRAVEL = RUN_FIELD_H - 70;
 // how many ms the gate takes to reach the runner — starts SLOW (14s), ramps to ~5s over ~40 questions
 function runnerCrossMs(score) { return Math.max(5000, 14000 - score * 230); }
 function runnerSpeed(score) { return RUN_TRAVEL / runnerCrossMs(score); }
-function startRunner() { RUNNER = Object.assign({ phase: 'run', lane: 1, hearts: 3, score: 0, gy: 0, last: 0, resolving: false }, runnerItem()); RUNNER.speed = runnerSpeed(0); go('runner'); }
+function startRunner() { RUNNER = Object.assign({ phase: 'run', lane: 1, hearts: 3, score: 0, gy: 0, last: 0, resolving: false }, runnerItem()); RUNNER.speed = runnerSpeed(0); RUNNER.qStart = now(); go('runner'); }
 function moveRunner(d) { if (RUNNER.phase !== 'run') return; RUNNER.lane = Math.max(0, Math.min(2, RUNNER.lane + d)); if (RUNNER.dom) RUNNER.dom.guy.style.left = (RUNNER.lane * 33.333 + 16.666) + '%'; }
 function dropRunner() { if (RUNNER.phase === 'run') runnerResolve(); } // commit early once you know the answer
 function runnerResolve() {
   if (RUNNER.resolving) return; RUNNER.resolving = true;
   const stu = STATE.students[STATE.currentUserId];
   const ok = RUNNER.lane === RUNNER.correctLane;
-  handleAnswer(stu, RUNNER.skill, ok, 2);   // counts toward mastery/xp like the other games
+  handleAnswer(stu, RUNNER.skill, ok, Math.max(1, Math.min(30, Math.round((now() - (RUNNER.qStart || now())) / 1000))));
   if (ok) { RUNNER.score++; }
   else { RUNNER.hearts--; if (RUNNER.dom) { RUNNER.dom.field.classList.add('shake'); setTimeout(() => RUNNER.dom && RUNNER.dom.field.classList.remove('shake'), 300); } }
   persist();
   if (RUNNER.hearts <= 0) { endRunner(); return; }
-  Object.assign(RUNNER, runnerItem()); RUNNER.gy = 0; RUNNER.speed = runnerSpeed(RUNNER.score); RUNNER.resolving = false;
+  Object.assign(RUNNER, runnerItem()); RUNNER.gy = 0; RUNNER.speed = runnerSpeed(RUNNER.score); RUNNER.resolving = false; RUNNER.qStart = now();
   paintRunner();
 }
 function endRunner() {
@@ -1843,14 +1875,14 @@ function renderParentReview() {
 
 /* --------------------------- FAST PRACTICE TEST -------------------------- */
 let FAST = null;
-function startFast() { FAST = { i: 0, n: 10, correct: 0, item: gameItem(), answers: [] }; go('fast'); }
+function startFast() { FAST = { i: 0, n: 10, correct: 0, item: gameItem(), answers: [], qStart: now() }; go('fast'); }
 function fastAnswer(choice, btn) {
   if (FAST.locked) return; FAST.locked = true;
   const stu = STATE.students[STATE.currentUserId];
   const ok = choice === FAST.item.answer;
   if (ok) { FAST.correct++; if (btn) btn.classList.add('right'); } else { recordMiss(stu, FAST.item.skill, FAST.item, choice); if (btn) btn.classList.add('wrong'); }
-  handleAnswer(stu, FAST.item.skill, ok, 5); persist();
-  setTimeout(() => { FAST.locked = false; FAST.i++; if (FAST.i >= FAST.n) { FAST.done = true; } else { FAST.item = gameItem(); } go('fast'); }, ok ? 250 : 550);
+  handleAnswer(stu, FAST.item.skill, ok, Math.max(1, Math.min(120, Math.round((now() - (FAST.qStart || now())) / 1000)))); persist();
+  setTimeout(() => { FAST.locked = false; FAST.i++; if (FAST.i >= FAST.n) { FAST.done = true; } else { FAST.item = gameItem(); FAST.qStart = now(); } go('fast'); }, ok ? 250 : 550);
 }
 function renderFast() {
   const stu = STATE.students[STATE.currentUserId];
