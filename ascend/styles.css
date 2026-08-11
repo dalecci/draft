@@ -289,6 +289,17 @@ button { font-family: inherit; cursor: pointer; border: none; }
 @keyframes btnpulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
 .btn[disabled] { opacity: .55; box-shadow: none; animation: none; }
 
+/* Level Ladder */
+.ladder-rung { border-left: 6px solid #d6ccee; }
+.ladder-rung.clear { border-left-color: var(--good); }
+.ladder-rung.gold { border-left-color: #f59f00; background: linear-gradient(180deg, rgba(245,159,0,.07), var(--card)); }
+.rung-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.rung-name b { font-size: 17px; }
+.rung-best { font-weight: 800; color: var(--muted); font-size: 13px; }
+.ladder-prow { display: flex; gap: 10px; align-items: center; margin: 8px 0; flex-wrap: wrap; }
+.ladder-pmid { flex: 1; min-width: 140px; }
+.ladder-prow .inp { flex: 1; min-width: 150px; }
+
 /* assignments */
 .assign-card { border: 2px solid var(--primary); }
 .assign-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; border-top: 1px solid #f0ecf9; }
