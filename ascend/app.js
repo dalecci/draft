@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 42; // shown on every screen so you can confirm the running version
+const APP_BUILD = 43; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -258,9 +258,45 @@ function recordAnswer(stu, skill, correct, seconds) {
   p.attempts++; if (correct) p.correct++;
   p.score = Math.max(0, Math.min(100, p.score + (correct ? 14 : -10)));
   let newlyMastered = false;
-  if (p.score >= 100 && !p.masteredAt) { p.masteredAt = now(); newlyMastered = true; }
+  if (p.score >= 100 && !p.masteredAt) { p.masteredAt = now(); newlyMastered = true; scheduleReview(p, 0); }
   stu.log.push({ ts: now(), skillId: skill.id, unitId: skill.unitId, correct, seconds });
   return newlyMastered;
+}
+
+/* --------------- SPACED RETRIEVAL (the Daily Warm-up queue) ---------------
+   After mastery, a skill comes back for a quick check at ~1, 3, 7, 14, and
+   30 days. Pass -> next interval. Miss -> the skill is FRAGILE: it steps
+   back an interval and returns tomorrow. Served as a friendly warm-up,
+   max 3 questions a day — never a surprise test. */
+const REVIEW_DAYS = [1, 3, 7, 14, 30];
+function scheduleReview(p, stage) { p.review = { stage: Math.max(0, Math.min(REVIEW_DAYS.length - 1, stage)), due: now() + REVIEW_DAYS[Math.max(0, Math.min(REVIEW_DAYS.length - 1, stage))] * DAY, fragile: false }; }
+function backfillReviews(stu) { // older masteries (pre-warmup builds) join the cycle mid-way
+  for (const id in stu.progress) { const p = stu.progress[id]; if (p && p.masteredAt && !p.review && !p.retired) { p.review = { stage: 2, due: p.masteredAt + 7 * DAY, fragile: false }; } }
+}
+function warmupQueue(stu) {
+  backfillReviews(stu);
+  return withGrade(stu, () => ALL_SKILLS
+    .filter(s => { const p = stu.progress[s.id]; return p && p.review && !p.retired && p.review.due <= now(); })
+    .sort((a, b) => stu.progress[a.id].review.due - stu.progress[b.id].review.due)
+    .slice(0, 3));
+}
+function fragileSkills(stu) {
+  return withGrade(stu, () => ALL_SKILLS.filter(s => { const p = stu.progress[s.id]; return p && p.review && p.review.fragile; }));
+}
+function resolveWarmup(stu, skill, correct, seconds) {
+  const p = stu.progress[skill.id]; if (!p || !p.review) return;
+  trackFocus(stu, seconds, focusLimitFor(stu, skill.id));
+  stu.log.push({ ts: now(), skillId: skill.id, unitId: skill.unitId, correct, seconds, warmup: true });
+  ensureDailies(stu); bumpQuest(stu, 'answer', 1); if (correct) bumpQuest(stu, 'correct', 1);
+  if (correct) {
+    awardCoins(stu, 1, '🔥 warm-up');
+    const nxt = p.review.stage + 1;
+    if (nxt >= REVIEW_DAYS.length) { p.retired = true; delete p.review; } // survived the full cycle — truly secure
+    else scheduleReview(p, nxt);
+  } else {
+    scheduleReview(p, p.review.stage - 1);
+    p.review.due = now() + 1 * DAY; p.review.fragile = true; // fragile: back tomorrow
+  }
 }
 
 // above-grade "Grade 6" track — a separate score on the same skill
@@ -536,6 +572,15 @@ function renderStudentHome() {
       el('span', { class: 'mini' }, 'Practice ▶'),
     ])); });
     wrap.append(ab);
+  }
+
+  // daily warm-up (spaced retrieval) — friendly, 3 questions max
+  const wq = warmupQueue(stu);
+  if (wq.length) {
+    wrap.append(el('div', { class: 'card play-card warmup-card', onclick: () => { WARMUP = null; go('warmup'); } }, [
+      el('div', { class: 'play-emoji' }, '🔥'),
+      el('div', {}, [el('div', { class: 'play-title' }, `Warm-up: ${wq.length} quick one${wq.length === 1 ? '' : 's'}`), el('div', { class: 'play-sub' }, 'Keep mastered skills strong (~1 min)')]),
+    ]));
   }
 
   // today's mission
@@ -1745,6 +1790,64 @@ function startSkill(skillId) {
   else { PRACTICE = null; go('practice', { skill: skillId }); }
 }
 
+/* ------------------------ DAILY WARM-UP (retrieval) ----------------------- */
+let WARMUP = null;
+function startWarmup() {
+  const stu = STATE.students[STATE.currentUserId];
+  const q = warmupQueue(stu);
+  if (!q.length) { go('student-home'); return; }
+  WARMUP = { items: q.map(sk => ({ skill: sk, item: withGrade(stu, () => generateItemAt(sk.gen, practicePos(stu, sk))) })), i: 0, correct: 0, missed: [], qStart: now() };
+  go('warmup');
+}
+function renderWarmup() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  if (!WARMUP) { startWarmup(); return wrap; }
+  if (WARMUP.i >= WARMUP.items.length) {
+    const allGood = WARMUP.correct === WARMUP.items.length;
+    const card = el('div', { class: 'card game-splash' });
+    card.append(el('div', { class: 'game-logo' }, allGood ? '🧠' : '💪'));
+    card.append(el('h2', {}, `Warm-up done — ${WARMUP.correct}/${WARMUP.items.length}`));
+    card.append(el('p', { class: 'muted' }, allGood ? 'Still solid! Those skills come back for another check later — that\'s how they stay yours forever.'
+      : `${WARMUP.missed.length} skill${WARMUP.missed.length === 1 ? ' is' : 's are'} getting rusty — ${WARMUP.missed.map(s => '"' + s.name + '"').join(', ')}. It comes back tomorrow. Rust wiped early is rust gone!`));
+    card.append(el('button', { class: 'btn primary big wide', onclick: () => { WARMUP = null; go('student-home'); } }, 'Done ▶'));
+    wrap.append(card); wrap.append(navbar('home'));
+    return wrap;
+  }
+  const cur = WARMUP.items[WARMUP.i], item = cur.item;
+  const card = el('div', { class: 'card practice' });
+  card.append(el('div', { class: 'practice-top' }, [
+    el('div', { class: 'chip', style: 'background:#12b88622;color:#12b886' }, `🔥 Warm-up · keeping "${cur.skill.name}" strong`),
+    el('span', { class: 'mini' }, `${WARMUP.i + 1}/${WARMUP.items.length}`),
+  ]));
+  card.append(el('div', { class: 'q', html: item.prompt }));
+  const feedback = el('div', { class: 'feedback' });
+  const submit = (val) => {
+    if (WARMUP.locked) return; WARMUP.locked = true;
+    const ok = checkAnswer(item, val);
+    const secs = Math.max(1, Math.min(600, Math.round((now() - WARMUP.qStart) / 1000)));
+    resolveWarmup(stu, cur.skill, ok, secs);
+    if (ok) WARMUP.correct++; else WARMUP.missed.push(cur.skill);
+    persist();
+    feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
+    feedback.innerHTML = (ok ? '✅ Still got it!' : '🕰 A little rusty — no problem.') + `<div class="expl">${item.explanation || ''}</div>`;
+    feedback.append(el('button', { class: 'btn primary', onclick: () => { WARMUP.locked = false; WARMUP.i++; WARMUP.qStart = now(); go('warmup'); } }, WARMUP.i + 1 >= WARMUP.items.length ? 'Finish ▶' : 'Next ▶'));
+  };
+  if (item.type === 'mc') {
+    const opts = el('div', { class: 'options' });
+    item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: () => submit(c) }, c)));
+    card.append(opts);
+  } else {
+    const inp = el('input', { class: 'inp answer', placeholder: 'Your answer', onkeydown: e => { if (e.key === 'Enter') submit(inp.value); } });
+    card.append(el('div', { class: 'answer-row' }, [inp, el('button', { class: 'btn primary', onclick: () => submit(inp.value) }, 'Check')]));
+    setTimeout(() => inp.focus(), 30);
+  }
+  card.append(feedback);
+  wrap.append(card); wrap.append(navbar('home'));
+  return wrap;
+}
+
 /* ------------------------ REPAIR (fix-it lesson) -------------------------- */
 function renderRepair() {
   const stu = STATE.students[STATE.currentUserId];
@@ -2283,6 +2386,19 @@ function renderMisconsCard(stu) {
   return card;
 }
 
+/* ----------------------- PARENT: REVIEW RADAR ------------------------------ */
+function renderReviewCard(stu) {
+  const due = withGrade(stu, () => warmupQueue(stu));
+  const frag = fragileSkills(stu);
+  if (!due.length && !frag.length) return null;
+  const card = el('div', { class: 'card' });
+  card.append(el('h3', {}, '🕰 Review radar'));
+  card.append(el('p', { class: 'muted' }, 'Mastered skills come back for quick checks at 1, 3, 7, 14 and 30 days so they stick. Misses turn a skill "fragile" until it\'s re-proven.'));
+  if (due.length) card.append(el('div', { class: 'vrow' }, [el('b', {}, `Due today: `), due.map(s => s.name).join(' · ')]));
+  if (frag.length) card.append(el('div', { class: 'lesson-warn' }, [el('b', {}, `⚠️ Fragile (missed a review): `), frag.slice(0, 3).map(s => s.name).join(' · ') + (frag.length > 3 ? ` +${frag.length - 3} more` : '')]));
+  return card;
+}
+
 /* -------------------- PARENT: LEVEL LADDER + PLEDGES ---------------------- */
 function renderLadderCard(stu) {
   const card = el('div', { class: 'card' });
@@ -2335,6 +2451,7 @@ function renderParentChild() {
   // Coach's Report — written analysis + recommendations
   wrap.append(renderCoachCard(stu));
   const misCard = renderMisconsCard(stu); if (misCard) wrap.append(misCard);
+  const revCard = renderReviewCard(stu); if (revCard) wrap.append(revCard);
   wrap.append(renderLadderCard(stu));
   const perkCard = renderPerkCard(stu); if (perkCard) wrap.append(perkCard);
   if (readyToMoveUp(stu)) wrap.append(renderMoveUpCard(stu));
@@ -2440,7 +2557,7 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
-    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview, 'ladder': renderLadder, 'repair': renderRepair,
+    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview, 'ladder': renderLadder, 'repair': renderRepair, 'warmup': renderWarmup,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor, 'parent-add': renderAddChild,
   };
   const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build', 'runner'];
