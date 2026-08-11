@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 44; // shown on every screen so you can confirm the running version
+const APP_BUILD = 45; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -256,9 +256,14 @@ function currentSkill(stu) {
 function recordAnswer(stu, skill, correct, seconds) {
   const p = stu.progress[skill.id] || (stu.progress[skill.id] = { score: 0, attempts: 0, correct: 0, masteredAt: null });
   p.attempts++; if (correct) p.correct++;
+  const assisted = p.assistUntil && now() < p.assistUntil; // just re-watched the lesson / finished a fix-it
+  if (assisted && correct) p.assistedCorrect = (p.assistedCorrect || 0) + 1;
   p.score = Math.max(0, Math.min(100, p.score + (correct ? 14 : -10)));
   let newlyMastered = false;
-  if (p.score >= 100 && !p.masteredAt) { p.masteredAt = now(); newlyMastered = true; scheduleReview(p, 0); }
+  if (p.score >= 100 && !p.masteredAt) {
+    if (assisted) { p.score = 99; p.heldByAssist = true; } // correct-with-help is progress, not mastery
+    else { p.masteredAt = now(); newlyMastered = true; delete p.heldByAssist; scheduleReview(p, 0); }
+  }
   stu.log.push({ ts: now(), skillId: skill.id, unitId: skill.unitId, correct, seconds });
   return newlyMastered;
 }
@@ -650,7 +655,7 @@ function renderPractice() {
   if (adv) card.append(el('div', { class: 'adv-banner' }, '🔥 ' + stLbl().toUpperCase() + ' · Above grade level'));
   card.append(el('div', { class: 'practice-top' }, [
     el('div', { class: 'chip', style: `background:${skill.color}22;color:${skill.color}` }, skill.unitName),
-    el('button', { class: 'mini', onclick: () => go('lesson', { skill: skill.id, then: 'practice' }) }, '📖 Learn'),
+    el('button', { class: 'mini', onclick: () => { if (stu.games.taught[skill.id]) { const pp = stu.progress[skill.id]; if (pp) pp.assistUntil = now() + 5 * 60 * 1000; } go('lesson', { skill: skill.id, then: 'practice' }); } }, '📖 Learn'),
   ]));
   card.append(el('h2', {}, skill.name));
   if (adv) card.append(el('div', { class: 'smart' }, [el('span', {}, '🔥 ' + stLbl() + ' SmartScore'), el('div', { class: 'bar' }, el('div', { class: 'bar-fill', style: `width:${sp.score || 0}%;background:#f76707` })), el('b', {}, `${sp.score || 0}`)]));
@@ -680,6 +685,9 @@ function renderPractice() {
     celebrate(cel);
     feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
     feedback.innerHTML = (ok ? '✅ Correct! ' : '❌ Not quite. ') + `<div class="expl">${item.explanation}</div>`;
+    if (ok && stu.progress[skill.id] && stu.progress[skill.id].heldByAssist) {
+      feedback.append(el('div', { class: 'mis-tag', style: 'color:var(--primary)' }, '🔒 99! The lesson helped — now one clean solve on your own locks in mastery.'));
+    }
     if (misHit) {
       feedback.append(el('div', { class: 'mis-tag' }, `🔍 I think I see it: ${misHit.mis.name.toLowerCase()}.`));
       if (misHit.due) {
@@ -689,7 +697,7 @@ function renderPractice() {
     const p2 = stu.progress[skill.id];
     const win = p2.win || [];
     if (!ok && !adv && win.length >= 6 && win.reduce((a, b) => a + b, 0) / win.length < 0.6) {
-      feedback.append(el('button', { class: 'btn ghost', onclick: () => { PRACTICE = null; go('lesson', { skill: skill.id, then: 'practice' }) } }, '📖 Re-watch the lesson — it helps'));
+      feedback.append(el('button', { class: 'btn ghost', onclick: () => { const pp = stu.progress[skill.id]; if (pp) pp.assistUntil = now() + 5 * 60 * 1000; PRACTICE = null; go('lesson', { skill: skill.id, then: 'practice' }) } }, '📖 Re-watch the lesson — it helps'));
     }
     const onGradeMastered = !!p2.masteredAt, stretchMastered = !!(p2.stretch && p2.stretch.masteredAt);
     let goNext, label, secondary = null;
@@ -1872,6 +1880,7 @@ function renderRepair() {
   doneBtn.onclick = () => {
     if (idx < steps.length) return;
     const rec = stu.games.miscons[mis.id]; if (rec) { rec.repairedAt = now(); rec.repairs = (rec.repairs || 0) + 1; }
+    const pp = stu.progress[REPAIR_CTX.skillId]; if (pp) pp.assistUntil = now() + 5 * 60 * 1000; // help is great — but the mastery answer must be their own
     persist(); stopSpeech(); PRACTICE = null; go('practice', { skill: REPAIR_CTX.skillId });
   };
   const nextBtn = el('button', { class: 'btn primary' }, '▶ Show me');
