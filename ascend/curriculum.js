@@ -215,6 +215,14 @@ const GEN = {
   g3_measure() { const l = randInt(3, 12), w = randInt(2, 9); return Math.random() < 0.5 ? numItem(`A rectangle is ${l} long and ${w} wide. What is its PERIMETER?`, 2 * (l + w), `P = ${l}+${w}+${l}+${w} = ${2 * (l + w)}.`) : numItem(`A rectangle is ${l} long and ${w} wide. What is its AREA?`, l * w, `A = ${l} × ${w} = ${l * w}.`); },
   g3_round() { const n = randInt(101, 989); const k = pick([10, 100]); return numItem(`Round ${n} to the nearest ${k === 10 ? 'ten' : 'hundred'}.`, Math.round(n / k) * k, `${n} rounds to ${Math.round(n / k) * k}.`); },
   g3_word() { const kind = randInt(0, 2); if (kind === 0) { const g = randInt(2, 6), s = randInt(3, 8), extra = randInt(2, 9); return numItem(`There are ${g} boxes with ${s} toys each, plus ${extra} loose toys. How many toys in all?`, g * s + extra, `${g} × ${s} = ${g * s}, + ${extra} = ${g * s + extra}.`); } if (kind === 1) { const start = randInt(300, 900), spent = randInt(50, 250), earned = randInt(50, 250); return numItem(`You have ${start} points, lose ${spent}, then win ${earned}. How many now?`, start - spent + earned, `${start} − ${spent} + ${earned} = ${start - spent + earned}.`); } const kids = randInt(3, 6), each = randInt(4, 9); return numItem(`${kids} friends share stickers equally from a pack of ${kids * each}. How many does each get?`, each, `${kids * each} ÷ ${kids} = ${each}.`); },
+
+  /* ------------------------- GRADE 4 generators --------------------------- */
+  g4_round() { const n = randInt(1100, 98999); const k = pick([10, 100, 1000]); return numItem(`Round ${n.toLocaleString()} to the nearest ${k === 10 ? 'ten' : k === 100 ? 'hundred' : 'thousand'}.`, Math.round(n / k) * k, `${n.toLocaleString()} rounds to ${(Math.round(n / k) * k).toLocaleString()}.`); },
+  g4_mult1() { const a = randInt(102, 4999), b = randInt(2, 9); return numItem(`Multiply:  ${a} × ${b}`, a * b, `${a} × ${b} = ${(a * b).toLocaleString()}.`); },
+  g4_fracAdd() { const d = pick([3, 4, 5, 6, 8, 10, 12]); const n1 = randInt(1, d - 2), n2 = randInt(1, d - n1 - 1); const op = pick(['+', '−']); if (op === '+') return { type: 'text', prompt: `Add:  ${n1}/${d} + ${n2}/${d}  (write a/b in lowest terms)`, answer: fracStr(n1 + n2, d), explanation: `Same denominator — add the tops: ${n1 + n2}/${d} = ${fracStr(n1 + n2, d)}.` }; const hi = Math.max(n1, n2) + 1, lo = randInt(1, hi - 1); return { type: 'text', prompt: `Subtract:  ${hi}/${d} − ${lo}/${d}  (write a/b in lowest terms)`, answer: fracStr(hi - lo, d), explanation: `Same denominator — subtract the tops: ${hi - lo}/${d} = ${fracStr(hi - lo, d)}.` }; },
+  g4_angle() { if (Math.random() < 0.5) { const deg = pick([30, 45, 60, 85, 90, 95, 120, 150, 179]); const kind = deg < 90 ? 'Acute' : deg === 90 ? 'Right' : 'Obtuse'; return mc(`An angle measures ${deg}°. What kind of angle is it?`, kind, ['Acute', 'Right', 'Obtuse', 'Straight'].filter(x => x !== kind).slice(0, 3), `${deg}° is ${kind.toLowerCase()} (${kind === 'Acute' ? 'less than 90°' : kind === 'Right' ? 'exactly 90°' : 'between 90° and 180°'}).`); } const whole = pick([90, 180]); const a = randInt(15, whole - 15); return numItem(`Two angles make a ${whole === 90 ? 'right angle (90°)' : 'straight line (180°)'}. One is ${a}°. What is the other?`, whole - a, `${whole} − ${a} = ${whole - a}°.`); },
+  g4_symmetry() { const q = pick([['a square', 4], ['a rectangle (not square)', 2], ['an equilateral triangle', 3], ['the letter H', 2], ['the letter A', 1], ['a five-pointed star', 5]]); return numItem(`How many lines of symmetry does ${q[0]} have?`, q[1], `${q[0]} has ${q[1]} line${q[1] === 1 ? '' : 's'} of symmetry.`); },
+  g4_word() { const kind = randInt(0, 2); if (kind === 0) { const box = randInt(12, 48), per = randInt(3, 9), left = randInt(5, 40); return numItem(`A store has ${box} boxes with ${per} markers each. They sell ${left} markers. How many are left?`, box * per - left, `${box} × ${per} = ${box * per}, − ${left} = ${box * per - left}.`); } if (kind === 1) { const kids = randInt(3, 9), each = randInt(12, 45), extra = randInt(10, 99); return numItem(`${kids} classes collect ${each} cans each, then one more class adds ${extra} cans. Total cans?`, kids * each + extra, `${kids} × ${each} = ${kids * each}, + ${extra} = ${kids * each + extra}.`); } const total = randInt(4, 9) * randInt(11, 25), tables = gcd(total, pick([4, 6, 8])) > 1 ? pick([4, 6, 8]) : 4; const per = Math.floor(total / tables), rem = total % tables; return numItem(`${total} students sit equally at ${tables} tables; extras stand. How many students stand?`, rem, `${total} ÷ ${tables} = ${per} remainder ${rem}.`); },
 };
 
 // which base (Grade 5) generator gets an above-grade "Grade 6" stretch variant
@@ -596,17 +604,70 @@ function pickGen3(unitId, name) {
   const byUnit = { A: 'g3_place', B: 'g3_addsub', C: 'g3_mult', D: 'g3_div', E: 'g3_mult', F: 'g3_frac', G: 'g3_measure', H: 'g3_money', I: 'g3_word', J: 'name2D' };
   return byUnit[unitId] || 'g3_addsub';
 }
+// Grade 4 (core topics) — completes the G2→G6 ladder so no rung is missing
+const UNITS4 = [
+  ['A', 'Place value and rounding', ['Place value to 1,000,000', 'Value of a digit', 'Compare large numbers', 'Round to the nearest ten, hundred, and thousand', 'Standard and expanded form']],
+  ['B', 'Addition and subtraction', ['Add multi-digit numbers', 'Subtract multi-digit numbers', 'Add and subtract: word problems', 'Estimate sums and differences']],
+  ['C', 'Multiplication', ['Multiply by 1-digit numbers', 'Multiply 2-digit by 2-digit numbers', 'Multiply by multiples of 10', 'Multiplication word problems']],
+  ['D', 'Division', ['Divide by 1-digit numbers', 'Division with remainders', 'Division word problems', 'Relate multiplication and division']],
+  ['E', 'Factors and multiples', ['Factors', 'Multiples', 'Prime and composite numbers', 'Factor pairs']],
+  ['F', 'Fractions', ['Equivalent fractions', 'Compare fractions', 'Add and subtract fractions with like denominators', 'Improper fractions and mixed numbers', 'Multiply fractions by whole numbers']],
+  ['G', 'Decimals', ['Decimal place value', 'Compare decimals', 'Add and subtract decimals', 'Relate fractions and decimals']],
+  ['H', 'Measurement', ['Customary units', 'Metric units', 'Convert time units', 'Elapsed time', 'Money word problems']],
+  ['I', 'Geometry', ['Classify angles', 'Find missing angles', 'Lines of symmetry', 'Classify triangles', 'Perimeter', 'Area of rectangles']],
+  ['J', 'Word problems', ['Multi-step word problems', 'Problems with all four operations']],
+];
+function pickGen4(unitId, name) {
+  const s = name.toLowerCase(); const has = (...w) => w.some(x => s.includes(x));
+  if (has('round')) return 'g4_round';
+  if (has('place value', 'value of a digit', 'expanded')) return 'st_placeValue';
+  if (has('compare') && has('decimal')) return 'cmpDec';
+  if (has('compare') && has('fraction')) return 'cmpFrac';
+  if (has('compare')) return 'compare2';
+  if (has('multiply') && has('fraction')) return 'multFracWhole';
+  if (has('multiply 2-digit')) return 'multiply';
+  if (has('multiples of 10')) return 'multZeros';
+  if (has('multiplication word', 'multi-step', 'all four')) return 'g4_word';
+  if (has('multiply', 'multiplication')) return 'g4_mult1';
+  if (has('remainder')) return 'divRem';
+  if (has('division word')) return 'g4_word';
+  if (has('divide', 'division', 'relate multiplication')) return 'divide';
+  if (has('factor pair', 'factors')) return 'factors';
+  if (has('multiples')) return 'multiples';
+  if (has('prime')) return 'primeComp';
+  if (has('equivalent fraction')) return 'equivFrac';
+  if (has('like denominator')) return 'g4_fracAdd';
+  if (has('improper', 'mixed number')) return 'impropMixed';
+  if (has('relate fraction', 'decimal') && has('fraction')) return 'convFracDec';
+  if (has('decimal place')) return 'decPV';
+  if (has('add and subtract decimal', 'decimal')) return 'addDec';
+  if (has('add', 'subtract', 'estimate')) return has('word') ? 'g4_word' : 'addSub';
+  if (has('customary')) return 'custConv';
+  if (has('metric')) return 'metricConv';
+  if (has('time unit')) return 'timeConv';
+  if (has('elapsed')) return 'g3_time';
+  if (has('money')) return 'g3_money';
+  if (has('angle')) return 'g4_angle';
+  if (has('symmetry')) return 'g4_symmetry';
+  if (has('triangle')) return 'classTri';
+  if (has('perimeter')) return 'perimeter';
+  if (has('area')) return 'area';
+  const byUnit = { A: 'st_placeValue', B: 'addSub', C: 'g4_mult1', D: 'divide', E: 'factors', F: 'g4_fracAdd', G: 'addDec', H: 'custConv', I: 'g4_angle', J: 'g4_word' };
+  return byUnit[unitId] || 'addSub';
+}
 const CURRICULA = {
   g5: buildCurriculum('Grade 5 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS5, pickGen),
   g2: buildCurriculum('Grade 2 Mathematics', 'Full curriculum · IXL-aligned scope', UNITS2, pickGen2),
   g6: buildCurriculum('Grade 6 Mathematics', 'Core topics · above grade level', UNITS6, pickGen6),
   g3: buildCurriculum('Grade 3 Mathematics', 'Core topics · above grade level', UNITS3, pickGen3),
+  g4: buildCurriculum('Grade 4 Mathematics', 'Core topics · ladder rung', UNITS4, pickGen4),
 };
 const GRADES = [
   { id: 'g2', label: 'Grade 2', short: 'G2' },
   { id: 'g5', label: 'Grade 5', short: 'G5' },
   { id: 'g6', label: 'Grade 6', short: 'G6' },
   { id: 'g3', label: 'Grade 3', short: 'G3' },
+  { id: 'g4', label: 'Grade 4', short: 'G4' },
 ];
 // active curriculum (mutable) — the app rebinds these to whichever student is in view
 let CURRICULUM = CURRICULA.g5;

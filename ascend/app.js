@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 37; // shown on every screen so you can confirm the running version
+const APP_BUILD = 38; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -438,13 +438,27 @@ function renderStudentHome() {
   const hero = el('div', { class: 'hero card' });
   hero.append(ring(pace.pct, 140, '#7048e8', 'mastered'));
   const paceBadge = pace.daysDelta >= 0 ? el('span', { class: 'badge good' }, `${pace.daysDelta} days ahead 🎉`) : el('span', { class: 'badge warn' }, `${Math.abs(pace.daysDelta)} days behind`);
+  const h2g = hoursToFinishOwnGrade(stu);
   hero.append(el('div', { class: 'hero-txt' }, [
     el('h2', {}, `Hi ${stu.name}! ${stu.avatar}`),
     el('p', {}, `${pace.mastered} of ${pace.total} skills mastered in ${CURRICULUM.subject}.`),
+    h2g.remaining ? el('p', { class: 'muted' }, `⏱ About ${fmtHours(h2g.hours)} of focused work to finish the whole year. That's it — it's hours, not luck.`) : null,
     paceBadge,
     el('div', {}, el('button', { class: 'btn primary big', onclick: () => { const c = currentSkill(stu); c ? startSkill(c.id) : go('practice'); } }, '▶ Start today’s practice')),
   ]));
   wrap.append(hero);
+
+  // Level Ladder entry
+  const lad = stu.games.ladder || {};
+  const cleared = LADDER_SEQ.filter(g => lad[g] && lad[g].cleared).length;
+  const gold = LADDER_SEQ.filter(g => lad[g] && lad[g].hundred).length;
+  const ladCard = el('div', { class: 'card play-card', onclick: () => { LADDER = null; go('ladder'); } });
+  ladCard.append(el('div', { class: 'play-emoji' }, '🪜'));
+  ladCard.append(el('div', {}, [
+    el('div', { class: 'play-title' }, 'Level Ladder'),
+    el('div', { class: 'play-sub' }, gold || cleared ? `${gold} 🏅 jackpots · ${cleared}/${LADDER_SEQ.length} rungs cleared` : `Prove your level · 100% = ${LADDER_JACKPOT} 🪙 jackpot`),
+  ]));
+  wrap.append(ladCard);
   wrap.append(goalCard(stu));
 
   // assignments from a parent/coach
@@ -585,6 +599,197 @@ function renderPractice() {
   wrap.append(navbar('practice'));
   return wrap;
 }
+
+/* ------------------- LEVEL LADDER (Alpha's "100 for 100") ----------------- */
+// Prove a level with a 20-question test: 90% clears the rung, 100% pays the
+// jackpot. Misses become "holes" the kid patches with 5-question fix sessions.
+// Foreign-grade work never touches stu.progress (skill ids collide across grades).
+const LADDER_SEQ = ['g2', 'g3', 'g4', 'g5', 'g6'];
+const LADDER_QS = 20, LADDER_PASS = 90, LADDER_CLEAR_COINS = 40, LADDER_JACKPOT = 150;
+let LADDER = null;
+function withGradeId(gid, fn) { const prev = ACTIVE_GRADE; setActiveGrade(gid); try { return fn(); } finally { setActiveGrade(prev); } }
+function gradeLabel(gid) { const g = GRADES.find(x => x.id === gid); return g ? g.label : gid; }
+function ladderInfo(stu, gid) { const l = stu.games.ladder = stu.games.ladder || {}; return l[gid] = l[gid] || { best: 0, cleared: false, hundred: false, tries: 0, holes: [] }; }
+function medianSeconds(stu) { const xs = stu.log.slice(0, 400).map(l => l.seconds).filter(s => s > 1 && s < 300).sort((a, b) => a - b); return xs.length >= 8 ? xs[Math.floor(xs.length / 2)] : 30; }
+function attemptsPerMastery(stu) { const m = Object.values(stu.progress).filter(p => p && p.masteredAt && p.attempts); if (!m.length) return 9; return Math.min(20, Math.max(5, m.reduce((a, p) => a + p.attempts, 0) / m.length)); }
+function fmtHours(h) { if (h < 0.9) return Math.max(5, Math.round(h * 12) * 5) + ' min'; const r = Math.round(h * 2) / 2; return r + (r === 1 ? ' hour' : ' hours'); }
+function hoursToFinishOwnGrade(stu) {
+  return withGrade(stu, () => {
+    const remaining = ALL_SKILLS.filter(s => !stu.progress[s.id]?.masteredAt).length;
+    return { remaining, hours: remaining * attemptsPerMastery(stu) * medianSeconds(stu) / 3600 };
+  });
+}
+function ladderTestItems(gid) {
+  return withGradeId(gid, () => {
+    const skills = ALL_SKILLS, step = skills.length / LADDER_QS, out = [];
+    for (let i = 0; i < LADDER_QS; i++) {
+      const sk = skills[Math.min(skills.length - 1, Math.floor(i * step + Math.random() * step))]; // spread across the whole year
+      out.push({ item: generateItem(sk.gen, sk), skill: { id: sk.id, name: sk.name, unitName: sk.unitName, gen: sk.gen, pos: sk.pos } });
+    }
+    return out;
+  });
+}
+function startLadderTest(gid) { LADDER = { mode: 'test', grade: gid, items: ladderTestItems(gid), i: 0, correct: 0, misses: [] }; go('ladder'); }
+function finishLadderTest(stu) {
+  const L = LADDER, pct = Math.round(100 * L.correct / L.items.length);
+  const info = ladderInfo(stu, L.grade);
+  info.tries = (info.tries || 0) + 1; info.at = now();
+  const firstClear = pct >= LADDER_PASS && !info.cleared, firstHundred = pct >= 100 && !info.hundred;
+  if (pct > (info.best || 0)) info.best = pct;
+  if (pct >= LADDER_PASS) info.cleared = true;
+  if (pct >= 100) info.hundred = true;
+  const seen = new Set();
+  info.holes = L.misses.filter(m => !seen.has(m.id) && seen.add(m.id)).map(m => ({ skillId: m.id, name: m.name, unitName: m.unitName, gen: m.gen, pos: m.pos, fixedAt: null }));
+  if (firstClear) awardCoins(stu, LADDER_CLEAR_COINS, `🪜 cleared ${gradeLabel(L.grade)}`);
+  if (firstHundred) awardCoins(stu, LADDER_JACKPOT, `🏅 100% jackpot · ${gradeLabel(L.grade)}`);
+  persist();
+  if (firstHundred) confetti(['🏅', '🎉', '🪙']); else if (firstClear) confetti(['🪜', '🎉']);
+  L.done = { pct, firstClear, firstHundred };
+}
+function renderLadder() {
+  const stu = STATE.students[STATE.currentUserId];
+  const wrap = el('div', { class: 'page' });
+  wrap.append(topbar(stu, true));
+  const medSec = medianSeconds(stu);
+
+  if (LADDER && LADDER.mode === 'test' && !LADDER.done) {          // ---- running a rung test
+    const L = LADDER, entry = L.items[L.i], item = entry.item;
+    const card = el('div', { class: 'card practice' });
+    card.append(el('div', { class: 'practice-top' }, [
+      el('div', { class: 'chip', style: 'background:#7048e822;color:#7048e8' }, `🪜 ${gradeLabel(L.grade)} test`),
+      el('span', { class: 'mini' }, `${L.i + 1}/${L.items.length}`),
+    ]));
+    card.append(el('div', { class: 'q', html: item.prompt }));
+    const feedback = el('div', { class: 'feedback' });
+    const submit = (val) => {
+      if (L.locked) return; L.locked = true;
+      const ok = checkAnswer(item, val);
+      if (ok) L.correct++; else L.misses.push(entry.skill);
+      feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
+      feedback.innerHTML = (ok ? '✅ Correct!' : '❌ Not quite.') + `<div class="expl">${item.explanation || ''}</div>`;
+      const nxt = () => { L.locked = false; L.i++; if (L.i >= L.items.length) finishLadderTest(stu); go('ladder'); };
+      feedback.append(el('button', { class: 'btn primary', onclick: nxt }, L.i + 1 >= L.items.length ? 'Finish ▶' : 'Next ▶'));
+    };
+    if (item.type === 'mc') {
+      const opts = el('div', { class: 'options' });
+      item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: () => submit(c) }, c)));
+      card.append(opts);
+    } else {
+      const inp = el('input', { class: 'inp answer', placeholder: 'Your answer', onkeydown: e => { if (e.key === 'Enter') submit(inp.value); } });
+      card.append(el('div', { class: 'answer-row' }, [inp, el('button', { class: 'btn primary', onclick: () => submit(inp.value) }, 'Check')]));
+      setTimeout(() => inp.focus(), 30);
+    }
+    card.append(feedback);
+    card.append(el('button', { class: 'btn ghost wide', onclick: () => { LADDER = null; go('ladder'); } }, '✖ Quit test (no score)'));
+    wrap.append(card); wrap.append(navbar('practice'));
+    return wrap;
+  }
+
+  if (LADDER && LADDER.mode === 'test' && LADDER.done) {           // ---- rung test results
+    const L = LADDER, d = L.done;
+    const card = el('div', { class: 'card game-splash' });
+    card.append(el('div', { class: 'game-logo' }, d.pct >= 100 ? '🏅' : d.pct >= LADDER_PASS ? '🎉' : '💪'));
+    card.append(el('h2', {}, `${d.pct}% on the ${gradeLabel(L.grade)} test`));
+    if (d.pct >= 100) card.append(el('p', {}, `PERFECT! ${d.firstHundred ? `Jackpot: +${LADDER_JACKPOT} coins! 🪙` : 'Already jackpotted this rung — legend status stands.'}`));
+    else if (d.pct >= LADDER_PASS) card.append(el('p', {}, `Rung cleared! ${d.firstClear ? `+${LADDER_CLEAR_COINS} coins. ` : ''}Get 100% for the ${LADDER_JACKPOT}-coin jackpot — you're only ${L.misses.length} question${L.misses.length === 1 ? '' : 's'} away.`));
+    else card.append(el('p', {}, `You need ${LADDER_PASS}% to clear this rung. Patch your ${L.misses.length} holes below and take it again — new questions every time.`));
+    if (L.misses.length) {
+      const box = el('div', { class: 'lesson-box', style: 'text-align:left' });
+      box.append(el('h4', {}, '🔧 Your holes (what to patch)'));
+      L.misses.forEach(m => box.append(el('div', { class: 'vrow' }, `• ${m.name} (${m.unitName})`)));
+      card.append(box);
+    }
+    card.append(el('button', { class: 'btn primary big wide', onclick: () => { LADDER = null; go('ladder'); } }, 'Back to the ladder ▶'));
+    wrap.append(card); wrap.append(navbar('practice'));
+    return wrap;
+  }
+
+  if (LADDER && LADDER.mode === 'fix') {                            // ---- 5-question hole patch
+    const L = LADDER, hole = L.hole;
+    if (L.i >= L.n) {
+      const passed = L.correct >= 4;
+      if (passed && !hole.fixedAt) { hole.fixedAt = now(); awardCoins(stu, 8, '🔧 patched a hole'); persist(); confetti(['🔧', '✅']); }
+      const card = el('div', { class: 'card game-splash' });
+      card.append(el('div', { class: 'game-logo' }, passed ? '✅' : '🔁'));
+      card.append(el('h2', {}, passed ? 'Hole patched!' : `${L.correct}/${L.n} — almost`));
+      card.append(el('p', {}, passed ? `+8 coins. "${hole.name}" won't surprise you again.` : 'Get 4 of 5 to patch it. Read the explanations and go again!'));
+      card.append(el('div', { class: 'answer-row' }, [
+        passed ? null : el('button', { class: 'btn primary', onclick: () => startLadderFix(L.grade, hole) }, '🔁 Try again'),
+        el('button', { class: 'btn ' + (passed ? 'primary' : 'ghost'), onclick: () => { LADDER = null; go('ladder'); } }, 'Back to the ladder ▶'),
+      ]));
+      wrap.append(card); wrap.append(navbar('practice'));
+      return wrap;
+    }
+    const item = L.item;
+    const card = el('div', { class: 'card practice' });
+    card.append(el('div', { class: 'practice-top' }, [
+      el('div', { class: 'chip', style: 'background:#f7670722;color:#f76707' }, `🔧 Patch: ${hole.name}`),
+      el('span', { class: 'mini' }, `${L.i + 1}/${L.n} · need 4 right`),
+    ]));
+    card.append(el('div', { class: 'q', html: item.prompt }));
+    const feedback = el('div', { class: 'feedback' });
+    const submit = (val) => {
+      if (L.locked) return; L.locked = true;
+      const ok = checkAnswer(item, val);
+      if (ok) L.correct++;
+      feedback.className = 'feedback ' + (ok ? 'ok' : 'no');
+      feedback.innerHTML = (ok ? '✅ Correct!' : '❌ Not quite.') + `<div class="expl">${item.explanation || ''}</div>`;
+      feedback.append(el('button', { class: 'btn primary', onclick: () => { L.locked = false; L.i++; if (L.i < L.n) L.item = withGradeId(L.grade, () => generateItem(hole.gen, hole)); go('ladder'); } }, L.i + 1 >= L.n ? 'Finish ▶' : 'Next ▶'));
+    };
+    if (item.type === 'mc') {
+      const opts = el('div', { class: 'options' });
+      item.choices.forEach(c => opts.append(el('button', { class: 'option', onclick: () => submit(c) }, c)));
+      card.append(opts);
+    } else {
+      const inp = el('input', { class: 'inp answer', placeholder: 'Your answer', onkeydown: e => { if (e.key === 'Enter') submit(inp.value); } });
+      card.append(el('div', { class: 'answer-row' }, [inp, el('button', { class: 'btn primary', onclick: () => submit(inp.value) }, 'Check')]));
+      setTimeout(() => inp.focus(), 30);
+    }
+    card.append(feedback);
+    wrap.append(card); wrap.append(navbar('practice'));
+    return wrap;
+  }
+
+  // ---- the ladder overview
+  const head = el('div', { class: 'card' });
+  head.append(el('h2', {}, '🪜 Level Ladder'));
+  head.append(el('p', { class: 'muted' }, `Prove a level with a ${LADDER_QS}-question test. ${LADDER_PASS}% clears the rung (+${LADDER_CLEAR_COINS} 🪙) · 100% wins the ${LADDER_JACKPOT} 🪙 JACKPOT. Miss some? They become holes you can patch, then test again with fresh questions. It's not about being smart — it's about hours.`));
+  wrap.append(head);
+  const pledges = stu.games.ladderPledges || {};
+  LADDER_SEQ.forEach(gid => {
+    const info = (stu.games.ladder || {})[gid] || { best: 0, cleared: false, hundred: false, holes: [] };
+    const mine = gid === stu.grade;
+    const card = el('div', { class: 'card ladder-rung' + (info.hundred ? ' gold' : info.cleared ? ' clear' : '') });
+    const testMin = Math.max(5, Math.round(LADDER_QS * medSec / 60 / 5) * 5);
+    card.append(el('div', { class: 'rung-top' }, [
+      el('div', { class: 'rung-name' }, [
+        el('b', {}, `${info.hundred ? '🏅 ' : info.cleared ? '✅ ' : ''}${gradeLabel(gid)}`),
+        mine ? el('span', { class: 'mini', style: 'margin-left:8px' }, 'your grade') : null,
+      ]),
+      el('div', { class: 'rung-best' }, info.best ? `best ${info.best}%` : 'not tried'),
+    ]));
+    const pledge = pledges[gid];
+    if (pledge && pledge.text) card.append(el('div', { class: 'lesson-why' }, [el('b', {}, '🎁 100% prize from your family: '), pledge.text, pledge.honoredAt ? ' · honored ✓' : (info.hundred ? ' · EARNED — tell your parent!' : '')]));
+    const open = (info.holes || []).filter(h => !h.fixedAt);
+    if (open.length) {
+      const hbox = el('div', { class: 'lesson-box' });
+      hbox.append(el('h4', {}, `🔧 ${open.length} hole${open.length === 1 ? '' : 's'} to patch (~${fmtHours(open.length * 5 * medSec / 3600)})`));
+      open.slice(0, 6).forEach(h => hbox.append(el('div', { class: 'assign-row', onclick: () => startLadderFix(gid, h) }, [
+        el('div', { class: 'assign-mid' }, [el('div', { class: 'assign-nm' }, h.name), el('div', { class: 'muted' }, h.unitName)]),
+        el('span', { class: 'mini' }, 'Fix ▶'),
+      ])));
+      card.append(hbox);
+    }
+    const fixed = (info.holes || []).filter(h => h.fixedAt).length;
+    if (fixed && !open.length && !info.hundred) card.append(el('div', { class: 'badge good' }, `All holes patched — you're ready. Take it again!`));
+    card.append(el('button', { class: 'btn ' + (info.hundred ? 'ghost' : 'primary') + ' wide', onclick: () => startLadderTest(gid) },
+      info.hundred ? '🔁 Retake for fun' : info.cleared ? `🏅 Go for 100% (~${testMin} min)` : `▶ Take the ${gradeLabel(gid)} test (~${testMin} min)`));
+    wrap.append(card);
+  });
+  wrap.append(navbar('practice'));
+  return wrap;
+}
+function startLadderFix(gid, hole) { LADDER = { mode: 'fix', grade: gid, hole, i: 0, correct: 0, n: 5, item: withGradeId(gid, () => generateItem(hole.gen, hole)) }; go('ladder'); }
 
 /* --------------------------- STUDENT: PROGRESS --------------------------- */
 function renderProgress() {
@@ -1654,7 +1859,7 @@ function coachReport(stu) {
   return { headline, lines, sug };
 }
 /* ------------------------- "Ready to move up" flow ----------------------- */
-function nextGrade(g) { return { g2: 'g3', g5: 'g6' }[g] || null; }
+function nextGrade(g) { return { g2: 'g3', g3: 'g4', g4: 'g5', g5: 'g6' }[g] || null; }
 function gradeLabel(id) { const g = GRADES.find(x => x.id === id); return g ? g.label : id; }
 function readyToMoveUp(stu) {
   if (!nextGrade(stu.grade)) return false;
@@ -1890,6 +2095,33 @@ function renderAddChild() {
   return wrap;
 }
 
+/* -------------------- PARENT: LEVEL LADDER + PLEDGES ---------------------- */
+function renderLadderCard(stu) {
+  const card = el('div', { class: 'card' });
+  card.append(el('h3', {}, '🪜 Level Ladder'));
+  card.append(el('p', { class: 'muted' }, `${LADDER_PASS}% clears a rung, 100% wins the coin jackpot. Add a real-world prize for 100% below (a day off, $20, movie night) — the app shows it on the rung; honoring it is yours.`));
+  const pledges = stu.games.ladderPledges = stu.games.ladderPledges || {};
+  LADDER_SEQ.forEach(gid => {
+    const info = (stu.games.ladder || {})[gid];
+    const status = !info || !info.tries ? 'not tried' : info.hundred ? '🏅 100%' : info.cleared ? `✅ cleared (best ${info.best}%)` : `best ${info.best}% · ${(info.holes || []).filter(h => !h.fixedAt).length} holes open`;
+    const p = pledges[gid] = pledges[gid] || { text: '', honoredAt: null };
+    const inp = el('input', { class: 'inp', placeholder: '100% prize (optional)', value: p.text || '' });
+    inp.addEventListener('change', () => { p.text = inp.value.trim(); persist(); });
+    const row = el('div', { class: 'ladder-prow' }, [
+      el('div', { class: 'ladder-pmid' }, [
+        el('b', {}, `${gradeLabel(gid)}${gid === stu.grade ? ' · their grade' : ''}`),
+        el('div', { class: 'muted' }, status),
+      ]),
+      inp,
+    ]);
+    if (p.text && info && info.hundred && !p.honoredAt) {
+      row.append(el('button', { class: 'btn primary', onclick: () => { p.honoredAt = now(); persist(); toast('🎁 Marked honored — nice parenting'); go('parent-child', { child: stu.id }); } }, `🎁 Honor "${p.text}"`));
+    } else if (p.honoredAt) row.append(el('span', { class: 'badge good' }, 'honored ✓'));
+    card.append(row);
+  });
+  return card;
+}
+
 function renderParentChild() {
   const stu = STATE.students[VIEW.child];
   const period = VIEW.period || 'week';
@@ -1913,6 +2145,7 @@ function renderParentChild() {
 
   // Coach's Report — written analysis + recommendations
   wrap.append(renderCoachCard(stu));
+  wrap.append(renderLadderCard(stu));
   const perkCard = renderPerkCard(stu); if (perkCard) wrap.append(perkCard);
   if (readyToMoveUp(stu)) wrap.append(renderMoveUpCard(stu));
   wrap.append(goalCard(stu));
@@ -2016,7 +2249,7 @@ function render() {
     'login': renderLogin, 'student-home': renderStudentHome, 'practice': renderPractice,
     'progress': renderProgress, 'writing': renderWriting, 'sprint': renderSprint, 'boss': renderBoss,
     'play-hub': renderPlayHub, 'profile': renderProfile, 'shop': renderShop, 'leaderboard': renderLeaderboard,
-    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview,
+    'build': renderBuild, 'runner': renderRunner, 'lesson': renderLesson, 'fast': renderFast, 'parent-review': renderParentReview, 'ladder': renderLadder,
     'parent-home': renderParentHome, 'parent-child': renderParentChild, 'parent-plan': renderPlanEditor, 'parent-add': renderAddChild,
   };
   const studentOnly = ['student-home', 'practice', 'progress', 'writing', 'sprint', 'boss', 'play-hub', 'profile', 'shop', 'leaderboard', 'fast', 'build', 'runner'];
@@ -2045,6 +2278,7 @@ function ensureStudentShape(stu) {
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
   g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinLog = g.coinLog || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
+  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {};
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered
