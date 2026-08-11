@@ -531,3 +531,4 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .build-status.warn { color: var(--warn); }
 .mis-tag { font-size: 13px; font-weight: 700; color: var(--warn); margin: 6px 0; }
 .warmup-card { border-left: 6px solid var(--good); }
+.ev-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; align-items: center; }
