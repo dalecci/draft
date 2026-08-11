@@ -6,7 +6,7 @@
 
 /* ------------------------------- CONFIG ---------------------------------- */
 const CFG = window.ASCEND_CONFIG || {};
-const APP_BUILD = 45; // shown on every screen so you can confirm the running version
+const APP_BUILD = 46; // shown on every screen so you can confirm the running version
 const CLOUD = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
 let sb = null;
 let AUTHED = false; // cloud: signed in (but may not have picked a profile yet)
@@ -729,6 +729,7 @@ function renderPractice() {
   }
   card.append(feedback);
   // entry point to Advanced mode (before answering) when the skill is already mastered
+  if (!adv && constructKindFor(skill)) card.append(el('button', { class: 'btn ghost wide', onclick: () => startBuildFor(skill.id) }, '🧊 Hands-on: build it with ' + { coins: 'coins', baseten: 'blocks', fraction: 'fraction pieces', clock: 'the clock', array: 'an array' }[constructKindFor(skill)]));
   if (canStretch && !adv) card.append(el('button', { class: 'btn stretch-btn wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id, stretch: true }); } }, `🔥 ${stLbl()} Challenge  ·  ${sp.masteredAt ? 'mastered ✓' : (sp.score || 0) + '/100'}`));
   if (adv) card.append(el('button', { class: 'btn ghost wide', onclick: () => { PRACTICE = null; go('practice', { skill: skill.id }); } }, '← Back to grade level'));
   wrap.append(card);
@@ -1347,17 +1348,20 @@ function renderBuild() {
   }
   if (BUILD.done) {
     const mm = Math.floor(BUILD.totalSecs / 60), ss = String(BUILD.totalSecs % 60).padStart(2, '0');
-    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, '🎉'), el('h2', {}, `${BUILD.correct}/${BUILD.n} built!`),
+    const forSkill = BUILD.forSkill;
+    wrap.append(el('div', { class: 'card game-splash' }, [el('div', { class: 'game-logo' }, forSkill ? '🧊' : '🎉'), el('h2', {}, forSkill ? 'Hands-on done!' : `${BUILD.correct}/${BUILD.n} built!`),
       el('div', { class: 'muted' }, `🎯 ${BUILD.firstTries}/${BUILD.n} on the first try${BUILD.kind === 'coins' ? ` · 🌟 ${BUILD.stars} fewest-coin stars` : ''} · ⏱ ${mm}:${ss}`),
-      el('div', { class: 'muted' }, 'Nice building! +XP & coins earned.'),
-      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, [
+      el('div', { class: 'muted' }, forSkill ? 'You BUILT the idea with your hands — now the numbers will make sense.' : 'Nice building! +XP & coins earned.'),
+      el('div', { class: 'answer-row', style: 'justify-content:center;margin-top:12px' }, forSkill ? [
+        el('button', { class: 'btn primary big', onclick: () => { stu.games.built[forSkill] = now(); persist(); const sid = forSkill; BUILD = null; PRACTICE = null; go('practice', { skill: sid }); } }, 'Start practice ▶'),
+      ] : [
         el('button', { class: 'btn primary', onclick: () => startBuild(BUILD.kind) }, '↻ Again'),
         el('button', { class: 'btn ghost', onclick: () => { BUILD = null; go('build'); } }, 'Menu'),
       ])]));
     wrap.append(navbar('play')); return wrap;
   }
 
-  wrap.append(el('div', { class: 'card fast-prog' }, [el('b', {}, `${BUILD_KINDS[BUILD.kind].name} · ${BUILD.i + 1} of ${BUILD.n}`),
+  wrap.append(el('div', { class: 'card fast-prog' }, [el('b', {}, `${BUILD.forSkill ? '🧊 Hands-on: ' + BUILD.forName : BUILD_KINDS[BUILD.kind].name} · ${BUILD.i + 1} of ${BUILD.n}`),
     el('div', { class: 'bar sm' }, el('div', { class: 'bar-fill', style: `width:${100 * BUILD.i / BUILD.n}%;background:var(--primary)` }))]));
   const area = el('div', { class: 'card build-area' });
   const status = el('div', { class: 'build-status' });
@@ -1792,6 +1796,35 @@ function unitReadiness(stu, unit) { const a = unit.skills.map(s => skillStrength
 function projectedBand(stu) { const r = overallReadiness(stu); return { band: Math.max(1, Math.min(5, 1 + Math.round(r * 4))), r }; }
 function fadedSkills(stu) { return ALL_SKILLS.filter(s => stu.progress[s.id]?.masteredAt && skillStrength(stu, s.id) < 0.6); }
 function suggestions(stu, n) { return ALL_SKILLS.map(s => ({ s, str: skillStrength(stu, s.id) })).sort((a, b) => a.str - b.str).slice(0, n || 3); }
+// concrete-before-symbolic: which Build It manipulative teaches each generator
+const CONSTRUCT_MAP = {
+  countCoins: 'coins', addMoney: 'coins', makeDollar: 'coins', makeChange: 'coins', coinValue: 'coins',
+  placeTensOnes: 'baseten', digitValue2: 'baseten', expand2: 'baseten', regroup: 'baseten', g2add: 'baseten', g2sub: 'baseten', g2mixed: 'baseten',
+  identFrac: 'fraction', fracParts: 'fraction', g3_frac: 'fraction',
+  timeAfter: 'clock', g3_time: 'clock',
+  repeatedAdd: 'array', arrays: 'array', g3_mult: 'array',
+};
+function constructKindFor(skill) {
+  if (!skill) return null;
+  const kind = CONSTRUCT_MAP[skill.gen];
+  if (!kind) return null;
+  if ((skill.gen === 'g2add' || skill.gen === 'g2sub' || skill.gen === 'g2mixed') && (skill.pos || 0) < 0.25) return null; // 1-digit facts don't need block building
+  return kind;
+}
+function startBuildFor(skillId) {
+  const stu = STATE.students[STATE.currentUserId];
+  const skill = ALL_SKILLS.find(s => s.id === skillId);
+  const kind = skill && constructKindFor(skill);
+  if (!kind) { PRACTICE = null; go('practice', { skill: skillId }); return; }
+  BUILD = { kind, i: 0, n: 2, correct: 0, stars: 0, firstTries: 0, totalSecs: 0, forSkill: skillId, forName: skill.name };
+  setupBuild(); go('build');
+}
+function afterLesson(skillId) { // lesson → hands-on (first time) → practice
+  const stu = STATE.students[STATE.currentUserId];
+  const skill = ALL_SKILLS.find(s => s.id === skillId);
+  if (skill && constructKindFor(skill) && !stu.games.built[skillId]) { startBuildFor(skillId); return; }
+  PRACTICE = null; go('practice', { skill: skillId });
+}
 function startSkill(skillId) {
   const stu = STATE.students[STATE.currentUserId];
   if (!stu.games.taught[skillId]) go('lesson', { skill: skillId, then: 'practice' });
@@ -2007,7 +2040,7 @@ function renderLesson() {
 
   if (!isParent && VIEW.then === 'practice') {
     startBtn = el('button', { class: 'btn primary big wide', disabled: '' }, '👀 Watch the steps first');
-    startBtn.onclick = () => { if (!finished) return; stopSpeech(); stu.games.taught[skillId] = now(); persist(); PRACTICE = null; go('practice', { skill: skillId }); };
+    startBtn.onclick = () => { if (!finished) return; stopSpeech(); stu.games.taught[skillId] = now(); persist(); afterLesson(skillId); };
     card.append(startBtn);
     if (!steps.length) finish();
   } else {
@@ -2641,7 +2674,7 @@ function ensureStudentShape(stu) {
   g.streak = g.streak || { count: 0, last: null };
   g.badges = g.badges || []; g.ownedAvatars = g.ownedAvatars || [stu.avatar];
   g.bossCleared = g.bossCleared || {}; g.taught = g.taught || {}; g.runnerBest = g.runnerBest || 0; g.perks = g.perks || []; g.coinLog = g.coinLog || []; g.coinTick = g.coinTick || 0; if (!('theme' in g)) g.theme = null; if (!('dailies' in g)) g.dailies = null;
-  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {}; g.interests = g.interests || []; g.miscons = g.miscons || {};
+  g.ladder = g.ladder || {}; g.ladderPledges = g.ladderPledges || {}; g.interests = g.interests || []; g.miscons = g.miscons || {}; g.built = g.built || {};
 }
 
 // keyboard: Enter submits (per-input); Space advances to the next question once answered
