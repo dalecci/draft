@@ -877,11 +877,17 @@
         <button class="ghost" id="addRectBtn" type="button" title="Add a rectangle zone">▭ Rect</button>
         <button class="ghost" id="addFreeBtn" type="button" title="Free-draw — click again or press Esc to stop">✏️ Draw</button>
       </div>
+      <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">
+        <button class="ghost" id="addConeBtn" type="button" title="Add a training cone">🔶 Cone</button>
+        <button class="ghost" id="addXBtn" type="button" title="Add an X spot marker">✖ X Spot</button>
+        <button class="ghost" id="clearMarkersBtn" type="button" title="Remove all cones and X marks">Clear markers</button>
+      </div>
       <div class="row" id="zoneColorPalette" style="gap:5px;margin-top:8px;flex-wrap:wrap">
         <!-- color swatches injected by JS -->
       </div>
       <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
-        <b>Draw:</b> tap ✏️ then drag as many lines as you want. Tap ✏️ again or press <b>Esc</b> to stop. Tap a shape to select &amp; delete.
+        <b>Draw:</b> tap ✏️ then drag as many lines as you want. Tap ✏️ again or press <b>Esc</b> to stop.<br>
+        <b>Drills:</b> add 🔶 cones and ✖ spots, then drag each into position. Tap one to recolor or delete.
       </div>
     </div>
 
@@ -1255,6 +1261,75 @@
         e.setAttribute('stroke', z.color);
         e.dataset.zoneId = z.id;
         zonesGroup.appendChild(e);
+      } else if (z.shape === 'cone') {
+        const g = document.createElementNS(NS, 'g');
+        g.dataset.zoneId = z.id;
+        g.setAttribute('pointer-events', 'all');
+        g.setAttribute('class', isSelected ? 'selected' : '');
+        const cx = z.x, cy = z.y;
+        // Base ellipse (shadow/depth)
+        const base = document.createElementNS(NS, 'ellipse');
+        base.setAttribute('cx', cx); base.setAttribute('cy', cy + 10);
+        base.setAttribute('rx', 13); base.setAttribute('ry', 4);
+        base.setAttribute('fill', '#7a2e00'); base.setAttribute('opacity', '0.5');
+        // Cone body
+        const tri = document.createElementNS(NS, 'polygon');
+        tri.setAttribute('points', `${cx},${cy - 18} ${cx - 13},${cy + 10} ${cx + 13},${cy + 10}`);
+        tri.setAttribute('fill', z.color || '#ff6b00');
+        tri.setAttribute('stroke', 'rgba(0,0,0,0.35)'); tri.setAttribute('stroke-width', '1');
+        // Highlight stripe
+        const stripe = document.createElementNS(NS, 'polygon');
+        stripe.setAttribute('points', `${cx - 4},${cy - 4} ${cx + 4},${cy - 4} ${cx + 9},${cy + 6} ${cx - 9},${cy + 6}`);
+        stripe.setAttribute('fill', 'rgba(255,255,255,0.22)');
+        // Invisible hit target
+        const hit = document.createElementNS(NS, 'ellipse');
+        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
+        hit.setAttribute('rx', 16); hit.setAttribute('ry', 18);
+        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+        hit.dataset.zoneId = z.id;
+        if (isSelected) {
+          const sel = document.createElementNS(NS, 'circle');
+          sel.setAttribute('cx', cx); sel.setAttribute('cy', cy - 2); sel.setAttribute('r', 20);
+          sel.setAttribute('fill', 'none'); sel.setAttribute('stroke', '#d4af37');
+          sel.setAttribute('stroke-width', '2'); sel.setAttribute('stroke-dasharray', '4 3');
+          g.appendChild(sel);
+        }
+        g.appendChild(base); g.appendChild(tri); g.appendChild(stripe); g.appendChild(hit);
+        zonesGroup.appendChild(g);
+      } else if (z.shape === 'xmark') {
+        const g = document.createElementNS(NS, 'g');
+        g.dataset.zoneId = z.id;
+        g.setAttribute('pointer-events', 'all');
+        const cx = z.x, cy = z.y, r2 = 12;
+        // Shadow
+        const sh = document.createElementNS(NS, 'circle');
+        sh.setAttribute('cx', cx); sh.setAttribute('cy', cy + 2); sh.setAttribute('r', r2 + 3);
+        sh.setAttribute('fill', 'rgba(0,0,0,0.25)');
+        // Two arms of the X
+        const mkLine = (x1,y1,x2,y2) => {
+          const l = document.createElementNS(NS, 'line');
+          l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+          l.setAttribute('stroke', z.color || '#ffffff');
+          l.setAttribute('stroke-width', '4'); l.setAttribute('stroke-linecap', 'round');
+          return l;
+        };
+        // Invisible hit circle
+        const hit = document.createElementNS(NS, 'circle');
+        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', r2 + 6);
+        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+        hit.dataset.zoneId = z.id;
+        g.appendChild(sh);
+        g.appendChild(mkLine(cx-r2, cy-r2, cx+r2, cy+r2));
+        g.appendChild(mkLine(cx+r2, cy-r2, cx-r2, cy+r2));
+        g.appendChild(hit);
+        if (isSelected) {
+          const sel = document.createElementNS(NS, 'circle');
+          sel.setAttribute('cx', cx); sel.setAttribute('cy', cy); sel.setAttribute('r', r2 + 8);
+          sel.setAttribute('fill', 'none'); sel.setAttribute('stroke', '#d4af37');
+          sel.setAttribute('stroke-width', '2'); sel.setAttribute('stroke-dasharray', '4 3');
+          g.insertBefore(sel, g.firstChild);
+        }
+        zonesGroup.appendChild(g);
       } else { // 'rect'
         const r = document.createElementNS(NS, 'rect');
         r.setAttribute('class', 'zone zone-fill' + (isSelected ? ' selected' : ''));
@@ -1267,7 +1342,7 @@
         r.dataset.zoneId = z.id;
         zonesGroup.appendChild(r);
       }
-      if (isSelected && z.shape !== 'freehand') {
+      if (isSelected && z.shape !== 'freehand' && z.shape !== 'cone' && z.shape !== 'xmark') {
         // Render 4 corner handles for resize
         const corners = [
           { cx: z.x,         cy: z.y,         cls: 'h-nw' },
@@ -1352,6 +1427,23 @@
       state.drawMode = true;
       document.body.classList.add('pm-drawing');
       toast('Draw mode — click & drag on the court');
+      return;
+    }
+    // Cones and X marks are point markers — stagger them so multiples don't stack
+    if (shape === 'cone' || shape === 'xmark') {
+      const count = state.zones.filter(z => z.shape === shape).length;
+      const z = {
+        id: newZoneId(),
+        shape,
+        x: 120 + (count % 5) * 65,
+        y: 250 + Math.floor(count / 5) * 60,
+        color: shape === 'cone' ? '#ff6b00' : '#ffffff'
+      };
+      state.zones.push(z);
+      state.selectedZoneId = z.id;
+      renderZones();
+      zonesChanged();
+      toast(shape === 'cone' ? 'Cone added — drag to position' : 'X added — drag to position');
       return;
     }
     const z = {
@@ -2196,6 +2288,18 @@
       updateDrawBtn();
       toast('Draw mode — drag to draw, tap ✏️ or Esc to stop');
     }
+  });
+  document.getElementById('addConeBtn').addEventListener('click', () => addZone('cone'));
+  document.getElementById('addXBtn').addEventListener('click', () => addZone('xmark'));
+  document.getElementById('clearMarkersBtn').addEventListener('click', () => {
+    const count = state.zones.filter(z => z.shape === 'cone' || z.shape === 'xmark').length;
+    if (!count) { toast('No markers to clear'); return; }
+    pushHistory();
+    state.zones = state.zones.filter(z => z.shape !== 'cone' && z.shape !== 'xmark');
+    state.selectedZoneId = null;
+    renderZones();
+    zonesChanged();
+    toast(`Cleared ${count} marker${count === 1 ? '' : 's'}`);
   });
   document.getElementById('clearFreehandBtn').addEventListener('click', () => {
     const count = state.zones.filter(z => z.shape === 'freehand').length;
