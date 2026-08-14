@@ -518,27 +518,6 @@
     font-weight: 700;
   }
 
-  /* ---------- Lineup / roster ---------- */
-  .assign-row {
-    display: flex; align-items: center; gap: 8px; padding: 3px 0;
-  }
-  .pos-badge {
-    width: 26px; height: 26px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: 0;
-  }
-  .pos-badge.offense { background: linear-gradient(135deg,#5a82ff,#1d3fb8); color:#fff; }
-  .pos-badge.defense { background: linear-gradient(135deg,#e85a55,#9a2520); color:#fff; }
-  .player-select {
-    flex: 1; min-width: 0;
-    background: var(--panel-2); border: 1px solid var(--border);
-    color: var(--ink); padding: 7px 10px; border-radius: 9px;
-    font-size: 13px; font-family: inherit;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    cursor: pointer;
-  }
-  .player-select:focus { outline:none; border-color:var(--border-strong); box-shadow: 0 0 0 3px var(--gold-glow); }
-
   /* ---------- Draw mode ---------- */
   button.draw-active {
     background: linear-gradient(135deg, var(--gold) 0%, #b8932d 100%) !important;
@@ -666,6 +645,35 @@
   @media (max-width: 980px) {
     .panel { max-height: none; }
     svg.court { max-height: 60vh; }
+  }
+
+  /* ---------- Roster / Lineup section ---------- */
+  .pm-roster-list { display: grid; gap: 5px; }
+  .pm-roster-row {
+    display: grid; grid-template-columns: 38px 1fr; gap: 8px; align-items: center;
+  }
+  .pm-roster-pos {
+    text-align: center; font-weight: 800; font-size: 12px;
+    padding: 5px 4px; border-radius: 7px; letter-spacing: 0.04em;
+    border: 1px solid var(--border);
+  }
+  .pm-roster-pos.offense {
+    background: rgba(44, 92, 255, 0.18); color: #a9bcff;
+    border-color: rgba(44, 92, 255, 0.45);
+  }
+  .pm-roster-pos.defense {
+    background: rgba(200, 49, 44, 0.18); color: #f1b1ae;
+    border-color: rgba(200, 49, 44, 0.45);
+  }
+  .pm-roster-select {
+    width: 100%; padding: 6px 8px; border-radius: 7px;
+    background: var(--panel-solid, #1a2230); color: var(--ink);
+    border: 1px solid var(--border); font-size: 12.5px; font-family: inherit;
+  }
+  .pm-roster-select:focus { outline: none; border-color: var(--gold); }
+  .pm-roster-empty {
+    color: var(--muted); font-size: 12px; text-align: center;
+    padding: 14px 8px; letter-spacing: 0.04em;
   }
 </style>
 </head>
@@ -852,18 +860,18 @@
       </div>
     </div>
 
-    <!-- Roster + position assignments -->
+    <!-- Roster / Lineup — assign Warriors players to each position -->
     <div class="section">
       <div class="section-title">
-        <span>Lineup</span>
-        <label class="toggle" style="margin:0;gap:8px;">
-          <input type="checkbox" id="namesToggle"/>
-          <span class="switch"></span>
-          <span style="font-size:11px;color:var(--muted);letter-spacing:1px;">Show Names</span>
-        </label>
+        <span>Roster / Lineup</span>
+        <button class="small-btn" id="clearRosterBtn" title="Remove all player assignments">Clear names</button>
       </div>
-      <div id="offenseAssign"></div>
-      <div id="defenseAssign" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--border)"></div>
+      <div class="pm-roster-list" id="rosterList">
+        <div class="pm-roster-empty">Loading roster…</div>
+      </div>
+      <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
+        Pick a Warrior for each position. Their first name shows on the court instead of the number. Saved with the play.
+      </div>
     </div>
 
     <!-- Zones (defensive areas, lanes, freehand annotations) — added 2026-05-19 -->
@@ -880,14 +888,14 @@
       <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">
         <button class="ghost" id="addConeBtn" type="button" title="Add a training cone">🔶 Cone</button>
         <button class="ghost" id="addXBtn" type="button" title="Add an X spot marker">✖ X Spot</button>
-        <button class="ghost" id="clearMarkersBtn" type="button" title="Remove all cones and X marks">Clear markers</button>
+        <button class="ghost" id="clearMarkersBtn" type="button" title="Remove all cones and X spots">Clear markers</button>
       </div>
       <div class="row" id="zoneColorPalette" style="gap:5px;margin-top:8px;flex-wrap:wrap">
         <!-- color swatches injected by JS -->
       </div>
       <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
-        <b>Draw:</b> tap ✏️ then drag as many lines as you want. Tap ✏️ again or press <b>Esc</b> to stop.<br>
-        <b>Drills:</b> add 🔶 cones and ✖ spots, then drag each into position. Tap one to recolor or delete.
+        <b>Draw:</b> tap ✏️ then drag as many lines as you want. Tap ✏️ again or press <b>Esc</b> to stop. Tap a shape to select &amp; delete.<br>
+        <b>Drills:</b> add 🔶 cones and ✖ spots, then drag each into position.
       </div>
     </div>
 
@@ -1010,7 +1018,8 @@
       pendingPaths: clone(state.pendingPaths),
       steps: clone(state.steps),
       activeStep: state.activeStep,
-      ballHolder: state.ballHolder
+      ballHolder: state.ballHolder,
+      assignments: clone(state.assignments || {})
     });
     if (history.length > MAX_HISTORY) history.shift();
     updateUndoBtn();
@@ -1024,6 +1033,8 @@
     state.steps = prev.steps;
     state.activeStep = prev.activeStep;
     state.ballHolder = prev.ballHolder;
+    state.assignments = prev.assignments || {};
+    renderRosterPanel();
     renderAll();
     updateUndoBtn();
     toast('Undone');
@@ -1048,9 +1059,116 @@
     selectedZoneId: null,
     drawMode: false,      // when true, pointer events on court draw a freehand path
     zoneColor: '#FFD24D', // current paint color for new shapes
-    playerNames: { '1':'','2':'','3':'','4':'','5':'','X1':'','X2':'','X3':'','X4':'','X5':'' },
-    showNames: false
+    roster: [],           // cached roster from Supabase players table
+    assignments: {}       // { '1': playerId, 'X3': playerId, ... } — per play
   };
+
+  // ---------- Roster (Warriors players from hoops DB) ----------
+  function firstName(p) { return (p && p.name || '').split(/\s+/)[0]; }
+  function labelForEntity(id) {
+    const a = state.assignments[id];
+    if (a) {
+      const p = state.roster.find(r => r.id === a);
+      if (p) {
+        const fn = firstName(p);
+        return fn.length > 8 ? fn.slice(0, 7) + '.' : fn;
+      }
+    }
+    return (state.entities[id] && state.entities[id].label) || id;
+  }
+  function fitFontSize(len) {
+    if (len <= 2) return 14;
+    if (len <= 3) return 13;
+    if (len <= 4) return 11.5;
+    if (len <= 5) return 10.5;
+    if (len <= 6) return 9.5;
+    return 8.5;
+  }
+
+  async function loadRoster() {
+    try {
+      const sb = window.__pmSupabase;
+      if (sb) {
+        const { data, error } = await sb
+          .from('players')
+          .select('id, name, jersey_number, active')
+          .order('jersey_number', { ascending: true, nullsFirst: false });
+        if (!error && Array.isArray(data)) state.roster = data.filter(p => p.active !== false);
+      }
+    } catch (e) { /* offline */ }
+    renderRosterPanel();
+    if (typeof renderEntities === 'function') renderEntities();
+  }
+  window.addEventListener('pm:unlocked', loadRoster);
+  if (sessionStorage.getItem('playmaker_unlocked') === '1') loadRoster();
+
+  function renderRosterPanel() {
+    const list = document.getElementById('rosterList');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!state.roster.length) {
+      const empty = document.createElement('div');
+      empty.className = 'pm-roster-empty';
+      empty.textContent = 'No players loaded. Add some on the Hoops Roster page.';
+      list.appendChild(empty);
+      return;
+    }
+    const positions = ['1','2','3','4','5','X1','X2','X3','X4','X5'];
+    const taken = new Set(Object.values(state.assignments));
+    for (const id of positions) {
+      const e = STARTING[id];
+      if (!e) continue;
+      const row = document.createElement('div');
+      row.className = 'pm-roster-row';
+      const lbl = document.createElement('div');
+      lbl.className = 'pm-roster-pos ' + e.type;
+      lbl.textContent = id;
+      const select = document.createElement('select');
+      select.className = 'pm-roster-select';
+      const opt0 = document.createElement('option');
+      opt0.value = ''; opt0.textContent = '— Position ' + id + ' —';
+      select.appendChild(opt0);
+      for (const p of state.roster) {
+        const o = document.createElement('option');
+        o.value = p.id;
+        const num = p.jersey_number != null ? `#${p.jersey_number} ` : '';
+        o.textContent = `${num}${p.name}`;
+        // Mark already-assigned-elsewhere players (still selectable, will swap)
+        if (taken.has(p.id) && state.assignments[id] !== p.id) {
+          o.textContent += '  (assigned)';
+        }
+        select.appendChild(o);
+      }
+      select.value = state.assignments[id] || '';
+      select.addEventListener('change', () => {
+        pushHistory();
+        const v = select.value;
+        // If this player is already in another slot, vacate that slot first
+        if (v) {
+          for (const otherId of Object.keys(state.assignments)) {
+            if (otherId !== id && state.assignments[otherId] === v) delete state.assignments[otherId];
+          }
+          state.assignments[id] = v;
+        } else {
+          delete state.assignments[id];
+        }
+        renderRosterPanel();
+        renderEntities();
+      });
+      row.appendChild(lbl);
+      row.appendChild(select);
+      list.appendChild(row);
+    }
+  }
+
+  function clearAllAssignments() {
+    if (!Object.keys(state.assignments).length) return;
+    if (!confirm('Remove all player names? Positions will revert to 1-5 / X1-X5.')) return;
+    pushHistory();
+    state.assignments = {};
+    renderRosterPanel();
+    renderEntities();
+  }
 
   // ---------- DOM refs ----------
   const svg = document.getElementById('court');
@@ -1133,13 +1251,11 @@
         c.setAttribute('cy', e.y);
         t.setAttribute('x', e.x);
         t.setAttribute('y', e.y);
+        // Display first name if assigned, else position label
+        const label = labelForEntity(id);
+        if (t.textContent !== label) t.textContent = label;
+        t.setAttribute('font-size', fitFontSize(label.length));
         el.classList.toggle('has-ball', state.ballHolder === id);
-        // Update label: name or number
-        const customName = state.showNames ? (state.playerNames[id] || '').trim() : '';
-        const displayLabel = customName || e.label;
-        t.textContent = displayLabel;
-        const len = displayLabel.length;
-        t.setAttribute('font-size', len <= 2 ? 13 : len <= 3 ? 11 : len <= 4 ? 9 : 8);
       }
     });
   }
@@ -1265,28 +1381,7 @@
         const g = document.createElementNS(NS, 'g');
         g.dataset.zoneId = z.id;
         g.setAttribute('pointer-events', 'all');
-        g.setAttribute('class', isSelected ? 'selected' : '');
         const cx = z.x, cy = z.y;
-        // Base ellipse (shadow/depth)
-        const base = document.createElementNS(NS, 'ellipse');
-        base.setAttribute('cx', cx); base.setAttribute('cy', cy + 10);
-        base.setAttribute('rx', 13); base.setAttribute('ry', 4);
-        base.setAttribute('fill', '#7a2e00'); base.setAttribute('opacity', '0.5');
-        // Cone body
-        const tri = document.createElementNS(NS, 'polygon');
-        tri.setAttribute('points', `${cx},${cy - 18} ${cx - 13},${cy + 10} ${cx + 13},${cy + 10}`);
-        tri.setAttribute('fill', z.color || '#ff6b00');
-        tri.setAttribute('stroke', 'rgba(0,0,0,0.35)'); tri.setAttribute('stroke-width', '1');
-        // Highlight stripe
-        const stripe = document.createElementNS(NS, 'polygon');
-        stripe.setAttribute('points', `${cx - 4},${cy - 4} ${cx + 4},${cy - 4} ${cx + 9},${cy + 6} ${cx - 9},${cy + 6}`);
-        stripe.setAttribute('fill', 'rgba(255,255,255,0.22)');
-        // Invisible hit target
-        const hit = document.createElementNS(NS, 'ellipse');
-        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
-        hit.setAttribute('rx', 16); hit.setAttribute('ry', 18);
-        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
-        hit.dataset.zoneId = z.id;
         if (isSelected) {
           const sel = document.createElementNS(NS, 'circle');
           sel.setAttribute('cx', cx); sel.setAttribute('cy', cy - 2); sel.setAttribute('r', 20);
@@ -1294,6 +1389,22 @@
           sel.setAttribute('stroke-width', '2'); sel.setAttribute('stroke-dasharray', '4 3');
           g.appendChild(sel);
         }
+        const base = document.createElementNS(NS, 'ellipse');
+        base.setAttribute('cx', cx); base.setAttribute('cy', cy + 10);
+        base.setAttribute('rx', 13); base.setAttribute('ry', 4);
+        base.setAttribute('fill', '#7a2e00'); base.setAttribute('opacity', '0.5');
+        const tri = document.createElementNS(NS, 'polygon');
+        tri.setAttribute('points', `${cx},${cy - 18} ${cx - 13},${cy + 10} ${cx + 13},${cy + 10}`);
+        tri.setAttribute('fill', z.color || '#ff6b00');
+        tri.setAttribute('stroke', 'rgba(0,0,0,0.35)'); tri.setAttribute('stroke-width', '1');
+        const stripe = document.createElementNS(NS, 'polygon');
+        stripe.setAttribute('points', `${cx - 4},${cy - 4} ${cx + 4},${cy - 4} ${cx + 9},${cy + 6} ${cx - 9},${cy + 6}`);
+        stripe.setAttribute('fill', 'rgba(255,255,255,0.22)');
+        const hit = document.createElementNS(NS, 'ellipse');
+        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
+        hit.setAttribute('rx', 16); hit.setAttribute('ry', 18);
+        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+        hit.dataset.zoneId = z.id;
         g.appendChild(base); g.appendChild(tri); g.appendChild(stripe); g.appendChild(hit);
         zonesGroup.appendChild(g);
       } else if (z.shape === 'xmark') {
@@ -1301,34 +1412,32 @@
         g.dataset.zoneId = z.id;
         g.setAttribute('pointer-events', 'all');
         const cx = z.x, cy = z.y, r2 = 12;
-        // Shadow
-        const sh = document.createElementNS(NS, 'circle');
-        sh.setAttribute('cx', cx); sh.setAttribute('cy', cy + 2); sh.setAttribute('r', r2 + 3);
-        sh.setAttribute('fill', 'rgba(0,0,0,0.25)');
-        // Two arms of the X
-        const mkLine = (x1,y1,x2,y2) => {
-          const l = document.createElementNS(NS, 'line');
-          l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-          l.setAttribute('stroke', z.color || '#ffffff');
-          l.setAttribute('stroke-width', '4'); l.setAttribute('stroke-linecap', 'round');
-          return l;
-        };
-        // Invisible hit circle
-        const hit = document.createElementNS(NS, 'circle');
-        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', r2 + 6);
-        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
-        hit.dataset.zoneId = z.id;
-        g.appendChild(sh);
-        g.appendChild(mkLine(cx-r2, cy-r2, cx+r2, cy+r2));
-        g.appendChild(mkLine(cx+r2, cy-r2, cx-r2, cy+r2));
-        g.appendChild(hit);
         if (isSelected) {
           const sel = document.createElementNS(NS, 'circle');
           sel.setAttribute('cx', cx); sel.setAttribute('cy', cy); sel.setAttribute('r', r2 + 8);
           sel.setAttribute('fill', 'none'); sel.setAttribute('stroke', '#d4af37');
           sel.setAttribute('stroke-width', '2'); sel.setAttribute('stroke-dasharray', '4 3');
-          g.insertBefore(sel, g.firstChild);
+          g.appendChild(sel);
         }
+        const sh = document.createElementNS(NS, 'circle');
+        sh.setAttribute('cx', cx); sh.setAttribute('cy', cy + 2); sh.setAttribute('r', r2 + 3);
+        sh.setAttribute('fill', 'rgba(0,0,0,0.25)');
+        const mkLine = (x1, y1, x2, y2) => {
+          const l = document.createElementNS(NS, 'line');
+          l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+          l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+          l.setAttribute('stroke', z.color || '#ffffff');
+          l.setAttribute('stroke-width', '4'); l.setAttribute('stroke-linecap', 'round');
+          return l;
+        };
+        const hit = document.createElementNS(NS, 'circle');
+        hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', r2 + 6);
+        hit.setAttribute('fill', 'transparent'); hit.setAttribute('pointer-events', 'all');
+        hit.dataset.zoneId = z.id;
+        g.appendChild(sh);
+        g.appendChild(mkLine(cx - r2, cy - r2, cx + r2, cy + r2));
+        g.appendChild(mkLine(cx + r2, cy - r2, cx - r2, cy + r2));
+        g.appendChild(hit);
         zonesGroup.appendChild(g);
       } else { // 'rect'
         const r = document.createElementNS(NS, 'rect');
@@ -1429,7 +1538,7 @@
       toast('Draw mode — click & drag on the court');
       return;
     }
-    // Cones and X marks are point markers — stagger them so multiples don't stack
+    // Cones and X spots are point markers — stagger them so multiples don't stack
     if (shape === 'cone' || shape === 'xmark') {
       const count = state.zones.filter(z => z.shape === shape).length;
       const z = {
@@ -1443,7 +1552,7 @@
       state.selectedZoneId = z.id;
       renderZones();
       zonesChanged();
-      toast(shape === 'cone' ? 'Cone added — drag to position' : 'X added — drag to position');
+      toast(shape === 'cone' ? 'Cone added — drag to position' : 'X spot added — drag to position');
       return;
     }
     const z = {
@@ -1750,7 +1859,7 @@
     const el = renderedEls[dragId];
     if (el) el.classList.remove('dragging');
 
-    // TAP detected (no path recorded = finger didn't move) on a player → instant pass
+    // TAP on a player (finger never moved, so no path was recorded) → instant pass
     if (!recordingPath && dragId !== 'ball') {
       const ent = state.entities[dragId];
       if (ent && ent.type !== 'ball' && state.ballHolder !== dragId) {
@@ -1759,11 +1868,11 @@
         if (ball) { ball.x = ent.x; ball.y = ent.y; }
         delete state.pendingPaths.ball;
         renderAll();
-        const displayName = (state.showNames && state.playerNames[dragId]) ? state.playerNames[dragId] : dragId;
-        toast(`Ball → ${displayName}`);
+        toast('Ball → ' + labelForEntity(dragId));
       }
       dragId = null; dragOffset = null; dragStartPos = null;
-      recordingPath = null; ballFollowOffset = null; ballFollowStartPos = null; ballFollowPath = null;
+      recordingPath = null; ballFollowOffset = null;
+      ballFollowStartPos = null; ballFollowPath = null;
       return;
     }
 
@@ -2194,6 +2303,7 @@
       folder,
       steps: state.steps,
       zones: clone(state.zones),
+      assignments: clone(state.assignments || {}),
       savedAt: Date.now(),
       team_visible: teamVisible,
       team_category: teamVisible ? teamCategory : null,
@@ -2222,9 +2332,11 @@
     document.getElementById('teamShare').checked = !!p.team_visible;
     document.getElementById('teamCategory').value = p.team_category || '';
     state.zones = Array.isArray(p.zones) ? clone(p.zones) : [];
+    state.assignments = (p.assignments && typeof p.assignments === 'object') ? clone(p.assignments) : {};
     state.selectedZoneId = null;
     if (state.steps.length) loadStep(0);
     else renderAll();
+    renderRosterPanel();
     toast(`Loaded "${name}"`, 'success');
   }
 
@@ -2237,9 +2349,11 @@
     state.activeStep = -1;
     state.pendingPaths = {};
     state.zones = [];
+    state.assignments = {};
     state.selectedZoneId = null;
     state.entities = clone(STARTING);
     state.ballHolder = detectBallHolder();
+    renderRosterPanel();
     renderAll();
     toast('New play');
   }
@@ -2273,6 +2387,8 @@
   });
   document.getElementById('resetBtn').addEventListener('click', resetPositions);
   document.getElementById('saveBtn').addEventListener('click', savePlay);
+  const clearRosterBtnEl = document.getElementById('clearRosterBtn');
+  if (clearRosterBtnEl) clearRosterBtnEl.addEventListener('click', clearAllAssignments);
   document.getElementById('newPlayBtn').addEventListener('click', startNewPlay);
 
   // Zone toolbar buttons
@@ -2366,7 +2482,6 @@
   document.getElementById('defenseToggle').addEventListener('change', (e) => {
     state.showDefense = e.target.checked;
     renderAll();
-    document.getElementById('defenseAssign').style.display = state.showDefense ? '' : 'none';
   });
   document.getElementById('speedRange').addEventListener('input', (e) => {
     state.speed = parseFloat(e.target.value);
@@ -2385,78 +2500,6 @@
       e.preventDefault();
       undo();
     }
-  });
-
-  // ---------- Roster & Lineup ----------
-  const NAMES_KEY    = 'playmaker_player_names_v1';
-  const ROSTER_KEY   = 'playmaker_roster_v1';
-  const DEFAULT_ROSTER = ['Jason','Reed','Dom','Herb','Cairo','Jayden','Nathan','Michael','Brantley','Jacob'];
-
-  function getRoster() {
-    try { return JSON.parse(localStorage.getItem(ROSTER_KEY)) || DEFAULT_ROSTER.slice(); }
-    catch { return DEFAULT_ROSTER.slice(); }
-  }
-  function setRoster(r) { localStorage.setItem(ROSTER_KEY, JSON.stringify(r)); }
-
-  function loadSavedNames() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(NAMES_KEY) || '{}');
-      Object.keys(saved).forEach(id => { if (id in state.playerNames) state.playerNames[id] = saved[id]; });
-    } catch {}
-  }
-  function saveNames() { localStorage.setItem(NAMES_KEY, JSON.stringify(state.playerNames)); }
-
-  function buildAssignUI(containerId, positions, type) {
-    const wrap = document.getElementById(containerId);
-    wrap.innerHTML = '';
-    const roster = getRoster();
-    positions.forEach(pos => {
-      const row = document.createElement('div');
-      row.className = 'assign-row';
-
-      const badge = document.createElement('span');
-      badge.className = 'pos-badge ' + type;
-      badge.textContent = pos;
-      row.appendChild(badge);
-
-      const sel = document.createElement('select');
-      sel.className = 'player-select';
-      const blank = document.createElement('option');
-      blank.value = ''; blank.textContent = '— select player —';
-      sel.appendChild(blank);
-      roster.forEach(name => {
-        const o = document.createElement('option');
-        o.value = name; o.textContent = name;
-        if (state.playerNames[pos] === name) o.selected = true;
-        sel.appendChild(o);
-      });
-      sel.addEventListener('change', () => {
-        state.playerNames[pos] = sel.value;
-        saveNames();
-        if (state.showNames) renderEntities();
-      });
-      row.appendChild(sel);
-      wrap.appendChild(row);
-    });
-  }
-
-  function refreshNameGrids() {
-    buildAssignUI('offenseAssign', ['1','2','3','4','5'], 'offense');
-    buildAssignUI('defenseAssign', ['X1','X2','X3','X4','X5'], 'defense');
-    document.getElementById('defenseAssign').style.display = state.showDefense ? '' : 'none';
-  }
-
-  // Initialise roster if not yet saved
-  if (!localStorage.getItem(ROSTER_KEY)) setRoster(DEFAULT_ROSTER.slice());
-
-  document.getElementById('namesToggle').addEventListener('change', (e) => {
-    state.showNames = e.target.checked;
-    Object.keys(renderedEls).forEach(id => {
-      if (renderedEls[id] && state.entities[id] && state.entities[id].type !== 'ball') {
-        renderedEls[id].remove(); delete renderedEls[id];
-      }
-    });
-    renderEntities();
   });
 
   // ---------- GitHub Sync ----------
@@ -2592,8 +2635,6 @@
 
   refreshFolderDropdown();
   refreshPlaybook();
-  loadSavedNames();
-  refreshNameGrids();
   state.ballHolder = detectBallHolder();
   renderAll();
   updateUndoBtn();
