@@ -860,17 +860,15 @@
       </div>
     </div>
 
-    <!-- Roster / Lineup — assign Warriors players to each position -->
+    <!-- Lineup — type a custom name for each position -->
     <div class="section">
       <div class="section-title">
-        <span>Roster / Lineup</span>
-        <button class="small-btn" id="clearRosterBtn" title="Remove all player assignments">Clear names</button>
+        <span>Lineup</span>
+        <button class="small-btn" id="clearRosterBtn" title="Clear all typed names">Clear names</button>
       </div>
-      <div class="pm-roster-list" id="rosterList">
-        <div class="pm-roster-empty">Loading roster…</div>
-      </div>
+      <div class="pm-roster-list" id="rosterList"></div>
       <div class="hint" style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.45">
-        Pick a Warrior for each position. Their first name shows on the court instead of the number. Saved with the play.
+        Type a name for any position — it shows on the court instead of the number. Leave blank to keep the number. Names stick between plays and save with each play.
       </div>
     </div>
 
@@ -1034,6 +1032,7 @@
     state.activeStep = prev.activeStep;
     state.ballHolder = prev.ballHolder;
     state.assignments = prev.assignments || {};
+    saveLineup();
     renderRosterPanel();
     renderAll();
     updateUndoBtn();
@@ -1059,22 +1058,33 @@
     selectedZoneId: null,
     drawMode: false,      // when true, pointer events on court draw a freehand path
     zoneColor: '#FFD24D', // current paint color for new shapes
-    roster: [],           // cached roster from Supabase players table
-    assignments: {}       // { '1': playerId, 'X3': playerId, ... } — per play
+    assignments: {}       // { '1': 'Jason', 'X3': 'Reed', ... } — custom typed names
   };
 
-  // ---------- Roster (Warriors players from hoops DB) ----------
-  function firstName(p) { return (p && p.name || '').split(/\s+/)[0]; }
+  // ---------- Custom player names ----------
+  const LINEUP_KEY = 'playmaker_lineup_v1';
+  // Old saves stored Supabase UUIDs here; ignore those so they don't show as gibberish.
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  function cleanAssignments(obj) {
+    const out = {};
+    Object.keys(obj || {}).forEach(k => {
+      const v = (obj[k] == null ? '' : String(obj[k])).trim();
+      if (v && !UUID_RE.test(v)) out[k] = v;
+    });
+    return out;
+  }
+
   function labelForEntity(id) {
-    const a = state.assignments[id];
-    if (a) {
-      const p = state.roster.find(r => r.id === a);
-      if (p) {
-        const fn = firstName(p);
-        return fn.length > 8 ? fn.slice(0, 7) + '.' : fn;
-      }
-    }
+    const name = (state.assignments[id] || '').trim();
+    if (name) return name.length > 8 ? name.slice(0, 7) + '.' : name;
     return (state.entities[id] && state.entities[id].label) || id;
+  }
+
+  function saveLineup() { localStorage.setItem(LINEUP_KEY, JSON.stringify(state.assignments)); }
+  function loadLineup() {
+    try { return cleanAssignments(JSON.parse(localStorage.getItem(LINEUP_KEY) || '{}')); }
+    catch { return {}; }
   }
   function fitFontSize(len) {
     if (len <= 2) return 14;
@@ -1085,78 +1095,45 @@
     return 8.5;
   }
 
-  async function loadRoster() {
-    try {
-      const sb = window.__pmSupabase;
-      if (sb) {
-        const { data, error } = await sb
-          .from('players')
-          .select('id, name, jersey_number, active')
-          .order('jersey_number', { ascending: true, nullsFirst: false });
-        if (!error && Array.isArray(data)) state.roster = data.filter(p => p.active !== false);
-      }
-    } catch (e) { /* offline */ }
-    renderRosterPanel();
-    if (typeof renderEntities === 'function') renderEntities();
-  }
-  window.addEventListener('pm:unlocked', loadRoster);
-  if (sessionStorage.getItem('playmaker_unlocked') === '1') loadRoster();
-
+  // Rebuilds the panel from scratch. Avoid calling while a field has focus —
+  // it would replace the live input node and drop the caret mid-typing.
   function renderRosterPanel() {
     const list = document.getElementById('rosterList');
     if (!list) return;
     list.innerHTML = '';
-    if (!state.roster.length) {
-      const empty = document.createElement('div');
-      empty.className = 'pm-roster-empty';
-      empty.textContent = 'No players loaded. Add some on the Hoops Roster page.';
-      list.appendChild(empty);
-      return;
-    }
     const positions = ['1','2','3','4','5','X1','X2','X3','X4','X5'];
-    const taken = new Set(Object.values(state.assignments));
     for (const id of positions) {
       const e = STARTING[id];
       if (!e) continue;
       const row = document.createElement('div');
       row.className = 'pm-roster-row';
+
       const lbl = document.createElement('div');
       lbl.className = 'pm-roster-pos ' + e.type;
       lbl.textContent = id;
-      const select = document.createElement('select');
-      select.className = 'pm-roster-select';
-      const opt0 = document.createElement('option');
-      opt0.value = ''; opt0.textContent = '— Position ' + id + ' —';
-      select.appendChild(opt0);
-      for (const p of state.roster) {
-        const o = document.createElement('option');
-        o.value = p.id;
-        const num = p.jersey_number != null ? `#${p.jersey_number} ` : '';
-        o.textContent = `${num}${p.name}`;
-        // Mark already-assigned-elsewhere players (still selectable, will swap)
-        if (taken.has(p.id) && state.assignments[id] !== p.id) {
-          o.textContent += '  (assigned)';
-        }
-        select.appendChild(o);
-      }
-      select.value = state.assignments[id] || '';
-      select.addEventListener('change', () => {
-        pushHistory();
-        const v = select.value;
-        // If this player is already in another slot, vacate that slot first
-        if (v) {
-          for (const otherId of Object.keys(state.assignments)) {
-            if (otherId !== id && state.assignments[otherId] === v) delete state.assignments[otherId];
-          }
-          state.assignments[id] = v;
-        } else {
-          delete state.assignments[id];
-        }
-        renderRosterPanel();
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'pm-roster-select';
+      input.placeholder = 'Player ' + id;
+      input.maxLength = 14;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.value = state.assignments[id] || '';
+
+      // Live-update the court as they type (no re-render of the panel itself)
+      input.addEventListener('input', () => {
+        const v = input.value.trim();
+        if (v) state.assignments[id] = v;
+        else delete state.assignments[id];
+        saveLineup();
         renderEntities();
       });
+      // Snapshot for undo only once per editing session, not per keystroke
+      input.addEventListener('focus', () => pushHistory());
+
       row.appendChild(lbl);
-      row.appendChild(select);
+      row.appendChild(input);
       list.appendChild(row);
     }
   }
@@ -1166,6 +1143,7 @@
     if (!confirm('Remove all player names? Positions will revert to 1-5 / X1-X5.')) return;
     pushHistory();
     state.assignments = {};
+    saveLineup();
     renderRosterPanel();
     renderEntities();
   }
@@ -1541,11 +1519,13 @@
     // Cones and X spots are point markers — stagger them so multiples don't stack
     if (shape === 'cone' || shape === 'xmark') {
       const count = state.zones.filter(z => z.shape === shape).length;
+      // Cones and X spots get separate start rows so the first of each doesn't overlap
+      const baseY = shape === 'cone' ? 250 : 330;
       const z = {
         id: newZoneId(),
         shape,
         x: 120 + (count % 5) * 65,
-        y: 250 + Math.floor(count / 5) * 60,
+        y: baseY + Math.floor(count / 5) * 55,
         color: shape === 'cone' ? '#ff6b00' : '#ffffff'
       };
       state.zones.push(z);
@@ -2332,7 +2312,9 @@
     document.getElementById('teamShare').checked = !!p.team_visible;
     document.getElementById('teamCategory').value = p.team_category || '';
     state.zones = Array.isArray(p.zones) ? clone(p.zones) : [];
-    state.assignments = (p.assignments && typeof p.assignments === 'object') ? clone(p.assignments) : {};
+    // Fall back to the saved lineup when a play carries no names (or only old UUIDs)
+    const loaded = cleanAssignments(p.assignments);
+    state.assignments = Object.keys(loaded).length ? loaded : loadLineup();
     state.selectedZoneId = null;
     if (state.steps.length) loadStep(0);
     else renderAll();
@@ -2349,7 +2331,7 @@
     state.activeStep = -1;
     state.pendingPaths = {};
     state.zones = [];
-    state.assignments = {};
+    state.assignments = loadLineup(); // keep your typed lineup across new plays
     state.selectedZoneId = null;
     state.entities = clone(STARTING);
     state.ballHolder = detectBallHolder();
@@ -2635,6 +2617,8 @@
 
   refreshFolderDropdown();
   refreshPlaybook();
+  state.assignments = loadLineup();
+  renderRosterPanel();
   state.ballHolder = detectBallHolder();
   renderAll();
   updateUndoBtn();
@@ -2795,8 +2779,18 @@
 })();
 </script>
 <script>
+  // There is no sw.js on this host. Older builds registered one, and an orphaned
+  // service worker serves its cached copy forever — that's what pinned devices
+  // (notably the iPad) to a stale version. Tear any leftover down on load.
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    navigator.serviceWorker.getRegistrations()
+      .then(regs => Promise.all(regs.map(r => r.unregister())))
+      .then(unregistered => {
+        if (!unregistered.some(Boolean)) return null;
+        return caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+          .then(() => location.reload()); // one-time reload to pick up the real files
+      })
+      .catch(() => {});
   }
 </script>
 </body>
