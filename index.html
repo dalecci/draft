@@ -536,7 +536,8 @@
   .player-circle.offense { fill: url(#offenseGrad); stroke: rgba(255,255,255,0.85); stroke-width: 1.5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
   .player-circle.defense { fill: url(#defenseGrad); stroke: rgba(255,255,255,0.85); stroke-width: 1.5; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
   .player-label { fill: #fff; font-size: 13px; font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none; letter-spacing: 0.5px; }
-  .ball { fill: url(#ballGrad); stroke: #5a3a10; stroke-width: 1.2; cursor: grab; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+  /* White rim keeps the ball legible when it sits on a coloured player disc */
+  .ball { fill: url(#ballGrad); stroke: #fff; stroke-width: 1.6; cursor: grab; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.65)); }
   .ball:active { cursor: grabbing; }
 
   /* Path overlays */
@@ -908,6 +909,10 @@
       <div class="row">
         <button class="primary" id="captureBtn" style="flex:1;">＋ Capture Step</button>
         <button class="ghost" id="undoBtn" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+      </div>
+      <div class="row">
+        <button class="ghost" id="shootBtn" style="width:100%;justify-content:center;"
+                title="Send the ball from the current handler to the nearest rim (S)">🏀 Shoot at Rim</button>
       </div>
     </div>
 
@@ -1446,8 +1451,11 @@
         renderedEls[id] = el;
       }
       if (e.type === 'ball') {
-        el.setAttribute('cx', e.x);
-        el.setAttribute('cy', e.y);
+        // A held ball sits at the holder's centre logically, but drawing it there
+        // buries it under the disc. Nudge it to the player's shoulder so it reads.
+        const p = ballRenderPos();
+        el.setAttribute('cx', p.x);
+        el.setAttribute('cy', p.y);
       } else {
         const c = el.firstChild;
         const t = el.lastChild;
@@ -1462,6 +1470,76 @@
         el.classList.toggle('has-ball', state.ballHolder === id);
       }
     });
+  }
+
+  // Offset used when a player is carrying the ball (up and to the right).
+  const HELD_DX = 14, HELD_DY = -13;
+
+  // Where the ball should actually be drawn. A held ball is nudged off the
+  // player's centre so it isn't buried under the disc. The nudge fades out over
+  // the first few pixels of travel, so a pass or shot slides out of the hand
+  // instead of popping sideways on the first frame.
+  const HELD_FADE = 26;
+  function ballRenderPos() {
+    const b = state.entities.ball;
+    if (!b) return { x: 0, y: 0 };
+    const h = state.ballHolder && state.entities[state.ballHolder];
+    if (!h) return { x: b.x, y: b.y };
+    const d = Math.hypot(b.x - h.x, b.y - h.y);
+    if (d >= HELD_FADE) return { x: b.x, y: b.y };
+    const k = 1 - d / HELD_FADE; // 1 in hand → 0 once clear of the player
+    return {
+      x: clamp(b.x + HELD_DX * k, BALL_RADIUS, COURT_W - BALL_RADIUS),
+      y: clamp(b.y + HELD_DY * k, BALL_RADIUS, courtHeight() - BALL_RADIUS)
+    };
+  }
+
+  // ---------- Shooting ----------
+  // Hoop centres match renderCourt(): near hoop at y=55, far hoop mirrored.
+  function hoops() {
+    const list = [{ x: 250, y: 55 }];
+    if (state.fullCourt) list.push({ x: 250, y: courtHeight() - 55 });
+    return list;
+  }
+  function nearestHoop(from) {
+    return hoops().reduce((best, h) =>
+      Math.hypot(from.x - h.x, from.y - h.y) < Math.hypot(from.x - best.x, from.y - best.y) ? h : best);
+  }
+
+  // Quadratic arc so a shot reads differently from a straight-line pass.
+  function arcPoints(from, to, steps) {
+    const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    // Bow perpendicular to the shot line, capped so long shots don't loop wildly
+    const bow = Math.min(len * 0.18, 55);
+    const cx = mx + (-dy / len) * bow;
+    const cy = my + (dx / len) * bow;
+    const pts = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps, u = 1 - t;
+      pts.push({
+        x: u * u * from.x + 2 * u * t * cx + t * t * to.x,
+        y: u * u * from.y + 2 * u * t * cy + t * t * to.y
+      });
+    }
+    return pts;
+  }
+
+  function shootBall() {
+    const ball = state.entities.ball;
+    if (!ball) return;
+    if (!state.ballHolder) { toast('Tap a player to give them the ball first', 'error'); return; }
+    if (state.isPlaying) stopPlay();
+    pushHistory();
+    const from = { x: ball.x, y: ball.y };
+    const rim = nearestHoop(from);
+    state.pendingPaths.ball = arcPoints(from, rim, 26);
+    ball.x = rim.x;
+    ball.y = rim.y;
+    state.ballHolder = null; // it's at the rim now, nobody is holding it
+    renderAll();
+    toast('Shot at the rim — capture the step to keep it');
   }
 
   // ---------- Render motion paths ----------
@@ -2154,7 +2232,7 @@
     .player-circle.offense{fill:url(#offenseGrad);stroke:rgba(255,255,255,.85);stroke-width:1.5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
     .player-circle.defense{fill:url(#defenseGrad);stroke:rgba(255,255,255,.85);stroke-width:1.5;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
     .player-label{fill:#fff;font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:central}
-    .ball{fill:url(#ballGrad);stroke:#5a3a10;stroke-width:1.2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+    .ball{fill:url(#ballGrad);stroke:#fff;stroke-width:1.6;filter:drop-shadow(0 2px 5px rgba(0,0,0,.65))}
     .player.has-ball .player-circle{stroke:#d4af37;stroke-width:2.4}
   `;
 
@@ -2694,6 +2772,7 @@
     document.getElementById('folderSelect').value = name;
     toast(`Folder "${name}" created`, 'success');
   });
+  document.getElementById('shootBtn').addEventListener('click', shootBall);
   document.getElementById('halfCourtBtn').addEventListener('click', () => setCourtMode(false));
   document.getElementById('fullCourtBtn').addEventListener('click', () => setCourtMode(true));
   document.getElementById('defenseToggle').addEventListener('change', (e) => {
@@ -2714,6 +2793,8 @@
       if (state.isPlaying) stopPlay(); else play();
     } else if (e.key === 'n' || e.key === 'N') {
       captureStep();
+    } else if (e.key === 's' || e.key === 'S') {
+      shootBall();
     } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
       e.preventDefault();
       undo();
