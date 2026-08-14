@@ -650,7 +650,27 @@
   /* ---------- Roster / Lineup section ---------- */
   .pm-roster-list { display: grid; gap: 5px; }
   .pm-roster-row {
-    display: grid; grid-template-columns: 38px 1fr; gap: 8px; align-items: center;
+    display: grid; grid-template-columns: 18px 38px 1fr; gap: 8px; align-items: center;
+  }
+  /* Off-court players stay listed but visibly recede */
+  .pm-roster-row.is-off .pm-roster-pos,
+  .pm-roster-row.is-off .pm-roster-select { opacity: 0.4; }
+  .pm-roster-check {
+    width: 16px; height: 16px; margin: 0; cursor: pointer;
+    accent-color: var(--gold); flex-shrink: 0;
+  }
+  .pm-group-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.6px;
+    color: var(--ink-2); font-weight: 600;
+    margin-top: 8px; padding: 2px 2px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pm-group-head:first-child { margin-top: 0; }
+  .pm-group-right { display: flex; align-items: center; gap: 6px; }
+  .pm-group-count {
+    color: var(--gold); font-size: 10px; letter-spacing: 1px;
+    font-weight: 500; text-transform: none;
   }
   .pm-roster-pos {
     text-align: center; font-weight: 800; font-size: 12px;
@@ -799,27 +819,9 @@
         </marker>
       </defs>
 
-      <!-- Hardwood floor -->
-      <rect x="0" y="0" width="500" height="470" fill="url(#woodGrain)"/>
-      <rect x="0" y="0" width="500" height="470" fill="url(#courtVignette)"/>
-
-      <!-- Court markings -->
-      <rect x="2" y="2" width="496" height="466" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
-      <!-- Lane / key -->
-      <rect x="170" y="2" width="160" height="188" fill="rgba(0,0,0,0.06)" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
-      <!-- Free-throw circle -->
-      <path d="M 190 190 A 60 60 0 0 1 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
-      <path d="M 190 190 A 60 60 0 0 0 310 190" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-dasharray="6 6"/>
-      <!-- 3-point line -->
-      <path d="M 30 2 L 30 140 A 237.5 237.5 0 0 0 470 140 L 470 2" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
-      <!-- Backboard -->
-      <line x1="220" y1="40" x2="280" y2="40" stroke="rgba(255,255,255,0.95)" stroke-width="3" stroke-linecap="round"/>
-      <!-- Hoop -->
-      <circle cx="250" cy="55" r="9" fill="none" stroke="#ff5a1f" stroke-width="2.2"/>
-      <!-- Restricted arc -->
-      <path d="M 210 55 A 40 40 0 0 0 290 55" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
-      <!-- Half-court line (near bottom edge of half-court view) -->
-      <line x1="0" y1="468" x2="500" y2="468" stroke="rgba(255,255,255,0.85)" stroke-width="2"/>
+      <!-- Floor + court markings — drawn by renderCourt() for half or full court -->
+      <g id="courtFloor"></g>
+      <g id="courtMarks"></g>
 
       <!-- Zones group (behind everything else, rendered by JS from state.zones) -->
       <g id="zones"></g>
@@ -906,6 +908,16 @@
       <div class="row">
         <button class="primary" id="captureBtn" style="flex:1;">＋ Capture Step</button>
         <button class="ghost" id="undoBtn" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <span>Court</span>
+      </div>
+      <div class="row">
+        <button class="ghost" id="halfCourtBtn" type="button" style="flex:1;justify-content:center;" title="Half court view">Half</button>
+        <button class="ghost" id="fullCourtBtn" type="button" style="flex:1;justify-content:center;" title="Full court view">Full</button>
       </div>
     </div>
 
@@ -1017,7 +1029,9 @@
       steps: clone(state.steps),
       activeStep: state.activeStep,
       ballHolder: state.ballHolder,
-      assignments: clone(state.assignments || {})
+      assignments: clone(state.assignments || {}),
+      onCourt: clone(state.onCourt || {}),
+      fullCourt: !!state.fullCourt
     });
     if (history.length > MAX_HISTORY) history.shift();
     updateUndoBtn();
@@ -1032,7 +1046,12 @@
     state.activeStep = prev.activeStep;
     state.ballHolder = prev.ballHolder;
     state.assignments = prev.assignments || {};
+    state.onCourt = prev.onCourt || {};
+    if (typeof prev.fullCourt === 'boolean' && prev.fullCourt !== state.fullCourt) {
+      state.fullCourt = prev.fullCourt; saveCourtMode(); renderCourt(); updateCourtBtns();
+    }
     saveLineup();
+    saveOnCourt();
     renderRosterPanel();
     renderAll();
     updateUndoBtn();
@@ -1054,6 +1073,8 @@
     isPlaying: false,
     speed: 1.0,
     ballHolder: null,     // id of the player currently holding the ball, or null
+    onCourt: {},          // { '1': true, 'X3': false, ... } — unset means on court
+    fullCourt: false,     // false = half court (500x470), true = full court (500x940)
     zones: [],            // [{id, shape:'oval'|'rect'|'freehand', x,y,w,h | d, color}]
     selectedZoneId: null,
     drawMode: false,      // when true, pointer events on court draw a freehand path
@@ -1086,6 +1107,33 @@
     try { return cleanAssignments(JSON.parse(localStorage.getItem(LINEUP_KEY) || '{}')); }
     catch { return {}; }
   }
+
+  // ---------- On-court selection ----------
+  const ONCOURT_KEY = 'playmaker_oncourt_v1';
+
+  function cleanOnCourt(obj) {
+    const out = {};
+    OFFENSE_IDS.concat(DEFENSE_IDS).forEach(id => {
+      if (obj && typeof obj === 'object' && obj[id] === false) out[id] = false;
+    });
+    return out;
+  }
+  function saveOnCourt() { localStorage.setItem(ONCOURT_KEY, JSON.stringify(state.onCourt)); }
+  function loadOnCourt() {
+    try { return cleanOnCourt(JSON.parse(localStorage.getItem(ONCOURT_KEY) || '{}')); }
+    catch { return {}; }
+  }
+
+  function setOnCourt(id, on) {
+    pushHistory();
+    if (on) delete state.onCourt[id];
+    else state.onCourt[id] = false;
+    // A player taken off the court can't be holding the ball.
+    if (!on && state.ballHolder === id) state.ballHolder = null;
+    saveOnCourt();
+    renderRosterPanel(); // refresh the group count + All/None label
+    renderAll();
+  }
   function fitFontSize(len) {
     if (len <= 2) return 14;
     if (len <= 3) return 13;
@@ -1101,12 +1149,60 @@
     const list = document.getElementById('rosterList');
     if (!list) return;
     list.innerHTML = '';
-    const positions = ['1','2','3','4','5','X1','X2','X3','X4','X5'];
-    for (const id of positions) {
+    const groups = [
+      { title: 'Offense', ids: OFFENSE_IDS },
+      { title: 'Defense', ids: DEFENSE_IDS }
+    ];
+    for (const grp of groups) {
+      const onCount = grp.ids.filter(id => state.onCourt[id] !== false).length;
+      const head = document.createElement('div');
+      head.className = 'pm-group-head';
+      const ttl = document.createElement('span');
+      ttl.textContent = grp.title;
+      const cnt = document.createElement('span');
+      cnt.className = 'pm-group-count';
+      cnt.textContent = onCount + ' on court';
+      const all = document.createElement('button');
+      all.className = 'small-btn';
+      all.textContent = onCount === grp.ids.length ? 'None' : 'All';
+      all.title = onCount === grp.ids.length ? 'Take all off the court' : 'Put all on the court';
+      all.addEventListener('click', () => {
+        pushHistory();
+        const turnOn = onCount !== grp.ids.length;
+        grp.ids.forEach(id => {
+          if (turnOn) delete state.onCourt[id];
+          else {
+            state.onCourt[id] = false;
+            if (state.ballHolder === id) state.ballHolder = null;
+          }
+        });
+        saveOnCourt();
+        renderRosterPanel();
+        renderAll();
+      });
+      const right = document.createElement('span');
+      right.className = 'pm-group-right';
+      right.appendChild(cnt);
+      right.appendChild(all);
+      head.appendChild(ttl);
+      head.appendChild(right);
+      list.appendChild(head);
+
+    for (const id of grp.ids) {
       const e = STARTING[id];
       if (!e) continue;
       const row = document.createElement('div');
       row.className = 'pm-roster-row';
+
+      const on = state.onCourt[id] !== false;
+      row.classList.toggle('is-off', !on);
+
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.className = 'pm-roster-check';
+      chk.checked = on;
+      chk.title = on ? 'On the court — uncheck to remove' : 'Off the court — check to add';
+      chk.addEventListener('change', () => setOnCourt(id, chk.checked));
 
       const lbl = document.createElement('div');
       lbl.className = 'pm-roster-pos ' + e.type;
@@ -1132,9 +1228,11 @@
       // Snapshot for undo only once per editing session, not per keystroke
       input.addEventListener('focus', () => pushHistory());
 
+      row.appendChild(chk);
       row.appendChild(lbl);
       row.appendChild(input);
       list.appendChild(row);
+    }
     }
   }
 
@@ -1154,11 +1252,139 @@
   const pathsGroup = document.getElementById('paths');
   const zonesGroup = document.getElementById('zones');
   const ZONE_COLORS = ['#FFD24D','#5BA8F0','#E85A55','#3FB984','#B47BFF','#F0A830','#FFFFFF','#000000'];
+  const courtFloor = document.getElementById('courtFloor');
+  const courtMarks = document.getElementById('courtMarks');
+
+  // ---------- Court geometry (half / full) ----------
+  // Half court is the original 500x470 box with the hoop at the top.
+  // Full court stacks a mirrored copy below it, so saved half-court plays
+  // keep their coordinates and simply sit in the attacking half.
+  const COURT_W = 500;
+  const HALF_H  = 470;
+  const COURT_KEY = 'playmaker_court_mode_v1';
+
+  function courtHeight() { return state.fullCourt ? HALF_H * 2 : HALF_H; }
+
+  function mk(tag, attrs) {
+    const el = document.createElementNS(NS, tag);
+    for (const k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+
+  // Draws one half's markings. flip=false → hoop at top (y grows into the court);
+  // flip=true → the same shapes mirrored about `originY` for the far end.
+  function drawHalf(g, originY, flip) {
+    const Y = v => flip ? originY - v : originY + v;
+    const line = 'rgba(255,255,255,0.85)';
+
+    // Lane / key
+    g.appendChild(mk('rect', {
+      x: 170, y: Math.min(Y(2), Y(190)), width: 160, height: 188,
+      fill: 'rgba(0,0,0,0.06)', stroke: line, 'stroke-width': 2
+    }));
+    // Free-throw circle (solid top half, dashed bottom half)
+    const sweepA = flip ? 0 : 1, sweepB = flip ? 1 : 0;
+    g.appendChild(mk('path', {
+      d: `M 190 ${Y(190)} A 60 60 0 0 ${sweepA} 310 ${Y(190)}`,
+      fill: 'none', stroke: line, 'stroke-width': 2
+    }));
+    g.appendChild(mk('path', {
+      d: `M 190 ${Y(190)} A 60 60 0 0 ${sweepB} 310 ${Y(190)}`,
+      fill: 'none', stroke: line, 'stroke-width': 2, 'stroke-dasharray': '6 6'
+    }));
+    // 3-point line
+    g.appendChild(mk('path', {
+      d: `M 30 ${Y(2)} L 30 ${Y(140)} A 237.5 237.5 0 0 ${sweepB} 470 ${Y(140)} L 470 ${Y(2)}`,
+      fill: 'none', stroke: line, 'stroke-width': 2
+    }));
+    // Backboard
+    g.appendChild(mk('line', {
+      x1: 220, y1: Y(40), x2: 280, y2: Y(40),
+      stroke: 'rgba(255,255,255,0.95)', 'stroke-width': 3, 'stroke-linecap': 'round'
+    }));
+    // Hoop
+    g.appendChild(mk('circle', {
+      cx: 250, cy: Y(55), r: 9, fill: 'none', stroke: '#ff5a1f', 'stroke-width': 2.2
+    }));
+    // Restricted arc
+    g.appendChild(mk('path', {
+      d: `M 210 ${Y(55)} A 40 40 0 0 ${sweepB} 290 ${Y(55)}`,
+      fill: 'none', stroke: 'rgba(255,255,255,0.6)', 'stroke-width': 1.5
+    }));
+  }
+
+  function renderCourt() {
+    const H = courtHeight();
+    svg.setAttribute('viewBox', `0 0 ${COURT_W} ${H}`);
+    svg.style.maxHeight = state.fullCourt ? '86vh' : '78vh';
+
+    courtFloor.innerHTML = '';
+    courtFloor.appendChild(mk('rect', { x: 0, y: 0, width: COURT_W, height: H, fill: 'url(#woodGrain)' }));
+    courtFloor.appendChild(mk('rect', { x: 0, y: 0, width: COURT_W, height: H, fill: 'url(#courtVignette)' }));
+
+    courtMarks.innerHTML = '';
+    const line = 'rgba(255,255,255,0.85)';
+    // Outer boundary
+    courtMarks.appendChild(mk('rect', {
+      x: 2, y: 2, width: COURT_W - 4, height: H - 4,
+      fill: 'none', stroke: line, 'stroke-width': 2
+    }));
+
+    drawHalf(courtMarks, 0, false);
+
+    if (state.fullCourt) {
+      drawHalf(courtMarks, H, true);
+      // Midcourt line + center circle
+      courtMarks.appendChild(mk('line', {
+        x1: 0, y1: HALF_H, x2: COURT_W, y2: HALF_H, stroke: line, 'stroke-width': 2
+      }));
+      courtMarks.appendChild(mk('circle', {
+        cx: 250, cy: HALF_H, r: 60, fill: 'none', stroke: line, 'stroke-width': 2
+      }));
+      courtMarks.appendChild(mk('circle', {
+        cx: 250, cy: HALF_H, r: 20, fill: 'none', stroke: 'rgba(255,255,255,0.5)', 'stroke-width': 1.5
+      }));
+    } else {
+      // Half-court view: the baseline-opposite edge doubles as the timeline
+      courtMarks.appendChild(mk('line', {
+        x1: 0, y1: HALF_H - 2, x2: COURT_W, y2: HALF_H - 2, stroke: line, 'stroke-width': 2
+      }));
+    }
+  }
+
+  function saveCourtMode() { localStorage.setItem(COURT_KEY, state.fullCourt ? 'full' : 'half'); }
+  function loadCourtMode() { return localStorage.getItem(COURT_KEY) === 'full'; }
+
+  function setCourtMode(full) {
+    if (state.fullCourt === full) return;
+    pushHistory();
+    state.fullCourt = full;
+    saveCourtMode();
+    renderCourt();
+    updateCourtBtns();
+    renderAll();
+    toast(full ? 'Full court' : 'Half court');
+  }
+
+  function updateCourtBtns() {
+    const h = document.getElementById('halfCourtBtn');
+    const f = document.getElementById('fullCourtBtn');
+    if (h) h.classList.toggle('primary', !state.fullCourt);
+    if (f) f.classList.toggle('primary', state.fullCourt);
+  }
 
   // ---------- Visibility ----------
+  const OFFENSE_IDS = ['1','2','3','4','5'];
+  const DEFENSE_IDS = ['X1','X2','X3','X4','X5'];
+
+  // On-court selection is per player. Defenders also stay behind the master
+  // "Show defenders" switch so unchecking it hides them all at once.
   function visibleIds() {
-    const ids = ['1','2','3','4','5','ball'];
-    if (state.showDefense) return ['X1','X2','X3','X4','X5'].concat(ids);
+    const ids = OFFENSE_IDS.filter(id => state.onCourt[id] !== false);
+    ids.push('ball');
+    if (state.showDefense) {
+      return DEFENSE_IDS.filter(id => state.onCourt[id] !== false).concat(ids);
+    }
     return ids;
   }
 
@@ -1553,8 +1779,9 @@
   function svgPoint(evt) {
     const rect = svg.getBoundingClientRect();
     const x = (evt.clientX - rect.left) / rect.width * 500;
-    const y = (evt.clientY - rect.top) / rect.height * 470;
-    return { x: Math.max(0, Math.min(500, x)), y: Math.max(0, Math.min(470, y)) };
+    const H = courtHeight();
+    const y = (evt.clientY - rect.top) / rect.height * H;
+    return { x: Math.max(0, Math.min(COURT_W, x)), y: Math.max(0, Math.min(H, y)) };
   }
 
   // Zone interactions on the SVG: click to select; drag body to move; drag handle to resize
@@ -1790,8 +2017,8 @@
     const p = svgPoint(e);
     const ent = state.entities[dragId];
     const r = ent.type === 'ball' ? BALL_RADIUS : ENT_RADIUS;
-    const newX = clamp(p.x - dragOffset.dx, r, 500 - r);
-    const newY = clamp(p.y - dragOffset.dy, r, 470 - r);
+    const newX = clamp(p.x - dragOffset.dx, r, COURT_W - r);
+    const newY = clamp(p.y - dragOffset.dy, r, courtHeight() - r);
 
     if (!recordingPath) {
       const moved = Math.hypot(newX - dragStartPos.x, newY - dragStartPos.y);
@@ -1811,8 +2038,8 @@
     // If the dragged entity holds the ball, drag the ball at the same offset.
     if (ballFollowOffset) {
       const ball = state.entities.ball;
-      ball.x = clamp(ent.x + ballFollowOffset.dx, BALL_RADIUS, 500 - BALL_RADIUS);
-      ball.y = clamp(ent.y + ballFollowOffset.dy, BALL_RADIUS, 470 - BALL_RADIUS);
+      ball.x = clamp(ent.x + ballFollowOffset.dx, BALL_RADIUS, COURT_W - BALL_RADIUS);
+      ball.y = clamp(ent.y + ballFollowOffset.dy, BALL_RADIUS, courtHeight() - BALL_RADIUS);
       if (recordingPath) {
         if (!ballFollowPath) ballFollowPath = [{ x: ballFollowStartPos.x, y: ballFollowStartPos.y }];
         const last = ballFollowPath[ballFollowPath.length - 1];
@@ -1958,7 +2185,7 @@
       .replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'play';
 
     // Canvas: maintain viewBox 500×470 ratio at 1280px wide
-    const CW = 1280, CH = Math.round(1280 * 470 / 500);
+    const CW = 1280, CH = Math.round(1280 * courtHeight() / COURT_W);
     const canvas = document.createElement('canvas');
     canvas.width = CW; canvas.height = CH;
     const ctx = canvas.getContext('2d');
@@ -2284,6 +2511,8 @@
       steps: state.steps,
       zones: clone(state.zones),
       assignments: clone(state.assignments || {}),
+      onCourt: clone(state.onCourt || {}),
+      fullCourt: !!state.fullCourt,
       savedAt: Date.now(),
       team_visible: teamVisible,
       team_category: teamVisible ? teamCategory : null,
@@ -2315,6 +2544,9 @@
     // Fall back to the saved lineup when a play carries no names (or only old UUIDs)
     const loaded = cleanAssignments(p.assignments);
     state.assignments = Object.keys(loaded).length ? loaded : loadLineup();
+    state.onCourt = p.onCourt ? cleanOnCourt(p.onCourt) : loadOnCourt();
+    state.fullCourt = !!p.fullCourt;
+    saveCourtMode(); renderCourt(); updateCourtBtns();
     state.selectedZoneId = null;
     if (state.steps.length) loadStep(0);
     else renderAll();
@@ -2332,6 +2564,7 @@
     state.pendingPaths = {};
     state.zones = [];
     state.assignments = loadLineup(); // keep your typed lineup across new plays
+    state.onCourt = loadOnCourt();
     state.selectedZoneId = null;
     state.entities = clone(STARTING);
     state.ballHolder = detectBallHolder();
@@ -2461,8 +2694,11 @@
     document.getElementById('folderSelect').value = name;
     toast(`Folder "${name}" created`, 'success');
   });
+  document.getElementById('halfCourtBtn').addEventListener('click', () => setCourtMode(false));
+  document.getElementById('fullCourtBtn').addEventListener('click', () => setCourtMode(true));
   document.getElementById('defenseToggle').addEventListener('change', (e) => {
     state.showDefense = e.target.checked;
+    renderRosterPanel();
     renderAll();
   });
   document.getElementById('speedRange').addEventListener('input', (e) => {
@@ -2618,6 +2854,10 @@
   refreshFolderDropdown();
   refreshPlaybook();
   state.assignments = loadLineup();
+  state.onCourt = loadOnCourt();
+  state.fullCourt = loadCourtMode();
+  renderCourt();
+  updateCourtBtns();
   renderRosterPanel();
   state.ballHolder = detectBallHolder();
   renderAll();
