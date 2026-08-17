@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Vibrant Resonance — Frequency Studio</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0A0E13">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+  <!-- ============ LOCK SCREEN ============ -->
+  <section id="lock-screen">
+    <div class="lock-inner">
+      <svg class="lock-mark" viewBox="0 0 120 60" aria-hidden="true">
+        <path d="M0 30 Q 15 0, 30 30 T 60 30 T 90 30 T 120 30" fill="none" stroke="#FF4D4D" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <h1 class="lock-title">Vibrant Resonance</h1>
+      <p class="lock-sub">Frequency Studio · Part of Vibrant Complete Health</p>
+      <div id="lock-pad-wrap">
+        <div id="lock-dots"></div>
+        <div id="lock-pad">
+          <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+          <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+          <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+          <span></span><button data-key="0">0</button><button data-key="back">⌫</button>
+        </div>
+      </div>
+      <p class="lock-disclaimer">Frequency listings in this app reproduce historical Rife/CAFL practitioner conventions.
+        They are not clinically established treatments and do not replace diagnostic testing or medical care.</p>
+    </div>
+  </section>
+
+  <!-- ============ USER PICKER ============ -->
+  <section id="user-screen" class="hidden">
+    <div class="user-inner">
+      <h2 class="display">Who is running this session?</h2>
+      <div id="user-list"></div>
+      <div class="add-user-row">
+        <input id="new-user-name" type="text" placeholder="Add a new name…" maxlength="40">
+        <button id="add-user-btn" class="btn primary">Add</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MAIN APP ============ -->
+  <main id="main-app" class="hidden">
+    <header class="app-header">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 120 60" aria-hidden="true">
+          <path d="M0 30 Q 15 0, 30 30 T 60 30 T 90 30 T 120 30" fill="none" stroke="#FF4D4D" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="brand-name">Vibrant Resonance</div>
+          <div class="brand-sub">Vibrant Complete Health</div>
+        </div>
+      </div>
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="generator">Generator</button>
+        <button class="tab-btn" data-tab="protocols">Protocols</button>
+        <button class="tab-btn" data-tab="brain">🧠 Brain</button>
+        <button class="tab-btn" data-tab="admin">Admin</button>
+      </nav>
+      <div class="header-right">
+        <span class="sync"><span id="sync-dot" class="sync-dot"></span><span id="sync-label">…</span></span>
+        <button id="switch-user" class="user-chip-btn"><span id="user-chip">—</span> ⇄</button>
+      </div>
+    </header>
+
+    <!-- ---- GENERATOR ---- -->
+    <section id="tab-generator" class="tab-pane">
+      <div class="gen-layout">
+        <div class="gen-main panel">
+          <div class="gen-freq-row">
+            <input id="gen-freq" type="number" value="728" min="0.1" max="100000" step="0.1" inputmode="decimal">
+            <span class="gen-hz-label">Hz</span>
+          </div>
+          <div id="gen-nudge" class="gen-nudge">
+            <button data-d="-100">−100</button><button data-d="-10">−10</button><button data-d="-1">−1</button><button data-d="-0.1">−0.1</button>
+            <button data-d="0.1">+0.1</button><button data-d="1">+1</button><button data-d="10">+10</button><button data-d="100">+100</button>
+          </div>
+          <div id="gen-chips" class="gen-chips">
+            <button data-hz="465">465</button><button data-hz="727">727</button><button data-hz="728">728</button>
+            <button data-hz="784">784</button><button data-hz="800">800</button><button data-hz="880">880</button>
+            <button data-hz="5000">5,000</button><button data-hz="10000">10,000</button>
+          </div>
+          <div id="gen-warning" class="warning hidden"></div>
+          <div class="gen-controls">
+            <button id="gen-play" class="btn primary big">▶ Play</button>
+            <div class="vol-wrap">
+              <label>Volume</label>
+              <input id="gen-volume" type="range" min="0" max="100" value="30">
+              <span id="gen-vol-label">30%</span>
+            </div>
+          </div>
+        </div>
+        <div class="gen-side panel">
+          <canvas id="gen-scope" width="560" height="200"></canvas>
+          <div class="gen-info">
+            <div><span class="muted">Sample rate</span><b id="gen-sr">—</b></div>
+            <div><span class="muted">Max clean frequency</span><b id="gen-max">—</b></div>
+            <div><span class="muted">Measured output</span><b id="gen-measured">—</b></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- PROTOCOLS ---- -->
+    <section id="tab-protocols" class="tab-pane hidden">
+      <div class="pane-toolbar">
+        <h2 class="display">Protocol Bank</h2>
+        <button id="new-preset-btn" class="btn primary">+ New Protocol</button>
+      </div>
+      <div id="preset-groups"></div>
+    </section>
+
+    <!-- ---- BRAIN ---- -->
+    <section id="tab-brain" class="tab-pane hidden">
+      <div class="brain-search-wrap">
+        <h2 class="display">The Brain</h2>
+        <p class="muted">Name a parasite, mold, or condition — the Brain builds the protocol from its knowledge base
+          and everything you've trained it on.</p>
+        <input id="brain-q" type="search" placeholder="e.g. aspergillus niger, roundworm, mold…" autocomplete="off">
+      </div>
+
+      <div id="brain-chat" class="panel brain-chat">
+        <div class="bc-header">
+          <h3>💬 Talk to the Brain</h3>
+          <span class="muted">Describe what you need — it designs the protocol</span>
+        </div>
+        <div id="bc-thread" class="bc-thread"></div>
+        <p id="bc-nokey" class="muted hidden">AI conversations need an Anthropic API key —
+          add one in <b>Admin → Backup &amp; Settings → AI Brain</b>.</p>
+        <div class="bc-input-row">
+          <textarea id="bc-input" rows="2"
+            placeholder="e.g. What would you do for tapeworm, extra strength?"></textarea>
+          <button id="bc-send" class="btn primary">Ask</button>
+        </div>
+      </div>
+      <div id="brain-results" class="brain-results"></div>
+      <div id="brain-detail" class="panel hidden"></div>
+    </section>
+
+    <!-- ---- ADMIN ---- -->
+    <section id="tab-admin" class="tab-pane hidden">
+      <div id="admin-gate" class="admin-gate panel">
+        <h2 class="display">Admin</h2>
+        <p class="muted">Enter the admin PIN to view logs and manage the system.</p>
+        <div class="admin-pin-row">
+          <input id="admin-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN">
+          <button id="admin-enter" class="btn primary">Unlock</button>
+        </div>
+      </div>
+      <div id="admin-content" class="hidden">
+        <nav class="admin-nav">
+          <button class="admin-nav-btn active" data-sec="sessions">Session Log</button>
+          <button class="admin-nav-btn" data-sec="users">Users</button>
+          <button class="admin-nav-btn" data-sec="research">🧠 Add Research</button>
+          <button class="admin-nav-btn" data-sec="training">Training</button>
+          <button class="admin-nav-btn" data-sec="backup">Backup & Settings</button>
+        </nav>
+
+        <div id="sec-sessions" class="admin-sec panel">
+          <div class="filters">
+            <select id="flt-user"><option value="">All users</option></select>
+            <input id="flt-from" type="date" title="From">
+            <input id="flt-to" type="date" title="To">
+            <input id="flt-q" type="search" placeholder="Search protocol / notes…">
+            <button id="export-csv" class="btn">⬇ CSV</button>
+          </div>
+          <div class="table-scroll">
+            <table id="sessions-table">
+              <thead><tr><th>Date</th><th>User</th><th>Protocol</th><th>Steps</th><th>Time</th><th>Rating</th><th>Notes</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="sec-users" class="admin-sec panel hidden">
+          <div class="add-user-row">
+            <input id="admin-new-user" type="text" placeholder="New user name…" maxlength="40">
+            <button id="admin-add-user" class="btn primary">Add User</button>
+          </div>
+          <div id="admin-user-list"></div>
+        </div>
+
+        <div id="sec-research" class="admin-sec panel hidden">
+          <h3>Add Research to the Brain</h3>
+          <p class="muted">Paste new frequency research below. One entry per line:<br>
+            <code>Condition name | Category | 123, 456, 789 | dwell 180 | optional notes</code><br>
+            or simply <code>Condition name: 123, 456, 789</code> — or a JSON array.<br>
+            <b>Knowledge updates never touch Brain training</b> — everything you've taught it is kept.</p>
+          <textarea id="research-text" rows="8" placeholder="Stachybotrys chartarum | Mold &amp; Fungus | 222, 728, 880 | dwell 180 | from new research"></textarea>
+          <div class="row-between">
+            <button id="research-preview-btn" class="btn">Preview</button>
+            <button id="research-apply" class="btn primary" disabled>🧠 Update the Brain</button>
+          </div>
+          <div id="research-preview"></div>
+        </div>
+
+        <div id="sec-training" class="admin-sec panel hidden">
+          <h3>Everything the Brain has learned</h3>
+          <div id="training-list"></div>
+        </div>
+
+        <div id="sec-backup" class="admin-sec panel hidden">
+          <h3>Sync status</h3>
+          <div id="backup-status"></div>
+          <h3>Backup</h3>
+          <div class="row-gap">
+            <button id="backup-export" class="btn">⬇ Export full backup (JSON)</button>
+            <label class="btn file-btn">⬆ Restore from backup<input id="backup-import-file" type="file" accept=".json"></label>
+          </div>
+          <h3>AI Brain</h3>
+          <div class="row-gap api-key-row">
+            <input id="set-api-key" type="password" placeholder="Anthropic API key (sk-ant-…)">
+            <button id="save-api-key" class="btn primary">Save Key</button>
+          </div>
+          <p id="api-key-status" class="muted"></p>
+          <h3>Settings</h3>
+          <label class="setting-row"><input id="set-voice" type="checkbox" checked> Voice announcements during sessions</label>
+        </div>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      Vibrant Resonance · Part of Vibrant Complete Health · Historical Rife/CAFL listings — not clinically established treatments.
+    </footer>
+  </main>
+
+  <!-- ============ PROTOCOL BUILDER MODAL ============ -->
+  <div id="builder-modal" class="modal hidden">
+    <div class="modal-card panel">
+      <h2 id="builder-title" class="display">New Protocol</h2>
+      <div class="b-form-row">
+        <input id="b-name" type="text" placeholder="Protocol name…" maxlength="80">
+        <select id="b-category">
+          <option>General</option><option>Parasites</option><option>Mold &amp; Fungus</option>
+          <option>Bacteria</option><option>Viruses</option><option>Wellness Tones</option>
+        </select>
+      </div>
+      <div id="b-steps"></div>
+      <div class="row-between">
+        <button id="b-add-step" class="btn">+ Add Step</button>
+        <span id="b-total" class="muted">Total: 0:00</span>
+      </div>
+      <div class="modal-actions">
+        <button id="b-cancel" class="btn">Cancel</button>
+        <button id="b-save" class="btn">💾 Save</button>
+        <button id="b-run" class="btn primary">💾 Save &amp; ▶ Run</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SESSION CONSOLE (dark overlay) ============ -->
+  <div id="session-overlay" class="hidden">
+    <div id="session-live">
+      <header class="sp-header">
+        <div>
+          <div id="sp-name" class="sp-name">—</div>
+          <div class="sp-sub">Session for <span id="sp-user">—</span></div>
+        </div>
+        <button id="sp-stop" class="btn danger">■ End Session</button>
+      </header>
+
+      <div class="sp-body">
+        <div class="sp-ring-wrap">
+          <svg class="sp-ring" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" class="sp-ring-bg"/>
+            <circle id="sp-ring-progress" cx="100" cy="100" r="90" class="sp-ring-fg"
+              stroke-dasharray="565.487" stroke-dashoffset="565.487" transform="rotate(-90 100 100)"/>
+          </svg>
+          <div class="sp-center">
+            <div id="sp-freq" class="sp-freq">—</div>
+            <div class="sp-hz">Hz</div>
+            <div id="sp-step-time" class="sp-step-time">0:00</div>
+            <div id="sp-step-label" class="sp-step-label">—</div>
+            <div id="sp-total-time" class="sp-total">—</div>
+          </div>
+        </div>
+
+        <div class="sp-right">
+          <canvas id="sp-scope" width="520" height="140"></canvas>
+          <div id="sp-warning" class="warning hidden">⚠ This step is above the device's clean frequency limit.</div>
+          <div id="sp-steps" class="sp-steps"></div>
+        </div>
+      </div>
+
+      <footer class="sp-controls">
+        <button id="sp-back" class="btn sp-btn">⏮ Back</button>
+        <button id="sp-pause" class="btn sp-btn big">⏸ Pause</button>
+        <button id="sp-skip" class="btn sp-btn">⏭ Skip</button>
+        <div class="vol-wrap dark">
+          <label>Vol</label>
+          <input id="sp-volume" type="range" min="0" max="100" value="30">
+        </div>
+      </footer>
+    </div>
+
+    <div id="session-summary" class="hidden">
+      <div class="ss-card">
+        <h2 id="ss-title" class="display">Session Complete</h2>
+        <p id="ss-detail" class="muted">—</p>
+        <p class="ss-ask">How did it go? <span class="muted">(this trains the Brain)</span></p>
+        <div id="ss-stars">
+          <button class="star">★</button><button class="star">★</button><button class="star">★</button>
+          <button class="star">★</button><button class="star">★</button>
+        </div>
+        <textarea id="ss-notes" rows="3" placeholder="Notes (optional)…"></textarea>
+        <div class="modal-actions">
+          <button id="ss-close" class="btn">Skip</button>
+          <button id="ss-save" class="btn primary">Save Feedback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="js/kb-data.js"></script>
+  <script src="js/audio-engine.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/brain.js"></script>
+  <script src="js/brain-ai.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
