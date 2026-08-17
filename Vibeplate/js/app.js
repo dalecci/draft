@@ -205,14 +205,23 @@ const App = (() => {
     { id: 'preset-mold-general', name: 'Mold — General (13-frequency)', category: 'Mold & Fungus', freqs: [222, 242, 523, 565, 592, 623, 745, 933, 1130, 1155, 1333, 1833, 4442] },
     { id: 'preset-aspergillus-master', name: 'Aspergillus — Master Set', category: 'Mold & Fungus', freqs: [1972, 1823, 758, 743, 697, 524, 374, 339, 247] },
     { id: 'preset-rife-classics', name: 'Rife Classics — General Set', category: 'General', freqs: [20, 72, 95, 125, 440, 465, 727, 787, 802, 880, 1550, 5000, 10000] },
+    {
+      id: 'preset-tapeworm-totalkill', name: 'Tapeworm — Total Kill (One Session)', category: 'Parasites', favorite: 1,
+      steps: [
+        { hz: 522, seconds: 300 }, { hz: 562, seconds: 300 }, { hz: 843, seconds: 300 },
+        { hz: 1223, seconds: 300 }, { hz: 3032, seconds: 300 }, { hz: 5522, seconds: 300 },
+        { hz: 728, seconds: 180 }, { hz: 784, seconds: 180 }, { hz: 880, seconds: 180 }, { hz: 465, seconds: 180 },
+        { hz: 522, seconds: 300 }, { hz: 562, seconds: 300 }, { hz: 843, seconds: 300 },
+      ],
+    },
   ];
 
   function seedPresets() {
     for (const p of BUILTIN_PRESETS) {
       if (Store.get('presets', p.id)) continue; // never resurrect deleted/edited ones
       Store.upsert('presets', {
-        id: p.id, name: p.name, category: p.category, builtin: 1,
-        steps_json: JSON.stringify(p.freqs.map((hz) => ({ hz, seconds: 180 }))),
+        id: p.id, name: p.name, category: p.category, builtin: 1, favorite: p.favorite || 0,
+        steps_json: JSON.stringify(p.steps || p.freqs.map((hz) => ({ hz, seconds: 180 }))),
         created_by: 'Vibrant research',
       });
     }
