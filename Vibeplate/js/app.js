@@ -117,7 +117,9 @@ const App = (() => {
   function updateSyncBadge() {
     const dot = $('#sync-dot');
     dot.classList.toggle('online', Store.isOnline);
-    $('#sync-label').textContent = Store.isOnline ? 'Synced' : 'Local mode';
+    $('#sync-label').textContent = Store.isOnline
+      ? (Store.hasSyncToken ? 'Live · all locations' : 'Synced')
+      : 'Local mode';
   }
 
   // ---------- generator ----------
@@ -728,11 +730,16 @@ const App = (() => {
 
   // Backup + settings
   function renderBackupStatus() {
+    const backend = Store.hasSyncToken ? 'Cloud (all locations)' : 'Local server / this device';
     $('#backup-status').innerHTML = `
-      <div>Server: <b>${Store.isOnline ? 'connected ✅' : 'not connected — logs stay on this device'}</b></div>
+      <div>Backend: <b>${backend}</b></div>
+      <div>Status: <b>${Store.isOnline ? 'connected ✅' : (Store.lastError || 'not connected — data stays on this device')}</b></div>
       <div>Last sync: <b>${Store.lastSync ? new Date(Store.lastSync).toLocaleString() : 'never'}</b></div>
       <div>This device: <span class="muted">${Store.deviceId()}</span></div>`;
     $('#set-voice').checked = Store.setting('voice', true);
+    $('#sync-token-status').textContent = Store.hasSyncToken
+      ? '✅ Cloud sync connected on this device'
+      : 'Not connected yet — paste the sync token to join the shared database.';
     renderApiKeyStatus();
   }
 
@@ -820,6 +827,14 @@ const App = (() => {
       e.target.value = '';
     });
     $('#set-voice').addEventListener('change', (e) => Store.setSetting('voice', e.target.checked));
+    $('#save-sync-token').addEventListener('click', () => {
+      const t = $('#set-sync-token').value.trim();
+      if (!t) { toast('Paste the sync token first'); return; }
+      Store.setSyncToken(t);
+      $('#set-sync-token').value = '';
+      toast('☁ Connecting to the shared database…');
+      setTimeout(() => { renderBackupStatus(); updateSyncBadge(); }, 2500);
+    });
     $('#save-api-key').addEventListener('click', () => {
       const key = $('#set-api-key').value.trim();
       if (!key.startsWith('sk-ant-')) { toast('That does not look like an Anthropic key (sk-ant-…)'); return; }

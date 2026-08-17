@@ -206,6 +206,14 @@
         </div>
 
         <div id="sec-backup" class="admin-sec panel hidden">
+          <h3>Cloud Sync — all locations</h3>
+          <p class="muted">One shared database for every device, everywhere. Paste the VibePlate sync token once on
+            each device (Admin → this box) and sessions, protocols, users, and Brain training stay live-synced.</p>
+          <div class="row-gap api-key-row">
+            <input id="set-sync-token" type="password" placeholder="Sync token (github_pat_…)">
+            <button id="save-sync-token" class="btn primary">Connect</button>
+          </div>
+          <p id="sync-token-status" class="muted"></p>
           <h3>Sync status</h3>
           <div id="backup-status"></div>
           <h3>Backup</h3>
