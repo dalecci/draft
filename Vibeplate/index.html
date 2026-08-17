@@ -290,8 +290,21 @@
         </div>
 
         <div class="sp-right">
-          <canvas id="sp-scope" width="520" height="140"></canvas>
           <div id="sp-warning" class="warning hidden">⚠ This step is above the device's clean frequency limit.</div>
+          <div class="sp-next-row">
+            <div class="sp-next-card">
+              <span class="sp-next-label">Next Up</span>
+              <span id="sp-next-hz" class="sp-next-val">—</span>
+            </div>
+            <div class="sp-next-card">
+              <span class="sp-next-label">Elapsed</span>
+              <span id="sp-elapsed" class="sp-next-val">0:00</span>
+            </div>
+            <div class="sp-next-card">
+              <span class="sp-next-label">Steps</span>
+              <span id="sp-count" class="sp-next-val">—</span>
+            </div>
+          </div>
           <div id="sp-steps" class="sp-steps"></div>
         </div>
       </div>

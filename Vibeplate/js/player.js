@@ -132,40 +132,24 @@ const Player = (() => {
     // Ring
     const C = 2 * Math.PI * 90;
     $('#sp-ring-progress').style.strokeDashoffset = C * (1 - Math.min(1, done / total));
-    // Step list countdown
+    // Info cards
+    const next = protocol.steps[stepIndex + 1];
+    $('#sp-next-hz').textContent = next
+      ? `${next.sweepToHz ? fmtHz(next.hz) + '→' + fmtHz(next.sweepToHz) : fmtHz(next.hz)} Hz`
+      : 'Finish 🏁';
+    $('#sp-elapsed').textContent = fmt(done);
+    $('#sp-count').textContent = `${stepIndex + 1} / ${protocol.steps.length}`;
+    // Step list countdown + active-step progress bar
     const cells = document.querySelectorAll('#sp-steps .sp-step');
     cells.forEach((el, i) => {
       el.classList.toggle('active', i === stepIndex);
       el.classList.toggle('done', i < stepIndex);
       const t = el.querySelector('.sp-step-remaining');
       if (t) t.textContent = i < stepIndex ? '✓' : i === stepIndex ? fmt(rem) : fmt(protocol.steps[i].seconds);
+      const bar = el.querySelector('.sp-step-bar');
+      if (bar) bar.style.width = i < stepIndex ? '100%'
+        : i === stepIndex ? ((1 - rem / protocol.steps[i].seconds) * 100).toFixed(1) + '%' : '0%';
     });
-    drawScope();
-  }
-
-  const scopeBuf = new Float32Array(4096);
-  function drawScope() {
-    const canvas = $('#sp-scope');
-    if (!canvas || !AudioEngine.waveform(scopeBuf)) return;
-    const ctx2 = canvas.getContext('2d');
-    const { width: w, height: h } = canvas;
-    ctx2.clearRect(0, 0, w, h);
-    ctx2.beginPath();
-    ctx2.strokeStyle = '#2DD4BF';
-    ctx2.lineWidth = 2;
-    ctx2.shadowColor = '#2DD4BF';
-    ctx2.shadowBlur = 8;
-    // Show ~4 cycles for stability
-    const sr = AudioEngine.context?.sampleRate || 48000;
-    const hz = Math.max(1, AudioEngine.currentHz || 1);
-    const samples = Math.min(scopeBuf.length, Math.max(64, Math.floor((sr / hz) * 4)));
-    for (let i = 0; i < samples; i++) {
-      const x = (i / samples) * w;
-      const y = h / 2 - scopeBuf[i] * (h / 2.4);
-      i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
-    }
-    ctx2.stroke();
-    ctx2.shadowBlur = 0;
   }
 
   function renderSteps() {
@@ -175,6 +159,7 @@ const Player = (() => {
         <span class="sp-step-num">${i + 1}</span>
         <span class="sp-step-hz">${s.sweepToHz ? fmtHz(s.hz) + ' → ' + fmtHz(s.sweepToHz) : fmtHz(s.hz)} Hz</span>
         <span class="sp-step-remaining">${fmt(s.seconds)}</span>
+        <span class="sp-step-bar"></span>
       </div>`).join('');
   }
 
