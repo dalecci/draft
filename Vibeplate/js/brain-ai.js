@@ -30,8 +30,9 @@ const BrainAI = (() => {
                     hz: { type: 'number' },
                     seconds: { type: 'integer' },
                     sweepToHz: { anyOf: [{ type: 'number' }, { type: 'null' }] },
+                    pulseHz: { anyOf: [{ type: 'number' }, { type: 'null' }] },
                   },
-                  required: ['hz', 'seconds', 'sweepToHz'],
+                  required: ['hz', 'seconds', 'sweepToHz', 'pulseHz'],
                   additionalProperties: false,
                 },
               },
@@ -78,7 +79,7 @@ const BrainAI = (() => {
 How to build protocols:
 - Draw on the clinic's knowledge base and training below FIRST (their own research and tuned protocols take priority), then your broader knowledge of published Rife/CAFL frequency listings.
 - Default dwell is 180 seconds per frequency. For "extra strength" / "aggressive" / "maximum" requests: extend dwells on the primary frequencies (300–420s), add closely related documented frequencies from the same organism family, finish with the core cleanup cluster 728 / 784 / 880 / 465, and consider a second pass of the primary frequencies. Keep total time practical (under ~90 minutes unless asked for more).
-- The device plays pure sine tones from 0.1 to 100,000 Hz. A step may optionally sweep from hz to sweepToHz over its duration (set sweepToHz to null for a fixed tone).
+- The device plays pure sine tones from 0.1 to 100,000 Hz. A step may optionally sweep from hz to sweepToHz over its duration (set sweepToHz to null for a fixed tone). A step may also set pulseHz to amplitude-pulse the tone at that rate (else null) — pulseHz: 40 on a comfortable carrier (~700 Hz) is the research-backed gamma-entrainment mode (MIT GENUS: 1 hour daily for cognition/dementia support).
 - Use frequencies from documented Rife/CAFL listings or the knowledge base and say which source a set comes from. Never invent precise frequencies and present them as documented.
 
 Honesty rules (strict but brief):
@@ -146,6 +147,7 @@ ${trainingDigest()}`;
           .map((s) => {
             const step = { hz: Math.min(100000, s.hz), seconds: Math.round(s.seconds) };
             if (s.sweepToHz) step.sweepToHz = Math.min(100000, s.sweepToHz);
+            if (s.pulseHz) step.pulseHz = Math.min(200, s.pulseHz);
             return step;
           });
         if (!parsed.protocol.steps.length) parsed.protocol = null;

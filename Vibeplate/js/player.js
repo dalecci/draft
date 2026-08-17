@@ -89,15 +89,25 @@ const Player = (() => {
     stepIndex = i;
     const step = protocol.steps[i];
     const warn = step.hz > AudioEngine.maxCleanHz() || (step.sweepToHz && step.sweepToHz > AudioEngine.maxCleanHz());
-    if (first || !AudioEngine.playing) AudioEngine.start(step.hz);
-    else AudioEngine.setFrequency(step.hz);
+    const pulse = step.pulseHz || 0;
+    if (first || !AudioEngine.playing) {
+      AudioEngine.start(step.hz, pulse);
+    } else if (pulse !== AudioEngine.currentPulse) {
+      // Pulse mode changed — rebuild the audio chain with a soft gap
+      AudioEngine.stop();
+      setTimeout(() => AudioEngine.start(step.hz, pulse), 110);
+    } else {
+      AudioEngine.setFrequency(step.hz);
+    }
     if (step.sweepToHz) AudioEngine.glideTo(step.sweepToHz, step.seconds);
     stepStart = ctxNow();
     $('#sp-warning').classList.toggle('hidden', !warn);
     renderSteps();
     const label = step.sweepToHz
       ? `Sweep ${fmtHz(step.hz)} to ${fmtHz(step.sweepToHz)} hertz`
-      : `${fmtHz(step.hz)} hertz`;
+      : step.pulseHz
+        ? `${fmtHz(step.hz)} hertz, pulsed at ${step.pulseHz} hertz`
+        : `${fmtHz(step.hz)} hertz`;
     speak(`Step ${i + 1} of ${protocol.steps.length}. ${label}. ${describeDuration(step.seconds)}.`);
   }
 
@@ -157,7 +167,7 @@ const Player = (() => {
     el.innerHTML = protocol.steps.map((s, i) => `
       <div class="sp-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}">
         <span class="sp-step-num">${i + 1}</span>
-        <span class="sp-step-hz">${s.sweepToHz ? fmtHz(s.hz) + ' → ' + fmtHz(s.sweepToHz) : fmtHz(s.hz)} Hz</span>
+        <span class="sp-step-hz">${s.sweepToHz ? fmtHz(s.hz) + ' → ' + fmtHz(s.sweepToHz) : fmtHz(s.hz)} Hz${s.pulseHz ? ` <span class="sp-pulse">⚡${s.pulseHz}</span>` : ''}</span>
         <span class="sp-step-remaining">${fmt(s.seconds)}</span>
         <span class="sp-step-bar"></span>
       </div>`).join('');

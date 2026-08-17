@@ -12,6 +12,9 @@ const AudioEngine = (() => {
   let analyser = null;
   let playing = false;
   let currentHz = 0;
+  let currentPulse = 0; // amplitude-pulse rate (0 = steady tone)
+  let pulseLfo = null;  // gamma-mode LFO
+  let pulseGainNode = null;
   let volume = 0.3;    // safe default
 
   function ensureContext() {
@@ -44,18 +47,37 @@ const AudioEngine = (() => {
   // Highest frequency this device can cleanly produce.
   function maxCleanHz() { return ensureContext().sampleRate / 2; }
 
-  function start(hz) {
+  // pulseHz > 0 = Gamma/pulse mode: the tone's amplitude throbs at pulseHz
+  // (e.g. a 700 Hz carrier pulsing 40×/sec — the audio analog of 40 Hz
+  // gamma-entrainment stimulation used in the MIT GENUS research).
+  function start(hz, pulseHz = 0) {
     ensureContext();
     if (ctx.state === 'suspended') ctx.resume();
     stopNow(); // safety: never two oscillators
     currentHz = hz;
+    currentPulse = pulseHz || 0;
     voiceGain = ctx.createGain();
     voiceGain.gain.value = 0;
     osc = ctx.createOscillator();
     osc.type = 'sine'; // mathematically pure
     osc.frequency.value = hz;
     osc.connect(voiceGain);
-    voiceGain.connect(master);
+    if (currentPulse > 0) {
+      pulseGainNode = ctx.createGain();
+      pulseGainNode.gain.value = 0.5;            // amplitude swings 0 → 1
+      const depth = ctx.createGain();
+      depth.gain.value = 0.5;
+      pulseLfo = ctx.createOscillator();
+      pulseLfo.type = 'sine';
+      pulseLfo.frequency.value = currentPulse;
+      pulseLfo.connect(depth);
+      depth.connect(pulseGainNode.gain);
+      voiceGain.connect(pulseGainNode);
+      pulseGainNode.connect(master);
+      pulseLfo.start();
+    } else {
+      voiceGain.connect(master);
+    }
     const t = ctx.currentTime;
     osc.start(t);
     voiceGain.gain.linearRampToValueAtTime(1, t + RAMP);
@@ -87,17 +109,21 @@ const AudioEngine = (() => {
   function stop() {
     if (!playing || !osc) return;
     const t = ctx.currentTime;
-    const dying = osc, dyingGain = voiceGain;
+    const dying = osc, dyingGain = voiceGain, dyingLfo = pulseLfo;
     dyingGain.gain.cancelScheduledValues(t);
     dyingGain.gain.setValueAtTime(dyingGain.gain.value, t);
     dyingGain.gain.linearRampToValueAtTime(0, t + RAMP);
     dying.stop(t + RAMP + 0.02);
-    osc = null; voiceGain = null; playing = false;
+    if (dyingLfo) { try { dyingLfo.stop(t + RAMP + 0.02); } catch {} }
+    osc = null; voiceGain = null; pulseLfo = null; pulseGainNode = null;
+    playing = false; currentPulse = 0;
   }
 
   function stopNow() {
     if (osc) { try { osc.stop(); } catch {} osc = null; voiceGain = null; }
+    if (pulseLfo) { try { pulseLfo.stop(); } catch {} pulseLfo = null; pulseGainNode = null; }
     playing = false;
+    currentPulse = 0;
   }
 
   function setVolume(v) {
@@ -156,6 +182,7 @@ const AudioEngine = (() => {
     pause, resume, waveform, measuredHz, chime,
     get playing() { return playing; },
     get currentHz() { return currentHz; },
+    get currentPulse() { return currentPulse; },
     get volume() { return volume; },
     get analyserNode() { return analyser; },
     get context() { return ctx; },

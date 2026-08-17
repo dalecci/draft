@@ -210,6 +210,26 @@ const App = (() => {
       steps: [1234, 3672, 7346, 727, 787, 880, 10000, 47, 120].map((hz) => ({ hz, seconds: 300 })),
     },
     {
+      id: 'preset-gamma-frontal', name: 'Frontal Lobe — Gamma 40 Hz (Research Mode)', category: 'Brain & Cognition', favorite: 1,
+      steps: [
+        { hz: 700, seconds: 600, pulseHz: 40 },
+        { hz: 700, seconds: 600, pulseHz: 40 },
+        { hz: 700, seconds: 600, pulseHz: 40 },
+      ],
+    },
+    {
+      id: 'preset-alzheimers2', name: 'Memory — CAFL Alzheimers_2', category: 'Brain & Cognition',
+      steps: [19180.5, 2213, 5148, 866, 840, 624, 620, 430].map((hz) => ({ hz, seconds: 180 })),
+    },
+    {
+      id: 'preset-lymph-support', name: 'Lymphatic Drainage — CAFL Lymph Support', category: 'Lymph & Circulation',
+      steps: [15.05, 10.36, 3176].map((hz) => ({ hz, seconds: 360 })),
+    },
+    {
+      id: 'preset-arteries', name: 'Arteries — CAFL Arteriosclerosis', category: 'Lymph & Circulation',
+      steps: [10000, 2720, 2170, 1800, 1600, 1500, 880, 787, 776, 727, 20].map((hz) => ({ hz, seconds: 180 })),
+    },
+    {
       id: 'preset-tapeworm-totalkill', name: 'Tapeworm — Total Kill (One Session)', category: 'Parasites', favorite: 1,
       steps: [
         { hz: 522, seconds: 300 }, { hz: 562, seconds: 300 }, { hz: 843, seconds: 300 },

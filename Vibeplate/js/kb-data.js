@@ -381,6 +381,55 @@ const KB_BASE = [
     notes: 'Same safety rules as the main asthma entry.',
   },
 
+  // ============================== BRAIN & COGNITION (Vibrant research, Aug 2026) ==============================
+  {
+    id: 'gamma-frontal-40', condition: 'Frontal Lobe — Gamma 40 Hz (research-based)',
+    aliases: ['frontal lobe', 'focus', 'executive function', 'brain fog', 'gamma', 'cognition', 'turn brain on'],
+    category: 'Brain & Cognition', frequencies: [40], dwell: 1200,
+    source: 'Clinical research (MIT GENUS)',
+    notes: 'The one frequency with real peer-reviewed brain evidence: 40 Hz gamma sensory stimulation (MIT GENUS / Cognito Therapeutics trials). In late-onset Alzheimer\'s patients, 1 hour DAILY of 40 Hz light+sound improved MMSE/CDR scores and cut plasma pTau217 up to 47% over 2 years of use. Key detail: the research uses sound PULSING at 40 Hz, not a plain 40 Hz tone — use the Gamma preset (pulsed carrier). Daily consistency matters far more than one long session. No CAFL entry exists for "frontal lobe" — this is science-tier, not Rife-tier.',
+  },
+  {
+    id: 'alzheimers-1', condition: 'Alzheimers 1 (CAFL)',
+    aliases: ['alzheimer', 'dementia', 'memory loss', 'memory'],
+    category: 'Brain & Cognition',
+    frequencies: [430, 620, 624, 840, 866, 5148, 2213, 19180.5, 742.4, 303, 23.2, 3773.3, 943.3, 471.66, 470.9, 941.8, 3767.3], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL Alzheimers_1 (verified against electroherbalism CAFL; CAFL also says "see ALS sets"). Historical listing, unverified clinically. The clinically supported frequency approach for dementia is 40 Hz gamma stimulation — see Frontal Lobe — Gamma 40 Hz. Never a substitute for medical dementia care.',
+  },
+  {
+    id: 'alzheimers-2', condition: 'Alzheimers 2 (CAFL)',
+    aliases: [], category: 'Brain & Cognition',
+    frequencies: [19180.5, 2213, 5148, 866, 840, 624, 620, 430], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL Alzheimers_2 — the compact set. Same honesty notes as Alzheimers 1.',
+  },
+
+  // ============================== LYMPH & CIRCULATION (Vibrant research, Aug 2026) ==============================
+  {
+    id: 'lymph-support', condition: 'Lymph Support (CAFL — 6-min dwells)',
+    aliases: ['lymph', 'lymphatic', 'lymphatic drainage'],
+    category: 'Lymph & Circulation', frequencies: [15.05, 10.36, 3176], dwell: 360,
+    source: 'Vibrant research',
+    notes: 'CAFL "Lymph Support" — CAFL documents 6 minutes per frequency. 15.05 and 10.36 Hz are sub-audible (felt as pulsing more than heard). Historical listing, unverified; actual lymph movement is driven by muscle activity, breathing, hydration, and manual lymphatic drainage massage.',
+  },
+  {
+    id: 'detox-lymphs', condition: 'Detox & Lymphs (CAFL full set)',
+    aliases: ['detox', 'drainage'],
+    category: 'Lymph & Circulation',
+    frequencies: [10000, 3176, 3040, 880, 787, 751, 727, 676, 635, 625, 522, 465, 444, 440, 304, 306, 148, 146, 15.2, 15.05, 10.36, 10, 7.83, 6.3, 2.5], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL "Detox and lymphs" — 25 frequencies, verified against CAFL reproductions. Sub-20 Hz values are felt, not heard, on normal speakers.',
+  },
+  {
+    id: 'arteriosclerosis', condition: 'Arteriosclerosis (CAFL)',
+    aliases: ['arteries', 'artery cleaning', 'atherosclerosis', 'hardening of the arteries', 'circulation', 'plaque'],
+    category: 'Lymph & Circulation',
+    frequencies: [10000, 2720, 2170, 1800, 1600, 1500, 880, 787, 776, 727, 20], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL entry, verified — CAFL itself annotates "hardening of the arteries; regeneration takes time." Honesty: no clinical evidence that sound frequencies clear arterial plaque — the proven levers are blood pressure control, statins, diet, and exercise; treat this as a complementary session only.',
+  },
+
   // ============================== GENERAL & WELLNESS ==============================
   {
     id: 'rife-classic-general', condition: 'Rife Classics — General Set',
