@@ -15,7 +15,7 @@
 // validated treatments.
 'use strict';
 
-const KB_VERSION = 1;
+const KB_VERSION = 2;
 const DEFAULT_DWELL = 180; // seconds — the commonly cited 3-minute Rife practitioner convention
 
 const KB_BASE = [
@@ -348,6 +348,37 @@ const KB_BASE = [
     aliases: ['flu', 'grippe'],
     category: 'Viruses', frequencies: [728, 787, 800, 880], dwell: 180,
     source: 'CAFL (public reproductions)', verify: true,
+  },
+
+  // ============================== RESPIRATORY (Vibrant research, Aug 2026 — full forensic asthma review) ==============================
+  {
+    id: 'asthma-main', condition: 'Asthma — Main Set',
+    aliases: ['asthma', 'bronchial asthma'],
+    category: 'Respiratory',
+    frequencies: [7344, 3702, 3672, 2720, 2170, 1800, 1600, 1500, 1283, 1234, 1233, 880, 787, 727, 522, 444, 146, 125, 95, 72, 20, 0.5],
+    dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL main asthma entry. Most asthma-SPECIFIC values: 1233/1234, 1283, 3672/3702, 7344/7346 — the 727/787/880 trio appears across many unrelated conditions and should not be read as asthma resonances. CAFL cross-references Liver support, Parasites Ascaris, and Mycoplasma general. SAFETY: never a substitute for prescribed inhaler therapy or an asthma action plan, and never run vibration/frequency sessions during an active asthma attack — in a human study, chest-wall vibration increased breathing rate and produced sensations resembling an asthma episode. Use only when asthma is stable and controlled.',
+  },
+  {
+    id: 'asthma-1', condition: 'Asthma 1',
+    aliases: [], category: 'Respiratory', frequencies: [1283, 1233, 4.7], dwell: 180,
+    source: 'Vibrant research',
+    notes: '4.7 Hz is sub-audible — felt more than heard on normal speakers. Same safety rules as the main asthma entry.',
+  },
+  {
+    id: 'asthma-2', condition: 'Asthma 2 — documented 5-minute dwells',
+    aliases: ['asthma_2'], category: 'Respiratory',
+    frequencies: [1234, 3672, 7346, 727, 787, 880, 10000, 47, 120], dwell: 300,
+    source: 'Vibrant research',
+    notes: 'The most clearly documented CAFL asthma protocol — CAFL explicitly labels this set "all frequencies for 5 min" (45 minutes total). Same safety rules as the main asthma entry.',
+  },
+  {
+    id: 'asthma-v', condition: 'Asthma V',
+    aliases: [], category: 'Respiratory',
+    frequencies: [3125, 3124, 890, 886, 871, 822, 782, 756, 712, 665, 633, 521, 515, 487, 434, 411, 322, 263, 172, 128], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'Same safety rules as the main asthma entry.',
   },
 
   // ============================== GENERAL & WELLNESS ==============================

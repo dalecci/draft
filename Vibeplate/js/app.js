@@ -206,6 +206,10 @@ const App = (() => {
     { id: 'preset-aspergillus-master', name: 'Aspergillus — Master Set', category: 'Mold & Fungus', freqs: [1972, 1823, 758, 743, 697, 524, 374, 339, 247] },
     { id: 'preset-rife-classics', name: 'Rife Classics — General Set', category: 'General', freqs: [20, 72, 95, 125, 440, 465, 727, 787, 802, 880, 1550, 5000, 10000] },
     {
+      id: 'preset-asthma2-historical', name: 'Asthma — CAFL Asthma_2 (Historical 45 min)', category: 'Respiratory',
+      steps: [1234, 3672, 7346, 727, 787, 880, 10000, 47, 120].map((hz) => ({ hz, seconds: 300 })),
+    },
+    {
       id: 'preset-tapeworm-totalkill', name: 'Tapeworm — Total Kill (One Session)', category: 'Parasites', favorite: 1,
       steps: [
         { hz: 522, seconds: 300 }, { hz: 562, seconds: 300 }, { hz: 843, seconds: 300 },
