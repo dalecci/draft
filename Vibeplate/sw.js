@@ -1,5 +1,5 @@
 // Vibrant Resonance — service worker: app shell cached for offline use.
-const CACHE = 'vr-shell-v8';
+const CACHE = 'vr-shell-v9';
 const SHELL = [
   './', 'index.html', 'css/app.css', 'icon.svg', 'manifest.webmanifest',
   'js/kb-data.js', 'js/audio-engine.js', 'js/sync.js', 'js/brain.js', 'js/brain-ai.js',

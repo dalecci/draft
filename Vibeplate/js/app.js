@@ -769,7 +769,7 @@ const App = (() => {
       <div>Status: <b>${Store.isOnline ? 'connected ✅' : (Store.lastError || 'not connected — data stays on this device')}</b></div>
       <div>Last sync: <b>${Store.lastSync ? new Date(Store.lastSync).toLocaleString() : 'never'}</b></div>
       <div>This device: <span class="muted">${Store.deviceId()}</span></div>`;
-    $('#set-voice').checked = Store.setting('voice', true);
+    $('#set-voice').checked = Store.setting('voice', false);
     $('#sync-token-status').textContent = Store.hasSyncToken
       ? '✅ Cloud sync connected on this device'
       : 'Not connected yet — paste the sync token to join the shared database.';

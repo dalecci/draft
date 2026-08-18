@@ -35,7 +35,7 @@ const Player = (() => {
     return (Math.round(hz * 10) / 10).toLocaleString('en-US', { maximumFractionDigits: 1 });
   }
 
-  function voiceOn() { return Store.setting('voice', true); }
+  function voiceOn() { return Store.setting('voice', false); } // off by default — enable in Admin if ever wanted
 
   function speak(text) {
     if (!voiceOn() || !('speechSynthesis' in window)) return;
