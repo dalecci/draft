@@ -224,6 +224,14 @@ const App = (() => {
       steps: [19180.5, 2213, 5148, 866, 840, 624, 620, 430].map((hz) => ({ hz, seconds: 180 })),
     },
     {
+      id: 'preset-ibs-gutreset', name: 'Gut Reset — CAFL IBS + Calm Finish', category: 'Digestive',
+      steps: [
+        ...[6766, 5429, 4334, 2018, 1550, 880, 832, 829, 812, 802, 787, 727, 465, 422, 407, 334, 20].map((hz) => ({ hz, seconds: 180 })),
+        { hz: 7.83, seconds: 180 }, // Schumann — calm finisher
+        { hz: 10, seconds: 180 },   // alpha — calm finisher
+      ],
+    },
+    {
       id: 'preset-lymph-support', name: 'Lymphatic Drainage — CAFL Lymph Support', category: 'Lymph & Circulation',
       steps: [15.05, 10.36, 3176].map((hz) => ({ hz, seconds: 360 })),
     },

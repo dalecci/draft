@@ -430,6 +430,31 @@ const KB_BASE = [
     notes: 'CAFL entry, verified — CAFL itself annotates "hardening of the arteries; regeneration takes time." Honesty: no clinical evidence that sound frequencies clear arterial plaque — the proven levers are blood pressure control, statins, diet, and exercise; treat this as a complementary session only.',
   },
 
+  // ============================== DIGESTIVE (Vibrant research, Aug 2026) ==============================
+  {
+    id: 'ibs', condition: 'Irritable Bowel Syndrome (IBS)',
+    aliases: ['ibs', 'irritable bowel', 'gut', 'bowel', 'intestinal spasms'],
+    category: 'Digestive',
+    frequencies: [6766, 5429, 4334, 2018, 1550, 880, 832, 829, 812, 802, 787, 727, 465, 422, 407, 334, 20], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL entry verified verbatim — CAFL cross-references "Parasites general set and Colitis" and annotates that this set may help balance gut bacteria and ease intestinal spasms but may miss giardia/parasites. Honesty: IBS has no cure in any system — it is a gut-brain axis disorder managed into remission. Best clinical evidence: low-FODMAP diet, psyllium fiber, enteric-coated peppermint oil, and gut-directed hypnotherapy/CBT (real RCT support — the mind-body layer genuinely moves IBS). Stress drives flares, so the CALMING component of a session is the honest mechanism here — run sessions relaxed, low volume, comfortable position. Red flags that mean doctor, not frequencies: blood in stool, weight loss, fever, nighttime symptoms, onset after 50.',
+  },
+  {
+    id: 'colitis-diarrhea', condition: 'Colitis & Diarrhea',
+    aliases: ['colitis', 'diarrhea', 'colon inflammation'],
+    category: 'Digestive',
+    frequencies: [10000, 5000, 1550, 880, 832, 802, 787, 727, 621, 465, 454, 440, 433, 344, 152], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL "Colitis_and_Diarrhea" (inflammation of the colon), verified verbatim. Persistent bloody diarrhea, fever, or weight loss = medical evaluation for IBD — not a frequency session.',
+  },
+  {
+    id: 'colon-general', condition: 'Colon Problems — General',
+    aliases: ['colon'], category: 'Digestive',
+    frequencies: [20, 440, 880, 1552, 802, 832], dwell: 180,
+    source: 'Vibrant research',
+    notes: 'CAFL "Colon_problems_general", verified verbatim. CAFL also lists Large intestine tonic: 8, 440, 880.',
+  },
+
   // ============================== GENERAL & WELLNESS ==============================
   {
     id: 'rife-classic-general', condition: 'Rife Classics — General Set',
