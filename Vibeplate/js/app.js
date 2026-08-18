@@ -107,6 +107,8 @@ const App = (() => {
   }
 
   function refresh() {
+    seedUsers(); // re-check after every sync so the roster survives merges
+    renderUserList();
     renderPresets();
     renderAdminSessions();
     renderAdminUsers();
@@ -239,6 +241,23 @@ const App = (() => {
       ],
     },
   ];
+
+  // Family/staff roster baked into the app — every device shows these names
+  // immediately, even before it has ever synced.
+  const BUILTIN_USERS = [
+    { id: 'user-jordan', name: 'Jordan' },
+    { id: 'user-dale', name: 'Dale' },
+    { id: 'user-philip', name: 'Philip Francis' },
+  ];
+
+  function seedUsers() {
+    for (const u of BUILTIN_USERS) {
+      if (Store.get('users', u.id)) continue;
+      // don't duplicate a same-named user that already synced in
+      if (Store.rows('users').some((r) => (r.name || '').toLowerCase() === u.name.toLowerCase())) continue;
+      Store.upsert('users', { id: u.id, name: u.name, active: 1 });
+    }
+  }
 
   function seedPresets() {
     for (const p of BUILTIN_PRESETS) {
@@ -887,6 +906,7 @@ const App = (() => {
 
   function init() {
     bind();
+    seedUsers();
     seedPresets();
     Store.sync();
     updateSyncBadge();
