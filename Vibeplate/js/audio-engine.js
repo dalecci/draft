@@ -17,6 +17,34 @@ const AudioEngine = (() => {
   let pulseGainNode = null;
   let volume = 0.3;    // safe default
 
+  // ---- iOS/iPad fix ----
+  // iPads route Web Audio as "ambient" sound, which the silent switch / silent
+  // mode MUTES (while speech synthesis is not muted — so you hear the voice but
+  // no tone). Looping a silent <audio> element promotes the whole app to the
+  // "playback" audio category, which iOS never silences.
+  let mediaKeepalive = null;
+  function unlockMediaSession() {
+    if (!mediaKeepalive) {
+      try {
+        mediaKeepalive = document.createElement('audio');
+        mediaKeepalive.setAttribute('playsinline', '');
+        mediaKeepalive.loop = true;
+        // 44-byte silent WAV
+        mediaKeepalive.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+        mediaKeepalive.play().catch(() => { mediaKeepalive = null; });
+      } catch { mediaKeepalive = null; }
+    } else {
+      mediaKeepalive.play().catch(() => {});
+    }
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  }
+  document.addEventListener('touchend', unlockMediaSession, { capture: true });
+  document.addEventListener('click', unlockMediaSession, { capture: true });
+  // iOS suspends audio when the app is backgrounded — resume when it returns
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && ctx && playing && ctx.state === 'suspended') ctx.resume();
+  });
+
   function ensureContext() {
     if (ctx) return ctx;
     // Ask for 192 kHz so high-frequency work is possible; browser falls back if unsupported.
