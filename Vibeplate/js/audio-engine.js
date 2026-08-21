@@ -75,6 +75,28 @@ const AudioEngine = (() => {
   // Highest frequency this device can cleanly produce.
   function maxCleanHz() { return ensureContext().sampleRate / 2; }
 
+  // ---- VM15 mode (Sonic Life SW-VM15 vibration plate, 3–70 Hz mechanical band) ----
+  // When on, every frequency above VM15_MAX is octave-folded (halved repeatedly)
+  // into the plate's window before it reaches the oscillator — the Rife tradition's
+  // standard practice for band-limited devices. Stored protocols are never altered;
+  // folding happens only at the moment of sound production. Per-device setting.
+  const VM15_MAX = 68;
+  let vm15 = localStorage.getItem('vr_vm15') === '1';
+
+  function fold(hz) {
+    let f = hz, n = 0;
+    while (f > VM15_MAX) { f /= 2; n++; }
+    return { hz: Math.round(f * 100) / 100, div: 2 ** n, octaves: n };
+  }
+
+  function setVM15(on) {
+    vm15 = !!on;
+    if (on) localStorage.setItem('vr_vm15', '1');
+    else localStorage.removeItem('vr_vm15');
+  }
+
+  function effHz(hz) { return vm15 ? fold(hz).hz : hz; }
+
   // pulseHz > 0 = Gamma/pulse mode: the tone's amplitude throbs at pulseHz
   // (e.g. a 700 Hz carrier pulsing 40×/sec — the audio analog of 40 Hz
   // gamma-entrainment stimulation used in the MIT GENUS research).
@@ -82,6 +104,7 @@ const AudioEngine = (() => {
     ensureContext();
     if (ctx.state === 'suspended') ctx.resume();
     stopNow(); // safety: never two oscillators
+    hz = effHz(hz);
     currentHz = hz;
     currentPulse = pulseHz || 0;
     voiceGain = ctx.createGain();
@@ -114,6 +137,7 @@ const AudioEngine = (() => {
 
   // Change frequency between protocol steps: quick dip to zero, retune, rise. No clicks.
   function setFrequency(hz) {
+    hz = effHz(hz);
     currentHz = hz;
     if (!playing || !osc) return;
     const t = ctx.currentTime;
@@ -126,6 +150,7 @@ const AudioEngine = (() => {
 
   // Sweep (glide) from current frequency to hz over `seconds` — a continuous pure-sine slide.
   function glideTo(hz, seconds) {
+    hz = effHz(hz);
     if (!playing || !osc) return;
     const t = ctx.currentTime;
     osc.frequency.cancelScheduledValues(t);
@@ -207,7 +232,8 @@ const AudioEngine = (() => {
 
   return {
     ensureContext, info, maxCleanHz, start, setFrequency, glideTo, stop, setVolume,
-    pause, resume, waveform, measuredHz, chime,
+    pause, resume, waveform, measuredHz, chime, fold, setVM15,
+    get vm15() { return vm15; },
     get playing() { return playing; },
     get currentHz() { return currentHz; },
     get currentPulse() { return currentPulse; },

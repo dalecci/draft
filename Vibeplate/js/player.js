@@ -68,6 +68,7 @@ const Player = (() => {
     $('#session-live').classList.remove('paused');
     $('#sp-name').textContent = protocol.name;
     $('#sp-user').textContent = App.currentUserName() || '—';
+    $('#sp-vm15').classList.toggle('hidden', !AudioEngine.vm15);
     renderSteps();
     acquireWakeLock();
     AudioEngine.ensureContext();
@@ -119,8 +120,9 @@ const Player = (() => {
       if (stepIndex + 1 < protocol.steps.length) {
         playedBefore += protocol.steps[stepIndex].seconds;
         beginStep(stepIndex + 1);
-      } else finish(); // elapsedTotal() caps the final step at its full duration
+      } else { finish(); return; } // elapsedTotal() caps the final step at its full duration
     }
+    updateUI(); // interval-driven so the console stays live even when rAF is frozen (backgrounded tab)
   }
 
   function uiTick() {
@@ -164,10 +166,18 @@ const Player = (() => {
 
   function renderSteps() {
     const el = $('#sp-steps');
+    const vm15 = AudioEngine.vm15;
+    const hzLabel = (hz) => {
+      if (!vm15) return fmtHz(hz) + '';
+      const f = AudioEngine.fold(hz);
+      return f.div > 1
+        ? `${f.hz} <span class="sp-fold">(${fmtHz(hz)}÷${f.div})</span>`
+        : `${fmtHz(hz)}`;
+    };
     el.innerHTML = protocol.steps.map((s, i) => `
       <div class="sp-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}">
         <span class="sp-step-num">${i + 1}</span>
-        <span class="sp-step-hz">${s.sweepToHz ? fmtHz(s.hz) + ' → ' + fmtHz(s.sweepToHz) : fmtHz(s.hz)} Hz${s.pulseHz ? ` <span class="sp-pulse">⚡${s.pulseHz}</span>` : ''}</span>
+        <span class="sp-step-hz">${s.sweepToHz ? hzLabel(s.hz) + ' → ' + hzLabel(s.sweepToHz) : hzLabel(s.hz)} Hz${s.pulseHz ? ` <span class="sp-pulse">⚡${s.pulseHz}</span>` : ''}</span>
         <span class="sp-step-remaining">${fmt(s.seconds)}</span>
         <span class="sp-step-bar"></span>
       </div>`).join('');
@@ -249,6 +259,7 @@ const Player = (() => {
       steps_planned: protocol.steps.length,
       total_seconds: Math.round(elapsedTotal()),
       completed: completed ? 1 : 0,
+      vm15: AudioEngine.vm15 ? 1 : 0, // honest record of the delivery mode
       rating: null, notes: null,
     });
   }

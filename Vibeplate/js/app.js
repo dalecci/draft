@@ -145,6 +145,41 @@ const App = (() => {
       $('#gen-warning').textContent =
         `⚠ ${fmtHz(genHz)} Hz is above this device's clean limit of ${fmtHz(info.nyquist)} Hz (sample rate ${info.sampleRate / 1000} kHz). The tone cannot be produced accurately on this hardware.`;
     }
+    updateVM15Hint();
+  }
+
+  // ---------- VM15 mode ----------
+  function updateVM15Hint() {
+    const el = $('#gen-vm15-hint');
+    if (!AudioEngine.vm15) { el.classList.add('hidden'); return; }
+    const f = AudioEngine.fold(genHz);
+    el.classList.remove('hidden');
+    el.innerHTML = f.div > 1
+      ? `📳 VM15 mode: plays as <b>${f.hz} Hz</b> on the plate (${fmtHz(genHz)} ÷ ${f.div} — folded down ${f.octaves} octave${f.octaves > 1 ? 's' : ''})`
+      : `📳 VM15 mode: <b>${f.hz} Hz</b> is inside the plate's native band — plays as-is`;
+  }
+
+  function updateVM15Pill() {
+    $('#vm15-toggle').classList.toggle('on', AudioEngine.vm15);
+  }
+
+  function toggleVM15() {
+    AudioEngine.setVM15(!AudioEngine.vm15);
+    updateVM15Pill();
+    updateVM15Hint();
+    if (AudioEngine.vm15) {
+      // Retune a live tone into the plate band immediately
+      if (AudioEngine.playing) AudioEngine.setFrequency(genHz);
+      if (!localStorage.getItem('vr_vm15_hint')) {
+        localStorage.setItem('vr_vm15_hint', '1');
+        toast('📳 VM15 mode ON — plug this device\'s line-out into the plate\'s Audio-In, device volume high, intensity on the plate\'s 0–99 dial');
+      } else {
+        toast('📳 VM15 mode ON — frequencies fold into the plate\'s band');
+      }
+    } else {
+      if (AudioEngine.playing) AudioEngine.setFrequency(genHz);
+      toast('VM15 mode off — normal speaker playback');
+    }
   }
 
   function toggleGenPlay() {
@@ -840,6 +875,9 @@ const App = (() => {
     // Tabs
     $$('.tab-btn').forEach((b) => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
+    // VM15 mode
+    $('#vm15-toggle').addEventListener('click', toggleVM15);
+
     // Generator
     $('#gen-freq').addEventListener('change', (e) => setGenHz(e.target.value));
     $$('#gen-nudge button').forEach((b) => b.addEventListener('click', () => setGenHz(genHz + Number(b.dataset.d))));
@@ -914,6 +952,7 @@ const App = (() => {
 
   function init() {
     bind();
+    updateVM15Pill();
     seedUsers();
     seedPresets();
     Store.sync();

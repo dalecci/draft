@@ -64,6 +64,7 @@
         <button class="tab-btn" data-tab="admin">Admin</button>
       </nav>
       <div class="header-right">
+        <button id="vm15-toggle" class="vm15-pill" title="VM15 vibration-plate mode — folds every frequency into the plate's 3–70 Hz band">📳 VM15</button>
         <span class="sync"><span id="sync-dot" class="sync-dot"></span><span id="sync-label">…</span></span>
         <button id="switch-user" class="user-chip-btn"><span id="user-chip">—</span> ⇄</button>
       </div>
@@ -87,6 +88,7 @@
             <button data-hz="5000">5,000</button><button data-hz="10000">10,000</button>
           </div>
           <div id="gen-warning" class="warning hidden"></div>
+          <div id="gen-vm15-hint" class="vm15-hint hidden"></div>
           <div class="gen-controls">
             <button id="gen-play" class="btn primary big">▶ Play</button>
             <div class="vol-wrap">
@@ -269,7 +271,7 @@
       <header class="sp-header">
         <div>
           <div id="sp-name" class="sp-name">—</div>
-          <div class="sp-sub">Session for <span id="sp-user">—</span></div>
+          <div class="sp-sub">Session for <span id="sp-user">—</span> <span id="sp-vm15" class="sp-vm15-tag hidden">📳 VM15 MODE · OCTAVE-FOLDED</span></div>
         </div>
         <button id="sp-stop" class="btn danger">■ End Session</button>
       </header>
