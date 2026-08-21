@@ -68,10 +68,7 @@ const Player = (() => {
     $('#session-live').classList.remove('paused');
     $('#sp-name').textContent = protocol.name;
     $('#sp-user').textContent = App.currentUserName() || '—';
-    $('#sp-vm15').classList.toggle('hidden', !AudioEngine.vm15);
-    $('#sp-vm15').textContent = AudioEngine.vm15Mode === 'dual'
-      ? '📳 VM15 DUAL · TONE + PLATE PULSE'
-      : '📳 VM15 FOLD · OCTAVE-FOLDED';
+    syncVM15UI();
     renderSteps();
     acquireWakeLock();
     AudioEngine.ensureContext();
@@ -125,6 +122,31 @@ const Player = (() => {
     if (!running) return;
     updateUI();
     rafId = requestAnimationFrame(uiTick);
+  }
+
+  // ---- VM15 in-session toggle ----
+  function syncVM15UI() {
+    const mode = AudioEngine.vm15Mode;
+    const tag = $('#sp-vm15');
+    tag.classList.toggle('hidden', mode === 'off');
+    tag.textContent = mode === 'dual' ? '📳 VM15 DUAL · TONE + PLATE PULSE' : '📳 VM15 FOLD · OCTAVE-FOLDED';
+    const btn = $('#sp-vm15-btn');
+    btn.classList.toggle('on', mode !== 'off');
+    btn.classList.toggle('dual', mode === 'dual');
+    btn.textContent = mode === 'off' ? '📳 VM15' : mode === 'fold' ? '📳 FOLD' : '📳 DUAL';
+  }
+
+  function cycleVM15() {
+    const next = { off: 'fold', fold: 'dual', dual: 'off' }[AudioEngine.vm15Mode];
+    AudioEngine.setVM15Mode(next);
+    syncVM15UI();
+    renderSteps(); // step labels change with the mode
+    // Re-shape the live audio right now, mid-step
+    if (running && !paused && AudioEngine.playing) {
+      const step = protocol.steps[stepIndex];
+      AudioEngine.retune(step.hz, step.pulseHz || 0);
+    }
+    if (window.App?.refreshVM15) App.refreshVM15(); // keep the main header pill in sync
   }
 
   function updateUI() {
@@ -282,6 +304,7 @@ const Player = (() => {
   }
 
   function bind() {
+    $('#sp-vm15-btn').addEventListener('click', cycleVM15);
     $('#sp-pause').addEventListener('click', pauseResume);
     $('#sp-skip').addEventListener('click', skip);
     $('#sp-back').addEventListener('click', back);

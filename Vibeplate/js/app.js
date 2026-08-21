@@ -972,6 +972,7 @@ const App = (() => {
 
   return {
     refresh, toast,
+    refreshVM15: () => { updateVM15Pill(); updateVM15Hint(); },
     currentUserId: () => currentUser?.id || null,
     currentUserName: () => currentUser?.name || null,
   };
