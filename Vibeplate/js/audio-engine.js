@@ -81,7 +81,14 @@ const AudioEngine = (() => {
   // standard practice for band-limited devices. Stored protocols are never altered;
   // folding happens only at the moment of sound production. Per-device setting.
   const VM15_MAX = 68;
-  let vm15 = localStorage.getItem('vr_vm15') === '1';
+  // Three modes:
+  //   'off'  — normal speaker playback
+  //   'fold' — frequency is replaced by its sub-octave inside the plate band
+  //   'dual' — BOTH at once: the original frequency plays as the carrier while
+  //            its amplitude pulses at the folded rate, so the plate physically
+  //            moves at the in-band rate and the original tone rides on top.
+  let vm15Mode = localStorage.getItem('vr_vm15_mode')
+    || (localStorage.getItem('vr_vm15') === '1' ? 'dual' : 'off');
 
   function fold(hz) {
     let f = hz, n = 0;
@@ -89,13 +96,22 @@ const AudioEngine = (() => {
     return { hz: Math.round(f * 100) / 100, div: 2 ** n, octaves: n };
   }
 
-  function setVM15(on) {
-    vm15 = !!on;
-    if (on) localStorage.setItem('vr_vm15', '1');
-    else localStorage.removeItem('vr_vm15');
+  function setVM15Mode(mode) {
+    vm15Mode = ['off', 'fold', 'dual'].includes(mode) ? mode : 'off';
+    if (vm15Mode === 'off') localStorage.removeItem('vr_vm15_mode');
+    else localStorage.setItem('vr_vm15_mode', vm15Mode);
+    localStorage.removeItem('vr_vm15'); // legacy flag
   }
 
-  function effHz(hz) { return vm15 ? fold(hz).hz : hz; }
+  // What actually reaches the oscillator for a requested (hz, stepPulse) pair.
+  function resolveChain(hz, stepPulse = 0) {
+    if (vm15Mode === 'fold') return { carrier: fold(hz).hz, pulse: stepPulse || 0 };
+    if (vm15Mode === 'dual') {
+      if (stepPulse) return { carrier: hz, pulse: stepPulse }; // step's own pulse wins (already in-band by design)
+      return hz > VM15_MAX ? { carrier: hz, pulse: fold(hz).hz } : { carrier: hz, pulse: 0 };
+    }
+    return { carrier: hz, pulse: stepPulse || 0 };
+  }
 
   // pulseHz > 0 = Gamma/pulse mode: the tone's amplitude throbs at pulseHz
   // (e.g. a 700 Hz carrier pulsing 40×/sec — the audio analog of 40 Hz
@@ -104,9 +120,10 @@ const AudioEngine = (() => {
     ensureContext();
     if (ctx.state === 'suspended') ctx.resume();
     stopNow(); // safety: never two oscillators
-    hz = effHz(hz);
+    const chain = resolveChain(hz, pulseHz);
+    hz = chain.carrier;
     currentHz = hz;
-    currentPulse = pulseHz || 0;
+    currentPulse = chain.pulse;
     voiceGain = ctx.createGain();
     voiceGain.gain.value = 0;
     osc = ctx.createOscillator();
@@ -136,21 +153,34 @@ const AudioEngine = (() => {
   }
 
   // Change frequency between protocol steps: quick dip to zero, retune, rise. No clicks.
-  function setFrequency(hz) {
-    hz = effHz(hz);
-    currentHz = hz;
-    if (!playing || !osc) return;
+  // Move to a new (hz, stepPulse) target. If the chain topology (pulsed vs
+  // steady) must change, rebuild with a soft gap; otherwise retune in place.
+  function retune(hz, stepPulse = 0) {
+    const chain = resolveChain(hz, stepPulse);
+    if (!playing || !osc) { start(hz, stepPulse); return; }
+    const hasPulse = currentPulse > 0;
+    const wantsPulse = chain.pulse > 0;
+    if (hasPulse !== wantsPulse) {
+      stop();
+      setTimeout(() => start(hz, stepPulse), 110);
+      return;
+    }
+    currentHz = chain.carrier;
+    currentPulse = chain.pulse;
     const t = ctx.currentTime;
     voiceGain.gain.cancelScheduledValues(t);
     voiceGain.gain.setValueAtTime(voiceGain.gain.value, t);
     voiceGain.gain.linearRampToValueAtTime(0, t + RAMP);
-    osc.frequency.setValueAtTime(hz, t + RAMP);
+    osc.frequency.setValueAtTime(chain.carrier, t + RAMP);
+    if (wantsPulse && pulseLfo) pulseLfo.frequency.setValueAtTime(chain.pulse, t + RAMP);
     voiceGain.gain.linearRampToValueAtTime(1, t + RAMP * 2);
   }
 
+  function setFrequency(hz) { retune(hz, 0); }
+
   // Sweep (glide) from current frequency to hz over `seconds` — a continuous pure-sine slide.
   function glideTo(hz, seconds) {
-    hz = effHz(hz);
+    hz = resolveChain(hz, 0).carrier; // dual mode sweeps the true carrier; fold mode sweeps in-band
     if (!playing || !osc) return;
     const t = ctx.currentTime;
     osc.frequency.cancelScheduledValues(t);
@@ -231,9 +261,10 @@ const AudioEngine = (() => {
   }
 
   return {
-    ensureContext, info, maxCleanHz, start, setFrequency, glideTo, stop, setVolume,
-    pause, resume, waveform, measuredHz, chime, fold, setVM15,
-    get vm15() { return vm15; },
+    ensureContext, info, maxCleanHz, start, setFrequency, retune, glideTo, stop, setVolume,
+    pause, resume, waveform, measuredHz, chime, fold, setVM15Mode, resolveChain,
+    get vm15() { return vm15Mode !== 'off'; },
+    get vm15Mode() { return vm15Mode; },
     get playing() { return playing; },
     get currentHz() { return currentHz; },
     get currentPulse() { return currentPulse; },

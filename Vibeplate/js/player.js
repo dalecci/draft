@@ -69,6 +69,9 @@ const Player = (() => {
     $('#sp-name').textContent = protocol.name;
     $('#sp-user').textContent = App.currentUserName() || '—';
     $('#sp-vm15').classList.toggle('hidden', !AudioEngine.vm15);
+    $('#sp-vm15').textContent = AudioEngine.vm15Mode === 'dual'
+      ? '📳 VM15 DUAL · TONE + PLATE PULSE'
+      : '📳 VM15 FOLD · OCTAVE-FOLDED';
     renderSteps();
     acquireWakeLock();
     AudioEngine.ensureContext();
@@ -91,15 +94,8 @@ const Player = (() => {
     const step = protocol.steps[i];
     const warn = step.hz > AudioEngine.maxCleanHz() || (step.sweepToHz && step.sweepToHz > AudioEngine.maxCleanHz());
     const pulse = step.pulseHz || 0;
-    if (first || !AudioEngine.playing) {
-      AudioEngine.start(step.hz, pulse);
-    } else if (pulse !== AudioEngine.currentPulse) {
-      // Pulse mode changed — rebuild the audio chain with a soft gap
-      AudioEngine.stop();
-      setTimeout(() => AudioEngine.start(step.hz, pulse), 110);
-    } else {
-      AudioEngine.setFrequency(step.hz);
-    }
+    if (first || !AudioEngine.playing) AudioEngine.start(step.hz, pulse);
+    else AudioEngine.retune(step.hz, pulse); // handles carrier + pulse changes, rebuilds chain if needed
     if (step.sweepToHz) AudioEngine.glideTo(step.sweepToHz, step.seconds);
     stepStart = ctxNow();
     $('#sp-warning').classList.toggle('hidden', !warn);
@@ -166,21 +162,24 @@ const Player = (() => {
 
   function renderSteps() {
     const el = $('#sp-steps');
-    const vm15 = AudioEngine.vm15;
     const hzLabel = (hz) => {
-      if (!vm15) return fmtHz(hz) + '';
-      const f = AudioEngine.fold(hz);
-      return f.div > 1
-        ? `${f.hz} <span class="sp-fold">(${fmtHz(hz)}÷${f.div})</span>`
-        : `${fmtHz(hz)}`;
+      const c = AudioEngine.resolveChain(hz, 0);
+      if (c.carrier !== hz) {
+        return `${c.carrier} <span class="sp-fold">(${fmtHz(hz)}÷${AudioEngine.fold(hz).div})</span>`;
+      }
+      return fmtHz(hz) + '';
     };
-    el.innerHTML = protocol.steps.map((s, i) => `
+    el.innerHTML = protocol.steps.map((s, i) => {
+      const chain = AudioEngine.resolveChain(s.hz, s.pulseHz || 0);
+      const pulseBadge = chain.pulse ? ` <span class="sp-pulse">⚡${chain.pulse}</span>` : '';
+      return `
       <div class="sp-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}">
         <span class="sp-step-num">${i + 1}</span>
-        <span class="sp-step-hz">${s.sweepToHz ? hzLabel(s.hz) + ' → ' + hzLabel(s.sweepToHz) : hzLabel(s.hz)} Hz${s.pulseHz ? ` <span class="sp-pulse">⚡${s.pulseHz}</span>` : ''}</span>
+        <span class="sp-step-hz">${s.sweepToHz ? hzLabel(s.hz) + ' → ' + hzLabel(s.sweepToHz) : hzLabel(s.hz)} Hz${pulseBadge}</span>
         <span class="sp-step-remaining">${fmt(s.seconds)}</span>
         <span class="sp-step-bar"></span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   function pauseResume() {
@@ -259,7 +258,7 @@ const Player = (() => {
       steps_planned: protocol.steps.length,
       total_seconds: Math.round(elapsedTotal()),
       completed: completed ? 1 : 0,
-      vm15: AudioEngine.vm15 ? 1 : 0, // honest record of the delivery mode
+      vm15: AudioEngine.vm15 ? AudioEngine.vm15Mode : 0, // honest record of the delivery mode
       rating: null, notes: null,
     });
   }

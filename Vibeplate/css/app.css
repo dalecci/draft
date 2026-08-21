@@ -381,6 +381,11 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
   background: rgba(45, 212, 191, .12); border-color: var(--teal); color: var(--teal);
   box-shadow: 0 0 14px rgba(45, 212, 191, .25);
 }
+.vm15-pill.dual {
+  background: linear-gradient(100deg, rgba(45, 212, 191, .16), rgba(255, 77, 77, .14));
+  border-color: var(--teal); color: #fff;
+  box-shadow: 0 0 16px rgba(45, 212, 191, .3), 0 0 26px rgba(255, 77, 77, .15);
+}
 .vm15-hint {
   margin-top: 10px; padding: 10px 14px; border-radius: 10px; font-size: 13.5px;
   background: rgba(45, 212, 191, .07); border: 1px solid rgba(45, 212, 191, .3); color: var(--tx);

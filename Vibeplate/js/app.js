@@ -148,37 +148,45 @@ const App = (() => {
     updateVM15Hint();
   }
 
-  // ---------- VM15 mode ----------
+  // ---------- VM15 mode (off → fold → dual) ----------
   function updateVM15Hint() {
     const el = $('#gen-vm15-hint');
-    if (!AudioEngine.vm15) { el.classList.add('hidden'); return; }
-    const f = AudioEngine.fold(genHz);
+    const mode = AudioEngine.vm15Mode;
+    if (mode === 'off') { el.classList.add('hidden'); return; }
     el.classList.remove('hidden');
-    el.innerHTML = f.div > 1
-      ? `📳 VM15 mode: plays as <b>${f.hz} Hz</b> on the plate (${fmtHz(genHz)} ÷ ${f.div} — folded down ${f.octaves} octave${f.octaves > 1 ? 's' : ''})`
-      : `📳 VM15 mode: <b>${f.hz} Hz</b> is inside the plate's native band — plays as-is`;
+    const f = AudioEngine.fold(genHz);
+    if (f.div === 1) {
+      el.innerHTML = `📳 VM15: <b>${f.hz} Hz</b> is inside the plate's native band — plays as-is`;
+    } else if (mode === 'fold') {
+      el.innerHTML = `📳 VM15 FOLD: plays as <b>${f.hz} Hz</b> on the plate (${fmtHz(genHz)} ÷ ${f.div} — down ${f.octaves} octave${f.octaves > 1 ? 's' : ''})`;
+    } else {
+      el.innerHTML = `📳 VM15 DUAL: <b>${fmtHz(genHz)} Hz</b> tone pulsing at <b>${f.hz} Hz</b> — the plate moves at ${f.hz}, the tone stays ${fmtHz(genHz)}`;
+    }
   }
 
   function updateVM15Pill() {
-    $('#vm15-toggle').classList.toggle('on', AudioEngine.vm15);
+    const mode = AudioEngine.vm15Mode;
+    const pill = $('#vm15-toggle');
+    pill.classList.toggle('on', mode !== 'off');
+    pill.classList.toggle('dual', mode === 'dual');
+    pill.textContent = mode === 'off' ? '📳 VM15' : mode === 'fold' ? '📳 VM15 · FOLD' : '📳 VM15 · DUAL';
   }
 
   function toggleVM15() {
-    AudioEngine.setVM15(!AudioEngine.vm15);
+    const next = { off: 'fold', fold: 'dual', dual: 'off' }[AudioEngine.vm15Mode];
+    AudioEngine.setVM15Mode(next);
     updateVM15Pill();
     updateVM15Hint();
-    if (AudioEngine.vm15) {
-      // Retune a live tone into the plate band immediately
-      if (AudioEngine.playing) AudioEngine.setFrequency(genHz);
+    if (AudioEngine.playing) AudioEngine.retune(genHz, 0); // re-shape a live tone immediately
+    if (next === 'fold') {
       if (!localStorage.getItem('vr_vm15_hint')) {
         localStorage.setItem('vr_vm15_hint', '1');
-        toast('📳 VM15 mode ON — plug this device\'s line-out into the plate\'s Audio-In, device volume high, intensity on the plate\'s 0–99 dial');
-      } else {
-        toast('📳 VM15 mode ON — frequencies fold into the plate\'s band');
-      }
+        toast('📳 FOLD — frequencies fold into the plate\'s band. Plug line-out → plate Audio-In, device volume high, plate intensity 0–99');
+      } else toast('📳 FOLD — pure low tone, folded into the plate\'s band');
+    } else if (next === 'dual') {
+      toast('📳 DUAL — original tone + plate pulsing at the folded rate, both at once');
     } else {
-      if (AudioEngine.playing) AudioEngine.setFrequency(genHz);
-      toast('VM15 mode off — normal speaker playback');
+      toast('VM15 off — normal speaker playback');
     }
   }
 
