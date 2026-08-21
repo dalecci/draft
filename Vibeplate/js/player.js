@@ -129,7 +129,7 @@ const Player = (() => {
     const mode = AudioEngine.vm15Mode;
     const tag = $('#sp-vm15');
     tag.classList.toggle('hidden', mode === 'off');
-    tag.textContent = mode === 'dual' ? '📳 VM15 DUAL · TONE + PLATE PULSE' : '📳 VM15 FOLD · OCTAVE-FOLDED';
+    tag.textContent = mode === 'dual' ? '📳 VM15 DUAL · TOP + BOTTOM TONES' : '📳 VM15 FOLD · BOTTOM TONE ONLY';
     const btn = $('#sp-vm15-btn');
     btn.classList.toggle('on', mode !== 'off');
     btn.classList.toggle('dual', mode === 'dual');
@@ -193,7 +193,8 @@ const Player = (() => {
     };
     el.innerHTML = protocol.steps.map((s, i) => {
       const chain = AudioEngine.resolveChain(s.hz, s.pulseHz || 0);
-      const pulseBadge = chain.pulse ? ` <span class="sp-pulse">⚡${chain.pulse}</span>` : '';
+      const pulseBadge = chain.mix ? ` <span class="sp-pulse">+ ${chain.mix} Hz</span>`
+        : chain.pulse ? ` <span class="sp-pulse">⚡${chain.pulse}</span>` : '';
       return `
       <div class="sp-step ${i === stepIndex ? 'active' : ''} ${i < stepIndex ? 'done' : ''}">
         <span class="sp-step-num">${i + 1}</span>

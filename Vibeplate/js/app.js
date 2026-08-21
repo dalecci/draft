@@ -160,7 +160,7 @@ const App = (() => {
     } else if (mode === 'fold') {
       el.innerHTML = `📳 VM15 FOLD: plays as <b>${f.hz} Hz</b> on the plate (${fmtHz(genHz)} ÷ ${f.div} — down ${f.octaves} octave${f.octaves > 1 ? 's' : ''})`;
     } else {
-      el.innerHTML = `📳 VM15 DUAL: <b>${fmtHz(genHz)} Hz</b> tone pulsing at <b>${f.hz} Hz</b> — the plate moves at ${f.hz}, the tone stays ${fmtHz(genHz)}`;
+      el.innerHTML = `📳 VM15 DUAL: <b>${fmtHz(genHz)} Hz</b> + <b>${f.hz} Hz</b> playing together — two real tones, the plate moves on the bottom one`;
     }
   }
 
@@ -184,7 +184,7 @@ const App = (() => {
         toast('📳 FOLD — frequencies fold into the plate\'s band. Plug line-out → plate Audio-In, device volume high, plate intensity 0–99');
       } else toast('📳 FOLD — pure low tone, folded into the plate\'s band');
     } else if (next === 'dual') {
-      toast('📳 DUAL — original tone + plate pulsing at the folded rate, both at once');
+      toast('📳 DUAL — top + bottom tones together: the original frequency AND its folded sub-tone, both real');
     } else {
       toast('VM15 off — normal speaker playback');
     }

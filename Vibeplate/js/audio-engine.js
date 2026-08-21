@@ -13,6 +13,8 @@ const AudioEngine = (() => {
   let playing = false;
   let currentHz = 0;
   let currentPulse = 0; // amplitude-pulse rate (0 = steady tone)
+  let currentMix = 0;   // dual-mode second tone (0 = single oscillator)
+  let osc2 = null;      // dual-mode bottom oscillator (real signal at the folded frequency)
   let pulseLfo = null;  // gamma-mode LFO
   let pulseGainNode = null;
   let volume = 0.3;    // safe default
@@ -103,14 +105,19 @@ const AudioEngine = (() => {
     localStorage.removeItem('vr_vm15'); // legacy flag
   }
 
-  // What actually reaches the oscillator for a requested (hz, stepPulse) pair.
+  // What actually reaches the oscillators for a requested (hz, stepPulse) pair.
+  // carrier = main tone; pulse = amplitude-pulse rate (gamma steps);
+  // mix = a SECOND real oscillator at the folded frequency (dual mode) — true
+  // signal energy at both the top and bottom tones simultaneously.
   function resolveChain(hz, stepPulse = 0) {
-    if (vm15Mode === 'fold') return { carrier: fold(hz).hz, pulse: stepPulse || 0 };
+    if (vm15Mode === 'fold') return { carrier: fold(hz).hz, pulse: stepPulse || 0, mix: 0 };
     if (vm15Mode === 'dual') {
-      if (stepPulse) return { carrier: hz, pulse: stepPulse }; // step's own pulse wins (already in-band by design)
-      return hz > VM15_MAX ? { carrier: hz, pulse: fold(hz).hz } : { carrier: hz, pulse: 0 };
+      if (stepPulse) return { carrier: hz, pulse: stepPulse, mix: 0 }; // step's own pulse wins (already in-band by design)
+      return hz > VM15_MAX
+        ? { carrier: hz, pulse: 0, mix: fold(hz).hz }
+        : { carrier: hz, pulse: 0, mix: 0 };
     }
-    return { carrier: hz, pulse: stepPulse || 0 };
+    return { carrier: hz, pulse: stepPulse || 0, mix: 0 };
   }
 
   // pulseHz > 0 = Gamma/pulse mode: the tone's amplitude throbs at pulseHz
@@ -124,12 +131,25 @@ const AudioEngine = (() => {
     hz = chain.carrier;
     currentHz = hz;
     currentPulse = chain.pulse;
+    currentMix = chain.mix || 0;
     voiceGain = ctx.createGain();
     voiceGain.gain.value = 0;
     osc = ctx.createOscillator();
     osc.type = 'sine'; // mathematically pure
     osc.frequency.value = hz;
-    osc.connect(voiceGain);
+    if (currentMix > 0) {
+      // DUAL: two real oscillators — top tone + bottom tone, each at half
+      // amplitude so the mix never clips. Real signal energy at BOTH frequencies.
+      const gTop = ctx.createGain(); gTop.gain.value = 0.5;
+      const gBottom = ctx.createGain(); gBottom.gain.value = 0.5;
+      osc.connect(gTop); gTop.connect(voiceGain);
+      osc2 = ctx.createOscillator();
+      osc2.type = 'sine';
+      osc2.frequency.value = currentMix;
+      osc2.connect(gBottom); gBottom.connect(voiceGain);
+    } else {
+      osc.connect(voiceGain);
+    }
     if (currentPulse > 0) {
       pulseGainNode = ctx.createGain();
       pulseGainNode.gain.value = 0.5;            // amplitude swings 0 → 1
@@ -148,6 +168,7 @@ const AudioEngine = (() => {
     }
     const t = ctx.currentTime;
     osc.start(t);
+    if (osc2) osc2.start(t);
     voiceGain.gain.linearRampToValueAtTime(1, t + RAMP);
     playing = true;
   }
@@ -158,21 +179,24 @@ const AudioEngine = (() => {
   function retune(hz, stepPulse = 0) {
     const chain = resolveChain(hz, stepPulse);
     if (!playing || !osc) { start(hz, stepPulse); return; }
-    const hasPulse = currentPulse > 0;
-    const wantsPulse = chain.pulse > 0;
-    if (hasPulse !== wantsPulse) {
+    const sameTopology =
+      (currentPulse > 0) === (chain.pulse > 0) &&
+      (currentMix > 0) === ((chain.mix || 0) > 0);
+    if (!sameTopology) {
       stop();
       setTimeout(() => start(hz, stepPulse), 110);
       return;
     }
     currentHz = chain.carrier;
     currentPulse = chain.pulse;
+    currentMix = chain.mix || 0;
     const t = ctx.currentTime;
     voiceGain.gain.cancelScheduledValues(t);
     voiceGain.gain.setValueAtTime(voiceGain.gain.value, t);
     voiceGain.gain.linearRampToValueAtTime(0, t + RAMP);
     osc.frequency.setValueAtTime(chain.carrier, t + RAMP);
-    if (wantsPulse && pulseLfo) pulseLfo.frequency.setValueAtTime(chain.pulse, t + RAMP);
+    if (currentMix > 0 && osc2) osc2.frequency.setValueAtTime(currentMix, t + RAMP);
+    if (currentPulse > 0 && pulseLfo) pulseLfo.frequency.setValueAtTime(chain.pulse, t + RAMP);
     voiceGain.gain.linearRampToValueAtTime(1, t + RAMP * 2);
   }
 
@@ -192,21 +216,24 @@ const AudioEngine = (() => {
   function stop() {
     if (!playing || !osc) return;
     const t = ctx.currentTime;
-    const dying = osc, dyingGain = voiceGain, dyingLfo = pulseLfo;
+    const dying = osc, dying2 = osc2, dyingGain = voiceGain, dyingLfo = pulseLfo;
     dyingGain.gain.cancelScheduledValues(t);
     dyingGain.gain.setValueAtTime(dyingGain.gain.value, t);
     dyingGain.gain.linearRampToValueAtTime(0, t + RAMP);
     dying.stop(t + RAMP + 0.02);
+    if (dying2) { try { dying2.stop(t + RAMP + 0.02); } catch {} }
     if (dyingLfo) { try { dyingLfo.stop(t + RAMP + 0.02); } catch {} }
-    osc = null; voiceGain = null; pulseLfo = null; pulseGainNode = null;
-    playing = false; currentPulse = 0;
+    osc = null; osc2 = null; voiceGain = null; pulseLfo = null; pulseGainNode = null;
+    playing = false; currentPulse = 0; currentMix = 0;
   }
 
   function stopNow() {
     if (osc) { try { osc.stop(); } catch {} osc = null; voiceGain = null; }
+    if (osc2) { try { osc2.stop(); } catch {} osc2 = null; }
     if (pulseLfo) { try { pulseLfo.stop(); } catch {} pulseLfo = null; pulseGainNode = null; }
     playing = false;
     currentPulse = 0;
+    currentMix = 0;
   }
 
   function setVolume(v) {
@@ -265,6 +292,7 @@ const AudioEngine = (() => {
     pause, resume, waveform, measuredHz, chime, fold, setVM15Mode, resolveChain,
     get vm15() { return vm15Mode !== 'off'; },
     get vm15Mode() { return vm15Mode; },
+    get currentMix() { return currentMix; },
     get playing() { return playing; },
     get currentHz() { return currentHz; },
     get currentPulse() { return currentPulse; },
