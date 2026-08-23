@@ -18,6 +18,19 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+const APP_VERSION = 22;
+window.onerror = function(msg, src, line) {
+  try {
+    let el = document.getElementById("vr-err");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "vr-err";
+      document.body.appendChild(el);
+    }
+    el.textContent = "\u26A0 " + msg + " \u2014 " + String(src || "").split("/").pop() + ":" + line;
+  } catch (e) {
+  }
+};
 const App = (() => {
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -865,6 +878,7 @@ const App = (() => {
     });
   }
   function init() {
+    document.getElementById("ver-badge").textContent = "VibePlate v" + APP_VERSION;
     bind();
     updateVM15Pill();
     seedUsers();

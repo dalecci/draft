@@ -71,8 +71,24 @@ const AudioEngine = (() => {
   let fallbackEl = null;
   let fallbackActive = false;
   let probeTimer = 0;
+  function makeOsc(freq, sr) {
+    const w = 2 * Math.PI * freq / sr;
+    const k = 2 * Math.cos(w);
+    let s0 = Math.sin(-2 * w);
+    let s1 = Math.sin(-w);
+    return function() {
+      const x = k * s1 - s0;
+      s0 = s1;
+      s1 = x;
+      return x;
+    };
+  }
+  const wavCache = {};
+  let wavCacheCount = 0;
   function wavDataURI(carrier, pulseHz, mixHz) {
     carrier = Math.min(carrier, 2e4);
+    const cacheKey = carrier + "|" + (pulseHz || 0) + "|" + (mixHz || 0);
+    if (wavCache[cacheKey]) return wavCache[cacheKey];
     const maxComp = Math.max(carrier, mixHz || 0) * 1.25;
     const sr = maxComp < 3600 ? 8e3 : maxComp < 9800 ? 22050 : 44100;
     const targetDur = Math.min(60, Math.max(10, Math.floor(18e5 / (sr * 2))));
@@ -97,16 +113,25 @@ const AudioEngine = (() => {
     dv.setUint16(34, 16, true);
     w(36, "data");
     dv.setUint32(40, n * 2, true);
+    const oscC = makeOsc(carrier, sr);
+    const oscM = mixHz ? makeOsc(mixHz, sr) : null;
+    const oscP = pulseHz ? makeOsc(pulseHz, sr) : null;
     for (let i = 0; i < n; i++) {
-      const t = i / sr;
-      let s = Math.sin(2 * Math.PI * carrier * t);
-      if (mixHz) s = 0.5 * s + 0.5 * Math.sin(2 * Math.PI * mixHz * t);
-      if (pulseHz) s *= 0.5 + 0.5 * Math.sin(2 * Math.PI * pulseHz * t);
+      let s = oscC();
+      if (oscM) s = 0.5 * s + 0.5 * oscM();
+      if (oscP) s *= 0.5 + 0.5 * oscP();
       dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, s * 0.6)) * 32767, true);
     }
     let bin = "";
     for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
-    return "data:audio/wav;base64," + btoa(bin);
+    const uri = "data:audio/wav;base64," + btoa(bin);
+    if (wavCacheCount > 10) {
+      for (const k2 in wavCache) delete wavCache[k2];
+      wavCacheCount = 0;
+    }
+    wavCache[cacheKey] = uri;
+    wavCacheCount++;
+    return uri;
   }
   function elementStart(hz, stepPulse) {
     const chain = resolveChain(hz, stepPulse || 0);

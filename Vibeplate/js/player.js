@@ -153,17 +153,26 @@ const Player = /* @__PURE__ */ (() => {
     if (stepRemaining() <= 0) {
       if (stepIndex + 1 < protocol.steps.length) {
         playedBefore += protocol.steps[stepIndex].seconds;
-        beginStep(stepIndex + 1);
+        try {
+          beginStep(stepIndex + 1);
+        } catch (e) {
+        }
       } else {
         finish();
         return;
       }
     }
-    updateUI();
+    try {
+      updateUI();
+    } catch (e) {
+    }
   }
   function uiTick() {
     if (!running) return;
-    updateUI();
+    try {
+      updateUI();
+    } catch (e) {
+    }
     rafId = requestAnimationFrame(uiTick);
   }
   function syncVM15UI() {
