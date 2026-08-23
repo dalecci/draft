@@ -32,7 +32,22 @@ const AudioEngine = (() => {
       mediaKeepalive.play().catch(() => {
       });
     }
-    if (ctx && ctx.state === "suspended") ctx.resume();
+    ensureContext();
+    if (ctx.state === "suspended" && ctx.resume) {
+      try {
+        ctx.resume();
+      } catch (e) {
+      }
+    }
+    try {
+      const b = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = b;
+      src.connect(ctx.destination);
+      if (src.start) src.start(0);
+      else if (src.noteOn) src.noteOn(0);
+    } catch (e) {
+    }
   }
   document.addEventListener("touchend", unlockMediaSession, { capture: true });
   document.addEventListener("click", unlockMediaSession, { capture: true });
@@ -245,11 +260,20 @@ const AudioEngine = (() => {
   function resume() {
     if (ctx && ctx.state === "suspended") return ctx.resume();
   }
+  let byteBuf = null;
   function waveform(buf) {
     if (!analyser) return false;
-    if (!analyser.getFloatTimeDomainData) return false;
-    analyser.getFloatTimeDomainData(buf);
-    return true;
+    if (analyser.getFloatTimeDomainData) {
+      analyser.getFloatTimeDomainData(buf);
+      return true;
+    }
+    if (analyser.getByteTimeDomainData) {
+      if (!byteBuf || byteBuf.length !== buf.length) byteBuf = new Uint8Array(buf.length);
+      analyser.getByteTimeDomainData(byteBuf);
+      for (let i = 0; i < buf.length; i++) buf[i] = (byteBuf[i] - 128) / 128;
+      return true;
+    }
+    return false;
   }
   function measuredHz() {
     if (!analyser || !playing) return 0;
