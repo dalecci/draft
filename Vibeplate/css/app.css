@@ -90,7 +90,7 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 
 /* ---------- lock screen ---------- */
 #lock-screen {
-  position: fixed; inset: 0; z-index: 50;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; z-index: 50;
   display: flex; align-items: center; justify-content: center;
   background:
     radial-gradient(900px 500px at 50% -10%, rgba(255, 77, 77, .08), transparent 60%),
@@ -118,7 +118,7 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 
 /* ---------- user picker ---------- */
 #user-screen {
-  position: fixed; inset: 0; z-index: 40;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; z-index: 40;
   display: flex; align-items: center; justify-content: center;
   background: var(--bg);
 }
@@ -211,7 +211,7 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 .preset-actions .btn { font-size: 12.5px; padding: 5px 12px; min-height: 32px; }
 
 /* ---------- builder ---------- */
-.modal { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, .65); display: flex; align-items: center; justify-content: center; padding: 18px; }
+.modal { position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; z-index: 60; background: rgba(0, 0, 0, .65); display: flex; align-items: center; justify-content: center; padding: 18px; }
 .modal-card { max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; }
 .b-form-row { display: flex; gap: 10px; margin: 14px 0; }
 .b-form-row input { flex: 1; }
@@ -316,14 +316,14 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 .admin-sec h3 { font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--red); margin: 20px 0 10px; }
 .admin-sec h3:first-child { margin-top: 0; }
 .file-btn { position: relative; overflow: hidden; display: inline-block; }
-.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-btn input { position: absolute; top: 0; right: 0; bottom: 0; left: 0; inset: 0; opacity: 0; cursor: pointer; }
 .setting-row { display: flex; align-items: center; gap: 10px; font-size: 15px; padding: 6px 0; }
 .setting-row input[type=checkbox] { accent-color: var(--red); width: 18px; height: 18px; }
 #backup-status { font-size: 14px; line-height: 1.9; }
 
 /* ---------- session console ---------- */
 #session-overlay {
-  position: fixed; inset: 0; z-index: 70; color: var(--tx);
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; z-index: 70; color: var(--tx);
   background:
     radial-gradient(900px 600px at 22% 30%, rgba(45, 212, 191, .06), transparent 60%),
     radial-gradient(700px 500px at 85% 80%, rgba(255, 77, 77, .05), transparent 60%),
@@ -335,7 +335,7 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 .sp-name { font-size: 22px; font-weight: 900; letter-spacing: .03em; color: #fff; }
 .sp-sub { font-size: 12px; color: var(--dim); letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
 .sp-body { flex: 1; display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; padding: 20px 0; min-height: 0; }
-.sp-ring-wrap { position: relative; width: min(56vh, 480px); margin: 0 auto; }
+.sp-ring-wrap { position: relative; width: 380px; width: min(56vh, 480px); margin: 0 auto; }
 .sp-ring { width: 100%; }
 .sp-ring-bg { fill: none; stroke: rgba(255, 255, 255, .06); stroke-width: 7; }
 .sp-ring-fg {
@@ -343,8 +343,8 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
   filter: drop-shadow(0 0 10px rgba(45, 212, 191, .8));
   transition: stroke-dashoffset .3s linear;
 }
-.sp-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
-.sp-freq { font-weight: 200; font-size: clamp(40px, 7vh, 64px); color: #fff; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+.sp-center { position: absolute; top: 0; right: 0; bottom: 0; left: 0; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.sp-freq { font-weight: 200; font-size: 52px; font-size: clamp(40px, 7vh, 64px); color: #fff; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 .sp-hz { color: var(--dim); font-size: 15px; font-weight: 800; letter-spacing: .14em; margin-top: -4px; }
 .sp-step-time { font-size: 30px; font-weight: 300; color: var(--gold); margin-top: 8px; font-variant-numeric: tabular-nums; }
 .sp-step-label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); font-weight: 700; }
@@ -432,7 +432,7 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 @media (max-width: 940px) {
   .gen-layout { grid-template-columns: 1fr; }
   .sp-body { grid-template-columns: 1fr; gap: 18px; overflow-y: auto; align-items: start; }
-  .sp-ring-wrap { width: min(62vw, 320px); }
+  .sp-ring-wrap { width: 300px; width: min(62vw, 320px); }
   .sp-right { max-width: none; }
   #gen-freq { font-size: 54px; width: 260px; }
   .app-header { justify-content: center; }
