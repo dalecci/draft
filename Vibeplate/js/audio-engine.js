@@ -67,6 +67,19 @@ const AudioEngine = (() => {
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && ctx && playing && ctx.state === "suspended") ctx.resume();
   });
+  function rebuildOnRouteChange() {
+    if (playing || !ctx) return;
+    try {
+      ctx.close();
+    } catch (e) {
+    }
+    ctx = null;
+    master = null;
+    analyser = null;
+  }
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener("devicechange", rebuildOnRouteChange);
+  }
   let deadWebAudio = localStorage.getItem("vr_wa_dead") === "1";
   let fallbackEl = null;
   let fallbackActive = false;
@@ -173,6 +186,13 @@ const AudioEngine = (() => {
       }
     }
     fallbackActive = false;
+  }
+  function retryWebAudio() {
+    deadWebAudio = false;
+    try {
+      localStorage.removeItem("vr_wa_dead");
+    } catch (e) {
+    }
   }
   function engageFallback(hz, stepPulse) {
     deadWebAudio = true;
@@ -543,6 +563,7 @@ const AudioEngine = (() => {
     fold,
     setVM15Mode,
     resolveChain,
+    retryWebAudio,
     get vm15() {
       return vm15Mode !== "off";
     },
