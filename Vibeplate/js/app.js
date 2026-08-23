@@ -18,7 +18,7 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-const APP_VERSION = 22;
+const APP_VERSION = 23;
 window.onerror = function(msg, src, line) {
   try {
     let el = document.getElementById("vr-err");
@@ -879,6 +879,10 @@ const App = (() => {
   }
   function init() {
     document.getElementById("ver-badge").textContent = "VibePlate v" + APP_VERSION;
+    if (localStorage.getItem("vr_app_ver") !== String(APP_VERSION)) {
+      localStorage.removeItem("vr_wa_dead");
+      localStorage.setItem("vr_app_ver", String(APP_VERSION));
+    }
     bind();
     updateVM15Pill();
     seedUsers();

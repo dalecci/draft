@@ -206,11 +206,20 @@ const AudioEngine = (() => {
     }
     master = ctx.createGain();
     master.gain.value = volume;
-    analyser = ctx.createAnalyser();
-    analyser.fftSize = 4096;
-    analyser.smoothingTimeConstant = 0;
-    master.connect(analyser);
-    analyser.connect(ctx.destination);
+    try {
+      analyser = ctx.createAnalyser();
+      try {
+        analyser.fftSize = 4096;
+      } catch (e) {
+        analyser.fftSize = 2048;
+      }
+      analyser.smoothingTimeConstant = 0;
+      master.connect(analyser);
+      analyser.connect(ctx.destination);
+    } catch (e) {
+      analyser = null;
+      master.connect(ctx.destination);
+    }
     return ctx;
   }
   function info() {
@@ -490,6 +499,13 @@ const AudioEngine = (() => {
     return (peak + delta) * ctx.sampleRate / analyser.fftSize;
   }
   function chime() {
+    try {
+      chimeInner();
+    } catch (e) {
+    }
+  }
+  function chimeInner() {
+    if (deadWebAudio) return;
     ensureContext();
     if (ctx.state === "suspended") ctx.resume();
     const notes = [1046.5, 1318.5, 1568];

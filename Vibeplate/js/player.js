@@ -111,8 +111,14 @@ const Player = /* @__PURE__ */ (() => {
     syncVM15UI();
     renderSteps();
     acquireWakeLock();
-    AudioEngine.ensureContext();
-    beginStep(0, true);
+    try {
+      AudioEngine.ensureContext();
+    } catch (e) {
+    }
+    try {
+      beginStep(0, true);
+    } catch (e) {
+    }
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(uiTick);
     lastTickWall = performance.now() / 1e3;
