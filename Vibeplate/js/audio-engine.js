@@ -22,6 +22,8 @@ const AudioEngine = (() => {
         mediaKeepalive.setAttribute("playsinline", "");
         mediaKeepalive.loop = true;
         mediaKeepalive.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+        mediaKeepalive.style.display = "none";
+        (document.body || document.documentElement).appendChild(mediaKeepalive);
         mediaKeepalive.play().catch(() => {
           mediaKeepalive = null;
         });
@@ -54,6 +56,102 @@ const AudioEngine = (() => {
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && ctx && playing && ctx.state === "suspended") ctx.resume();
   });
+  let deadWebAudio = localStorage.getItem("vr_wa_dead") === "1";
+  let fallbackEl = null;
+  let fallbackActive = false;
+  let probeTimer = 0;
+  function wavDataURI(carrier, pulseHz, mixHz) {
+    const sr = 44100;
+    carrier = Math.min(carrier, 2e4);
+    const base = pulseHz || mixHz || carrier;
+    const cycles = Math.max(1, Math.round(base));
+    const n = Math.max(1, Math.round(sr * cycles / base));
+    const bytes = new Uint8Array(44 + n * 2);
+    const dv = new DataView(bytes.buffer);
+    const w = (o, s) => {
+      for (let i = 0; i < s.length; i++) bytes[o + i] = s.charCodeAt(i);
+    };
+    w(0, "RIFF");
+    dv.setUint32(4, 36 + n * 2, true);
+    w(8, "WAVE");
+    w(12, "fmt ");
+    dv.setUint32(16, 16, true);
+    dv.setUint16(20, 1, true);
+    dv.setUint16(22, 1, true);
+    dv.setUint32(24, sr, true);
+    dv.setUint32(28, sr * 2, true);
+    dv.setUint16(32, 2, true);
+    dv.setUint16(34, 16, true);
+    w(36, "data");
+    dv.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) {
+      const t = i / sr;
+      let s = Math.sin(2 * Math.PI * carrier * t);
+      if (mixHz) s = 0.5 * s + 0.5 * Math.sin(2 * Math.PI * mixHz * t);
+      if (pulseHz) s *= 0.5 + 0.5 * Math.sin(2 * Math.PI * pulseHz * t);
+      dv.setInt16(44 + i * 2, Math.max(-1, Math.min(1, s * 0.6)) * 32767, true);
+    }
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+    return "data:audio/wav;base64," + btoa(bin);
+  }
+  function elementStart(hz, stepPulse) {
+    const chain = resolveChain(hz, stepPulse || 0);
+    currentHz = chain.carrier;
+    currentPulse = chain.pulse;
+    currentMix = chain.mix || 0;
+    try {
+      if (!fallbackEl) {
+        fallbackEl = document.createElement("audio");
+        fallbackEl.setAttribute("playsinline", "");
+        fallbackEl.loop = true;
+        fallbackEl.style.display = "none";
+        fallbackEl.id = "vr-fallback-tone";
+        (document.body || document.documentElement).appendChild(fallbackEl);
+      }
+      fallbackEl.src = wavDataURI(chain.carrier, chain.pulse, chain.mix || 0);
+      try {
+        fallbackEl.volume = Math.min(1, volume * 2);
+      } catch (e) {
+      }
+      fallbackEl.play().catch(() => {
+      });
+      fallbackActive = true;
+      playing = true;
+    } catch (e) {
+    }
+  }
+  function elementStop() {
+    if (fallbackEl) {
+      try {
+        fallbackEl.pause();
+      } catch (e) {
+      }
+    }
+    fallbackActive = false;
+  }
+  function engageFallback(hz, stepPulse) {
+    deadWebAudio = true;
+    localStorage.setItem("vr_wa_dead", "1");
+    stopNow();
+    elementStart(hz, stepPulse);
+  }
+  function scheduleOutputProbe(hz, stepPulse) {
+    clearTimeout(probeTimer);
+    if (deadWebAudio || volume < 0.02) return;
+    probeTimer = setTimeout(() => {
+      if (!playing || fallbackActive) return;
+      const buf = new Float32Array(1024);
+      if (!waveform(buf)) {
+        engageFallback(hz, stepPulse);
+        return;
+      }
+      let rms = 0;
+      for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i];
+      rms = Math.sqrt(rms / buf.length);
+      if (rms < 2e-3) engageFallback(hz, stepPulse);
+    }, 900);
+  }
   function ensureContext() {
     if (ctx) return ctx;
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -107,6 +205,11 @@ const AudioEngine = (() => {
     return { carrier: hz, pulse: stepPulse || 0, mix: 0 };
   }
   function start(hz, pulseHz = 0) {
+    if (deadWebAudio) {
+      elementStop();
+      elementStart(hz, pulseHz);
+      return;
+    }
     ensureContext();
     if (ctx.state === "suspended") ctx.resume();
     stopNow();
@@ -161,14 +264,22 @@ const AudioEngine = (() => {
     setTimeout(() => {
       try {
         if (playing && voiceGain === wdGain && wdGain.gain.value < 0.05) {
-          wdGain.gain.cancelScheduledValues(0);
+          try {
+            wdGain.gain.cancelScheduledValues(0);
+          } catch (e) {
+          }
           wdGain.gain.value = 1;
         }
       } catch (e) {
       }
     }, RAMP * 1e3 + 250);
+    scheduleOutputProbe(hz, pulseHz);
   }
   function retune(hz, stepPulse = 0) {
+    if (deadWebAudio || fallbackActive) {
+      elementStart(hz, stepPulse);
+      return;
+    }
     const chain = resolveChain(hz, stepPulse);
     if (!playing || !osc) {
       start(hz, stepPulse);
@@ -196,6 +307,10 @@ const AudioEngine = (() => {
     retune(hz, 0);
   }
   function glideTo(hz, seconds) {
+    if (deadWebAudio || fallbackActive) {
+      elementStart(hz, 0);
+      return;
+    }
     hz = resolveChain(hz, 0).carrier;
     if (!playing || !osc) return;
     const t = ctx.currentTime;
@@ -205,6 +320,13 @@ const AudioEngine = (() => {
     currentHz = hz;
   }
   function stop() {
+    if (fallbackActive) {
+      elementStop();
+      playing = false;
+      currentPulse = 0;
+      currentMix = 0;
+      return;
+    }
     if (!playing || !osc) return;
     const t = ctx.currentTime;
     const dying = osc, dying2 = osc2, dyingGain = voiceGain, dyingLfo = pulseLfo;
@@ -234,6 +356,7 @@ const AudioEngine = (() => {
     currentMix = 0;
   }
   function stopNow() {
+    if (fallbackActive) elementStop();
     if (osc) {
       try {
         osc.stop();
@@ -264,11 +387,29 @@ const AudioEngine = (() => {
   function setVolume(v) {
     volume = Math.min(1, Math.max(0, v));
     if (master) master.gain.setTargetAtTime(volume, ctx.currentTime, 0.03);
+    if (fallbackEl) {
+      try {
+        fallbackEl.volume = Math.min(1, volume * 2);
+      } catch (e) {
+      }
+    }
   }
   function pause() {
+    if (fallbackActive && fallbackEl) {
+      try {
+        fallbackEl.pause();
+      } catch (e) {
+      }
+      return;
+    }
     if (ctx && ctx.state === "running") return ctx.suspend();
   }
   function resume() {
+    if (fallbackActive && fallbackEl) {
+      fallbackEl.play().catch(() => {
+      });
+      return;
+    }
     if (ctx && ctx.state === "suspended") return ctx.resume();
   }
   let byteBuf = null;
@@ -287,6 +428,7 @@ const AudioEngine = (() => {
     return false;
   }
   function measuredHz() {
+    if (fallbackActive) return currentHz;
     if (!analyser || !playing) return 0;
     const n = analyser.frequencyBinCount;
     const data = new Float32Array(n);
@@ -296,6 +438,7 @@ const AudioEngine = (() => {
       peakVal = data[i];
       peak = i;
     }
+    if (!isFinite(peakVal) || peakVal < -75) return 0;
     const a = data[peak - 1], b = data[peak], c = data[peak + 1];
     let delta = 0;
     const denom = a - 2 * b + c;
