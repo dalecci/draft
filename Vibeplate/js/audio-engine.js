@@ -16,6 +16,17 @@ const AudioEngine = (() => {
   let volume = 0.3;
   let mediaKeepalive = null;
   function unlockMediaSession() {
+    if (deadWebAudio) {
+      if (fallbackActive && fallbackEl && fallbackEl.paused && playing) fallbackEl.play().catch(() => {
+      });
+      if (mediaKeepalive) {
+        try {
+          mediaKeepalive.pause();
+        } catch (e) {
+        }
+      }
+      return;
+    }
     if (!mediaKeepalive) {
       try {
         mediaKeepalive = document.createElement("audio");
@@ -61,10 +72,12 @@ const AudioEngine = (() => {
   let fallbackActive = false;
   let probeTimer = 0;
   function wavDataURI(carrier, pulseHz, mixHz) {
-    const sr = 44100;
     carrier = Math.min(carrier, 2e4);
+    const maxComp = Math.max(carrier, mixHz || 0) * 1.25;
+    const sr = maxComp < 3600 ? 8e3 : maxComp < 9800 ? 22050 : 44100;
+    const targetDur = Math.min(60, Math.max(10, Math.floor(18e5 / (sr * 2))));
     const base = pulseHz || mixHz || carrier;
-    const cycles = Math.max(1, Math.round(base));
+    const cycles = Math.max(1, Math.round(base * targetDur));
     const n = Math.max(1, Math.round(sr * cycles / base));
     const bytes = new Uint8Array(44 + n * 2);
     const dv = new DataView(bytes.buffer);
@@ -100,6 +113,12 @@ const AudioEngine = (() => {
     currentHz = chain.carrier;
     currentPulse = chain.pulse;
     currentMix = chain.mix || 0;
+    if (mediaKeepalive) {
+      try {
+        mediaKeepalive.pause();
+      } catch (e) {
+      }
+    }
     try {
       if (!fallbackEl) {
         fallbackEl = document.createElement("audio");
