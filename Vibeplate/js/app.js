@@ -141,7 +141,7 @@ const App = (() => {
   }
   function updateGenInfo() {
     const info = AudioEngine.context ? AudioEngine.info() : null;
-    $("#gen-sr").textContent = info ? info.sampleRate / 1e3 + " kHz" : "starts on play";
+    $("#gen-sr").textContent = info ? info.sampleRate / 1e3 + " kHz \xB7 " + info.state : "starts on play";
     $("#gen-max").textContent = info ? fmtHz(info.nyquist) + " Hz" : "\u2014";
     const over = info && genHz > info.nyquist;
     $("#gen-warning").classList.toggle("hidden", !over);

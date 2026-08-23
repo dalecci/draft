@@ -154,8 +154,19 @@ const AudioEngine = (() => {
     const t = ctx.currentTime;
     osc.start(t);
     if (osc2) osc2.start(t);
+    voiceGain.gain.setValueAtTime(0, t);
     voiceGain.gain.linearRampToValueAtTime(1, t + RAMP);
     playing = true;
+    const wdGain = voiceGain;
+    setTimeout(() => {
+      try {
+        if (playing && voiceGain === wdGain && wdGain.gain.value < 0.05) {
+          wdGain.gain.cancelScheduledValues(0);
+          wdGain.gain.value = 1;
+        }
+      } catch (e) {
+      }
+    }, RAMP * 1e3 + 250);
   }
   function retune(hz, stepPulse = 0) {
     const chain = resolveChain(hz, stepPulse);
