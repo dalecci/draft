@@ -30,8 +30,22 @@ const Player = /* @__PURE__ */ (() => {
   let advanceTimer = 0;
   let wakeLock = null;
   let sessionLogged = false;
+  let clock = 0;
+  let lastTickAudio = 0;
+  let lastTickWall = 0;
+  function clockTick() {
+    const wall = performance.now() / 1e3;
+    const audio = AudioEngine.context ? AudioEngine.context.currentTime : 0;
+    if (running && !paused) {
+      const dAudio = audio - lastTickAudio;
+      const dWall = Math.max(0, Math.min(wall - lastTickWall, 2));
+      clock += dAudio > 0.01 ? Math.min(dAudio, dWall + 0.5) : dWall;
+    }
+    lastTickAudio = audio;
+    lastTickWall = wall;
+  }
   function ctxNow() {
-    return AudioEngine.context ? AudioEngine.context.currentTime : 0;
+    return clock;
   }
   function stepElapsed() {
     return Math.max(0, ctxNow() - stepStart);
@@ -101,6 +115,8 @@ const Player = /* @__PURE__ */ (() => {
     beginStep(0, true);
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(uiTick);
+    lastTickWall = performance.now() / 1e3;
+    lastTickAudio = AudioEngine.context ? AudioEngine.context.currentTime : 0;
     clearInterval(advanceTimer);
     advanceTimer = setInterval(advanceCheck, 250);
     speak("Beginning ".concat(protocol.name, ". ").concat(protocol.steps.length, " steps. Total time ").concat(describeDuration(totalSeconds()), "."));
@@ -125,7 +141,15 @@ const Player = /* @__PURE__ */ (() => {
     speak("Step ".concat(i + 1, " of ").concat(protocol.steps.length, ". ").concat(label, ". ").concat(describeDuration(step.seconds), "."));
   }
   function advanceCheck() {
+    clockTick();
     if (!running || paused) return;
+    const actx = AudioEngine.context;
+    if (actx && actx.state === "suspended" && actx.resume) {
+      try {
+        actx.resume();
+      } catch (e) {
+      }
+    }
     if (stepRemaining() <= 0) {
       if (stepIndex + 1 < protocol.steps.length) {
         playedBefore += protocol.steps[stepIndex].seconds;
