@@ -89,7 +89,9 @@ function initSettings() {
 
 async function fetchJsonSafe(url, opts) {
   try {
-    const res = await fetch(url, opts);
+    // no-store: these files change on every scan/redeploy, a cached copy would show
+    // stale flags. Small files, fetched once at boot, the cost of skipping cache is negligible.
+    const res = await fetch(url, { cache: "no-store", ...opts });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -127,7 +129,7 @@ async function fetchGithubJson(path, token) {
   try {
     const res = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/${path}`,
-      { headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3.raw" } }
+      { cache: "no-store", headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3.raw" } }
     );
     if (!res.ok) return null;
     return await res.json();
