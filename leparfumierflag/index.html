@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le Parfumier: FLAG</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚩</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="lock" class="lock">
+  <div class="lock-card">
+    <div class="lock-mark">FLAG</div>
+    <div class="lock-title">Le Parfumier</div>
+    <p class="lock-sub">Enter the access code to continue.</p>
+    <input id="lock-input" class="lock-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
+    <button id="lock-btn" class="lock-btn">Unlock</button>
+    <p id="lock-error" class="lock-error"></p>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🚩</span>
+      <span class="brand-name">Le Parfumier</span>
+      <span class="brand-tag">FLAG</span>
+    </div>
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="flagged">Flagged</button>
+      <button class="tab-btn" data-tab="inventory">Inventory</button>
+      <button class="tab-btn" data-tab="about">How this works</button>
+    </nav>
+    <button id="settings-btn" class="icon-btn" title="Data connection settings">⚙</button>
+  </header>
+
+  <div class="statbar" id="statbar"></div>
+
+  <main>
+    <section id="tab-flagged" class="tab-panel">
+      <div class="panel-head">
+        <h1>Flagged for discontinuation</h1>
+        <p class="panel-sub" id="flagged-sub">Products showing signs of being discontinued by the brand. Reviewed and act on these before they disappear.</p>
+      </div>
+      <div id="flagged-list" class="flag-list"></div>
+      <div id="flagged-empty" class="empty-state hidden">
+        <p>Nothing flagged yet. Once the first scan runs, anything at risk will show up here.</p>
+      </div>
+    </section>
+
+    <section id="tab-inventory" class="tab-panel hidden">
+      <div class="panel-head">
+        <h1>Inventory</h1>
+        <p class="panel-sub">Your current catalog, loaded from the last uploaded export.</p>
+      </div>
+      <div class="controls">
+        <input id="search" class="search" type="search" placeholder="Search by product or brand...">
+        <select id="brand-filter" class="select"></select>
+        <select id="status-filter" class="select">
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="draft">Draft</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+      <div id="inventory-count" class="result-count"></div>
+      <div id="inventory-list" class="product-grid"></div>
+      <div class="pager">
+        <button id="page-prev" class="page-btn">Previous</button>
+        <span id="page-info" class="page-info"></span>
+        <button id="page-next" class="page-btn">Next</button>
+      </div>
+    </section>
+
+    <section id="tab-about" class="tab-panel hidden">
+      <div class="panel-head">
+        <h1>How this works</h1>
+      </div>
+      <div class="about-card">
+        <h2>What FLAG does</h2>
+        <p>Every few days, an automated scan walks through your inventory and checks each product for signs the brand is discontinuing it: brand site listing status, major retailer availability, and community chatter (forums, resale listings, social posts). Anything suspicious lands here on the Flagged page with the reason and the sources behind it.</p>
+        <h2>Confirmed vs rumored</h2>
+        <p><strong>Rumored</strong> means early chatter, worth watching. <strong>Confirmed</strong> means multiple independent sources agree. Once confirmed, FLAG also checks what the item is reselling for elsewhere, so you can judge the premium before deciding whether to buy in.</p>
+        <h2>Notifications</h2>
+        <p>You get emailed once per new flag. Already flagged items will not keep resurfacing in your inbox, they just stay listed here.</p>
+        <h2>Data connection</h2>
+        <p>This page reads from a private data store that the scheduled scan updates. Use the gear icon to connect it if you see a data not connected message.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="settings" class="settings hidden">
+    <div class="settings-card">
+      <h2>Data connection</h2>
+      <p class="settings-sub">Paste the access token for the private Le Parfumier data store. This stays only in this browser, it is never sent anywhere else.</p>
+      <input id="token-input" class="lock-input" type="password" placeholder="GitHub token" autocomplete="off">
+      <div class="settings-row">
+        <button id="token-save" class="lock-btn">Save</button>
+        <button id="token-clear" class="ghost-btn">Clear</button>
+        <button id="settings-close" class="ghost-btn">Close</button>
+      </div>
+      <p id="token-status" class="settings-status"></p>
+    </div>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "lastScan": null,
+  "scanNote": "Live flag data is kept in the private data repo and shown once a token is connected in settings. This placeholder ships with the public site so the page still works with no configuration.",
+  "flags": []
+}
