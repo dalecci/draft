@@ -163,6 +163,7 @@ html, body {
 }
 .statbar strong { color: var(--text-dim); font-weight: 600; }
 .statbar .warn { color: var(--amber); }
+.statbar .version-tag { margin-left: auto; color: var(--text-faint); font-variant-numeric: tabular-nums; }
 
 main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
 

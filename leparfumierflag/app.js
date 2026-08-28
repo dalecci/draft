@@ -1,4 +1,10 @@
 // Le Parfumier: FLAG — client app. No build step, no dependencies.
+//
+// Bump this on every deploy that changes app.js, style.css, or index.html,
+// and bump the ?v= query params in index.html's <link>/<script> tags to match
+// (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
+// at a glance whether a browser tab is running the latest build.
+const APP_VERSION = 3;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -66,7 +72,7 @@ function initSettings() {
     const saved = localStorage.getItem(TOKEN_KEY);
     document.getElementById("token-status").textContent = saved
       ? "A token is currently saved in this browser."
-      : "No token saved. The Flagged page will use the bundled snapshot only.";
+      : "No token saved. Inventory prices are shown, wholesale cost stays hidden until connected.";
   });
   document.getElementById("settings-close").addEventListener("click", () => modal.classList.add("hidden"));
   document.getElementById("token-save").addEventListener("click", async () => {
@@ -100,7 +106,9 @@ async function fetchJsonSafe(url, opts) {
 }
 
 async function loadData() {
-  // Baseline: the snapshot bundled alongside the deployed site.
+  // Flags: the scheduled scan pushes flags.json straight into this deployed site on
+  // every run (not gated behind a token), since a flag list carries no cost data and
+  // Jordan should never have to paste anything just to see what's flagged.
   const [bundledProducts, bundledFlags] = await Promise.all([
     fetchJsonSafe("data/products.json"),
     fetchJsonSafe("data/flags.json"),
@@ -111,17 +119,15 @@ async function loadData() {
     state.lastScan = bundledFlags.lastScan || null;
   }
 
-  // Live overlay: if a token is saved, pull fresher flags from the private data repo.
+  // Live overlay: if a token is saved, pull the full product list (this one DOES carry
+  // wholesale cost) from the private data repo instead of the redacted bundled copy.
   const token = localStorage.getItem(TOKEN_KEY);
   if (token) {
-    const liveFlags = await fetchGithubJson("flags.json", token);
-    if (liveFlags) {
-      state.flags = liveFlags.flags || [];
-      state.lastScan = liveFlags.lastScan || null;
+    const liveProducts = await fetchGithubJson("products.json", token);
+    if (liveProducts) {
+      state.products = liveProducts;
       state.dataSource = "live";
     }
-    const liveProducts = await fetchGithubJson("products.json", token);
-    if (liveProducts) state.products = liveProducts;
   }
 }
 
@@ -164,7 +170,8 @@ function renderStatbar() {
     <span><strong>${brands.size.toLocaleString()}</strong> brands</span>
     <span class="${flaggedOpen ? "warn" : ""}"><strong>${flaggedOpen}</strong> currently flagged</span>
     <span>Last scan: ${scanTxt}</span>
-    <span>Data: ${state.dataSource === "live" ? "live connection" : "bundled snapshot, connect in settings for live updates"}</span>
+    <span>Cost data: ${state.dataSource === "live" ? "connected" : "hidden, connect in settings"}</span>
+    <span class="version-tag" title="Bump the ?v= in index.html and APP_VERSION in app.js on every deploy">Site v${APP_VERSION}</span>
   `;
 }
 

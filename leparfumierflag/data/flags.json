@@ -1,5 +1,1092 @@
 {
-  "lastScan": null,
-  "scanNote": "Live flag data is kept in the private data repo and shown once a token is connected in settings. This placeholder ships with the public site so the page still works with no configuration.",
-  "flags": []
+  "lastScan": "2026-08-28T23:30:00Z",
+  "scanNote": "Seed scan run manually while building the pilot. First automatic scheduled scan will follow every few days from here.",
+  "flags": [
+    {
+      "id": "dolce-gabbana-light-blue-eau-intense-pour-homme-eau-de-parfum",
+      "productHandle": "dolce-gabbana-light-blue-eau-intense-pour-homme-eau-de-parfum",
+      "title": "Dolce & Gabbana Light Blue Eau Intense Pour Homme Eau de Parfum",
+      "vendor": "DOLCE & GABBANA",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple retailer and community sources report this fragrance as discontinued, replaced by a new Light Blue Eau de Parfum line launched in 2026."
+        },
+        {
+          "type": "pricing",
+          "note": "Your own catalog already lists a compare at price above the current price on both bottled sizes, consistent with clearance pricing ahead of a discontinuation."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Actively reselling on eBay with listings explicitly marked discontinued. Fragrantica forum threads are asking whether it will ever come back, and fragrance creators on TikTok are telling fans to buy a backup bottle before it disappears and secondhand prices climb."
+      },
+      "sources": [
+        {
+          "label": "eBay listing marked Discontinued",
+          "url": "https://www.ebay.com/itm/336667950426"
+        },
+        {
+          "label": "Fragrantica forum: will it come back",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=341926"
+        },
+        {
+          "label": "TikTok: buy a backup bottle before it is gone",
+          "url": "https://www.tiktok.com/@yk.scents/video/7524324968386137358"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "dolce-gabbana-light-blue-eau-intense-pour-femme-eau-de-parfum",
+      "productHandle": "dolce-gabbana-light-blue-eau-intense-pour-femme-eau-de-parfum",
+      "title": "Dolce & Gabbana Light Blue Eau Intense Pour Femme Eau de Parfum",
+      "vendor": "DOLCE & GABBANA",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Same discontinuation wave as the men's Eau Intense bottle, brand is consolidating the Light Blue line around the new 2026 Eau de Parfum."
+        },
+        {
+          "type": "pricing",
+          "note": "Compare at price above current price on 2 of 3 variants already on file."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Same secondary market pattern as the men's version, community sources describe it as increasingly hard to find at original pricing."
+      },
+      "sources": [
+        {
+          "label": "eBay listing marked Discontinued (men's, same family)",
+          "url": "https://www.ebay.com/itm/336667950426"
+        },
+        {
+          "label": "Fragrantica forum thread",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=341926"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "jesus-del-pozo-quasar-pour-homme-mousse-a-raser",
+      "productHandle": "jesus-del-pozo-quasar-pour-homme-mousse-a-raser",
+      "title": "Jesus Del Pozo Quasar Pour Homme Mousse a Raser",
+      "vendor": "JESUS DEL POZO",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "The Quasar line by Jesus Del Pozo (launched 1994) is widely described as discontinued, with only vintage/leftover stock circulating; the shaving foam (mousse a raser) is a companion product to an out-of-production fragrance line."
+        },
+        {
+          "type": "retailer",
+          "note": "No current listings found at major retailers; only resale/vintage sellers (eBay, niche discontinued-fragrance shops like Amour Boutique and Fragrance Revival) carry Quasar items."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Quasar",
+          "url": "https://www.fragrantica.com/perfume/Jesus-Del-Pozo/Quasar-1443.html"
+        },
+        {
+          "label": "Amour Boutique - Quosar (Discontinued)",
+          "url": "https://amourfragrances.com/products/quosar-by-jesus-del-pozo-discontinued"
+        },
+        {
+          "label": "eBay - Jesus Del Pozo Quasar shop",
+          "url": "https://www.ebay.com/shop/jesus-del-pozo-quasar?_nkw=jesus+del+pozo+quasar"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage bottles of Quasar EDT are fetching around $270 on eBay as collector items due to being out of production; the related aftershave/mousse variants trade in the same discontinued-fragrance resale niche."
+      }
+    },
+    {
+      "id": "dolce-gabbana-collection-miniature-pour-homme-et-femme",
+      "productHandle": "dolce-gabbana-collection-miniature-pour-homme-et-femme",
+      "title": "Dolce & Gabbana Collection Miniature Pour Homme et Femme",
+      "vendor": "DOLCE & GABBANA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Search results indicate this specific miniature gift-set variant is currently out of stock/unavailable at a retailer, with no clear official D&G page confirming it, though no independent secondary source explicitly confirms discontinuation."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Le Parfumier - D&G Collection Miniature",
+          "url": "https://leparfumier.com/products/dolce-gabbana-collection-miniature-pour-homme-et-femme"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "guerlain-champs-elysees-pour-femme-lait-eclat-pour-le-corps",
+      "productHandle": "guerlain-champs-elysees-pour-femme-lait-eclat-pour-le-corps",
+      "title": "Guerlain Champs-Elysees Pour Femme Lait Eclat Pour le Corps",
+      "vendor": "GUERLAIN",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Champs-Elysees is a legacy Guerlain fragrance line (1996) with several companion products, including body milk, showing up on discontinued-fragrance resale pages (eBay), though no explicit confirmation this exact body-milk SKU is discontinued was found."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Discontinued Women's Champs-Elysees",
+          "url": "https://www.ebay.com/b/Discontinued-Women-Champs-Elysees/11848/bn_7116766180"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "salvatore-ferragamo-amo-pour-femme-eau-de-parfum-edition-special",
+      "productHandle": "salvatore-ferragamo-amo-pour-femme-eau-de-parfum-edition-special",
+      "title": "Salvatore Ferragamo Amo Pour Femme Eau de Parfum Edition Spécial",
+      "vendor": "SALVATORE FERRAGAMO",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Several Amo Ferragamo limited/special editions (Holiday Edition, Oriental Wood, Limited Edition) are sold as discontinued on eBay's discontinued-fragrance category, suggesting special-edition Amo variants have a pattern of being retired, though this exact 'Edition Special' name wasn't individually confirmed."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price flag present, offered as weak supporting context alongside the special-edition pattern above."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Salvatore Ferragamo Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Salvatore-Ferragamo-Discontinued-Fragrances-for-Women/11848/bn_7116773652"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "maison-margiela-replica-under-the-lemon-trees-eau-de-toilette",
+      "productHandle": "maison-margiela-replica-under-the-lemon-trees-eau-de-toilette",
+      "title": "Maison Margiela Replica Under The Lemon Trees Eau de Toilette",
+      "vendor": "MAISON MARGIELA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple TikTok posts and customer comments speculate the fragrance is being discontinued and urge buying it before it disappears, though it remains listed on Maison Margiela's own site and at Sephora as of this check."
+        }
+      ],
+      "sources": [
+        {
+          "label": "TikTok - Under the Lemon Trees discontinued chatter",
+          "url": "https://www.tiktok.com/discover/maison-margiela-under-the-lemon-trees-discontinued"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "maison-margiela-replica-by-the-jazz-club-eau-de-toilette",
+      "productHandle": "maison-margiela-replica-by-the-jazz-club-eau-de-toilette",
+      "title": "Maison Margiela Replica Jazz Club Eau de Toilette",
+      "vendor": "MAISON MARGIELA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Some eBay sellers list the original Jazz Club EDT as 'discontinued', but Amazon does not flag it as discontinued by manufacturer and Maison Margiela released a 2025 Holiday Limited Edition Jazz Club, suggesting the line is still active in some form."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Replica 2025 Holiday Limited Edition: Jazz Club",
+          "url": "https://www.fragrantica.com/news/Maison-Margiela-Replica-2025-Holiday-Limited-Edition-Jazz-Club-23872.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "cuba-royal-pour-homme-eau-de-toilette-1",
+      "productHandle": "cuba-royal-pour-homme-eau-de-toilette-1",
+      "title": "Cuba Royal Pour Homme Eau De Toilette",
+      "vendor": "CUBA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "One retailer (Fragrance Outlet) currently shows Cuba Royal as sold out pending restock, though Amazon explicitly marks it not discontinued by manufacturer and other retailers (FragranceNet, Perfumania) still carry it."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price flag present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrance Outlet - Cuba Royal",
+          "url": "https://www.fragranceoutlet.com/products/cuba-royal-mens-eau-de-toilette-spray"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "hermes-jour-dhermes-pour-femme-eau-de-parfum",
+      "productHandle": "hermes-jour-dhermes-pour-femme-eau-de-parfum",
+      "title": "Hermes Jour d'Hermès Pour Femme Eau De Parfum",
+      "vendor": "HERMES",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A Fragrantica community thread asks whether the original (non-Absolu) Jour d'Hermes has been discontinued, though a Hermes USA product page for the original EDP still turned up in search."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica: Jour d'Hermes discontinued? thread",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=216250"
+        },
+        {
+          "label": "Hermes USA product page",
+          "url": "https://www.hermes.com/us/en/product/jour-d-hermes-eau-de-parfum-V27557/"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "hugo-boss-hugo-deep-red-pour-femme-eau-de-parfum",
+      "productHandle": "hugo-boss-hugo-deep-red-pour-femme-eau-de-parfum",
+      "title": "Hugo Boss Deep Red Pour Femme Eau de Parfum Edition 2025",
+      "vendor": "HUGO BOSS",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Some eBay sellers label Deep Red EDP discontinued, but it remains actively sold new by FragranceNet, Amazon, and Perfumania."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceNet listing",
+          "url": "https://www.fragrancenet.com/perfume/hugo-boss/hugo-deep-red/eau-de-parfum"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "versace-crystal-noir-pour-femme-parfum",
+      "productHandle": "versace-crystal-noir-pour-femme-parfum",
+      "title": "Versace Crystal Noir Pour Femme Parfum",
+      "vendor": "VERSACE",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Signals conflict by concentration: some eBay listings mark the EDT/Parfum discontinued in North America while a Fragrantica thread explicitly argues the EDP was never discontinued."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, weak supporting context given the mixed concentration signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica: Crystal Noir EDP is NOT discontinued thread",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=281974"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "chanel-n5-pour-femme-huile-pour-le-corps",
+      "productHandle": "chanel-n5-pour-femme-huile-pour-le-corps",
+      "title": "Chanel N5 Pour Femme Huile Pour le Corps",
+      "vendor": "CHANEL",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A Chanel-site customer review states Chanel stopped selling this body oil years ago; Chanel's current lineup now sells the item under a renamed SKU ('N°5 The Body Oil' / 'The Beige Gold Body Oil'), suggesting the old French-named version was phased out and replaced."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Chanel N5 The Body Oil (current product)",
+          "url": "https://www.chanel.com/us/fragrance/p/105820/n5-the-body-oil/"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "armaf-the-pride-of-armaf-rouge-pour-femme-eau-de-parfum",
+      "productHandle": "armaf-the-pride-of-armaf-rouge-pour-femme-eau-de-parfum",
+      "title": "Armaf The Pride Of Armaf Rouge Pour Femme Eau de Parfum",
+      "vendor": "ARMAF",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Some resale/aggregator listings label it 'discontinued', but it is still listed for sale on Armaf's own site and multiple retailers (FragranceNet, Le Parfumier), so the signal is weak/contradicted."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Armaf official product page",
+          "url": "https://armaf.com/products/the-pride-of-armaf-white-women"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "emporio-armani-stronger-with-you-intensely-eau-de-parfum-pour-homme",
+      "productHandle": "emporio-armani-stronger-with-you-intensely-eau-de-parfum-pour-homme",
+      "title": "Emporio Armani Stronger With You Intensely Eau de Parfum Pour Homme",
+      "vendor": "GIORGIO ARMANI",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple independent sources (fourthsense.co citing Armani support confirmation, and numerous eBay listings tagged 'discontinued in US') agree this EDP has been discontinued in the US market, though still sold in Europe."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Officially Discontinued: Armani Stronger With You Intensely",
+          "url": "https://fourthsense.co/emporio-armani-stronger-with-you-intensely-discontinued/"
+        },
+        {
+          "label": "eBay discontinued-in-US listing",
+          "url": "https://www.ebay.com/itm/145567820415"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining US stock is selling through resellers/eBay around $60 for the 3.3-3.4oz EDP, with other listings ranging higher for sealed boxes."
+      }
+    },
+    {
+      "id": "kenneth-cole-for-her-eau-de-parfum",
+      "productHandle": "kenneth-cole-for-her-eau-de-parfum",
+      "title": "Kenneth Cole For Her Eau de Parfum Pour Femme",
+      "vendor": "KENNETH COLE",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple independent sources (FragranceOriginal's discontinued-designer list, eBay 'Discontinued Fragrances for Women' category, and Mercari) consistently identify this as a discontinued 'Parlux era' Kenneth Cole fragrance no longer sold by first-party retailers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceOriginal discontinued Kenneth Cole collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/kenneth-cole"
+        },
+        {
+          "label": "eBay Kenneth Cole discontinued fragrances",
+          "url": "https://www.ebay.com/b/Kenneth-Cole-Discontinued-Fragrances-for-Women/11848/bn_7116756115"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Secondary-market listings for sealed 3.4oz bottles run roughly $70+ on eBay/Mercari, a premium over typical mass-market EDP pricing, consistent with discontinued/collector status."
+      }
+    },
+    {
+      "id": "calvin-klein-obession-pour-homme-lotion-apres-rasage",
+      "productHandle": "calvin-klein-obession-pour-homme-lotion-apres-rasage",
+      "title": "Calvin Klein Obsession Pour Homme Lotion Apres Rasage",
+      "vendor": "CALVIN KLEIN",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mixed signal: several vintage/Unilever-era CK Obsession aftershave splash listings are marketed as discontinued vintage on eBay, but the balm/lotion form is still sold new by FragranceNet, Amazon and Perfumania, so status is ambiguous and single-sourced toward discontinuation."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceNet Obsession aftershave listing",
+          "url": "https://www.fragrancenet.com/cologne/calvin-klein/obsession/aftershave"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "hugo-boss-no-1-vintage-eau-de-toilette-sans-vaporisateur-batch-21212711",
+      "productHandle": "hugo-boss-no-1-vintage-eau-de-toilette-sans-vaporisateur-batch-21212711",
+      "title": "Hugo Boss No.1 Vintage Eau de Toilette Sans Vaporisateur Batch#21212711",
+      "vendor": "HUGO BOSS",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Product is explicitly the original 1985 'Boss Number One' formulation, which multiple independent sources (Basenotes discussion, eBay vintage listings, Etsy) confirm was discontinued and replaced by a reformulated current version; it now circulates only as vintage/collector stock."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Basenotes: Vintage EDT Natural Spray vs. Recent EDT",
+          "url": "https://basenotes.com/community/threads/boss-number-one-vintage-edt-natural-spray-vs-recent-edt.267126/"
+        },
+        {
+          "label": "eBay vintage Boss No.1 listings",
+          "url": "https://www.ebay.com/b/HUGO-BOSS-Vintage-Fragrances-for-Men/29585/bn_7116857033"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage bottles resell on eBay across a wide range (~$60-$190 depending on size/condition), reflecting collector demand for the discontinued original formula."
+      }
+    },
+    {
+      "id": "valentino-v-pour-homme-eau-de-toilette",
+      "productHandle": "valentino-v-pour-homme-eau-de-toilette",
+      "title": "Valentino V Pour Homme Eau de Toilette",
+      "vendor": "VALENTINO",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Basenotes forum thread confirms V pour Homme discontinued; Fragrantica and Etsy listings describe it as a discontinued 2006 release."
+        },
+        {
+          "type": "retailer",
+          "note": "Only found on eBay/Etsy secondary-market listings, not at major fragrance retailers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Basenotes - Valentino V discontinued",
+          "url": "https://basenotes.com/threads/valentino-v-discontinued.373050/"
+        },
+        {
+          "label": "Fragrantica - V pour Homme",
+          "url": "https://www.fragrantica.com/perfume/Valentino/V-pour-Homme-805.html"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Secondary market prices run roughly $200 for a 100ml bottle, with some auction listings reaching close to $1,000."
+      }
+    },
+    {
+      "id": "mixx-just-forbidden-pour-homme-millesime",
+      "productHandle": "mixx-just-forbidden-pour-homme-millesime",
+      "title": "Mixx Just Forbidden Pour Homme Millesime",
+      "vendor": "MIXX PERFUME BAR",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Own retailer listing (Le Parfumier) shows the product as sold out/unavailable; no independent confirmation found."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, consistent with baseline noise, not a strong signal on its own."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Le Parfumier - Mixx Just Forbidden",
+          "url": "https://leparfumier.com/en/products/mixx-just-forbidden-for-men-millesime"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "guerlain-la-petite-robe-noire-ma-premiere-robe-eau-de-parfum",
+      "productHandle": "guerlain-la-petite-robe-noire-ma-premiere-robe-eau-de-parfum",
+      "title": "Guerlain La Petite Robe Noire Ma Première Robe Eau de Parfum",
+      "vendor": "GUERLAIN",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrance Revival (a 'recreate discontinued scents' service) lists it as discontinued; it was a 2015 limited-edition flanker and eBay's discontinued-LPRN category includes it."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrance Revival - LPRN Ma Premiere Robe (2015 LE)",
+          "url": "https://fragrancerevival.com/product/la-petite-robe-noire-limited-edition-2015-ma-premiere-robe-by-guerlain-type/"
+        },
+        {
+          "label": "Fragrantica - La Petite Robe Noire Ma Première Robe",
+          "url": "https://www.fragrantica.com/perfume/Guerlain/La-Petite-Robe-Noire-Ma-Premiere-Robe-32848.html"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Still findable on eBay in the $45-100 range for 50-100ml new/sealed bottles, sold as remaining old stock rather than through mainstream retail."
+      }
+    },
+    {
+      "id": "jean-louis-scherrer-pour-femme-eau",
+      "productHandle": "jean-louis-scherrer-pour-femme-eau",
+      "title": "Jean Louis Scherrer Pour Femme Eau de Parfum",
+      "vendor": "JEAN LOUIS SCHERRER",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Jean Louis Scherrer as a house is largely dormant and sold mainly through discontinued/rare fragrance retailers; search results conflated it with a confirmed-discontinued sibling (Immense pour Femme) rather than confirming this exact SKU."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Le Parfumier - Jean Louis Scherrer For Women EDP",
+          "url": "https://leparfumier.com/en/products/jean-louis-scherrer-for-women-eau-de-parfum"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "valentino-donna-born-in-roma-extradose-pour-femme-parfum",
+      "productHandle": "valentino-donna-born-in-roma-extradose-pour-femme-parfum",
+      "title": "Valentino Donna Born In Roma Extradose Pour Femme Parfum",
+      "vendor": "VALENTINO",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Valentino Beauty's own site lists Donna Born in Roma Extradose as discontinued."
+        },
+        {
+          "type": "retailer",
+          "note": "Still actively sold at Sephora and FragranceNet, consistent with retailers selling through remaining stock after brand delisting."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Valentino Beauty - Extradose page",
+          "url": "https://www.valentino-beauty.us/extradose.html"
+        },
+        {
+          "label": "Sephora - Born in Roma Donna Extradose Parfum",
+          "url": "https://www.sephora.com/product/born-in-roma-donna-extradose-P514437"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "No deep discounting yet observed; FragranceNet prices it near full retail ($52-271 depending on size), suggesting sell-through is still early."
+      }
+    },
+    {
+      "id": "jimmy-choo-rose-passion-pour-femme-eau-de-parfum",
+      "productHandle": "jimmy-choo-rose-passion-pour-femme-eau-de-parfum",
+      "title": "Jimmy Choo Rose Passion Pour Femme Eau de Parfum",
+      "vendor": "JIMMY CHOO",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "One retailer flagged it as discontinued/no longer available, but Jimmy Choo's own site, Macy's, and Nordstrom still sell it (Low Stock at some)."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Jimmy Choo official - Rose Passion EDP",
+          "url": "https://us.jimmychoo.com/en/women/beauty/fragrance/rose-passion-60ml/jimmy-choo-rose-passion-eau-de-parfum-60ml-JCROSEPASSION60MLFFPD112728.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "viktor-rolf-good-fortune-pour-femme-eau-de-parfum",
+      "productHandle": "viktor-rolf-good-fortune-pour-femme-eau-de-parfum",
+      "title": "Viktor & Rolf Good Fortune Pour Femme Eau de Parfum",
+      "vendor": "VIKTOR & ROLF",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Viktor & Rolf's own US site lists Good Fortune EDP under its /discontinued-fragrances/ URL path; customer reviews express disappointment at its removal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Viktor & Rolf official - Good Fortune (discontinued-fragrances)",
+          "url": "https://us.viktor-rolf.com/discontinued-fragrances/good-fortune-eau-de-parfum-VKR_264.html"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Full-size (90ml/3.04oz) bottles still trade around $180 on eBay, with minis/samples widely available, indicating stock is being sold through rather than deeply discounted yet."
+      }
+    },
+    {
+      "id": "escada-chiffon-sorbet-pour-femme-eau-de-toilette",
+      "productHandle": "escada-chiffon-sorbet-pour-femme-eau-de-toilette",
+      "title": "Escada Chiffon Sorbet Pour Femme Eau de Toilette",
+      "vendor": "ESCADA",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "1993 limited-edition Escada release; Fragrantica and vintage-specialty retailers (Etsy, eBay) consistently list it as discontinued/no-longer-produced."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Chiffon Sorbet (1993)",
+          "url": "https://www.fragrantica.com/perfume/Escada/Chiffon-Sorbet-3868.html"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Secondary market: full 3.3oz bottles run roughly $45-76 on eBay, with vintage mini splashes also traded as collectibles."
+      }
+    },
+    {
+      "id": "reyane-tradition-insurrection-sport-ii-pour-homme-eau-de-toilette",
+      "productHandle": "reyane-tradition-insurrection-sport-ii-pour-homme-eau-de-toilette",
+      "title": "Reyane Tradition Insurrection Sport II Pour Homme Eau de Toilette",
+      "vendor": "REYANE TRADITION",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One older eBay review called it 'sadly discontinued', but multiple current retailers (Perfume.com, Walmart, Le Parfumier) list it in stock as of 2024-2025."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Walmart - Insurrection II Sport",
+          "url": "https://www.walmart.com/ip/Insurrection-Sport-by-Reyane-Tradition-3-oz-Eau-De-Toilette-Spray-for-Men/859098414"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "al-haramain-junoon-pour-femme-eau-de-parfum",
+      "productHandle": "al-haramain-junoon-pour-femme-eau-de-parfum",
+      "title": "Al Haramain Junoon Pour Femme Eau de Parfum",
+      "vendor": "AL HARAMAIN",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "One retailer (Fragrance Outlet) shows it sold out/awaiting restock, but the Junoon line remains listed as active on Al Haramain's own site."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Al Haramain official - Junoon series",
+          "url": "https://us.alharamainperfumes.com/en/haramain-junoon-serires.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "al-haramain-belle-rouge-pour-femme-eau-de-parfum",
+      "productHandle": "al-haramain-belle-rouge-pour-femme-eau-de-parfum",
+      "title": "Al Haramain Belle Rouge Pour Femme Eau de Parfum",
+      "vendor": "AL HARAMAIN",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A single user comment described Belle Rouge as discontinued, but it remains listed for sale at FragranceNet, Amazon, and other retailers."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceNet - Al Haramain Belle Rouge",
+          "url": "https://www.fragrancenet.com/perfume/al-haramain/al-haramain-belle-rouge/eau-de-parfum"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "lancome-tresor-la-nuit-intense-pour-femme-eau-de-parfum",
+      "productHandle": "lancome-tresor-la-nuit-intense-pour-femme-eau-de-parfum",
+      "title": "Lancome La Nuit Tresor Intense Pour Femme Eau de Parfum",
+      "vendor": "LANCOME",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica Club forum thread ('La Nuit Tresor is being discontinued') plus Etsy listings describing it as discontinued and rare; Lancome reportedly confirmed it was not coming to the US."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - La Nuit Tresor is being discontinued",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=271137"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 3.3-3.4oz bottles run around $90, sold mainly via secondary market/EU imports rather than mainstream US retail."
+      }
+    },
+    {
+      "id": "juicy-couture-oui-pour-femme-eau-de-toilette",
+      "productHandle": "juicy-couture-oui-pour-femme-eau-de-toilette",
+      "title": "Juicy Couture Oui Pour Femme Eau de Toilette",
+      "vendor": "JUICY COUTURE",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One Fragrantica reviewer speculated it's being discontinued; official Juicy Couture site and major retailers (Macy's, Walgreens) still sell it, with FragranceNet marking it 'Low Stock'."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price present, weak supporting context only."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Juicy Couture official - Oui collection",
+          "url": "https://juicycouture.com/collections/oui-juicy-couture"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "coty-exclamation-wild-musk-pour-femme-eau-de-toilette",
+      "productHandle": "coty-exclamation-wild-musk-pour-femme-eau-de-toilette",
+      "title": "Coty Exclamation Wild Musk Pour Femme Eau de Toilette",
+      "vendor": "COTY",
+      "status": "confirmed",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Legacy Coty Wild Musk line is widely categorized by eBay itself under 'Discontinued Fragrances' and discussed on Fragrantica as discontinued/dropped by Coty, no longer sold new at major retailers."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price in our catalog, consistent with but not proof of discontinuation given the ~41% baseline."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Wild Musk Discontinued Fragrances category",
+          "url": "https://www.ebay.com/b/Wild-Musk-Discontinued-Fragrances-for-Women/11848/bn_7116764782"
+        },
+        {
+          "label": "Fragrantica board - Are all Coty perfumes discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=319753"
+        }
+      ],
+      "notified": true,
+      "marketCheck": {
+        "checked": true,
+        "note": "Active secondary market on eBay with dozens of new-old-stock and multi-packs; prices mostly under $35 with some lots seeing steady sell-through (dozens of units sold per listing), a few rare/large sizes listed near $80-480."
+      }
+    },
+    {
+      "id": "elie-saab-girl-of-now-shine-pour-femme-eau-de-parfum",
+      "productHandle": "elie-saab-girl-of-now-shine-pour-femme-eau-de-parfum",
+      "title": "Elie Saab Girl Of Now Shine Pour Femme Eau de Parfum",
+      "vendor": "ELIE SAAB",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Some eBay listings explicitly tag this as 'discontinued' and TikTok has a discussion thread on it, but it is still referenced on Elie Saab's official fragrance site and sold new on Amazon."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay listing tagged discontinued",
+          "url": "https://www.ebay.com/itm/386166747011"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "coty-jovan-platinum-musk-pour-homme-eau-de-cologne",
+      "productHandle": "coty-jovan-platinum-musk-pour-homme-eau-de-cologne",
+      "title": "Coty Jovan Platinum Musk Pour Homme Eau de Cologne",
+      "vendor": "COTY",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica forum thread questions whether the Jovan Musk line is discontinued and eBay reviewers describe it as 'old discontinued perfume', though it is still referenced as a current Coty/Jovan brand line."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price in our catalog, consistent with but not proof of discontinuation given the ~41% baseline."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Jovan Musk Discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=286884"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "coty-jovan-black-musk-pour-homme-eau-de-cologne",
+      "productHandle": "coty-jovan-black-musk-pour-homme-eau-de-cologne",
+      "title": "Coty Jovan Black Musk Pour Homme Eau de Cologne",
+      "vendor": "COTY",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Same Jovan Musk family forum discussion notes it's largely gone from traditional retail shelves and mainly found via eBay/online discounters now, though not confirmed dropped by Coty entirely."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price in our catalog, consistent with but not proof of discontinuation given the ~41% baseline."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Jovan Musk Discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=286884"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "carolina-herrera-ch-men-pasion-pour-homme-eau-de-parfum",
+      "productHandle": "carolina-herrera-ch-men-pasion-pour-homme-eau-de-parfum",
+      "title": "Carolina Herrera CH Men Pasion Pour Homme Eau de Parfum",
+      "vendor": "CAROLINA HERRERA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Several eBay sellers market it as a 'discontinued fragrance', but it remains listed for sale on Carolina Herrera's own official site and other current retailers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Carolina Herrera official product page",
+          "url": "https://www.carolinaherrera.com/ww/en/p-fragrance/ch-men-pasion"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "azzaro-the-most-wanted-pour-homme-eau-de-toilette-intense",
+      "productHandle": "azzaro-the-most-wanted-pour-homme-eau-de-toilette-intense",
+      "title": "Azzaro The Most Wanted Pour Homme Eau de Toilette Intense",
+      "vendor": "AZZARO",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Retailer Care to Beauty lists both 50ml and 100ml Eau de Parfum Intense as discontinued, but the Eau de Toilette Intense is still listed on Azzaro's own official site."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price in catalog, but this is a weak baseline signal seen in ~41% of the catalog."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Care to Beauty listing",
+          "url": "https://www.caretobeauty.com/us/azzaro-the-most-wanted-eau-de-parfum-intense-100ml/"
+        },
+        {
+          "label": "Azzaro official product page",
+          "url": "https://www.azzaro.com/en/fragrances/azzaro-the-most-wanted/eau-de-toilette-intense"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "amo-ferragamo-flowerful-eau-de-toilette",
+      "productHandle": "amo-ferragamo-flowerful-eau-de-toilette",
+      "title": "Amo Ferragamo Flowerful Eau de Toilette",
+      "vendor": "SALVATORE FERRAGAMO",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One eBay 'rare discontinued Ferragamo fragrances' listing includes it, but Amazon shows manufacturer discontinued = No and it's still actively sold at Macy's and FragranceNet."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, baseline noise consistent with weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Macy's product page",
+          "url": "https://www.macys.com/shop/product/salvatore-ferragamo-amo-ferragamo-flowerful-eau-de-toilette-fragrance-collection?ID=9470369"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "initio-absolute-aphrodisiac-eau-de-parfum",
+      "productHandle": "initio-absolute-aphrodisiac-eau-de-parfum",
+      "title": "Initio Absolute Aphrodisiac Eau de Parfum",
+      "vendor": "INITIO",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Some secondary-market listings tag it discontinued, but it is still actively sold on Initio's own US site and Selfridges."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, baseline noise consistent with weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Initio Parfums Privés US product page",
+          "url": "https://us.initioparfums.com/products/absolute-aphrodisiac"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "mancera-velvet-vanilla-eau-de-parfum",
+      "productHandle": "mancera-velvet-vanilla-eau-de-parfum",
+      "title": "Mancera Velvet Vanilla Eau de Parfum",
+      "vendor": "MANCERA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Customer comments express concern it's being discontinued and stock is limited, but it remains listed on Mancera's own site and several retailers."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, baseline noise consistent with weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Mancera Parfums official product page",
+          "url": "https://manceraparfums.us/products/velvet-vanilla"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "mancera-holidays-eau-de-parfum",
+      "productHandle": "mancera-holidays-eau-de-parfum",
+      "title": "Mancera Holidays Eau de Parfum",
+      "vendor": "MANCERA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A single Fragrantica forum thread lists it among discontinued scents, but Amazon shows not discontinued by manufacturer and it remains on Mancera's own site."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, baseline noise consistent with weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Mancera Parfums official product page",
+          "url": "https://manceraparfums.us/products/holidays"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "mancera-french-riviera-eau-de-parfum",
+      "productHandle": "mancera-french-riviera-eau-de-parfum",
+      "title": "Mancera French Riviera Eau de Parfum",
+      "vendor": "MANCERA",
+      "status": "rumored",
+      "flaggedDate": "2026-08-28",
+      "signals": [
+        {
+          "type": "web",
+          "note": "TikTok/eBay chatter says it sold out everywhere and vanished from Mancera's site in early 2024, but it is back in stock on Mancera's official US site now, alongside a new Intense flanker."
+        },
+        {
+          "type": "pricing",
+          "note": "compareAtPrice > price, baseline noise consistent with weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Mancera Parfums official product page",
+          "url": "https://manceraparfums.us/products/mancera-french-riviera-edp-120ml"
+        }
+      ],
+      "notified": false
+    }
+  ]
 }
