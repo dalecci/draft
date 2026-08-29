@@ -5,7 +5,7 @@
 // and bump the ?v= query params in index.html's <link>/<script> tags to match
 // (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
 // at a glance whether a browser tab is running the latest build.
-const APP_VERSION = 6;
+const APP_VERSION = 7;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -658,8 +658,23 @@ function matchFlagInFile(flag, product, parsed) {
     if (row) confidence = "possible match by name, not barcode, verify before ordering";
   }
   if (!row) return null;
-  const qty = parsed.cols.qtyCol !== -1 ? (row[parsed.cols.qtyCol] || "0") : null;
-  return { fileName: parsed.fileName, qty, confidence };
+  const hasQtyColumn = parsed.cols.qtyCol !== -1;
+  const qty = hasQtyColumn ? cleanQty(row[parsed.cols.qtyCol]) : null;
+  return { fileName: parsed.fileName, qty, hasQtyColumn, confidence };
+}
+
+// Some supplier spreadsheets carry a currency-style number format on their Qty column, a
+// source-data quirk confirmed against a real Le Parfumier supplier file: cells read back as
+// "$7" even though Excel's own display shows plain 7. Strip everything but the number itself
+// so quantity never shows a dollar sign no matter what formatting the source file applied.
+function cleanQty(v) {
+  const s = String(v ?? "").replace(/[^0-9.\-]/g, "").trim();
+  return s === "" || s === "-" ? null : s;
+}
+
+function qtyLabel(m) {
+  if (m.qty !== null) return `${escapeHtml(m.qty)} in stock`;
+  return m.hasQtyColumn ? "found, quantity not listed for this row" : "found, no quantity column in this file";
 }
 
 function renderStockReport(parsedFiles) {
@@ -696,7 +711,7 @@ function renderStockReport(parsedFiles) {
             .map((m) => `
               <li class="stock-source-row">
                 <span><span class="stock-source-file">${escapeHtml(m.fileName)}</span> — <span class="stock-source-note">${escapeHtml(m.confidence)}</span></span>
-                <span class="stock-source-qty">${m.qty !== null ? escapeHtml(m.qty) + " in stock" : "found, no qty column"}</span>
+                <span class="stock-source-qty">${qtyLabel(m)}</span>
               </li>
             `)
             .join("")}</ul>`
