@@ -170,6 +170,25 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
 .panel-head h1 { font-size: 22px; margin: 0 0 6px; color: var(--text); }
 .panel-sub { color: var(--text-dim); font-size: 14px; margin: 0 0 22px; max-width: 640px; }
 
+/* Flag controls: sort, filters, select bar */
+.flag-controls { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.select-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.select-all { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); cursor: pointer; }
+.select-all input { width: 16px; height: 16px; accent-color: var(--gold); }
+.select-count { font-size: 13px; color: var(--text-faint); }
+.ghost-btn.small { flex: none; padding: 8px 14px; font-size: 13px; }
+.ghost-btn.small:disabled { opacity: 0.4; cursor: default; }
+
 /* Flag cards */
 .flag-list { display: flex; flex-direction: column; gap: 14px; }
 .flag-card {
@@ -178,10 +197,12 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
   border-radius: 14px;
   padding: 18px 20px;
   display: grid;
-  grid-template-columns: 64px 1fr auto;
+  grid-template-columns: 20px 64px 1fr auto;
   gap: 16px;
   align-items: start;
 }
+.flag-card.rejected { opacity: 0.55; }
+.flag-select { width: 17px; height: 17px; margin-top: 4px; accent-color: var(--gold); cursor: pointer; }
 .flag-thumb {
   width: 64px; height: 64px;
   border-radius: 10px;
@@ -214,6 +235,32 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
   padding: 4px 10px;
 }
 .flag-sources a:hover { border-color: var(--gold); }
+
+.flag-actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.review-btn {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.review-btn.confirm.active { background: rgba(127,184,133,0.16); border-color: var(--green); color: var(--green); }
+.review-btn.reject.active { background: rgba(224,104,90,0.16); border-color: var(--rose); color: var(--rose); }
+.flag-order { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-faint); }
+.flag-order input {
+  width: 60px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+.save-tick { color: var(--green); font-size: 12px; opacity: 0; transition: opacity 0.2s; }
+.save-tick.show { opacity: 1; }
+
 .flag-side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .status-pill {
   font-size: 11px;
@@ -336,8 +383,35 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
 .settings-row .lock-btn { flex: 1; }
 .settings-status { font-size: 12px; color: var(--text-faint); margin: 12px 0 0; min-height: 16px; }
 
+.settings-card.wide { max-width: 560px; text-align: left; }
+.settings-card.wide .settings-sub { margin-bottom: 18px; }
+.file-input {
+  letter-spacing: normal;
+  text-align: left;
+  font-size: 13px;
+  padding: 10px;
+  cursor: pointer;
+}
+.stock-results { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; max-height: 340px; overflow-y: auto; }
+.stock-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.stock-row-title { font-size: 13px; color: var(--text); }
+.stock-row-vendor { font-size: 11px; color: var(--text-faint); text-transform: uppercase; }
+.stock-row-result { font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
+.stock-row-result.found { color: var(--green); }
+.stock-row-result.not-found { color: var(--text-faint); font-weight: 400; }
+.stock-note { font-size: 12px; color: var(--text-faint); margin: 0 0 4px; }
+
 @media (max-width: 640px) {
-  .flag-card { grid-template-columns: 48px 1fr; }
+  .flag-card { grid-template-columns: 18px 48px 1fr; }
   .flag-side { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
   .flag-thumb { width: 48px; height: 48px; }
 }
