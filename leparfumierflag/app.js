@@ -5,7 +5,7 @@
 // and bump the ?v= query params in index.html's <link>/<script> tags to match
 // (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
 // at a glance whether a browser tab is running the latest build.
-const APP_VERSION = 4;
+const APP_VERSION = 5;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -531,19 +531,25 @@ function initInventoryControls() {
 const STOCK_HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
 const STOP_WORDS = new Set(["pour", "de", "eau", "homme", "femme", "et", "the", "for", "men", "women", "toilette", "parfum", "edt", "edp", "ml", "oz"]);
 
+let lastReport = null; // [{flag, matches: [{fileName, qty, confidence}]}], kept for CSV export
+
 function openStockModal() {
   document.getElementById("stock-selected-count").textContent = state.selected.size;
+  document.getElementById("stock-file-list").innerHTML = "";
   document.getElementById("stock-results").innerHTML = "";
   document.getElementById("stock-file-input").value = "";
+  document.getElementById("stock-export-btn").classList.add("hidden");
+  lastReport = null;
   document.getElementById("stock-modal").classList.remove("hidden");
 }
 
 function initStockModal() {
   document.getElementById("stock-modal-close").addEventListener("click", () => document.getElementById("stock-modal").classList.add("hidden"));
   document.getElementById("stock-file-input").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) handleStockFile(file);
+    const files = [...e.target.files];
+    if (files.length) handleStockFiles(files);
   });
+  document.getElementById("stock-export-btn").addEventListener("click", exportReportCsv);
 }
 
 function findHeaderRow(rows) {
@@ -575,95 +581,170 @@ function significantWords(title) {
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 }
 
-function handleStockFile(file) {
-  const resultsEl = document.getElementById("stock-results");
-  resultsEl.innerHTML = `<p class="stock-note">Reading ${escapeHtml(file.name)}...</p>`;
+// Reads and parses one uploaded file. Never throws — resolves with an `error` field
+// instead, so one bad file in a multi-file batch doesn't stop the others.
+function parseWorkbookFile(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const wb = XLSX.read(e.target.result, { type: "array" });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const wb = XLSX.read(e.target.result, { type: "array" });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-
-      const headerIdx = findHeaderRow(rows);
-      if (headerIdx === -1) {
-        resultsEl.innerHTML = `<p class="stock-note">Could not find a header row in this file (looked for columns like UPC, Item, Description, Qty). Try a different sheet or file.</p>`;
-        return;
+        const headerIdx = findHeaderRow(rows);
+        if (headerIdx === -1) {
+          resolve({ fileName: file.name, error: "no recognizable header row (looked for UPC, Item, Description, Qty, ...)" });
+          return;
+        }
+        const header = rows[headerIdx];
+        const dataRows = rows.slice(headerIdx + 1).filter((r) => r.some((c) => String(c || "").trim()));
+        const cols = {
+          upcCol: findColumn(header, ["upc", "barcode", "ean"]),
+          qtyCol: findColumn(header, ["qty", "quantity", "stock", "avail"]),
+          descCol: findColumn(header, ["description", "item description", "name"]),
+          itemCol: findColumn(header, ["item", "sku"]),
+        };
+        resolve({ fileName: file.name, rows: dataRows, cols });
+      } catch (err) {
+        resolve({ fileName: file.name, error: err.message || "could not be read, is this a real .xls, .xlsx, or .csv export?" });
       }
-      const header = rows[headerIdx];
-      const dataRows = rows.slice(headerIdx + 1).filter((r) => r.some((c) => String(c || "").trim()));
-
-      const upcCol = findColumn(header, ["upc", "barcode", "ean"]);
-      const qtyCol = findColumn(header, ["qty", "quantity", "stock", "avail"]);
-      const descCol = findColumn(header, ["description", "item description", "name"]);
-      const itemCol = findColumn(header, ["item", "sku"]);
-
-      renderStockResults(dataRows, { upcCol, qtyCol, descCol, itemCol }, file.name);
-    } catch (err) {
-      resultsEl.innerHTML = `<p class="stock-note">Could not read this file (${escapeHtml(err.message || "unknown error")}). Make sure it is a real .xls, .xlsx, or .csv export.</p>`;
-    }
-  };
-  reader.onerror = () => {
-    resultsEl.innerHTML = `<p class="stock-note">Could not read this file.</p>`;
-  };
-  reader.readAsArrayBuffer(file);
+    };
+    reader.onerror = () => resolve({ fileName: file.name, error: "could not be read" });
+    reader.readAsArrayBuffer(file);
+  });
 }
 
-function renderStockResults(rows, cols, fileName) {
+async function handleStockFiles(files) {
+  const fileListEl = document.getElementById("stock-file-list");
   const resultsEl = document.getElementById("stock-results");
+  fileListEl.innerHTML = files
+    .map((f) => `<div class="stock-file-row" data-file="${escapeAttr(f.name)}"><span>${escapeHtml(f.name)}</span><span class="file-status">reading...</span></div>`)
+    .join("");
+  resultsEl.innerHTML = "";
+
+  const parsed = await Promise.all(files.map(parseWorkbookFile));
+
+  parsed.forEach((p) => {
+    const row = fileListEl.querySelector(`[data-file="${CSS.escape(p.fileName)}"] .file-status`);
+    if (!row) return;
+    if (p.error) { row.textContent = p.error; row.classList.add("err"); }
+    else { row.textContent = `${p.rows.length} rows`; row.classList.add("ok"); }
+  });
+
+  renderStockReport(parsed.filter((p) => !p.error));
+}
+
+// One flag matched against one already-parsed file: barcode first, brand+name fallback.
+function matchFlagInFile(flag, product, parsed) {
+  const barcodes = product ? (product.variants || []).map((v) => digitsOnly(v.barcode)).filter(Boolean) : [];
+  const words = significantWords(flag.title).concat(significantWords(flag.vendor));
+
+  let row = null;
+  let confidence = "";
+  if (parsed.cols.upcCol !== -1 && barcodes.length) {
+    row = parsed.rows.find((r) => barcodes.includes(digitsOnly(r[parsed.cols.upcCol])));
+    if (row) confidence = "exact barcode match";
+  }
+  if (!row && parsed.cols.descCol !== -1) {
+    const vendorWord = (flag.vendor || "").toLowerCase().split(/\s+/)[0];
+    row = parsed.rows.find((r) => {
+      const desc = String(r[parsed.cols.descCol] || "").toLowerCase();
+      if (vendorWord && !desc.includes(vendorWord)) return false;
+      return words.filter((w) => desc.includes(w)).length >= 2;
+    });
+    if (row) confidence = "possible match by name, not barcode, verify before ordering";
+  }
+  if (!row) return null;
+  const qty = parsed.cols.qtyCol !== -1 ? (row[parsed.cols.qtyCol] || "0") : null;
+  return { fileName: parsed.fileName, qty, confidence };
+}
+
+function renderStockReport(parsedFiles) {
+  const resultsEl = document.getElementById("stock-results");
+  const exportBtn = document.getElementById("stock-export-btn");
   const selectedFlags = state.flags.filter((f) => state.selected.has(f.id));
 
-  const upcWarning = cols.upcCol === -1
-    ? `<p class="stock-note">No UPC/barcode column found in this file, matching by brand and name instead, less reliable, double check anything it finds.</p>`
+  if (!parsedFiles.length) {
+    resultsEl.innerHTML = `<p class="stock-note">No file could be read, see the status above each one.</p>`;
+    exportBtn.classList.add("hidden");
+    lastReport = null;
+    return;
+  }
+
+  const noUpcFiles = parsedFiles.filter((p) => p.cols.upcCol === -1).map((p) => p.fileName);
+  const upcWarning = noUpcFiles.length
+    ? `<p class="stock-note">${escapeHtml(noUpcFiles.join(", "))} ${noUpcFiles.length > 1 ? "have" : "has"} no UPC/barcode column, matched by brand and name instead, less reliable, double check before ordering.</p>`
     : "";
 
-  const rowsHtml = selectedFlags
-    .map((f) => {
-      const product = findProduct(f.productHandle);
-      const barcodes = product ? (product.variants || []).map((v) => digitsOnly(v.barcode)).filter(Boolean) : [];
-      const words = significantWords(f.title) .concat(significantWords(f.vendor));
+  lastReport = selectedFlags.map((f) => {
+    const product = findProduct(f.productHandle);
+    const matches = parsedFiles
+      .map((p) => matchFlagInFile(f, product, p))
+      .filter(Boolean);
+    return { flag: f, matches };
+  });
 
-      let match = null;
-      let confidence = "";
-
-      if (cols.upcCol !== -1 && barcodes.length) {
-        match = rows.find((r) => barcodes.includes(digitsOnly(r[cols.upcCol])));
-        if (match) confidence = "exact barcode match";
-      }
-      if (!match && cols.descCol !== -1) {
-        const vendorWord = (f.vendor || "").toLowerCase().split(/\s+/)[0];
-        match = rows.find((r) => {
-          const desc = String(r[cols.descCol] || "").toLowerCase();
-          if (vendorWord && !desc.includes(vendorWord)) return false;
-          const hits = words.filter((w) => desc.includes(w)).length;
-          return hits >= 2;
-        });
-        if (match) confidence = "possible match by name, not barcode, verify before ordering";
-      }
-
-      let resultHtml;
-      if (match) {
-        const qty = cols.qtyCol !== -1 ? (match[cols.qtyCol] || "0") : null;
-        const label = qty !== null ? `${escapeHtml(qty)} in stock` : "found, no quantity column in this file";
-        resultHtml = `<span class="stock-row-result found">${label}<br><span style="font-weight:400;font-size:11px;">${escapeHtml(confidence)}</span></span>`;
-      } else {
-        resultHtml = `<span class="stock-row-result not-found">Not in this file</span>`;
-      }
-
+  const blocksHtml = lastReport
+    .map(({ flag: f, matches }) => {
+      const sourcesHtml = matches.length
+        ? `<ul class="stock-source-list">${matches
+            .map((m) => `
+              <li class="stock-source-row">
+                <span><span class="stock-source-file">${escapeHtml(m.fileName)}</span> — <span class="stock-source-note">${escapeHtml(m.confidence)}</span></span>
+                <span class="stock-source-qty">${m.qty !== null ? escapeHtml(m.qty) + " in stock" : "found, no qty column"}</span>
+              </li>
+            `)
+            .join("")}</ul>`
+        : "";
       return `
-        <div class="stock-row">
-          <div>
-            <div class="stock-row-title">${escapeHtml(f.title)}</div>
-            <div class="stock-row-vendor">${escapeHtml(f.vendor || "")}</div>
+        <div class="stock-item-block">
+          <div class="stock-item-head">
+            <div>
+              <div class="stock-row-title">${escapeHtml(f.title)}</div>
+              <div class="stock-row-vendor">${escapeHtml(f.vendor || "")}</div>
+            </div>
+            <span class="stock-item-status ${matches.length ? "found" : "not-found"}">${matches.length ? `In ${matches.length} of ${parsedFiles.length} list${parsedFiles.length === 1 ? "" : "s"}` : "Not found in any uploaded list"}</span>
           </div>
-          ${resultHtml}
+          ${sourcesHtml}
         </div>
       `;
     })
     .join("");
 
-  resultsEl.innerHTML = `<p class="stock-note">Matched against ${escapeHtml(fileName)}, ${rows.length} rows.</p>` + upcWarning + rowsHtml;
+  const totalRows = parsedFiles.reduce((sum, p) => sum + p.rows.length, 0);
+  resultsEl.innerHTML =
+    `<p class="stock-note">Report across ${parsedFiles.length} list${parsedFiles.length === 1 ? "" : "s"} (${totalRows.toLocaleString()} rows total) for ${selectedFlags.length} selected item${selectedFlags.length === 1 ? "" : "s"}.</p>` +
+    upcWarning + blocksHtml;
+
+  exportBtn.classList.toggle("hidden", !lastReport.length);
+}
+
+function csvCell(v) {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function exportReportCsv() {
+  if (!lastReport) return;
+  const rows = [["Item", "Brand", "Supplier list", "Match type", "Quantity"]];
+  lastReport.forEach(({ flag: f, matches }) => {
+    if (!matches.length) {
+      rows.push([f.title, f.vendor || "", "", "not found in any uploaded list", ""]);
+    } else {
+      matches.forEach((m) => rows.push([f.title, f.vendor || "", m.fileName, m.confidence, m.qty !== null ? m.qty : ""]));
+    }
+  });
+  const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ---------- Boot ----------

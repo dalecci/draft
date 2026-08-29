@@ -392,23 +392,33 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
   padding: 10px;
   cursor: pointer;
 }
-.stock-results { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; max-height: 340px; overflow-y: auto; }
-.stock-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
+.stock-file-list { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 0; }
+.stock-file-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-dim); }
+.stock-file-row .file-status { color: var(--text-faint); }
+.stock-file-row .file-status.ok { color: var(--green); }
+.stock-file-row .file-status.err { color: var(--rose); }
+
+.stock-results { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; max-height: 400px; overflow-y: auto; }
+.stock-item-block {
   background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 12px 14px;
 }
+.stock-item-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
 .stock-row-title { font-size: 13px; color: var(--text); }
 .stock-row-vendor { font-size: 11px; color: var(--text-faint); text-transform: uppercase; }
-.stock-row-result { font-size: 13px; font-weight: 600; text-align: right; flex-shrink: 0; }
-.stock-row-result.found { color: var(--green); }
-.stock-row-result.not-found { color: var(--text-faint); font-weight: 400; }
+.stock-item-status { font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.stock-item-status.found { color: var(--green); }
+.stock-item-status.not-found { color: var(--text-faint); font-weight: 400; }
+.stock-source-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.stock-source-row { font-size: 12px; color: var(--text-dim); display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--border); padding-top: 6px; }
+.stock-source-row:first-child { border-top: none; padding-top: 0; }
+.stock-source-file { color: var(--gold); }
+.stock-source-qty { font-weight: 600; color: var(--green); flex-shrink: 0; }
+.stock-source-note { font-size: 11px; color: var(--text-faint); }
 .stock-note { font-size: 12px; color: var(--text-faint); margin: 0 0 4px; }
+#stock-export-btn.hidden { display: none; }
 
 @media (max-width: 640px) {
   .flag-card { grid-template-columns: 18px 48px 1fr; }

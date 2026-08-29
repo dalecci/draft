@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le Parfumier: FLAG</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚩</text></svg>">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -144,11 +144,13 @@
 
   <div id="stock-modal" class="settings hidden">
     <div class="settings-card wide">
-      <h2>Check stock for selected items</h2>
-      <p class="settings-sub">Upload a supplier price list (.xls, .xlsx, or .csv). Matched against the <span id="stock-selected-count">0</span> item(s) you selected on the Flagged page, by barcode first, by brand and name if a row has no barcode.</p>
-      <input id="stock-file-input" type="file" accept=".xls,.xlsx,.csv" class="lock-input file-input">
+      <h2>Stock report for selected items</h2>
+      <p class="settings-sub">Upload one or more supplier price lists (.xls, .xlsx, or .csv, select several at once or add more after). Reports which of the <span id="stock-selected-count">0</span> item(s) you selected on the Flagged page show up in each list, by barcode first, by brand and name if a row has no barcode.</p>
+      <input id="stock-file-input" type="file" accept=".xls,.xlsx,.csv" class="lock-input file-input" multiple>
+      <div id="stock-file-list" class="stock-file-list"></div>
       <div id="stock-results" class="stock-results"></div>
       <div class="settings-row">
+        <button id="stock-export-btn" class="ghost-btn hidden">Export report as CSV</button>
         <button id="stock-modal-close" class="ghost-btn">Close</button>
       </div>
     </div>
@@ -157,7 +159,7 @@
 </div>
 
 <script src="vendor/xlsx.full.min.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 <!-- Bump the ?v= on every tag above on every future deploy that changes app.js or
      style.css. app.js/style.css/data files are served with several minutes of cache,
      so without a version bump, browsers that already visited (Jordan included) can
