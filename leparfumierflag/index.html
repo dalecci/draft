@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le Parfumier: FLAG</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚩</text></svg>">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -150,7 +150,8 @@
       <div id="stock-file-list" class="stock-file-list"></div>
       <div id="stock-results" class="stock-results"></div>
       <div class="settings-row">
-        <button id="stock-export-btn" class="ghost-btn hidden">Export report as CSV</button>
+        <button id="stock-pdf-btn" class="lock-btn hidden">Download PDF report</button>
+        <button id="stock-excel-btn" class="ghost-btn hidden">Download Excel</button>
         <button id="stock-modal-close" class="ghost-btn">Close</button>
       </div>
     </div>
@@ -159,7 +160,9 @@
 </div>
 
 <script src="vendor/xlsx.full.min.js?v=4"></script>
-<script src="app.js?v=5"></script>
+<script src="vendor/jspdf.umd.min.js?v=6"></script>
+<script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
+<script src="app.js?v=6"></script>
 <!-- Bump the ?v= on every tag above on every future deploy that changes app.js or
      style.css. app.js/style.css/data files are served with several minutes of cache,
      so without a version bump, browsers that already visited (Jordan included) can

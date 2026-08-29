@@ -5,7 +5,7 @@
 // and bump the ?v= query params in index.html's <link>/<script> tags to match
 // (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
 // at a glance whether a browser tab is running the latest build.
-const APP_VERSION = 5;
+const APP_VERSION = 6;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -531,14 +531,15 @@ function initInventoryControls() {
 const STOCK_HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
 const STOP_WORDS = new Set(["pour", "de", "eau", "homme", "femme", "et", "the", "for", "men", "women", "toilette", "parfum", "edt", "edp", "ml", "oz"]);
 
-let lastReport = null; // [{flag, matches: [{fileName, qty, confidence}]}], kept for CSV export
+let lastReport = null; // [{flag, matches: [{fileName, qty, confidence}]}], kept for the PDF/Excel downloads
 
 function openStockModal() {
   document.getElementById("stock-selected-count").textContent = state.selected.size;
   document.getElementById("stock-file-list").innerHTML = "";
   document.getElementById("stock-results").innerHTML = "";
   document.getElementById("stock-file-input").value = "";
-  document.getElementById("stock-export-btn").classList.add("hidden");
+  document.getElementById("stock-pdf-btn").classList.add("hidden");
+  document.getElementById("stock-excel-btn").classList.add("hidden");
   lastReport = null;
   document.getElementById("stock-modal").classList.remove("hidden");
 }
@@ -549,7 +550,8 @@ function initStockModal() {
     const files = [...e.target.files];
     if (files.length) handleStockFiles(files);
   });
-  document.getElementById("stock-export-btn").addEventListener("click", exportReportCsv);
+  document.getElementById("stock-pdf-btn").addEventListener("click", exportReportPdf);
+  document.getElementById("stock-excel-btn").addEventListener("click", exportReportExcel);
 }
 
 function findHeaderRow(rows) {
@@ -662,12 +664,14 @@ function matchFlagInFile(flag, product, parsed) {
 
 function renderStockReport(parsedFiles) {
   const resultsEl = document.getElementById("stock-results");
-  const exportBtn = document.getElementById("stock-export-btn");
+  const pdfBtn = document.getElementById("stock-pdf-btn");
+  const excelBtn = document.getElementById("stock-excel-btn");
   const selectedFlags = state.flags.filter((f) => state.selected.has(f.id));
 
   if (!parsedFiles.length) {
     resultsEl.innerHTML = `<p class="stock-note">No file could be read, see the status above each one.</p>`;
-    exportBtn.classList.add("hidden");
+    pdfBtn.classList.add("hidden");
+    excelBtn.classList.add("hidden");
     lastReport = null;
     return;
   }
@@ -717,34 +721,109 @@ function renderStockReport(parsedFiles) {
     `<p class="stock-note">Report across ${parsedFiles.length} list${parsedFiles.length === 1 ? "" : "s"} (${totalRows.toLocaleString()} rows total) for ${selectedFlags.length} selected item${selectedFlags.length === 1 ? "" : "s"}.</p>` +
     upcWarning + blocksHtml;
 
-  exportBtn.classList.toggle("hidden", !lastReport.length);
+  pdfBtn.classList.toggle("hidden", !lastReport.length);
+  excelBtn.classList.toggle("hidden", !lastReport.length);
 }
 
-function csvCell(v) {
-  const s = String(v ?? "");
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+// Picks which supplier to order an item from, out of everywhere it was found: most
+// quantity wins (they can actually fill the order), an exact barcode match beats a
+// name-only guess at equal quantity, and "found but no qty column" ranks below any
+// list that actually states a number.
+function pickRecommendation(matches) {
+  if (!matches.length) return null;
+  const scored = matches.map((m) => ({
+    m,
+    qty: m.qty !== null ? parseFloat(m.qty) || 0 : -1,
+    exact: m.confidence.startsWith("exact") ? 1 : 0,
+  }));
+  scored.sort((a, b) => b.qty - a.qty || b.exact - a.exact);
+  return scored[0].m;
 }
 
-function exportReportCsv() {
-  if (!lastReport) return;
-  const rows = [["Item", "Brand", "Supplier list", "Match type", "Quantity"]];
-  lastReport.forEach(({ flag: f, matches }) => {
-    if (!matches.length) {
-      rows.push([f.title, f.vendor || "", "", "not found in any uploaded list", ""]);
-    } else {
-      matches.forEach((m) => rows.push([f.title, f.vendor || "", m.fileName, m.confidence, m.qty !== null ? m.qty : ""]));
-    }
+function buildReportRows() {
+  return lastReport.map(({ flag: f, matches }) => {
+    const best = pickRecommendation(matches);
+    return {
+      title: f.title,
+      vendor: f.vendor || "",
+      aiStatus: f.status,
+      supplier: best ? best.fileName : "",
+      qty: best && best.qty !== null ? best.qty : "",
+      confidence: best ? best.confidence : "not found in any uploaded list",
+      allSources: matches.map((m) => `${m.fileName} (${m.qty !== null ? m.qty : "qty n/a"})`).join("; "),
+    };
   });
-  const csv = rows.map((r) => r.map(csvCell).join(",")).join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+}
+
+function exportReportExcel() {
+  if (!lastReport || !lastReport.length) return;
+  const rows = buildReportRows().map((r) => ({
+    "Item": r.title,
+    "Brand": r.vendor,
+    "AI Status": r.aiStatus,
+    "Recommended Supplier": r.supplier,
+    "Available Qty": r.qty,
+    "Match Confidence": r.confidence,
+    "All Suppliers Checked": r.allSources,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = [{ wch: 42 }, { wch: 20 }, { wch: 12 }, { wch: 26 }, { wch: 13 }, { wch: 34 }, { wch: 50 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Stock Report");
+  XLSX.writeFile(wb, `leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
+function exportReportPdf() {
+  if (!lastReport || !lastReport.length) return;
+  const rows = buildReportRows();
+  const doc = new window.jspdf.jsPDF({ orientation: "landscape" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const goldRGB = [199, 156, 90];
+  const darkRGB = [23, 19, 15];
+
+  doc.setFillColor(...darkRGB);
+  doc.rect(0, 0, pageWidth, 24, "F");
+  doc.setTextColor(...goldRGB);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("Le Parfumier", 14, 15);
+  doc.setFontSize(11);
+  doc.setTextColor(230, 224, 214);
+  doc.setFont("helvetica", "normal");
+  doc.text("Stock Availability Report", 14, 21);
+
+  doc.setTextColor(90, 80, 70);
+  doc.setFontSize(9);
+  const generated = new Date().toLocaleString();
+  const foundCount = rows.filter((r) => r.supplier).length;
+  doc.text(
+    `Generated ${generated}  ·  ${rows.length} item${rows.length === 1 ? "" : "s"} checked  ·  ${foundCount} found in at least one supplier list`,
+    14, 31
+  );
+
+  doc.autoTable({
+    startY: 36,
+    head: [["Item", "Brand", "AI Status", "Recommended Supplier", "Qty", "Confidence"]],
+    body: rows.map((r) => [r.title, r.vendor, r.aiStatus, r.supplier || "Not found", r.qty !== "" ? String(r.qty) : "-", r.confidence]),
+    theme: "striped",
+    headStyles: { fillColor: darkRGB, textColor: [255, 245, 230], fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [250, 246, 240] },
+    styles: { fontSize: 9, cellPadding: 4 },
+    columnStyles: { 4: { halign: "right" } },
+    didParseCell: (data) => {
+      if (data.section === "body" && data.column.index === 3 && data.cell.raw === "Not found") {
+        data.cell.styles.textColor = [170, 90, 80];
+      }
+    },
+    didDrawPage: () => {
+      const pageCount = doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(150, 140, 130);
+      doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 8);
+    },
+  });
+
+  doc.save(`leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 // ---------- Boot ----------

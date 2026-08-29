@@ -369,7 +369,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 60px; }
 }
 .settings-card h2 { margin: 0 0 8px; font-size: 17px; color: var(--gold-bright); }
 .settings-sub { font-size: 13px; color: var(--text-dim); margin: 0 0 16px; line-height: 1.5; }
-.settings-row { display: flex; gap: 8px; margin-top: 10px; }
+.settings-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.settings-row .lock-btn, .settings-row .ghost-btn { min-width: 120px; }
 .ghost-btn {
   background: transparent;
   border: 1px solid var(--border);
