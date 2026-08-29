@@ -5,7 +5,7 @@
 // and bump the ?v= query params in index.html's <link>/<script> tags to match
 // (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
 // at a glance whether a browser tab is running the latest build.
-const APP_VERSION = 7;
+const APP_VERSION = 8;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
