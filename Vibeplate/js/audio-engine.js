@@ -558,19 +558,37 @@ const AudioEngine = (() => {
     if (isFinite(a) && isFinite(c) && denom !== 0) delta = 0.5 * (a - c) / denom;
     return (peak + delta) * ctx.sampleRate / an.fftSize;
   }
+  const zcBuf = new Float32Array(16384);
+  function measureZC(an) {
+    if (!an || !playing) return 0;
+    if (!readWave(an, zcBuf)) return 0;
+    const n = Math.min(zcBuf.length, an.fftSize || zcBuf.length);
+    let first = -1, last = -1, count = 0;
+    for (let i = 1; i < n; i++) {
+      if (zcBuf[i - 1] <= 0 && zcBuf[i] > 0) {
+        const t = i - 1 + zcBuf[i - 1] / (zcBuf[i - 1] - zcBuf[i]);
+        if (first < 0) first = t;
+        else {
+          last = t;
+          count++;
+        }
+      }
+    }
+    if (count < 1 || last <= first) return 0;
+    return ctx.sampleRate * count / (last - first);
+  }
   function measuredHz() {
     if (fallbackActive) return currentHz;
-    return measuredOn(analyser);
+    return measureZC(analyser) || measuredOn(analyser);
   }
   function measuredTop() {
     if (fallbackActive) return currentHz;
-    const m = measuredOn(anTop);
-    return m || measuredOn(analyser);
+    return measureZC(anTop) || measuredOn(anTop) || currentHz;
   }
   function measuredBottom() {
     if (!currentMix) return 0;
     if (fallbackActive) return currentMix;
-    return measuredOn(anBottom) || currentMix;
+    return measureZC(anBottom) || measuredOn(anBottom) || currentMix;
   }
   function chime() {
     try {

@@ -18,7 +18,7 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 window.onerror = function(msg, src, line) {
   try {
     let el = document.getElementById("vr-err");
@@ -38,7 +38,7 @@ const App = (() => {
   let genRaf = 0;
   const genTopBuf = new Float32Array(16384);
   const genBotBuf = new Float32Array(16384);
-  function drawTrace(ctx2, w, h, buf, freq, sr, color) {
+  function drawTrace(ctx2, w, yCenter, amp, buf, freq, sr, color) {
     const samples = Math.min(buf.length, Math.max(64, Math.floor(sr / Math.max(0.5, freq) * 3.5)));
     ctx2.beginPath();
     ctx2.strokeStyle = color;
@@ -47,7 +47,7 @@ const App = (() => {
     ctx2.shadowBlur = 8;
     for (let i = 0; i < samples; i++) {
       const x = i / samples * w;
-      const y = h / 2 - buf[i] * (h / 2.4);
+      const y = yCenter - buf[i] * amp;
       i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
     }
     ctx2.stroke();
@@ -242,16 +242,33 @@ const App = (() => {
       const sr = AudioEngine.context ? AudioEngine.context.sampleRate : 48e3;
       let drew = false;
       if (AudioEngine.playing) {
-        if (AudioEngine.topWave(genTopBuf)) {
-          drawTrace(ctx2, w, h, genTopBuf, AudioEngine.currentHz || genHz, sr, "#2DD4BF");
+        const dual = AudioEngine.currentMix > 0;
+        if (dual) {
+          ctx2.strokeStyle = "rgba(255,255,255,.08)";
+          ctx2.lineWidth = 1;
+          ctx2.beginPath();
+          ctx2.moveTo(0, h / 2);
+          ctx2.lineTo(w, h / 2);
+          ctx2.stroke();
+          if (AudioEngine.topWave(genTopBuf)) {
+            drawTrace(ctx2, w, h * 0.25, h * 0.2, genTopBuf, AudioEngine.currentHz || genHz, sr, "#2DD4BF");
+            drew = true;
+          }
+          if (AudioEngine.bottomWave(genBotBuf)) {
+            drawTrace(ctx2, w, h * 0.75, h * 0.2, genBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
+            drew = true;
+          }
+          ctx2.font = "700 11px system-ui, sans-serif";
+          ctx2.fillStyle = "#2DD4BF";
+          ctx2.fillText("CH1 \xB7 TOP", 10, 16);
+          ctx2.fillStyle = "#FF4D4D";
+          ctx2.fillText("CH2 \xB7 BOTTOM", 10, h / 2 + 16);
+        } else if (AudioEngine.topWave(genTopBuf)) {
+          drawTrace(ctx2, w, h / 2, h / 2.4, genTopBuf, AudioEngine.currentHz || genHz, sr, "#2DD4BF");
           drew = true;
         }
-        if (AudioEngine.currentMix && AudioEngine.bottomWave(genBotBuf)) {
-          drawTrace(ctx2, w, h, genBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
-          drew = true;
-        }
-        const t = AudioEngine.measuredTop();
-        const b = AudioEngine.measuredBottom();
+        const t = Math.round(AudioEngine.measuredTop() * 100) / 100;
+        const b = Math.round(AudioEngine.measuredBottom() * 100) / 100;
         $("#gen-measured").innerHTML = b ? '<span class="ch-top">'.concat(fmtHz(t), '</span> \xB7 <span class="ch-bottom">').concat(fmtHz(b), "</span> Hz") : t ? fmtHz(t) + " Hz" : drew ? "\u2014" : fmtHz(AudioEngine.currentHz) + " Hz";
       }
       if (!drew) {

@@ -175,7 +175,7 @@ const Player = (() => {
   }
   const spTopBuf = new Float32Array(16384);
   const spBotBuf = new Float32Array(16384);
-  function drawSpTrace(ctx2, w, h, buf, freq, sr, color) {
+  function drawSpTrace(ctx2, w, yCenter, amp, buf, freq, sr, color) {
     const samples = Math.min(buf.length, Math.max(64, Math.floor(sr / Math.max(0.5, freq) * 3.5)));
     ctx2.beginPath();
     ctx2.strokeStyle = color;
@@ -184,7 +184,7 @@ const Player = (() => {
     ctx2.shadowBlur = 6;
     for (let i = 0; i < samples; i++) {
       const x = i / samples * w;
-      const y = h / 2 - buf[i] * (h / 2.4);
+      const y = yCenter - buf[i] * amp;
       i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
     }
     ctx2.stroke();
@@ -199,12 +199,24 @@ const Player = (() => {
     const sr = AudioEngine.context ? AudioEngine.context.sampleRate : 48e3;
     let drew = false;
     if (AudioEngine.playing && !paused) {
-      if (AudioEngine.topWave(spTopBuf)) {
-        drawSpTrace(ctx2, w, h, spTopBuf, AudioEngine.currentHz || 1, sr, "#2DD4BF");
-        drew = true;
-      }
-      if (AudioEngine.currentMix && AudioEngine.bottomWave(spBotBuf)) {
-        drawSpTrace(ctx2, w, h, spBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
+      const dual = AudioEngine.currentMix > 0;
+      if (dual) {
+        ctx2.strokeStyle = "rgba(255,255,255,.07)";
+        ctx2.lineWidth = 1;
+        ctx2.beginPath();
+        ctx2.moveTo(0, h / 2);
+        ctx2.lineTo(w, h / 2);
+        ctx2.stroke();
+        if (AudioEngine.topWave(spTopBuf)) {
+          drawSpTrace(ctx2, w, h * 0.25, h * 0.2, spTopBuf, AudioEngine.currentHz || 1, sr, "#2DD4BF");
+          drew = true;
+        }
+        if (AudioEngine.bottomWave(spBotBuf)) {
+          drawSpTrace(ctx2, w, h * 0.75, h * 0.2, spBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
+          drew = true;
+        }
+      } else if (AudioEngine.topWave(spTopBuf)) {
+        drawSpTrace(ctx2, w, h / 2, h / 2.4, spTopBuf, AudioEngine.currentHz || 1, sr, "#2DD4BF");
         drew = true;
       }
     }
@@ -216,8 +228,8 @@ const Player = (() => {
       ctx2.lineTo(w, h / 2);
       ctx2.stroke();
     }
-    const t = AudioEngine.measuredTop();
-    const b = AudioEngine.measuredBottom();
+    const t = Math.round(AudioEngine.measuredTop() * 100) / 100;
+    const b = Math.round(AudioEngine.measuredBottom() * 100) / 100;
     $("#sp-measured").innerHTML = b ? '<span class="ch-top">'.concat(fmtHz(t), '</span> \xB7 <span class="ch-bottom">').concat(fmtHz(b), "</span> Hz") : t ? fmtHz(t) + " Hz" : "\u2014";
   }
   function uiTick() {
