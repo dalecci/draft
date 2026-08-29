@@ -362,6 +362,18 @@ input::placeholder, textarea::placeholder { color: var(--dim); opacity: .7; }
 .sp-step-label { font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); font-weight: 700; }
 .sp-total { font-size: 12.5px; color: var(--dim); font-weight: 600; }
 .sp-right { display: flex; flex-direction: column; gap: 18px; min-width: 0; max-width: 560px; }
+.sp-scope2-wrap { position: relative; }
+#sp-scope2 {
+  width: 100%; height: auto; display: block; border-radius: 12px;
+  background: rgba(255, 255, 255, .02); border: 1px solid var(--line);
+}
+#sp-measured {
+  position: absolute; top: 8px; right: 12px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .05em;
+  color: var(--dim); font-variant-numeric: tabular-nums;
+}
+.ch-top { color: var(--teal); }
+.ch-bottom { color: var(--red); }
 .sp-next-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .sp-next-card {
   display: flex; flex-direction: column; gap: 6px; padding: 16px 18px;

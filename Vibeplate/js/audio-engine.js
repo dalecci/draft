@@ -11,6 +11,8 @@ const AudioEngine = (() => {
   let currentPulse = 0;
   let currentMix = 0;
   let osc2 = null;
+  let anTop = null;
+  let anBottom = null;
   let pulseLfo = null;
   let pulseGainNode = null;
   let volume = 0.3;
@@ -296,18 +298,30 @@ const AudioEngine = (() => {
     osc = ctx.createOscillator();
     osc.type = "sine";
     osc.frequency.value = hz;
+    anTop = makeVoiceAnalyser();
+    anBottom = null;
     if (currentMix > 0) {
       const gTop = ctx.createGain();
       gTop.gain.value = 0.5;
       const gBottom = ctx.createGain();
       gBottom.gain.value = 0.5;
       osc.connect(gTop);
-      gTop.connect(voiceGain);
+      if (anTop) {
+        gTop.connect(anTop);
+        anTop.connect(voiceGain);
+      } else gTop.connect(voiceGain);
       osc2 = ctx.createOscillator();
       osc2.type = "sine";
       osc2.frequency.value = currentMix;
       osc2.connect(gBottom);
-      gBottom.connect(voiceGain);
+      anBottom = makeVoiceAnalyser();
+      if (anBottom) {
+        gBottom.connect(anBottom);
+        anBottom.connect(voiceGain);
+      } else gBottom.connect(voiceGain);
+    } else if (anTop) {
+      osc.connect(anTop);
+      anTop.connect(voiceGain);
     } else {
       osc.connect(voiceGain);
     }
@@ -424,6 +438,8 @@ const AudioEngine = (() => {
     voiceGain = null;
     pulseLfo = null;
     pulseGainNode = null;
+    anTop = null;
+    anBottom = null;
     playing = false;
     currentPulse = 0;
     currentMix = 0;
@@ -453,9 +469,25 @@ const AudioEngine = (() => {
       pulseLfo = null;
       pulseGainNode = null;
     }
+    anTop = null;
+    anBottom = null;
     playing = false;
     currentPulse = 0;
     currentMix = 0;
+  }
+  function makeVoiceAnalyser() {
+    try {
+      const a = ctx.createAnalyser();
+      try {
+        a.fftSize = 16384;
+      } catch (e) {
+        a.fftSize = 2048;
+      }
+      a.smoothingTimeConstant = 0;
+      return a;
+    } catch (e) {
+      return null;
+    }
   }
   function setVolume(v) {
     volume = Math.min(1, Math.max(0, v));
@@ -486,26 +518,34 @@ const AudioEngine = (() => {
     if (ctx && ctx.state === "suspended") return ctx.resume();
   }
   let byteBuf = null;
-  function waveform(buf) {
-    if (!analyser) return false;
-    if (analyser.getFloatTimeDomainData) {
-      analyser.getFloatTimeDomainData(buf);
+  function readWave(an, buf) {
+    if (!an) return false;
+    if (an.getFloatTimeDomainData) {
+      an.getFloatTimeDomainData(buf);
       return true;
     }
-    if (analyser.getByteTimeDomainData) {
+    if (an.getByteTimeDomainData) {
       if (!byteBuf || byteBuf.length !== buf.length) byteBuf = new Uint8Array(buf.length);
-      analyser.getByteTimeDomainData(byteBuf);
+      an.getByteTimeDomainData(byteBuf);
       for (let i = 0; i < buf.length; i++) buf[i] = (byteBuf[i] - 128) / 128;
       return true;
     }
     return false;
   }
-  function measuredHz() {
-    if (fallbackActive) return currentHz;
-    if (!analyser || !playing) return 0;
-    const n = analyser.frequencyBinCount;
+  function waveform(buf) {
+    return readWave(analyser, buf);
+  }
+  function topWave(buf) {
+    return readWave(anTop, buf);
+  }
+  function bottomWave(buf) {
+    return readWave(anBottom, buf);
+  }
+  function measuredOn(an) {
+    if (!an || !playing || !an.getFloatFrequencyData) return 0;
+    const n = an.frequencyBinCount;
     const data = new Float32Array(n);
-    analyser.getFloatFrequencyData(data);
+    an.getFloatFrequencyData(data);
     let peak = 1, peakVal = -Infinity;
     for (let i = 1; i < n - 1; i++) if (data[i] > peakVal) {
       peakVal = data[i];
@@ -516,7 +556,21 @@ const AudioEngine = (() => {
     let delta = 0;
     const denom = a - 2 * b + c;
     if (isFinite(a) && isFinite(c) && denom !== 0) delta = 0.5 * (a - c) / denom;
-    return (peak + delta) * ctx.sampleRate / analyser.fftSize;
+    return (peak + delta) * ctx.sampleRate / an.fftSize;
+  }
+  function measuredHz() {
+    if (fallbackActive) return currentHz;
+    return measuredOn(analyser);
+  }
+  function measuredTop() {
+    if (fallbackActive) return currentHz;
+    const m = measuredOn(anTop);
+    return m || measuredOn(analyser);
+  }
+  function measuredBottom() {
+    if (!currentMix) return 0;
+    if (fallbackActive) return currentMix;
+    return measuredOn(anBottom) || currentMix;
   }
   function chime() {
     try {
@@ -558,7 +612,11 @@ const AudioEngine = (() => {
     pause,
     resume,
     waveform,
+    topWave,
+    bottomWave,
     measuredHz,
+    measuredTop,
+    measuredBottom,
     chime,
     fold,
     setVM15Mode,

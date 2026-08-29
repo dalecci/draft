@@ -18,7 +18,7 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-const Player = /* @__PURE__ */ (() => {
+const Player = (() => {
   let protocol = null;
   let stepIndex = 0;
   let stepStart = 0;
@@ -173,10 +173,61 @@ const Player = /* @__PURE__ */ (() => {
     } catch (e) {
     }
   }
+  const spTopBuf = new Float32Array(16384);
+  const spBotBuf = new Float32Array(16384);
+  function drawSpTrace(ctx2, w, h, buf, freq, sr, color) {
+    const samples = Math.min(buf.length, Math.max(64, Math.floor(sr / Math.max(0.5, freq) * 3.5)));
+    ctx2.beginPath();
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 1.6;
+    ctx2.shadowColor = color;
+    ctx2.shadowBlur = 6;
+    for (let i = 0; i < samples; i++) {
+      const x = i / samples * w;
+      const y = h / 2 - buf[i] * (h / 2.4);
+      i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
+    }
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+  }
+  function drawSessionScope() {
+    const canvas = $("#sp-scope2");
+    if (!canvas) return;
+    const ctx2 = canvas.getContext("2d");
+    const w = canvas.width, h = canvas.height;
+    ctx2.clearRect(0, 0, w, h);
+    const sr = AudioEngine.context ? AudioEngine.context.sampleRate : 48e3;
+    let drew = false;
+    if (AudioEngine.playing && !paused) {
+      if (AudioEngine.topWave(spTopBuf)) {
+        drawSpTrace(ctx2, w, h, spTopBuf, AudioEngine.currentHz || 1, sr, "#2DD4BF");
+        drew = true;
+      }
+      if (AudioEngine.currentMix && AudioEngine.bottomWave(spBotBuf)) {
+        drawSpTrace(ctx2, w, h, spBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
+        drew = true;
+      }
+    }
+    if (!drew) {
+      ctx2.beginPath();
+      ctx2.strokeStyle = "rgba(255,255,255,.1)";
+      ctx2.lineWidth = 1;
+      ctx2.moveTo(0, h / 2);
+      ctx2.lineTo(w, h / 2);
+      ctx2.stroke();
+    }
+    const t = AudioEngine.measuredTop();
+    const b = AudioEngine.measuredBottom();
+    $("#sp-measured").innerHTML = b ? '<span class="ch-top">'.concat(fmtHz(t), '</span> \xB7 <span class="ch-bottom">').concat(fmtHz(b), "</span> Hz") : t ? fmtHz(t) + " Hz" : "\u2014";
+  }
   function uiTick() {
     if (!running) return;
     try {
       updateUI();
+    } catch (e) {
+    }
+    try {
+      drawSessionScope();
     } catch (e) {
     }
     rafId = requestAnimationFrame(uiTick);

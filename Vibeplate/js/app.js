@@ -18,7 +18,7 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 window.onerror = function(msg, src, line) {
   try {
     let el = document.getElementById("vr-err");
@@ -36,7 +36,23 @@ const App = (() => {
   const $$ = (sel) => [...document.querySelectorAll(sel)];
   let currentUser = null;
   let genRaf = 0;
-  const genScopeBuf = new Float32Array(4096);
+  const genTopBuf = new Float32Array(16384);
+  const genBotBuf = new Float32Array(16384);
+  function drawTrace(ctx2, w, h, buf, freq, sr, color) {
+    const samples = Math.min(buf.length, Math.max(64, Math.floor(sr / Math.max(0.5, freq) * 3.5)));
+    ctx2.beginPath();
+    ctx2.strokeStyle = color;
+    ctx2.lineWidth = 2;
+    ctx2.shadowColor = color;
+    ctx2.shadowBlur = 8;
+    for (let i = 0; i < samples; i++) {
+      const x = i / samples * w;
+      const y = h / 2 - buf[i] * (h / 2.4);
+      i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
+    }
+    ctx2.stroke();
+    ctx2.shadowBlur = 0;
+  }
   function pins() {
     return Store.setting("pins", { app: "4545", admin: "1212" });
   }
@@ -223,31 +239,29 @@ const App = (() => {
       const ctx2 = canvas.getContext("2d");
       const { width: w, height: h } = canvas;
       ctx2.clearRect(0, 0, w, h);
-      if (AudioEngine.playing && AudioEngine.waveform(genScopeBuf)) {
-        ctx2.beginPath();
-        ctx2.strokeStyle = "#2DD4BF";
-        ctx2.lineWidth = 2;
-        ctx2.shadowColor = "#2DD4BF";
-        ctx2.shadowBlur = 10;
-        const sr = AudioEngine.context.sampleRate;
-        const samples = Math.min(genScopeBuf.length, Math.max(64, Math.floor(sr / Math.max(1, genHz) * 4)));
-        for (let i = 0; i < samples; i++) {
-          const x = i / samples * w;
-          const y = h / 2 - genScopeBuf[i] * (h / 2.4);
-          i ? ctx2.lineTo(x, y) : ctx2.moveTo(x, y);
+      const sr = AudioEngine.context ? AudioEngine.context.sampleRate : 48e3;
+      let drew = false;
+      if (AudioEngine.playing) {
+        if (AudioEngine.topWave(genTopBuf)) {
+          drawTrace(ctx2, w, h, genTopBuf, AudioEngine.currentHz || genHz, sr, "#2DD4BF");
+          drew = true;
         }
-        ctx2.stroke();
-        ctx2.shadowBlur = 0;
-        const measured = AudioEngine.measuredHz();
-        $("#gen-measured").textContent = measured ? fmtHz(measured) + " Hz" : "\u2014";
-      } else {
+        if (AudioEngine.currentMix && AudioEngine.bottomWave(genBotBuf)) {
+          drawTrace(ctx2, w, h, genBotBuf, AudioEngine.currentMix, sr, "#FF4D4D");
+          drew = true;
+        }
+        const t = AudioEngine.measuredTop();
+        const b = AudioEngine.measuredBottom();
+        $("#gen-measured").innerHTML = b ? '<span class="ch-top">'.concat(fmtHz(t), '</span> \xB7 <span class="ch-bottom">').concat(fmtHz(b), "</span> Hz") : t ? fmtHz(t) + " Hz" : drew ? "\u2014" : fmtHz(AudioEngine.currentHz) + " Hz";
+      }
+      if (!drew) {
         ctx2.beginPath();
         ctx2.strokeStyle = "rgba(255,255,255,.12)";
         ctx2.lineWidth = 1.5;
         ctx2.moveTo(0, h / 2);
         ctx2.lineTo(w, h / 2);
         ctx2.stroke();
-        $("#gen-measured").textContent = "\u2014";
+        if (!AudioEngine.playing) $("#gen-measured").textContent = "\u2014";
       }
       genRaf = requestAnimationFrame(draw);
     };
