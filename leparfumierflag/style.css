@@ -15,13 +15,58 @@
    for interface text, the same grotesque as the leparfumier.com concepts.
    IBM Plex Mono for dates, codes, scores and file names.
 
-   Themes: bare :root holds the complete light palette. The dark palette is
-   declared twice, once behind prefers-color-scheme for viewers left on system,
-   once behind [data-theme="dark"] so the toggle wins either way. No component
-   declares a colour inside a media or attribute block.
+   Themes: dark is the default. The bare :root block carries the complete dark
+   palette and [data-theme="light"] carries the complete light one, applied only
+   when the reader asks for it with the toggle. System preference is deliberately
+   not consulted, because the shop wants this dark whatever the laptop is set to.
+   No component declares a colour inside an attribute block.
    =========================================================================== */
 
+
+/* Dark is the default. */
 :root {
+  --paper:        #131019;
+  --paper-sunk:   #0c0a11;
+  --surface:      #1b1724;
+  --surface-2:    #221c2d;
+
+  --ink:          #f1edf5;
+  --ink-2:        #b6adc2;
+  --ink-3:        #978da6;
+
+  --rule:         #322b3e;
+  --rule-soft:    #272134;
+
+  --iris:         #c68ec3;
+  --iris-wash:    rgba(198, 142, 195, 0.14);
+
+  --vermilion:      #e9796b;
+  --vermilion-wash: rgba(233, 121, 107, 0.14);
+  --ochre:          #d9a83e;
+  --ochre-wash:     rgba(217, 168, 62, 0.14);
+  --moss:           #87be90;
+  --moss-wash:      rgba(135, 190, 144, 0.14);
+
+  --rail:         #0c0a11;
+  --rail-2:       #171320;
+  --rail-ink:     #efeaf4;
+  --rail-ink-2:   #948aa2;
+  --rail-rule:    #262031;
+  --rail-accent:  #c68ec3;
+
+  --shadow:       0 1px 2px rgba(0, 0, 0, 0.42), 0 16px 36px -22px rgba(0, 0, 0, 0.75);
+  --shadow-lift:  0 2px 6px rgba(0, 0, 0, 0.48), 0 30px 60px -26px rgba(0, 0, 0, 0.85);
+
+  --display: "Bodoni Moda", Didot, Georgia, "Times New Roman", serif;
+  --body:    "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
+  --rail-w:  74px;
+}
+
+/* Light, only when the toggle asks for it. */
+:root[data-theme="light"] {
   --paper:        #f0eef2;
   --paper-sunk:   #e6e2ea;
   --surface:      #ffffff;
@@ -29,7 +74,7 @@
 
   --ink:          #1a1622;
   --ink-2:        #4b4456;
-  --ink-3:        #7c7488;
+  --ink-3:        #6f6780;
 
   --rule:         #dcd7e3;
   --rule-soft:    #ebe7ef;
@@ -53,79 +98,6 @@
 
   --shadow:       0 1px 2px rgba(26, 22, 34, 0.05), 0 14px 30px -20px rgba(26, 22, 34, 0.32);
   --shadow-lift:  0 2px 4px rgba(26, 22, 34, 0.06), 0 26px 50px -24px rgba(26, 22, 34, 0.40);
-
-  --display: "Bodoni Moda", Didot, Georgia, "Times New Roman", serif;
-  --body:    "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  --ease:    cubic-bezier(0.22, 1, 0.36, 1);
-  --rail-w:  74px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper:        #131019;
-    --paper-sunk:   #0c0a11;
-    --surface:      #1b1724;
-    --surface-2:    #221c2d;
-
-    --ink:          #f1edf5;
-    --ink-2:        #b4abc0;
-    --ink-3:        #837a90;
-
-    --rule:         #322b3e;
-    --rule-soft:    #272134;
-
-    --iris:         #c68ec3;
-    --iris-wash:    rgba(198, 142, 195, 0.14);
-
-    --vermilion:      #e9796b;
-    --vermilion-wash: rgba(233, 121, 107, 0.14);
-    --ochre:          #d9a83e;
-    --ochre-wash:     rgba(217, 168, 62, 0.14);
-    --moss:           #87be90;
-    --moss-wash:      rgba(135, 190, 144, 0.14);
-
-    --rail:         #0c0a11;
-    --rail-2:       #171320;
-    --rail-ink-2:   #948aa2;
-    --rail-rule:    #262031;
-
-    --shadow:       0 1px 2px rgba(0, 0, 0, 0.42), 0 16px 36px -22px rgba(0, 0, 0, 0.75);
-    --shadow-lift:  0 2px 6px rgba(0, 0, 0, 0.48), 0 30px 60px -26px rgba(0, 0, 0, 0.85);
-  }
-}
-
-:root[data-theme="dark"] {
-  --paper:        #131019;
-  --paper-sunk:   #0c0a11;
-  --surface:      #1b1724;
-  --surface-2:    #221c2d;
-
-  --ink:          #f1edf5;
-  --ink-2:        #b4abc0;
-  --ink-3:        #837a90;
-
-  --rule:         #322b3e;
-  --rule-soft:    #272134;
-
-  --iris:         #c68ec3;
-  --iris-wash:    rgba(198, 142, 195, 0.14);
-
-  --vermilion:      #e9796b;
-  --vermilion-wash: rgba(233, 121, 107, 0.14);
-  --ochre:          #d9a83e;
-  --ochre-wash:     rgba(217, 168, 62, 0.14);
-  --moss:           #87be90;
-  --moss-wash:      rgba(135, 190, 144, 0.14);
-
-  --rail:         #0c0a11;
-  --rail-2:       #171320;
-  --rail-ink-2:   #948aa2;
-  --rail-rule:    #262031;
-
-  --shadow:       0 1px 2px rgba(0, 0, 0, 0.42), 0 16px 36px -22px rgba(0, 0, 0, 0.75);
-  --shadow-lift:  0 2px 6px rgba(0, 0, 0, 0.48), 0 30px 60px -26px rgba(0, 0, 0, 0.85);
 }
 
 /* ---------------------------------------------------------------- base --- */
@@ -437,15 +409,19 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
 }
 .stat { background: var(--surface); padding: 24px 22px 22px; min-width: 0; }
 .stat-k { font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+/* Figures are set in the grotesque, not the Didone. Bodoni's hairlines thin out to
+   nothing at screen sizes and all but vanish on the dark ground, and these numbers
+   are the first thing anyone reads. Words keep the display face, numbers do not. */
 .stat-v {
   display: block;
-  font-family: var(--display);
-  font-size: clamp(30px, 3.4vw, 44px);
-  font-weight: 500;
-  line-height: 0.95;
+  font-family: var(--body);
+  font-size: clamp(30px, 3.3vw, 42px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.015em;
   font-variant-numeric: tabular-nums;
 }
-.stat-v small { font-family: var(--body); font-size: 13px; font-weight: 500; color: var(--ink-3); margin-left: 3px; }
+.stat-v small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); margin-left: 3px; }
 .stat-n { font-size: 11.5px; color: var(--ink-3); margin-top: 10px; line-height: 1.45; }
 .stat.risk .stat-v { color: var(--vermilion); }
 .stat.money .stat-v { font-size: clamp(24px, 2.5vw, 34px); }

@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 10;
+const APP_VERSION = 11;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -69,13 +69,12 @@ function toast(msg, kind) {
 
 // ------------------------------------------------------------------ theme ---
 
+// Dark is the default, so an unset theme means dark and the toggle only ever has
+// to decide whether a light override is currently on.
 function initTheme() {
   el("theme-btn").addEventListener("click", () => {
     const root = document.documentElement;
-    const current =
-      root.getAttribute("data-theme") ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = current === "dark" ? "light" : "dark";
+    const next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
     root.setAttribute("data-theme", next);
     try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
   });
@@ -527,8 +526,15 @@ function renderBrief() {
   const act = open.filter((x) => x.band.key === "act");
   const undecided = act.filter((x) => x.decision === "review").length;
   const houses = new Set(open.map((x) => x.flag.vendor || "").filter(Boolean));
-  const unitValue = open.reduce((s, x) => s + x.unitPrice, 0);
-  const priced = open.filter((x) => x.unitPrice > 0).length;
+
+  // Gross margin sitting in the at risk list. Gated on cost actually being present
+  // rather than on the token, since the local dev server serves the costed catalog
+  // directly and the figure is real either way.
+  const costed = open.filter((x) => x.unitCost > 0 && x.unitPrice > 0);
+  const costedRetail = costed.reduce((s, x) => s + x.unitPrice, 0);
+  const costedCost = costed.reduce((s, x) => s + x.unitCost, 0);
+  const marginValue = costedRetail - costedCost;
+  const marginPct = costedRetail ? Math.round((marginValue / costedRetail) * 100) : 0;
 
   const committedItems = all.filter((x) => x.committed > 0);
   const committed = committedItems.reduce((s, x) => s + x.committed, 0);
@@ -538,10 +544,10 @@ function renderBrief() {
   let committedNote;
   if (!committedItems.length) {
     committedNote = "Mark items Buying or Ordered and add a quantity";
-  } else if (state.dataSource === "live" && committedCost > 0) {
+  } else if (committedCost > 0) {
     committedNote =
       bottles.toLocaleString() + " bottles across " + committedItems.length + " item" +
-      (committedItems.length === 1 ? "" : "s") + ", " + moneyShort(committed - committedCost) + " gross margin";
+      (committedItems.length === 1 ? "" : "s") + ", " + moneyShort(committed - committedCost) + " margin";
   } else {
     committedNote =
       bottles.toLocaleString() + " bottles across " + committedItems.length + " item" +
@@ -568,11 +574,13 @@ function renderBrief() {
         : "Priority 75 and above, all decided",
     },
     {
-      k: "Unit value at risk",
-      v: state.productsLoaded ? moneyShort(unitValue) : "&mdash;",
-      n: state.productsLoaded
-        ? "One bottle of each at your retail price, " + priced + " of " + open.length + " priced"
-        : "Waiting for the catalog",
+      k: "Gross margin",
+      v: costed.length ? moneyShort(marginValue) : "&mdash;",
+      n: costed.length
+        ? marginPct + " percent, across the " + costed.length + " flagged items with cost on file"
+        : state.productsLoaded
+          ? "Connect a token in settings to show cost"
+          : "Waiting for the catalog",
       cls: "money",
     },
     {

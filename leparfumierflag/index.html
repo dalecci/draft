@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le Parfumier: FLAG</title>
 <meta name="description" content="Discontinuation watch for the Le Parfumier catalog.">
-<meta name="theme-color" content="#1a1622">
+<meta name="theme-color" content="#131019">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2216%22 fill=%22%231a1622%22/><text x=%2250%22 y=%2270%22 text-anchor=%22middle%22 font-family=%22Georgia,serif%22 font-size=%2252%22 fill=%22%23c68ec3%22>LP</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 <script>
-  // Applied before first paint so a saved theme choice never flashes the other palette.
+  // Dark is the default in the stylesheet. This only reapplies a saved light
+  // override, before first paint, so the page never flashes dark then turns light.
   try {
-    var t = localStorage.getItem("lpf_theme");
-    if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+    if (localStorage.getItem("lpf_theme") === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
   } catch (e) {}
 </script>
 </head>
@@ -290,7 +292,7 @@
 <script src="vendor/xlsx.full.min.js?v=4"></script>
 <script src="vendor/jspdf.umd.min.js?v=6"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 <!-- Bump the ?v= on every tag above, and APP_VERSION in app.js, on every deploy that
      changes app.js or style.css. GitHub Pages caches both for ten minutes, so without
      a bump anyone who already opened the page keeps running the old build. -->
