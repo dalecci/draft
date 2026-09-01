@@ -1,5 +1,5 @@
 {
-  "lastScan": "2026-08-31T10:13:58Z",
+  "lastScan": "2026-09-01T10:10:29Z",
   "scanNote": "Discontinuation scan: checked 150 products (29 rumored re-checks + 121 rotation), 40 newly confirmed, 17 cleared.",
   "flags": [
     {
@@ -209,63 +209,63 @@
       "productHandle": "maison-margiela-replica-under-the-lemon-trees-eau-de-toilette",
       "title": "Maison Margiela Replica Under The Lemon Trees Eau de Toilette",
       "vendor": "MAISON MARGIELA",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-28",
       "signals": [
         {
           "type": "web",
-          "note": "Still sold on Maison Margiela's own site and at Sephora, so no brand-level drop."
+          "note": "Multiple eBay listings explicitly tag the 100ml EDT as (DISCONTINUED); TikTok community discourse also discusses it as discontinued."
         },
         {
-          "type": "community",
-          "note": "An eBay listing is tagged '(DISCONTINUED)' and there is active TikTok chatter discussing it as discontinued, but this is single-source/anecdotal against continued official availability."
+          "type": "web",
+          "note": "Still listed on Maison Margiela's own official fragrance site, but resale/community consensus points to discontinuation of this particular EDT format."
         }
       ],
       "sources": [
         {
-          "label": "Maison Margiela official product page",
-          "url": "https://www.maisonmargiela.com/en-us/replica-under-the-lemon-trees-eau-de-toilette-S33YX0058S11720961.html"
-        },
-        {
-          "label": "Sephora listing",
-          "url": "https://www.sephora.com/product/replica-under-lemon-trees-eau-de-toilette-P440634"
-        },
-        {
-          "label": "eBay listing tagged DISCONTINUED",
+          "label": "eBay - marked DISCONTINUED",
           "url": "https://www.ebay.com/itm/117273644238"
         },
         {
-          "label": "TikTok discontinued chatter",
+          "label": "TikTok discussion",
           "url": "https://www.tiktok.com/discover/maison-margiela-under-the-lemon-trees-discontinued"
+        },
+        {
+          "label": "Maison Margiela official product page",
+          "url": "https://www.maisonmargiela-fragrances.us/fragrances/replica-eau-de-toilette/replica-under-the-lemon-trees/MM013.html"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale for 100ml EDT bottles runs roughly $110 (new with box, e.g. ~AU$170/~US$111), comparable to or below original retail, consistent with sell-through of remaining stock."
+      }
     },
     {
       "id": "maison-margiela-replica-by-the-jazz-club-eau-de-toilette",
       "productHandle": "maison-margiela-replica-by-the-jazz-club-eau-de-toilette",
       "title": "Maison Margiela Replica Jazz Club Eau de Toilette",
       "vendor": "MAISON MARGIELA",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-28",
       "signals": [
         {
           "type": "web",
-          "note": "Multiple eBay listings (full bottle, refill, travel mini) market it as 'discontinued', but Sephora still carries a live product page and Costco/Kohl's had active 2026 deals on it."
+          "note": "Still actively sold on Sephora and Maison Margiela's own site; Amazon explicitly lists 'Is Discontinued By Manufacturer: No'. Only a limited-edition variant appears to have been retired, not the core fragrance."
         }
       ],
       "sources": [
-        {
-          "label": "eBay - Jazz Club refill listing",
-          "url": "https://www.ebay.com/itm/187619541312"
-        },
         {
           "label": "Sephora product page",
           "url": "https://www.sephora.com/product/replica-jazz-club-P385350"
         },
         {
-          "label": "Slickdeals - Costco Jazz Club deal",
-          "url": "https://slickdeals.net/f/17863371-costco-members-3-4oz-maison-margiela-replica-jazz-club-eau-de-toilette-more-75-f-s"
+          "label": "Maison Margiela official product page",
+          "url": "https://www.maisonmargiela-fragrances.us/fragrances/replica-eau-de-toilette/replica-jazz-club/MM008.html"
+        },
+        {
+          "label": "Amazon listing",
+          "url": "https://www.amazon.com/MAISON-MARGIELA-REPLICA-Travel-Spray/dp/B01NCOVRMV"
         }
       ],
       "notified": false
@@ -329,33 +329,37 @@
       "productHandle": "hugo-boss-hugo-deep-red-pour-femme-eau-de-parfum",
       "title": "Hugo Boss Deep Red Pour Femme Eau de Parfum Edition 2025",
       "vendor": "HUGO BOSS",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-28",
       "signals": [
         {
-          "type": "community",
-          "note": "A Fragrantica Club forum thread is titled 'Hugo Boss Deep Red Discontinued...???', asking whether it's been dropped, but no confirmation is given in-thread."
+          "type": "web",
+          "note": "Basenotes forum thread and a Fragrantica Club discussion both center on whether Deep Red has been discontinued; a dedicated 'Discontinued Designer Perfume' collection tags Hugo Boss Deep Red."
         },
         {
           "type": "web",
-          "note": "Still actively listed and in stock at Perfumania, 99Perfume, CaretoBeauty and FragranceNet, and on Amazon, so no retailer-wide pullback is visible."
+          "note": "Some retailers show it sold out/backordered while heavy eBay resale volume continues, consistent with sell-through of remaining stock."
         }
       ],
       "sources": [
         {
-          "label": "Fragrantica Club forum thread",
+          "label": "Basenotes discussion",
+          "url": "https://basenotes.com/threads/anyone-know-if-hugo-boss-deep-red-is-discontinued.208085/"
+        },
+        {
+          "label": "Fragrantica Club discussion",
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=74888"
         },
         {
-          "label": "Perfumania listing",
-          "url": "https://perfumania.com/products/hugo-boss-hugo-deep-red-women-eau-de-parfum-spray"
-        },
-        {
-          "label": "FragranceNet listing",
-          "url": "https://www.fragrancenet.com/perfume/hugo-boss/hugo-deep-red/eau-de-parfum"
+          "label": "Discontinued Hugo Boss collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/hugo-boss"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings range roughly $25-$103 depending on size/condition, with one listing showing 502 sold at a discounted $33.27 (down from $72), indicating active discount sell-through."
+      }
     },
     {
       "id": "versace-crystal-noir-pour-femme-parfum",
@@ -587,12 +591,12 @@
       "signals": [
         {
           "type": "web",
-          "note": "Fragrantica/Basenotes list it as a 1996-era fragrance; it is not carried by any major retailer (Sephora/Ulta/Nordstrom/FragranceX) and only turns up on niche 'discontinued fragrance' specialty sites, consistent with an out-of-production status but only weakly/single-sourced beyond the niche retail channel itself."
+          "note": "Only weak, single-sourced evidence found: described as a vintage/hard-to-find fragrance carried by niche specialty retailers, with no clear independent discontinuation confirmation from multiple sources."
         }
       ],
       "sources": [
         {
-          "label": "Le Parfumier - Mixx Just Forbidden For Men Millesime",
+          "label": "Search results overview",
           "url": "https://leparfumier.com/en/products/mixx-just-forbidden-for-men-millesime"
         }
       ],
@@ -909,33 +913,37 @@
       "productHandle": "juicy-couture-oui-pour-femme-eau-de-toilette",
       "title": "Juicy Couture Oui Pour Femme Eau de Toilette",
       "vendor": "JUICY COUTURE",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-28",
       "signals": [
         {
-          "type": "community",
-          "note": "eBay categorizes Juicy Couture 'Oui' under its 'Discontinued Fragrances for Women' storefront listings."
+          "type": "web",
+          "note": "Fragrantica user reviews mention 'it's being discontinued'; eBay lists it under Juicy Couture's discontinued fragrance category listings."
         },
         {
           "type": "web",
-          "note": "Current Juicy Couture lineup at Ulta (10-11 SKUs) is dominated by Viva La Juicy and the new 2025 'Just Moi'; 'Oui' did not surface among current retailer SKUs in search results."
+          "note": "Still shows up in some Ulta clearance listings, consistent with sell-through of remaining stock rather than full availability."
         }
       ],
       "sources": [
+        {
+          "label": "Fragrantica product page",
+          "url": "https://www.fragrantica.com/perfume/Juicy-Couture/Juicy-Couture-Oui-50345.html"
+        },
         {
           "label": "eBay - Juicy Couture Discontinued Fragrances",
           "url": "https://www.ebay.com/b/Juicy-Couture-Discontinued-Fragrances-for-Women/11848/bn_7116764857"
         },
         {
-          "label": "Ulta - Juicy Couture brand page",
-          "url": "https://www.ulta.com/brand/juicy-couture?category=fragrance%2Cwomens-fragrance%2Cperfume"
-        },
-        {
-          "label": "Fragrantica - Juicy Couture Oui",
-          "url": "https://www.fragrantica.com/perfume/Juicy-Couture/Juicy-Couture-Oui-50345.html"
+          "label": "Ulta Juicy Couture fragrance listing",
+          "url": "https://www.ulta.com/shop/fragrance/womens-fragrance/perfume?brand=Juicy+Couture"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for Juicy Couture Oui range from roughly $13 to over $150 depending on size/bundle, with some units found at Ulta on clearance with significant discounts."
+      }
     },
     {
       "id": "coty-exclamation-wild-musk-pour-femme-eau-de-toilette",
@@ -975,25 +983,29 @@
       "productHandle": "elie-saab-girl-of-now-shine-pour-femme-eau-de-parfum",
       "title": "Elie Saab Girl Of Now Shine Pour Femme Eau de Parfum",
       "vendor": "ELIE SAAB",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-28",
       "signals": [
         {
-          "type": "community",
-          "note": "An eBay listing markets remaining stock as 'DISCONTINUED,' but Amazon's own listing shows 'Not Discontinued By Manufacturer' and it remains sold new at FragranceNet, Jomashop, and Perfume.com."
+          "type": "web",
+          "note": "Multiple eBay listings explicitly tagged NEW/SEALED/DISCONTINUED for the 90ml EDP; TikTok has dedicated discussion threads on 'Elie Saab Girl of Now Discontinued'."
         }
       ],
       "sources": [
         {
-          "label": "eBay listing tagged discontinued",
+          "label": "eBay - DISCONTINUED listing",
           "url": "https://www.ebay.com/itm/386166747011"
         },
         {
-          "label": "Amazon listing",
-          "url": "https://www.amazon.com/Elie-Saab-Girl-Shine-Women/dp/B09YNMS9PP"
+          "label": "TikTok discussion",
+          "url": "https://www.tiktok.com/discover/elie-saab-girl-of-now-discontinued"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay 90ml bottles listed around $64.99 (list price ~$114, a 43% discount), with sample vials also selling briskly (42 sold) — consistent with discount sell-through of remaining stock."
+      }
     },
     {
       "id": "coty-jovan-platinum-musk-pour-homme-eau-de-cologne",
@@ -1096,25 +1108,21 @@
       "signals": [
         {
           "type": "web",
-          "note": "Retailer Care to Beauty states it has discontinued Azzaro The Most Wanted Eau de Parfum Intense (a related but distinct concentration from this EDT Intense), while Azzaro's own site and Macy's still list Most Wanted Intense products."
-        },
-        {
-          "type": "community",
-          "note": "TikTok discovery page 'Azzaro Most Wanted Intense Discontinued' shows active user chatter about scarcity."
+          "note": "TikTok discussion and a Fragrantica Club thread ('Is Azzaro's Wanted Line-up Discontinued?') raise concerns, but the fragrance remains actively listed and sold on Ulta, Macy's, and Azzaro's own official site."
         }
       ],
       "sources": [
         {
-          "label": "Care to Beauty listing",
-          "url": "https://www.caretobeauty.com/us/azzaro-the-most-wanted-eau-de-parfum-intense-100ml/"
+          "label": "Fragrantica Club discussion",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=310031"
         },
         {
-          "label": "Azzaro official EDP Intense page",
+          "label": "Ulta Beauty listing",
+          "url": "https://www.ulta.com/p/most-wanted-eau-de-parfum-intense-pimprod2023922?sku=2579633"
+        },
+        {
+          "label": "Azzaro official site",
           "url": "https://www.azzaro.com/en/fragrances/azzaro-the-most-wanted/eau-de-parfum-intense"
-        },
-        {
-          "label": "TikTok discontinued chatter",
-          "url": "https://www.tiktok.com/discover/azzaro-most-wanted-intense-discontinued"
         }
       ],
       "notified": false
@@ -1129,16 +1137,16 @@
       "signals": [
         {
           "type": "web",
-          "note": "eBay groups it under a 'Salvatore Ferragamo Discontinued Fragrances for Women' category page, but Amazon's own listing states 'Is Discontinued By Manufacturer: No' and it remains sold at several retailers."
+          "note": "Listed among 'rare' Salvatore Ferragamo fragrances and mainly found via secondary/niche retailers, but Amazon explicitly marks it 'Not Discontinued By Manufacturer' — single weak signal only."
         }
       ],
       "sources": [
         {
-          "label": "eBay - Ferragamo discontinued category",
+          "label": "eBay - Salvatore Ferragamo Discontinued Fragrances",
           "url": "https://www.ebay.com/b/Salvatore-Ferragamo-Discontinued-Fragrances-for-Women/11848/bn_7116773652"
         },
         {
-          "label": "Amazon product listing",
+          "label": "Amazon listing",
           "url": "https://www.amazon.com/Flowerful-Ferragamo-Salvatore-Women-Toilette/dp/B07N2VQRBT"
         }
       ],
@@ -1266,17 +1274,17 @@
       "signals": [
         {
           "type": "web",
-          "note": "Fragrance Outlet currently shows Cuba Royal EDT as sold out with plans to restock; Amazon otherwise lists it as not discontinued, and it remains listed at FragranceNet and Jomashop."
+          "note": "Described in search summaries as 'rare and discontinued', with some fragrance outlets showing it sold out, but it remains actively listed for sale at FragranceOutlet, Perfumania, and Amazon as a standard catalog item — evidence is weak/mixed."
         }
       ],
       "sources": [
         {
-          "label": "Fragrance Outlet - Cuba Royal",
+          "label": "Fragrance Outlet listing",
           "url": "https://www.fragranceoutlet.com/products/cuba-royal-mens-eau-de-toilette-spray"
         },
         {
-          "label": "Amazon - Cuba Royal",
-          "url": "https://www.amazon.com/Cuba-Royal-Men-Ounce-Spray/dp/B004Q87C12"
+          "label": "Perfumania listing",
+          "url": "https://perfumania.com/products/cuba-royal-mens-eau-de-toilette-spray"
         }
       ],
       "notified": false
@@ -1290,18 +1298,14 @@
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "Fragrance-community commentary references this Disney Princess Belle kids' EDT as discontinued, and it's not turning up at major mainstream retailers (Sephora/Ulta/FragranceX) - only niche/outlet sites carry it."
+          "type": "web",
+          "note": "One eBay listing tags the girls' Belle EdT as discontinued and describes it as hard to find, but this is a single-sourced signal; specialty retailers still list several Princess Belle variants."
         }
       ],
       "sources": [
         {
-          "label": "Fragrantica - Princess Belle",
-          "url": "https://www.fragrantica.com/perfume/Disney/Princess-Belle-15885.html"
-        },
-        {
-          "label": "Fragrance Outlet - Disney Princess Belle",
-          "url": "https://www.fragranceoutlet.com/products/disney-princess-belle-by-disney-for-kids-eau-de-toilette-spray"
+          "label": "eBay - Disney Belle EdT for Women/Girls",
+          "url": "https://www.ebay.com/b/Disney-Belle-Eau-de-Toilette-for-Women/11848/bn_107787121"
         }
       ],
       "notified": false
@@ -1451,33 +1455,37 @@
       "productHandle": "yves-saint-laurent-ysl-rive-gauche-pour-femme-eau-de-toilette",
       "title": "Yves Saint Laurent Ysl Rive Gauche Pour Femme Eau de Toilette",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
           "type": "web",
-          "note": "On YSL's US site it appears in the '20% off beauty outlet' clearance section, while still sold at full price on YSL's UK/AU/international sites - a mixed, single-market signal."
+          "note": "Multiple long-running Basenotes threads ('Farewell to Rive Gauche?', 'not discontinued??') and eBay's dedicated 'Discontinued Rive Gauche Fragrances for Women' category reflect years of community consensus that the original Rive Gauche EDT women's fragrance has been phased out by YSL, with users reporting difficulty finding it in stores since ~2019-2020."
         },
         {
-          "type": "community",
-          "note": "Multiple eBay listings and a dedicated 'Discontinued Rive Gauche Fragrances for Women' eBay category tag it as discontinued."
+          "type": "web",
+          "note": "Still findable through some retailers (e.g. FragranceX) selling remaining/back stock, and highly sought after on the secondary market at premium prices."
         }
       ],
       "sources": [
         {
-          "label": "YSL Beauty US outlet - Rive Gauche EDT",
-          "url": "https://www.yslbeautyus.com/20--off-beauty-outlet/rive-gauche-eau-de-toilette-spray/403YSL.html"
+          "label": "Basenotes - Farewell to Rive Gauche?",
+          "url": "https://basenotes.com/threads/farewell-to-rive-gauche.465544/"
         },
         {
-          "label": "YSL Beauty Int'l - Rive Gauche EDT",
-          "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-her/rive-gauche/rive-gauche-eau-de-toilette-vaporisateur/403YSL.html"
+          "label": "Basenotes - not discontinued??",
+          "url": "https://basenotes.com/threads/rive-gauche-not-discontinued.520858/"
         },
         {
-          "label": "eBay - discontinued Rive Gauche category",
+          "label": "eBay - Discontinued Rive Gauche Fragrances",
           "url": "https://www.ebay.com/b/Discontinued-Rive-Gauche-Fragrances-for-Women/11848/bn_7116773423"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Fragrance commands premium resale pricing on the secondary market as remaining stock is sold through; specific current eBay sold-price data was not itemized in search results but community sources consistently describe premium/above-average pricing for remaining bottles."
+      }
     },
     {
       "id": "yves-saint-laurent-ysl-opium-pour-femme-poudre-pour-le-corps-1757453178",
@@ -1587,55 +1595,59 @@
       "productHandle": "yves-saint-laurent-ysl-lhomme-cologne-bleue-pour-homme-eau-de-toilette",
       "title": "Yves Saint Laurent Ysl L'Homme Cologne Bleue Pour Homme Eau de Toilette",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
           "type": "web",
-          "note": "Still listed on YSL's official US site and sold at Walmart, but multiple eBay and Facebook fragrance-group posts explicitly label it 'discontinued'."
-        },
-        {
-          "type": "community",
-          "note": "A Fragrantica forum comment notes the fragrance has been heavily discounted recently, which posters associate with an approaching end-of-life."
+          "note": "Multiple independent sources describe it as discontinued: eBay listings explicitly tagged DISCONTINUED, Facebook fragrance-trading groups, TikTok discussion, and a Fragrantica Club thread about needing a replacement after it was discontinued."
         }
       ],
       "sources": [
         {
-          "label": "YSL Beauty US - L'Homme Cologne Bleue",
-          "url": "https://www.yslbeautyus.com/fragrance/mens-fragrance/lhomme/lhomme-cologne-bleue-eau-de-toilette/3614271990020.html"
-        },
-        {
-          "label": "eBay - L'Homme Cologne Bleue, discontinued",
+          "label": "eBay - DISCONTINUED listing",
           "url": "https://www.ebay.com/itm/225324675413"
         },
         {
-          "label": "Fragrantica board - favorite cologne discontinued",
+          "label": "Fragrantica Club discussion",
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=321241"
+        },
+        {
+          "label": "TikTok discussion",
+          "url": "https://www.tiktok.com/discover/is-cologne-bleu-discontinued-ysl"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale prices for 3.3oz bottles run roughly $69-$84, above typical discount territory, reflecting premium secondary-market pricing for a discontinued item rather than distress clearance."
+      }
     },
     {
       "id": "mancera-black-noir-eau-de-parfum",
       "productHandle": "mancera-black-noir-eau-de-parfum",
       "title": "Mancera Black Noir Eau de Parfum",
       "vendor": "MANCERA",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "One retailer (Ministry of Scent) states Black Noir 'has been discontinued by Mancera' and urges buying 'one of the last bottles', but this is contradicted by the official Mancera Parfums sites and other sellers (FragranceNet, La Maison Du Parfum) which still list it as an active current product."
+          "type": "web",
+          "note": "Launched 2023 and currently listed as actively in production on Parfumo, Mancera's own official US site, and major retailers like FragranceNet. Prior discontinuation claim appears to stem from confusion with a different, similarly-named Mancera fragrance ('Black to Black') that is actually discontinued."
         }
       ],
       "sources": [
         {
-          "label": "Ministry of Scent - Black Noir (discontinued claim)",
-          "url": "https://ministryofscent.com/products/black-noir"
+          "label": "Mancera official product page",
+          "url": "https://manceraparfums.us/products/black-noir"
         },
         {
-          "label": "Mancera Parfums official (US) - Black Noir",
-          "url": "https://manceraparfums.us/products/black-noir"
+          "label": "FragranceNet listing",
+          "url": "https://www.fragrancenet.com/fragrances/mancera/mancera-black-noir/eau-de-parfum"
+        },
+        {
+          "label": "Parfumo profile",
+          "url": "https://www.parfumo.com/Perfumes/Mancera/black-noir"
         }
       ],
       "notified": false
@@ -1645,22 +1657,22 @@
       "productHandle": "marvel-venom-eau-de-toilette",
       "title": "Marvel Venom Eau de Toilette",
       "vendor": "MARVEL",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "pricing",
-          "note": "FragranceX is selling it at up to 80% off retail and one retailer (LaBellePerfumes) lists it as out of stock, suggesting sell-through/clearance behavior, though no explicit discontinuation confirmation was found."
+          "type": "web",
+          "note": "Actively listed and in stock at multiple major retailers (Macy's, Walmart, Target, Hot Topic) with no discontinuation chatter found — looks normal/available."
         }
       ],
       "sources": [
         {
-          "label": "FragranceX - Marvel Venom Cologne",
-          "url": "https://www.fragrancex.com/products/marvel/marvel-venom-cologne"
+          "label": "Macy's listing",
+          "url": "https://www.macys.com/shop/product/marvel-venom-eau-de-toilette-spray-3.4-oz.?ID=23171981"
         },
         {
-          "label": "LaBellePerfumes - Marvel Venom (OOS)",
-          "url": "https://labelleperfumes.com/products/marvel-venom-3-4-oz-for-men"
+          "label": "Target listing",
+          "url": "https://www.target.com/p/air-val-international-marvel-venom-3-4-eau-de-toilette-spray/-/A-1007000707"
         }
       ],
       "notified": false
@@ -1909,25 +1921,21 @@
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "Basenotes thread 'Mancera Aoud Lemon Mint discontinued??' and a Fragrantica Club post 'Mancera no longer stock Aoud Lemon Mint' report Parfumo listing it as out of production."
-        },
-        {
           "type": "web",
-          "note": "Contradicts brand's own current site (manceraparfums.us) still listing the product, and other retailers show it on backorder rather than delisted."
+          "note": "Older Basenotes/Fragrantica threads questioned whether it was pulled from the official Mancera lineup around 2021, and some current retailers show it on backorder, but it is still listed on Mancera's own official site and multiple retailers today — mixed, inconclusive signal."
         }
       ],
       "sources": [
         {
-          "label": "Basenotes thread",
+          "label": "Basenotes discussion",
           "url": "https://basenotes.com/threads/mancera-aoud-lemon-mint-discontinued.486085/"
         },
         {
-          "label": "Fragrantica Club thread",
-          "url": "https://www.fragrantica.com/board/viewtopic.php?id=267716"
+          "label": "Mancera official product page",
+          "url": "https://manceraparfums.com/us/en/aouds/97-aoud-lemon-mint.html"
         },
         {
-          "label": "Mancera Parfums official product page",
+          "label": "Mancera Parfums US site",
           "url": "https://manceraparfums.us/products/aoud-lemon-mint"
         }
       ],
@@ -2277,16 +2285,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "eBay lists vintage 2.5oz EDP bottles as 'Rare Discontinued', but YSL's own site still actively sells Paris in EDT and EDP formats."
+          "note": "eBay and Etsy resellers list the EDP as 'Rare Discontinued Vintage', but YSL's own international site still has an active 'Parfum Paris' fragrance-for-her page, so the classic line itself is not confirmed gone; likely just the EDP concentration being phased out."
         }
       ],
       "sources": [
         {
-          "label": "eBay - Paris EDP 'Rare Discontinued'",
+          "label": "eBay - YSL Paris EDP 75ml Rare Discontinued",
           "url": "https://www.ebay.com/itm/287039297377"
         },
         {
-          "label": "YSL Beauty - Paris fragrance",
+          "label": "Etsy - Paris YSL EDT Discontinued Vintage Rare",
+          "url": "https://www.etsy.com/listing/1864127300/paris-yves-saint-laurent-for-women-ysl"
+        },
+        {
+          "label": "YSL Beauty Intl - Parfum Paris",
           "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-her/paris/"
         }
       ],
@@ -2297,25 +2309,33 @@
       "productHandle": "yves-saint-laurent-ysl-opium-pour-femme-huile-pour-le-corps",
       "title": "Yves Saint Laurent Ysl Opium Pour Femme Huile pour le Corps",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
           "type": "web",
-          "note": "eBay listings describe the original Opium body moisturizer/oil as discontinued and 'hard to find anymore'; no current listing for the body-oil format could be found on YSL's own site, only the Opium EDT/EDP sprays."
+          "note": "No current mainstream retailer listing found for original Opium perfumed body oil; only NWOB/vintage stock on eBay and third-party 'impression' oils on Amazon, indicating the genuine product line has been discontinued and only remaining inventory is being sold through resale channels."
         }
       ],
       "sources": [
         {
-          "label": "eBay - Opium Body Moisturizer-Lotion NWOB",
+          "label": "eBay - YSL Original Opium Body Moisturizer-Lotion NWOB",
           "url": "https://www.ebay.com/itm/287293270563"
         },
         {
-          "label": "YSL Beauty - Opium EDT (sprays only, no body oil listed)",
-          "url": "https://www.yslbeautyus.com/fragrance/womens-fragrances/opium/opium-eau-de-toilette-spray/512YSL.html"
+          "label": "eBay - YSL Opium Perfumed Elixir Body Oil Spray 125ml",
+          "url": "https://www.ebay.com/itm/146114289286"
+        },
+        {
+          "label": "Le Parfumier - YSL Opium Body Oil",
+          "url": "https://www.leparfumier.com/en/yves-saint-laurent-ysl-opium-for-women-body-oil.html"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for NWOB/vintage Opium perfumed body oil (100-125ml) range roughly $100-$350 depending on size/condition, well above typical body-oil retail pricing, consistent with discontinued/collector resale premium."
+      }
     },
     {
       "id": "yves-saint-laurent-ysl-kouros-pour-homme-lotion-apres-rasage",
@@ -2359,33 +2379,33 @@
       "productHandle": "coach-love-pour-femme-eau-de-parfum",
       "title": "Coach Love Pour Femme Eau de Parfum",
       "vendor": "COACH",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "Several individual eBay/Poshmark sellers label their stock 'discontinued original formula', but this is informal reseller language, not an official statement."
-        },
-        {
           "type": "web",
-          "note": "Coach Love EDP is still actively sold as a current item on Coach.com and Ulta.com, contradicting a full discontinuation."
+          "note": "Fragrantica lists both the original 2012 Coach Love and the 2023 relaunch; multiple independent resale sources (eBay, Poshmark, Facebook Marketplace) explicitly label it discontinued and no current listing found at Sephora/Ulta/Macy's/Coach.com."
         }
       ],
       "sources": [
         {
-          "label": "eBay 'discontinued' listing",
+          "label": "Fragrantica - Coach Love Eau de Parfum (2023)",
+          "url": "https://www.fragrantica.com/perfume/Coach/Coach-Love-Eau-de-Parfum-83465.html"
+        },
+        {
+          "label": "eBay - Coach Love Perfume Discontinued Original Formula",
           "url": "https://www.ebay.com/itm/325936624394"
         },
         {
-          "label": "Ulta product page",
-          "url": "https://www.ulta.com/p/love-eau-de-parfum-pimprod2040980?sku=2614411"
-        },
-        {
-          "label": "Coach.com product page",
-          "url": "https://www.coach.com/products/love-eau-de-parfum-90-ml/CL874.html"
+          "label": "Poshmark - Coach Love EDP NIB Discontinued",
+          "url": "https://poshmark.com/listing/Coach-Coach-Love-Eau-De-Parfum-Spray-17-Oz-Perfume-NIB-Discontinued-62c62353b512563185874a9e"
         }
       ],
-      "notified": false
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay sold listings show clearance-style pricing, e.g. 3.4oz EDP marked down from $111.99 to $37.08, and other listings around $98.50, consistent with sell-through of remaining discontinued stock."
+      }
     },
     {
       "id": "yves-saint-laurent-ysl-live-jazz-pour-homme-gel-modeleur-cheveux",
@@ -2441,22 +2461,18 @@
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "Basenotes threads ('Kouros no longer listed on YSL website', 'So Kouros is (perhaps) on the way to being discontinued') report the Kouros line pulled from YSL's US site/market."
-        },
-        {
           "type": "web",
-          "note": "The shower gel itself is still listed as available (not discontinued by manufacturer) on Amazon UK, so the signal is single-sourced/regional rather than a full confirmed discontinuation of this specific product."
+          "note": "Basenotes forum threads note Kouros products are 'no longer listed on the YSL USA website', but the shower gel is still sold on Amazon UK and by Le Parfumier, so availability looks region-limited rather than fully discontinued."
         }
       ],
       "sources": [
         {
-          "label": "Basenotes thread: no longer listed on YSL site",
+          "label": "Basenotes - Kouros no longer listed on YSL website",
           "url": "https://basenotes.com/threads/kouros-no-longer-listed-on-ysl-website.479965/"
         },
         {
-          "label": "Amazon UK shower gel listing",
-          "url": "https://www.amazon.co.uk/Body-Kouros-Yves-Saint-Laurent/dp/B001183NIG"
+          "label": "Le Parfumier - YSL Kouros Shower Gel",
+          "url": "https://www.leparfumier.com/en/yves-saint-laurent-ysl-kouros-for-men-shower-gel.html"
         }
       ],
       "notified": false
@@ -2466,22 +2482,17 @@
       "productHandle": "disney-donald-duck-eau-de-toilette",
       "title": "Disney Donald Duck Eau de Toilette",
       "vendor": "DISNEY",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "web",
-          "note": "1990-launch Disney kids fragrance with a much-reduced retail footprint; eBay maintains a dedicated 'Discontinued' filter category for Donald Duck fragrances, though it's still listed for sale at Macy's, Walmart and Perfume.com."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "Macy's product page",
+          "label": "Macy's - Disney Donald Duck EDT 3.4oz",
           "url": "https://www.macys.com/shop/product/disney-donald-duck-eau-de-toilette-3.4-oz.?ID=18007376"
         },
         {
-          "label": "eBay Donald Duck fragrances category",
-          "url": "https://www.ebay.com/b/Donald-Duck-Eau-de-Toilette-Fragrances-for-Children/159719/bn_5679044"
+          "label": "Walmart - Disney Donald Duck EDT",
+          "url": "https://www.walmart.com/ip/Donald-Duck-By-Disney-Edt-Spray-Men/8662924737"
         }
       ],
       "notified": false
@@ -2532,22 +2543,17 @@
       "productHandle": "yves-saint-laurent-ysl-mon-paris-pour-femme-eau-de-toilette",
       "title": "Yves Saint Laurent Ysl Mon Paris Pour Femme Eau de Toilette",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "web",
-          "note": "YSL's current site only sells 'Mon Paris Eau de Toilette Lumière', not the original Mon Paris EDT in this listing; a single eBay listing for the original describes it as 'Discontinued, hard to find, Rare.'"
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "YSL Beauty Mon Paris Lumiere page",
-          "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-her/mon-paris/mon-paris-eau-de-toilette-lumiere/WW-50954YSL.html"
+          "label": "YSL Beauty - Mon Paris Eau de Toilette",
+          "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-her/mon-paris/mon-paris-eau-de-toilette/WW-41804YSL.html"
         },
         {
-          "label": "eBay listing calling original discontinued",
-          "url": "https://www.ebay.com/itm/166645955475"
+          "label": "Macy's - Mon Paris Fragrance Collection",
+          "url": "https://www.macys.com/shop/product/yves-saint-laurent-mon-paris-eau-de-toilette-lumiere-fragrance-collection?ID=14129168"
         }
       ],
       "notified": false
@@ -2590,17 +2596,16 @@
       "productHandle": "yves-saint-laurent-ysl-lhomme-pour-homme-eau-de-parfum",
       "title": "Yves Saint Laurent YSL L'homme Pour Homme Eau De Parfum",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "community",
-          "note": "A Fragrantica Club forum thread directly asks 'Is YSL L'Homme Eau de Parfum being discontinued?', citing a diminished physical-retail presence, but there is no official confirmation from YSL and no corroborating second source."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "Fragrantica forum thread",
+          "label": "YSL Beauty - L'Homme Eau de Parfum",
+          "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-him/l-homme/l-homme-eau-de-parfum/WW-50955YSL.html"
+        },
+        {
+          "label": "Fragrantica Club - Is L'Homme EDP being discontinued?",
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=333900"
         }
       ],
@@ -2611,30 +2616,17 @@
       "productHandle": "disney-stitch-eau-de-toilette",
       "title": "Disney Stitch Eau De Toilette",
       "vendor": "DISNEY",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "web",
-          "note": "This 2025-launched fragrance shows mixed stock: FragranceNet and eCosmetics have shown it sold out/temporarily out of stock, while Macy's, Jomashop, FragranceX and eBay currently list it as available."
-        },
-        {
-          "type": "community",
-          "note": "Some customer comments reference disappointment over discontinuation, but these appear to reference an older, unrelated Stitch fragrance rather than the current 2025 release."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "Fragrantica page (2025 launch)",
+          "label": "Fragrantica - Stitch Eau de Toilette (2025)",
           "url": "https://www.fragrantica.com/perfume/Disney/Stitch-Eau-de-Toilette-109117.html"
         },
         {
-          "label": "Macy's listing",
+          "label": "Macy's - Disney Stitch EDT Spray 3.4oz",
           "url": "https://www.macys.com/shop/product/disney-stitch-eau-de-toilette-spray-3.4-oz.?ID=18007378"
-        },
-        {
-          "label": "FragranceNet listing",
-          "url": "https://www.fragrancenet.com/fragrances/disney/disney-stitch"
         }
       ],
       "notified": false
@@ -2648,22 +2640,18 @@
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "Multiple eBay resellers market the 1.6oz 'Y' after-shave balm explicitly as discontinued/new-old-stock, suggesting that specific formulation/packaging is no longer produced."
-        },
-        {
           "type": "web",
-          "note": "YSL Beauty's own site still sells a current 'Y After Shave Balm,' so the line itself continues under a possibly updated formulation, making this a single-sourced (reseller-driven) signal rather than a confirmed full discontinuation."
+          "note": "Some eBay resellers market NWOB stock as 'discontinued', but the product still has an active listing on YSL's own international site and at Le Parfumier, so signal is weak/single-sourced."
         }
       ],
       "sources": [
         {
-          "label": "eBay lot of discontinued-labeled balm",
-          "url": "https://www.ebay.com/itm/397488676480"
+          "label": "YSL Beauty - Y After Shave Balm",
+          "url": "https://www.yslbeauty.com/int/fragrance/body-care/body-care-for-him/after-shave/y--after-shave-balm/WW-50040YSL.html"
         },
         {
-          "label": "YSL Beauty current Y After Shave Balm",
-          "url": "https://www.yslbeauty.com/int/fragrance/body-care/body-care-for-him/after-shave/y--after-shave-balm/WW-50040YSL.html"
+          "label": "eBay - YSL Y After Shave Balm lot, marketed as discontinued",
+          "url": "https://www.ebay.com/itm/277583669775"
         }
       ],
       "notified": false
@@ -2747,22 +2735,17 @@
       "productHandle": "marvel-deadpool-pour-garcon-eau-de-toilette",
       "title": "Marvel Deadpool Pour Garçon Eau De Toilette",
       "vendor": "MARVEL",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "web",
-          "note": "One retailer listed a Deadpool variant as sold out/unavailable, and a reseller specializing in 'rare and discontinued' fragrances carries it, though it remains listed as current stock at Walmart, Amazon, eCosmetics, and other mainstream retailers."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "Walmart - Marvel Deadpool EDT",
-          "url": "https://www.walmart.com/ip/Marvel-Eau-De-Toilette-Spray-3-4-Oz-Deadpool-Dark/250777371"
+          "label": "Amazon - Marvel Deadpool EDT Spray",
+          "url": "https://www.amazon.com/Marvel-Dead-Toilette-Spray-Ounce/dp/B073RPLJH8"
         },
         {
-          "label": "eCosmetics - Marvel Deadpool EDT",
-          "url": "https://www.ecosmetics.com/product/marvel-deadpool-eau-de-toilette-spray/"
+          "label": "Walmart - Deadpool by Marvel EDT Spray",
+          "url": "https://www.walmart.com/ip/Deadpool-by-Marvel-Eau-De-Toilette-Spray-3-4-oz-for-Men/669186839"
         }
       ],
       "notified": false
@@ -2875,30 +2858,17 @@
       "productHandle": "yves-saint-laurent-ysl-libre-pour-femme-eau-de-toilette",
       "title": "Yves Saint Laurent Ysl Libre Pour Femme Eau de Toilette",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "community",
-          "note": "TikTok discussion threads specifically ask whether YSL Libre has been discontinued; eBay's 'YSL Women Discontinued' storefront category references Libre."
-        },
-        {
-          "type": "web",
-          "note": "YSL's US site currently surfaces several Libre EDP variants (Intense, L'Eau Nue, Vanille Couture) but no dedicated current plain 'Libre Eau de Toilette' product page turned up, suggesting the EDT specifically may have been phased out in the US while EDP variants continue."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "TikTok - Ysl Libre Discontinued discussion",
-          "url": "https://www.tiktok.com/discover/ysl-libre-discontinued"
+          "label": "Sephora - Libre Eau de Parfum",
+          "url": "https://www.sephora.com/product/libre-eau-de-parfum-P448102"
         },
         {
-          "label": "YSL Beauty US - Libre Collection",
+          "label": "YSL Beauty - Libre Collection",
           "url": "https://www.yslbeautyus.com/libre-collection.html"
-        },
-        {
-          "label": "eBay - YSL Women Discontinued",
-          "url": "https://www.ebay.com/b/YSL-Women-Discontinued/11848/bn_7116779517"
         }
       ],
       "notified": false
@@ -2987,17 +2957,17 @@
       "signals": [
         {
           "type": "web",
-          "note": "Amazon marks it 'Not Discontinued By Manufacturer,' but several perfume retailers show it out of stock/backorder with restock-notify signups, suggesting supply tightness rather than confirmed discontinuation."
+          "note": "Not officially discontinued per manufacturer note on Amazon, but several fragrance retailers show it out of stock with restock notices, suggesting supply/availability issues rather than confirmed discontinuation."
         }
       ],
       "sources": [
         {
-          "label": "Amazon listing",
+          "label": "Amazon - Cuba Shadow EDT Spray",
           "url": "https://www.amazon.com/Cuba-Shadow-Fragluxe-Toilette-Spray/dp/B07K2TD1ML"
         },
         {
-          "label": "Perfume.com listing",
-          "url": "https://www.perfume.com/fragluxe/cuba-shadow/men-cologne"
+          "label": "Fragrance Outlet - Cuba Shadow",
+          "url": "https://www.fragranceoutlet.com/products/cuba-shadow-by-cuba-for-men-eau-de-toilette-spray"
         }
       ],
       "notified": false
@@ -3007,22 +2977,17 @@
       "productHandle": "jean-paul-gaultier-le-beau-paradise-garden-pour-homme-eau-de-parfum",
       "title": "Jean Paul Gaultier Le Beau Paradise Garden Pour Homme Eau de Parfum",
       "vendor": "JEAN PAUL GAULTIER",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
-      "signals": [
-        {
-          "type": "web",
-          "note": "Still listed on Jean Paul Gaultier's official site under the Le Beau range (a 2024 seasonal/limited edition), but a TikTok search topic titled 'What happened to Le Beau Paradise Garden' points to consumer confusion about its ongoing availability."
-        }
-      ],
+      "signals": [],
       "sources": [
         {
-          "label": "JPG official product page",
-          "url": "https://www.jeanpaulgaultier.com/us/en_US/p/range-le-beau/le-beau-paradise-garden-eau-de-parfum-000000000065199801"
+          "label": "Jean Paul Gaultier official - Le Beau Paradise Garden EDP",
+          "url": "https://www.jeanpaulgaultier.com/us/en_US/p/range-le-beau-paradise-garden/le-beau-paradise-garden-eau-de-parfum-000000000065241560"
         },
         {
-          "label": "TikTok discovery topic",
-          "url": "https://www.tiktok.com/discover/What-happened-to-Le-Beau-Paradise-Garden-Jean-Paul-Gaultier"
+          "label": "FragranceX - Le Beau Paradise Garden Cologne",
+          "url": "https://www.fragrancex.com/products/jean-paul-gaultier/jean-paul-gaultier-le-beau-paradise-garden-cologne"
         }
       ],
       "notified": false
@@ -3069,25 +3034,1720 @@
       "productHandle": "yves-saint-laurent-ysl-opium-pour-homme-eau-de-parfum",
       "title": "Yves Saint Laurent Ysl Opium Pour Homme Eau de Parfum",
       "vendor": "YVES SAINT LAURENT YSL",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
-          "type": "community",
-          "note": "An eBay listing markets Opium Pour Homme as '***Discontinued***' (the fragrance dates to 1995), but a YSL Beauty international product page for 'Opium Pour Homme Eau de Toilette' still surfaced in search results, so official current status is mixed/unclear."
+          "type": "web",
+          "note": "Fragrantica and eBay both distinguish the EDP concentration of Opium Pour Homme (1995) as discontinued while the EDT version remains more readily available/reformulated; explicit 'Discontinued' labeling on multiple current eBay listings for the EDP."
         }
       ],
       "sources": [
         {
-          "label": "eBay listing tagged discontinued",
+          "label": "eBay - YSL Opium Pour Homme EDT ***Discontinued***",
           "url": "https://www.ebay.com/itm/255311418622"
         },
         {
-          "label": "YSL Beauty International product page",
-          "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-him/opium-pour-homme/opium-pour-homme-eau-de-toilette/399YSL.html"
+          "label": "Fragrantica - Opium Pour Homme Eau de Parfum (1995)",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Opium-Pour-Homme-Eau-de-Parfum-28179.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for Opium Pour Homme bottles (mostly EDT, some EDP/vintage) run roughly $96-$220 depending on size and whether it's a limited edition or vintage formulation, reflecting collector/resale pricing for a discontinued line."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-cinema-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-cinema-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent Ysl Cinema Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica Club forum debates whether Cinema is discontinued ('has almost disappeared from shelves of classic perfumeries'), and eBay/Etsy resellers label bottles 'discontinued vintage'; however YSL Beauty still maintains active product pages for Cinema EDP in the US, international, and Australian sites, so the signal is mixed/unconfirmed."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - Is Cinema discontinued??",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=171805"
+        },
+        {
+          "label": "YSL Beauty US - Cinema Eau De Parfum",
+          "url": "https://www.yslbeautyus.com/cinema-eau-de-parfum-spray/401YSL.html"
+        },
+        {
+          "label": "eBay - YSL Cinema EDP Discontinued Vintage",
+          "url": "https://www.ebay.com/itm/375154836421"
         }
       ],
       "notified": false
+    },
+    {
+      "id": "yves-saint-laurent-ysl-champagne-pour-femme-eau-de-toilette",
+      "productHandle": "yves-saint-laurent-ysl-champagne-pour-femme-eau-de-toilette",
+      "title": "Yves Saint Laurent Ysl Champagne Pour Femme Eau de Toilette",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Original 1993 'Champagne' fragrance was forced to be renamed to 'Yvresse' in 1996 after a lawsuit from the Comite Interprofessionnel du Vin de Champagne over trademark use of the word Champagne. The 'Champagne'-labeled product itself has been out of production for decades and is now a vintage collectible."
+        },
+        {
+          "type": "web",
+          "note": "Fragrantica, Basenotes and perfume blogs (Perfume Professor, Kafkaesque) all treat 'Champagne' as a discontinued/vintage-only name, distinct from the currently-sold Yvresse/La Collection Yvresse."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Yvresse (Champagne), 1993",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Yvresse-Champagne-101.html"
+        },
+        {
+          "label": "Basenotes - Yvresse / Champagne",
+          "url": "https://basenotes.com/fragrances/yvresse-champagne-by-yves-saint-laurent.10213397"
+        },
+        {
+          "label": "Perfume Professor - YSL Champagne (1993)",
+          "url": "https://perfumeprofessor.net/2018/12/30/new-years-eve-yves-saint-laurent-champagne-1993/"
+        },
+        {
+          "label": "eBay - vintage Champagne EDT/Parfum listings",
+          "url": "https://www.ebay.com/itm/276694608077"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay vintage listings for boxed 'Champagne'-labeled EDT run roughly $125-$345 depending on size/condition; small parfum-strength vintage bottles have listed as high as $499. Yvresse (current name) sells far cheaper new ($42-$65 for 60ml on outlet sites), confirming the 'Champagne' name itself is discontinued stock/collectible."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-champagne-pour-femme-deux-savon",
+      "productHandle": "yves-saint-laurent-ysl-champagne-pour-femme-deux-savon",
+      "title": "Yves Saint Laurent Ysl Champagne Pour Femme Deux Savon",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Same product line as YSL 'Champagne' (renamed Yvresse in 1996); the entire Champagne-branded line, including bath/soap items, has been out of production for decades and only survives as old stock/collectible."
+        },
+        {
+          "type": "web",
+          "note": "No current listings for a 'Champagne' soap on YSL or major retailer sites; only vintage/collector listings surface."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Yvresse (Champagne), 1993",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Yvresse-Champagne-101.html"
+        },
+        {
+          "label": "eBay - vintage Champagne perfume listings",
+          "url": "https://www.ebay.com/itm/297798958849"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Companion vintage 'Champagne' bottles (EDT/parfum) sell for $125-$500 on eBay depending on size and condition; the soap/savon format is a rarer ancillary item from the same discontinued line and turns up mainly on vintage/collector marketplaces rather than retail."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-champagne-parfum-pour-femme",
+      "productHandle": "yves-saint-laurent-ysl-champagne-parfum-pour-femme",
+      "title": "Yves Saint Laurent YSL Champagne Parfum Pour Femme",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Parfum-strength 'Champagne' (pre-1996 name for Yvresse) is discontinued; only vintage bottles circulate today."
+        },
+        {
+          "type": "web",
+          "note": "Fragrance blogs describe original boxed 'Champagne' bottles as increasingly hard to find and highly collectible since the rename/discontinuation."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Champagne Parfum 1oz vintage",
+          "url": "https://www.ebay.com/itm/276190390311"
+        },
+        {
+          "label": "eBay - Champagne Parfum .25oz vintage",
+          "url": "https://www.ebay.com/itm/276608197954"
+        },
+        {
+          "label": "Kafkaesque - YSL Vintage Champagne/Yvresse",
+          "url": "https://kafkaesqueblog.com/2013/12/14/ysl-vintage-champagneyvresse-sparkling-elegance/"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay vintage parfum listings: 1oz bottle listed at ~$499.99, 0.25oz at ~$199.99; cheapest boxed 1.7oz EDT-strength vintage bottles start around $125, larger sizes averaging $195-$200."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-black-opium-nuit-blanche-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-black-opium-nuit-blanche-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent Ysl Black Opium Nuit Blanche Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched 2016; not part of YSL's current Black Opium lineup page. Multiple independent eBay listings explicitly tag it 'DISCONTINUED RARE'."
+        },
+        {
+          "type": "web",
+          "note": "Fragrantica community commentary notes it never caught on well and is no longer sold, with collectors seeking remaining stock."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Black Opium Nuit Blanche 'DISCONTINUED RARE'",
+          "url": "https://www.ebay.com/itm/336204404932"
+        },
+        {
+          "label": "Fragrantica - Black Opium Nuit Blanche",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Black-Opium-Nuit-Blanche-34503.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay: 90ml (3oz) bottles listed/sold around $67-$79; some sealed listings priced up to ~$78-$120 depending on seller, sold as remaining/discontinued stock rather than new retail inventory."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-black-opium-neon-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-black-opium-neon-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent Ysl Black Opium Neon Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched 2019 as a limited flanker; no longer purchasable directly from YSL Beauty US site, with only third-party resellers (FragranceNet, Amazon, Fragrance Outlet) carrying remaining stock."
+        },
+        {
+          "type": "web",
+          "note": "Multiple eBay listings for Black Opium Neon are framed around limited leftover stock rather than active new inventory, consistent with a discontinued limited edition."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceNet - Black Opium Neon",
+          "url": "https://www.fragrancenet.com/perfume/yves-saint-laurent/black-opium-neon/eau-de-parfum"
+        },
+        {
+          "label": "eBay - Black Opium Neon 75ml listings",
+          "url": "https://www.ebay.com/itm/126530110305"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay: 75ml/2.5oz bottles have sold around $71.95 (tester, new in box); active listings range roughly $65-$140 depending on condition/seller. FragranceNet lists remaining 1oz stock at ~$120.99."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-black-opium-intense-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-black-opium-intense-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent YSL Black Opium Intense Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica community discussion indicates Black Opium Intense (2019) has been discontinued and effectively superseded by Black Opium Extreme / Black Opium Le Parfum in YSL's current lineup."
+        },
+        {
+          "type": "web",
+          "note": "Multiple 2025-dated eBay listings (including some labeled 'descatalogado' / discontinued) sell it as remaining stock rather than current retail inventory."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica forum - Which Black Opium (Intense vs Extreme)",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=271983"
+        },
+        {
+          "label": "eBay DE - Black Opium Intense 'Discontinued'",
+          "url": "https://www.ebay.de/itm/267284366897"
+        },
+        {
+          "label": "eBay DE - Black Opium Intense 90ml 'Descatalogado'",
+          "url": "https://www.ebay.de/itm/267140517545"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 90ml Black Opium Intense circulate as sealed 'discontinued' stock; comparable Black Opium flanker resale pricing runs roughly $60-$90 for 90ml bottles, well under typical $130+ department-store new pricing."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-black-opium-illicit-green-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-black-opium-illicit-green-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent YSL Black Opium Illicit Green Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched 2022 as a limited-edition Black Opium flanker; multiple eBay listings explicitly market it as 'Discontinued Rare'."
+        },
+        {
+          "type": "web",
+          "note": "Reviews/community commentary note it was a limited-time release with fans expressing disappointment over discontinuation and asking YSL to bring it back."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Black Opium Illicit Green 1oz 'Discontinued Rare'",
+          "url": "https://www.ebay.com/itm/257402109450"
+        },
+        {
+          "label": "Fragrantica - Black Opium Illicit Green, 2022",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Black-Opium-Illicit-Green-71193.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Active eBay resale market with dozens of units sold across listings (one listing shows 40+ sold); sold as limited/leftover stock across 1oz-2.5oz sizes rather than fresh retail inventory."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-black-opium-floral-shock-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-black-opium-floral-shock-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent Ysl Black Opium Floral Shock Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched 2017 as a limited Black Opium flanker; a Fragrantica Club thread is literally titled 'Help, Black Opium Floral Shock is discontinued', and multiple eBay listings tag it 'Discontinued'/rare."
+        },
+        {
+          "type": "web",
+          "note": "High demand for remaining stock has led to counterfeit warnings on eBay listings, a common signal of a sought-after discontinued item."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - 'Black Opium Floral Shock is discontinued'",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=295044"
+        },
+        {
+          "label": "eBay - Black Opium Floral Shock 90ml",
+          "url": "https://www.ebay.com/itm/286717474524"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay: 90ml bottles have sold around £65 (~$82); listings frame it as remaining/discontinued stock rather than current retail inventory."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-belle-dopium-pour-femme-gel-douche",
+      "productHandle": "yves-saint-laurent-ysl-belle-dopium-pour-femme-gel-douche",
+      "title": "Yves Saint Laurent Ysl Belle D'Opium Pour Femme Gel Douche",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Belle d'Opium (2010) has been discontinued by YSL; a Fragrantica Club thread directly asks/confirms 'Has Belle d'Opium by YSL been discontinued?' and multiple sources describe it as now a collectible, resale-only item."
+        },
+        {
+          "type": "web",
+          "note": "No listing found on current YSL Beauty retail pages; available primarily through eBay, specialty vintage sellers (e.g. Fragrance Vault) and other resellers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - Has Belle d'Opium been discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=88480"
+        },
+        {
+          "label": "eBay - Belle D'Opium listings",
+          "url": "https://www.ebay.com/p/Yves-Saint-Laurent-Belle-DOpium-3oz-Womens-Eau-de-Parfum/139696452"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Companion Belle d'Opium EDP bottles sell around €190/$165 for 90ml on eBay.de resale listings, and 10ml minis around $27.95; the shower gel/gel douche format from the same discontinued line is a rarer ancillary item found mainly through vintage/bath-set resellers."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-belle-dopium-pour-femme-eau-de-parfum",
+      "productHandle": "yves-saint-laurent-ysl-belle-dopium-pour-femme-eau-de-parfum",
+      "title": "Yves Saint Laurent Ysl Belle D'Opium Pour Femme Eau de Parfum",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Belle d'Opium (2010) has been discontinued by YSL; Fragrantica Club thread and multiple perfume sites describe it as no longer produced and now a collectible sold mainly through resale/specialty vintage retailers."
+        },
+        {
+          "type": "web",
+          "note": "Not found on current official YSL Beauty retail pages or major mainstream retailers (Sephora/Ulta); only vintage sellers and marketplaces (eBay, Fragrance Vault) carry it."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - Has Belle d'Opium been discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=88480"
+        },
+        {
+          "label": "Fragrance Vault - Belle D'Opium EDP",
+          "url": "https://fragrancevault.net/products/yves-st-laurent-belle-dopium-eau-de-parfum"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay/eBay.de listings: 90ml bottles around €190 (~$165); 10ml sample sprays around $27.95 (10+ sold). Prices trend at a premium versus original retail, consistent with discontinued/collectible status."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-baby-doll-pour-femme-gel-douche",
+      "productHandle": "yves-saint-laurent-ysl-baby-doll-pour-femme-gel-douche",
+      "title": "Yves Saint Laurent Ysl Baby Doll Pour Femme Gel Douche",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "YSL Baby Doll (launched 2000) has been discontinued for years; Fragrantica Club discussion confirms discontinuation, and Etsy/eBay listings consistently label the line 'Discontinued Vintage Rare'."
+        },
+        {
+          "type": "web",
+          "note": "A YouTube fragrance review is explicitly titled 'Baby Doll ... Review and Dupes - Alert Discontinued Perfume!', reinforcing multi-source agreement; only old/deadstock inventory circulates via eBay and Etsy."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - Has YSL Baby Doll been discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=174975"
+        },
+        {
+          "label": "Etsy - Baby Doll YSL 'Discontinued Vintage Rare'",
+          "url": "https://www.etsy.com/listing/1770138910/baby-doll-by-yves-saint-laurent-ysl-eau"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Companion Baby Doll EDT 100ml bottles sell in roughly the $120-$180 range on eBay as deadstock/vintage; the gel douche (shower gel) format from the same discontinued line is a rarer bath-line item typically found only via the same vintage/deadstock resellers (eBay, Etsy)."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-ysl-baby-doll-pour-femme-eau-de-toilette",
+      "productHandle": "yves-saint-laurent-ysl-baby-doll-pour-femme-eau-de-toilette",
+      "title": "Yves Saint Laurent Ysl Baby Doll Pour Femme Eau de Toilette",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica community thread and multiple eBay/Etsy listings confirm Baby Doll (launched 2000) is long discontinued; not present on current YSL Beauty site fragrance lineup, only sold as vintage/NOS stock."
+        },
+        {
+          "type": "web",
+          "note": "Fragrantica forum thread explicitly titled 'Has YSL Baby Doll been discontinued?' with community consensus it has been."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Baby Doll",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Baby-Doll-99.html"
+        },
+        {
+          "label": "Fragrantica Club forum - discontinued discussion",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=174975"
+        },
+        {
+          "label": "eBay listing - discontinued",
+          "url": "https://www.ebay.com/itm/375603349008"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay/Etsy listings for 50-100ml EDT bottles marked 'discontinued/rare' typically priced roughly $80-180+ depending on size/condition; no longer sold new by official retailers, only resale/vintage stock."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-y-live-pour-homme-eau-de-toilette-intense",
+      "productHandle": "yves-saint-laurent-y-live-pour-homme-eau-de-toilette-intense",
+      "title": "Yves Saint Laurent Y Live Pour Homme Eau de Toilette Intense",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica news/product pages and multiple eBay listings label Y Live (2019) as discontinued and phased out of the North American market, with community reports it was renamed/folded into 'Y Eau Intense EDT'."
+        },
+        {
+          "type": "web",
+          "note": "eBay listing titled 'YSL Y LIVE EDT INTENSE SPRAY 100mL DISCONTINUED LEGENDARY PERFUME' - a second independent seller corroborating discontinued status."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Y Live Intense discontinued",
+          "url": "https://www.ebay.com/itm/178312318111"
+        },
+        {
+          "label": "Fragrantica - Y Live",
+          "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Y-Live-55810.html"
+        },
+        {
+          "label": "eBay - Y Live EDT Intense discontinued",
+          "url": "https://www.ebay.com/itm/336125741342"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Sealed 100ml bottles on eBay currently listed/selling in roughly $60-100 range (one comparable Y line sealed 100ml sold for $99.99); not available on official YSL Beauty US site."
+      }
+    },
+    {
+      "id": "yves-saint-laurent-opium-trousse-a-cosmetique-1757453178",
+      "productHandle": "yves-saint-laurent-opium-trousse-a-cosmetique-1757453178",
+      "title": "Yves Saint Laurent Opium Trousse à Cosmétique",
+      "vendor": "YVES SAINT LAURENT YSL",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "This specific vintage-style Opium gift set (EDT + dusting powder + bath/shower cream + cosmetic bag) does not appear on YSL's current official site; only comparable vintage Opium gift sets turn up, sold as 'discontinued' on eBay/Etsy, suggesting this older-format set is no longer produced."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Opium gift set (discontinued)",
+          "url": "https://www.ebay.com/itm/265050149987"
+        },
+        {
+          "label": "eBay - Opium vintage collector's formula set",
+          "url": "https://www.ebay.com/itm/126956839170"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-torino-23-eau-de-parfum",
+      "productHandle": "xerjoff-torino-23-eau-de-parfum",
+      "title": "Xerjoff Torino 23 Eau De Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Torino23 is a limited annual edition tied to Xerjoff's Nitto ATP Finals sponsorship (Torino21-25 series, now succeeded by Torino24 and the final Torino25 released 2025); a retailer listing shows Torino23 as 'Low Stock', consistent with the line being sunset/superseded rather than restocked."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Torino23",
+          "url": "https://www.fragrantica.com/perfume/Xerjoff/Torino23-87970.html"
+        },
+        {
+          "label": "FragranceNet - Torino 23 low stock",
+          "url": "https://www.fragrancenet.com/fragrances/xerjoff/xerjoff-torino-23/eau-de-parfum"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-torino-21-jtc-atp-eau-de-parfum",
+      "productHandle": "xerjoff-torino-21-jtc-atp-eau-de-parfum",
+      "title": "Xerjoff Torino 21 JTC ATP Eau De Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Event-tied 2021 Nitto ATP Finals Torino release; a resale aggregator (PicClick) lists it under discontinued listings, though several boutique retailers (Niche Essence, Jomashop, Le Parfumier) still carry it. No official Xerjoff confirmation found."
+        }
+      ],
+      "sources": [
+        {
+          "label": "PicClick - Xerjoff Torino 21 listings",
+          "url": "https://picclick.com/Popular/xerjoff-torino-21"
+        },
+        {
+          "label": "Jomashop - Torino21 EDP",
+          "url": "https://www.jomashop.com/xerjoff-torino21-eau-de-parfum-50ml-1-7oz-8054320901211.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-shooting-stars-nio-eau-de-parfum",
+      "productHandle": "xerjoff-shooting-stars-nio-eau-de-parfum",
+      "title": "Xerjoff Shooting Stars Nio Eau De Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One retailer (CouCou Shop) categorizes Nio under 'Sold out and Discontinued Fragrances', but it remains listed on Xerjoff's own official site and in stock at Jomashop/eBay. Single-source, weak signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "CouCou Shop - discontinued listing",
+          "url": "https://www.coucoushop.com/xerjoff-shooting-stars-nio-edp-50ml.html"
+        },
+        {
+          "label": "Xerjoff official product page",
+          "url": "https://www.xerjoff.com/shooting-stars/172-nioparfum-50ml-8033488151553.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-purple-accento-crystal-edition-eau-de-parfum",
+      "productHandle": "xerjoff-purple-accento-crystal-edition-eau-de-parfum",
+      "title": "Xerjoff Purple Accento Crystal Edition Eau de Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A new 'Purple Accento' (2025) with different silk-foulard packaging has launched from Xerjoff, suggesting the original 2021 Crystal Edition may be getting phased out as its successor. Crystal Edition is still listed at multiple retailers currently, so this is a weak/single-angle signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Purple Accento (2025)",
+          "url": "https://www.fragrantica.com/perfume/Xerjoff/Purple-Accento-110892.html"
+        },
+        {
+          "label": "Fragrantica - Purple Accento Crystal Edition (2021)",
+          "url": "https://www.fragrantica.com/perfume/Xerjoff/Purple-Accento-Crystal-Edition-65616.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-golden-dallah-parfum",
+      "productHandle": "xerjoff-golden-dallah-parfum",
+      "title": "Xerjoff Golden Dallah Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "A single eBay seller/reviewer note claims the fragrance was discontinued and the bottle changed (pump removed), but it remains listed and in stock at the official Xerjoff site, FragranceNet, Beverly Hills Perfumery, and Walmart. Weak, single-sourced signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Xerjoff official - Golden Dallah",
+          "url": "https://www.xerjoff.com/en-us/products/golden-dallah-parfum"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "xerjoff-casamorati-quattro-pizzi-eau-de-parfum",
+      "productHandle": "xerjoff-casamorati-quattro-pizzi-eau-de-parfum",
+      "title": "Xerjoff Casamorati Quattro Pizzi Eau De Parfum",
+      "vendor": "XERJOFF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "2024 release; official Xerjoff site shows it as sold out and some retailers show low/limited stock, though most authorized sellers (Nordstrom, FragranceNet, Jomashop) still list it. Likely a stock gap rather than confirmed discontinuation."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Xerjoff official product page",
+          "url": "https://www.xerjoff.com/casamorati/10526-quattro-pizzi-eau-de-parfum-100ml.html"
+        },
+        {
+          "label": "Nordstrom listing",
+          "url": "https://www.nordstrom.com/s/casamorati-quattro-pizzi-eau-de-parfum/8101977"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "worth-je-reviens-pour-femme-eau-de-toilette",
+      "productHandle": "worth-je-reviens-pour-femme-eau-de-toilette",
+      "title": "Worth Je Reviens Pour Femme Eau de Toilette",
+      "vendor": "WORTH",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Classic 1929 fragrance; a customer review speculates Worth may be discontinuing it, but no independent confirmation. Still actively sold by FragranceNet, Jomashop, FragranceX and Perfume.com."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Je Reviens EDT",
+          "url": "https://www.fragrantica.com/perfume/Worth/Je-Reviens-Eau-de-Toilette-5130.html"
+        },
+        {
+          "label": "FragranceNet listing",
+          "url": "https://www.fragrancenet.com/fragrances/worth/je-reviens"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "weil-kipling-pour-homme-eau-de-toilette",
+      "productHandle": "weil-kipling-pour-homme-eau-de-toilette",
+      "title": "Weil Kipling Pour Homme Eau de Toilette",
+      "vendor": "WEIL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "1986 launch, widely described as discontinued by Parfumo, Basenotes and Fragrantica community; no current listings on brand or major retailer sites, only vintage/NOS stock on eBay."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Parfumo Kipling by Weil",
+          "url": "https://www.parfumo.com/Perfumes/Weil/Kipling_Eau_de_Toilette"
+        },
+        {
+          "label": "eBay - Weil Kipling EDT",
+          "url": "https://www.ebay.com/itm/375842215837"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for vintage/NOS bottles run roughly $20-$45 (e.g., 100ml EDT ~$20, 1oz NIB spray higher); no active sales through mainstream retailers, only secondhand/vintage stock."
+      }
+    },
+    {
+      "id": "weil-antilope-pour-femme-eau-de-cologne",
+      "productHandle": "weil-antilope-pour-femme-eau-de-cologne",
+      "title": "Weil Antilope Pour Femme Eau de Cologne",
+      "vendor": "WEIL",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "1946 launch, long discontinued vintage classic; no current brand or major retailer listings found. Multiple 'type'/clone makers (Fragrance Revival, etc.) exist specifically because the original is unavailable new."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Antilope by Weil",
+          "url": "https://www.fragrantica.com/perfume/Weil/Antilope-5315.html"
+        },
+        {
+          "label": "eBay - vintage Weil Antilope",
+          "url": "https://www.ebay.com/itm/321910189227"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay vintage listings range from ~$8 for minis to ~$40-$50 for full/larger bottles; a 2.25oz Parfum de Toilette spray sold at $39.99. Only secondhand/vintage market activity found, no new retail stock."
+      }
+    },
+    {
+      "id": "vuarnet-pour-homme-lotion-apres-rasage",
+      "productHandle": "vuarnet-pour-homme-lotion-apres-rasage",
+      "title": "Vuarnet Pour Homme Lotion Apres-Rasage",
+      "vendor": "VUARNET",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Vuarnet's fragrance line (a sunglasses brand's 1990s fragrance venture, e.g. Vuarnet 1960) is widely noted as discontinued and sold only through vintage/specialty retailers and secondary markets; no official brand fragrance site or current mainstream retail listings found for this aftershave lotion specifically."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Amazon - Vuarnet 1960 EDP (Beauty & Personal Care)",
+          "url": "https://www.amazon.com/Vuarnet-1960-Parfum-Spray-Ounce/dp/B008LYCNJS"
+        },
+        {
+          "label": "Coucou Shop - Sold out and Discontinued Fragrances: Vuarnet 1960",
+          "url": "https://www.coucoushop.com/vuarnet-1960-for-men-edp-60ml.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay/secondary-market listings for Vuarnet fragrance items range from ~$44-$69 for EDT sprays, with at least one item showing 12 units sold at $149; no aftershave-lotion-specific pricing found, but the line overall trades only as vintage/NOS stock."
+      }
+    },
+    {
+      "id": "vince-camuto-pour-femme-lotion-pour-le-corps",
+      "productHandle": "vince-camuto-pour-femme-lotion-pour-le-corps",
+      "title": "Vince Camuto Pour Femme Lotion Pour le Corps",
+      "vendor": "VINCE CAMUTO",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Vince Camuto Femme body lotion appears to have been dropped from the brand's current-season lineup; still findable at FragranceNet and eBay in limited/low stock, but not prominently listed as an active SKU alongside newer Vince Camuto scents (Bella, Amore)."
+        }
+      ],
+      "sources": [
+        {
+          "label": "FragranceNet - Vince Camuto Femme Body Lotion",
+          "url": "https://www.fragrancenet.com/perfume/vince-camuto/vince-camuto-femme/body-lotion"
+        },
+        {
+          "label": "eBay - Vince Camuto Femme Body Lotion",
+          "url": "https://www.ebay.com/p/1327968883"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "vince-camuto-pour-femme-eau-de-parfum",
+      "productHandle": "vince-camuto-pour-femme-eau-de-parfum",
+      "title": "Vince Camuto Pour Femme Eau de Parfum",
+      "vendor": "VINCE CAMUTO",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Vince Camuto Femme EDP (2013 launch) does not appear on the brand's current official fragrance collection page; still sold via FragranceNet, Fragrance Outlet, Macy's and eBay's 'discontinued Vince Camuto' category, suggesting sell-through of remaining stock rather than active production."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Vince Camuto official - All Fragrance",
+          "url": "https://www.vincecamuto.com/collections/all-fragrance"
+        },
+        {
+          "label": "FragranceNet - Vince Camuto Femme EDP",
+          "url": "https://www.fragrancenet.com/perfume/vince-camuto/vince-camuto-femme/eau-de-parfum"
+        },
+        {
+          "label": "eBay - Vince Camuto Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Vince-Camuto-Discontinued-Fragrances-for-Women/11848/bn_7116762311"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "vince-camuto-fiori-pour-femme-eau-de-parfum",
+      "productHandle": "vince-camuto-fiori-pour-femme-eau-de-parfum",
+      "title": "Vince Camuto Fiori Pour Femme Eau de Parfum",
+      "vendor": "VINCE CAMUTO",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fiori was a 2013 limited-edition release; not on Vince Camuto's current site lineup, and is grouped under eBay's discontinued Vince Camuto women's fragrances listings, though decant sellers (Scent Decant, Scent Box) still carry samples."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Fiori",
+          "url": "https://www.fragrantica.com/perfume/Vince-Camuto/Fiori-17833.html"
+        },
+        {
+          "label": "eBay - Vince Camuto Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Vince-Camuto-Discontinued-Fragrances-for-Women/11848/bn_7116762311"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "vince-camuto-femme-pour-femme-eau-de-parfum",
+      "productHandle": "vince-camuto-femme-pour-femme-eau-de-parfum",
+      "title": "Vince Camuto Femme Pour Femme Eau de Parfum",
+      "vendor": "VINCE CAMUTO",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Same signal as Vince Camuto Femme EDP: absent from brand's current official collection, sold mainly through discount fragrance sites and eBay's discontinued-listings category."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Vince Camuto official - All Fragrance",
+          "url": "https://www.vincecamuto.com/collections/all-fragrance"
+        },
+        {
+          "label": "Le Parfumier - Vince Camuto Femme EDP",
+          "url": "https://www.leparfumier.com/en/vince-camuto-femme-for-women-eau-de-parfum.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "viktor-rolf-spicebomb-infrared-pour-homme-eau-de-toilette",
+      "productHandle": "viktor-rolf-spicebomb-infrared-pour-homme-eau-de-toilette",
+      "title": "Viktor & Rolf Spicebomb Infrared Pour Homme Eau de Toilette",
+      "vendor": "VIKTOR & ROLF",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Viktor & Rolf's own official US site lists the Spicebomb Infrared Eau de Toilette under its '/discontinued-fragrances/' URL path, explicitly confirming discontinuation directly from the brand. The Infrared line continues, but only as an Eau de Parfum (separate active product page), not the EDT."
+        },
+        {
+          "type": "web",
+          "note": "Still actively sold through retailers selling remaining stock: FragranceX, MaxAroma, Amazon, Walmart, and multiple eBay listings."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Viktor & Rolf official - Spicebomb Infrared EDT (discontinued-fragrances page)",
+          "url": "https://us.viktor-rolf.com/discontinued-fragrances/spicebomb-infrared-eau-de-toilette-VKR_208.html"
+        },
+        {
+          "label": "Viktor & Rolf official - Spicebomb Infrared EDP (active)",
+          "url": "https://us.viktor-rolf.com/fragrance/spicebomb-infrared-eau-de-parfum-VKR_313.html"
+        },
+        {
+          "label": "FragranceX - Spicebomb Infrared Cologne",
+          "url": "https://www.fragrancex.com/products/viktor-and-rolf/spicebomb-infrared-cologne"
+        },
+        {
+          "label": "MaxAroma - Spicebomb Infrared",
+          "url": "https://www.maxaroma.com/fragrance/men/viktor-rolf-spicebomb-infrared/pid/28213/3"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "MaxAroma lists Spicebomb Infrared EDT at a regular price of $128 marked down to a clearance price of ~$72; FragranceX prices it around $75-$86 (up to 80% off retail). Multiple active eBay listings for the 90ml/3.04oz bottle in the same discounted range, consistent with sell-through of discontinued stock."
+      }
+    },
+    {
+      "id": "viktor-rolf-flowerbomb-midnight-pour-femme-eau-de-parfum",
+      "productHandle": "viktor-rolf-flowerbomb-midnight-pour-femme-eau-de-parfum",
+      "title": "Viktor & Rolf Flowerbomb Midnight Pour Femme Eau de Parfum",
+      "vendor": "VIKTOR & ROLF",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Viktor & Rolf's own official US site lists Flowerbomb Midnight under its 'discontinued-fragrances' catalog path, confirming the brand itself has retired it."
+        },
+        {
+          "type": "web",
+          "note": "Multiple eBay and Poshmark resale listings explicitly tag remaining stock as 'discontinued' and 'rare'."
+        }
+      ],
+      "sources": [
+        {
+          "label": "V&R official site - discontinued fragrances listing",
+          "url": "https://us.viktor-rolf.com/discontinued-fragrances/flowerbomb-midnight-VKR_113.html"
+        },
+        {
+          "label": "eBay - Flowerbomb Midnight 3.4oz 'Discontinued* Sealed'",
+          "url": "https://www.ebay.com/itm/205583170932"
+        },
+        {
+          "label": "Poshmark - Flowerbomb Midnight EDP discontinued listing",
+          "url": "https://poshmark.com/listing/VIKTORROLF-FLOWERBOMB-MIDNIGHT-EDP-50ml-DISCONTINUED-662b498cce7065be497be13d"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "No longer sold new by the brand or major retailers (Macy's/FragranceNet listings appear to be sell-through of remaining stock). Resale/sell-through 3.4oz bottles are going for roughly $90-$110 on eBay."
+      }
+    },
+    {
+      "id": "viktor-rolf-eau-mega-pour-femme-eau-de-parfum",
+      "productHandle": "viktor-rolf-eau-mega-pour-femme-eau-de-parfum",
+      "title": "Viktor & Rolf Eau Mega Pour Femme Eau de Parfum",
+      "vendor": "VIKTOR & ROLF",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "No current product page exists on the official Viktor & Rolf site (2009 launch); only gray-market/discount sellers (99perfume, eDukkaan, Amazon third-party) and resale platforms carry it."
+        },
+        {
+          "type": "web",
+          "note": "eBay, Poshmark and Fragrantica community listings consistently label it 'rare' and 'discontinued'."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Eau Mega discontinued fragrances category",
+          "url": "https://www.ebay.com/b/Eau-Mega-Discontinued-Fragrances-for-Women/11848/bn_7116771405"
+        },
+        {
+          "label": "Fragrantica - Eau Mega (2009)",
+          "url": "https://www.fragrantica.com/perfume/Viktor-Rolf/Eau-Mega-6484.html"
+        },
+        {
+          "label": "Poshmark - Eau Mega BNIB 'Sealed Rare Discontinued'",
+          "url": "https://poshmark.com/listing/ViktorRolf-Viktor-Rolf-Eau-Mega-BNIB-1-oz-50ml-Sealed-Rare-Discontinued-Parfum-67b7c7bbf884711f1453d436"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Not available through the brand or mainstream retailers; eBay resale listings for 50ml-75ml bottles range roughly $140-$270, reflecting collector/discontinued pricing."
+      }
+    },
+    {
+      "id": "viktor-rolf-bonbon-spring-summer-pour-femme-eau-de-toilette",
+      "productHandle": "viktor-rolf-bonbon-spring-summer-pour-femme-eau-de-toilette",
+      "title": "Viktor & Rolf Bonbon Spring Summer Pour Femme Eau de Toilette",
+      "vendor": "VIKTOR & ROLF",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "This was a 2017 limited-edition seasonal flanker exclusive to Bloomingdale's; it is absent from the current V&R lineup and from all major retailers, surfacing only on eBay as old/vintage stock."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica news - Bonbon Spring Summer launch",
+          "url": "https://www.fragrantica.com/news/Viktor-Rolf-Bonbon-Spring-Summer-9127.html"
+        },
+        {
+          "label": "eBay - Bonbon Spring Summer 2017 EDT listing",
+          "url": "https://www.ebay.com/itm/255765566263"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Only sold on eBay as remaining/vintage stock (50ml bottles); no current MSRP or brand listing exists since it was a one-season Bloomingdale's exclusive from 2017."
+      }
+    },
+    {
+      "id": "viktor-rolf-bonbon-pour-femme-eau-de-parfum",
+      "productHandle": "viktor-rolf-bonbon-pour-femme-eau-de-parfum",
+      "title": "Viktor & Rolf Bonbon Pour Femme Eau de Parfum",
+      "vendor": "VIKTOR & ROLF",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mixed/weak signal: some eBay listings and TikTok/forum chatter call Bonbon 'discontinued', but V&R consumer care reportedly told customers it is 'not discontinued, currently out of stock due to high demand,' and it remains listed on the official site and Macy's."
+        }
+      ],
+      "sources": [
+        {
+          "label": "TikTok discussion - Is Bonbon getting discontinued",
+          "url": "https://www.tiktok.com/discover/is-bon-bon-by-viktor-and-rolf-getting-discontinued?lang=en"
+        },
+        {
+          "label": "Viktor & Rolf official product page - Bonbon EDP",
+          "url": "https://us.viktor-rolf.com/flowerbomb/bonbon-eau-de-parfum/bonbon-eau-de-parfum-VKR_047.html"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "victorinox-swiss-army-altitude-pour-homme-eau-de-toilette",
+      "productHandle": "victorinox-swiss-army-altitude-pour-homme-eau-de-toilette",
+      "title": "Victorinox Swiss Army Altitude Pour Homme Eau de Toilette",
+      "vendor": "VICTORINOX SWISS ARMY",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One retailer (Amour Boutique/Amour Fragrances) explicitly labels this 'DISCONTINUED', but it remains in stock at Perfume.com, FragranceX, and eBay, and Parfumo lists it as still in production - a single-sourced, contradicted signal."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Amour Boutique listing tagged DISCONTINUED",
+          "url": "https://amourfragrances.com/products/victorinox-swiss-army-altitude-edt-for-men-discontinued"
+        },
+        {
+          "label": "Perfume.com - Swiss Army Altitude in stock",
+          "url": "https://www.perfume.com/victorinox/swiss-army-altitude/men-cologne"
+        }
+      ],
+      "notified": false
+    },
+    {
+      "id": "versace-yellow-jeans-pour-femme-eau-de-toilette",
+      "productHandle": "versace-yellow-jeans-pour-femme-eau-de-toilette",
+      "title": "Versace Yellow Jeans Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Part of the Versace Jeans Couture fragrance line launched 1996, discontinued for over a decade; not sold anywhere new, only as 'vintage/rare' on eBay, Etsy, 1stdibs; Fragrantica, Parfumo, TikTok and Basenotes all describe it as discontinued/collectible."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Yellow Jeans Versace (1996)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Yellow-Jeans-1763.html"
+        },
+        {
+          "label": "eBay - Yellow Jeans by Versace listings",
+          "url": "https://www.ebay.com/b/Yellow-Jeans-by-Versace-Womens-Fragrances/11848/bn_732247"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale listings for vintage sealed 75ml (2.5oz) bottles run roughly $150-$240; used/partial bottles sell lower. No new stock exists at any retailer."
+      }
+    },
+    {
+      "id": "versace-yellow-diamond-intense-pour-femme-eau-de-parfum",
+      "productHandle": "versace-yellow-diamond-intense-pour-femme-eau-de-parfum",
+      "title": "Versace Yellow Diamond Intense Pour Femme Eau de Parfum",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "No longer listed on versace.com (unlike regular Yellow Diamond); multiple Fragrantica community threads and TikTok posts describe it as discontinued/hard to find; still lingers at a few discount sellers (FragranceNet, Jomashop) and eBay while stock lasts."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - Yellow Diamond Intense discussion",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=288700"
+        },
+        {
+          "label": "Versace US - Yellow Diamond (no Intense listed)",
+          "url": "https://www.versace.com/us/en/women/accessories/fragrances-body-care/yellow-diamond/"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 3oz/1.7oz Yellow Diamond Intense EDP run roughly $30-$60 depending on set/size, sold as remaining/discounted stock rather than fresh production."
+      }
+    },
+    {
+      "id": "versace-woman-pour-femme-eau-de-parfum",
+      "productHandle": "versace-woman-pour-femme-eau-de-parfum",
+      "title": "Versace Woman Pour Femme Eau de Parfum",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched 2000; no longer listed on Versace's official website. Fragrantica community (replacement-scent thread) and multiple discontinued-fragrance retailers list it as discontinued; still findable at discounters/eBay while supplies last."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica Club - replacement for Versace Woman?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=335504"
+        },
+        {
+          "label": "FragranceOriginal - discontinued Gianni Versace collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/gianni-versace"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 100ml/3.4oz Versace Woman EDP typically range roughly $25-$60 depending on condition and seller."
+      }
+    },
+    {
+      "id": "versace-white-jeans-pour-femme-eau-de-toilette",
+      "productHandle": "versace-white-jeans-pour-femme-eau-de-toilette",
+      "title": "Versace White Jeans Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Part of the same discontinued Versace Jeans Couture line as Yellow Jeans (launched 1997); no current retailer sells it new, only vintage/rare listings on eBay and similar; Fragrantica lists it among discontinued Jeans Couture scents."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - White Jeans Versace (1997)",
+          "url": "https://www.fragrantica.com/perfume/Versace/White-Jeans-1764.html"
+        },
+        {
+          "label": "eBay - Versace White Jeans listings",
+          "url": "https://www.ebay.com/b/Versace-White-Jeans-Fragrances-for-Women/11848/bn_704813"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale listings for vintage 75ml (2.5oz) bottles range roughly $54-$350 depending on rarity/condition/whether sealed; sold listings cluster around $50-$150."
+      }
+    },
+    {
+      "id": "versace-vs-pour-homme-eau-de-toilette",
+      "productHandle": "versace-vs-pour-homme-eau-de-toilette",
+      "title": "Versace V/S Pour Homme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Discontinued men's scent (launched ~2000); not sold on versace.com; multiple sources (Perfume.com customer comments lamenting discontinuation, TikTok 'discontinued Versace colognes' posts, discontinued-fragrance retailers) agree it's gone from production; remaining stock sold through discounters and eBay."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Perfume.com - Versace V/S (V S) Cologne for Men",
+          "url": "https://www.perfume.com/versace/vs-v-s/men-cologne"
+        },
+        {
+          "label": "FragranceOriginal - discontinued Gianni Versace collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/gianni-versace"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 3.4oz/100ml V/S Versus EDT commonly run roughly $35-$50 for remaining/older stock."
+      }
+    },
+    {
+      "id": "versace-versus-vs-pour-homme-eau-de-toilette",
+      "productHandle": "versace-versus-vs-pour-homme-eau-de-toilette",
+      "title": "Versace Versus V/S Pour Homme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica/Parfumo list V/S (2000) as discontinued; retailers (VisionScents, Le Parfumier) and Etsy sellers explicitly market it as 'vintage, discontinued, very rare'."
+        },
+        {
+          "type": "web",
+          "note": "Not sold on Versace's own site; only found via resale/decant sellers and eBay."
+        }
+      ],
+      "sources": [
+        {
+          "label": "VisionScents - Versus Pour Homme (Vintage, Discontinued)",
+          "url": "https://visionscents.com/products/gianni-versace-versus-pour-homme-eau-de-toilette-spray-for-men-100-ml-3-3-oz-vintage-discontinued"
+        },
+        {
+          "label": "Etsy - Versace VERSUS V/S EDT 100ml Vintage Discontinued",
+          "url": "https://www.etsy.com/listing/1834395577/versace-versus-vs-eau-de-toilette-100ml"
+        },
+        {
+          "label": "Fragrantica - Versus Uomo (1991)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Versus-Uomo-1417.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Resold on eBay/Etsy as vintage stock, roughly $50-$180 depending on size/seller (Versus family range), no longer available new from brand or major retailers."
+      }
+    },
+    {
+      "id": "versace-versus-vs-pour-femme-lotion-pour-le-corps",
+      "productHandle": "versace-versus-vs-pour-femme-lotion-pour-le-corps",
+      "title": "Versace Versus V/S Pour Femme Lotion Pour le Corps",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Part of the Versus V/S line, which Fragrantica/collector sources confirm is discontinued; body-lotion companion products from this line are no longer produced."
+        },
+        {
+          "type": "web",
+          "note": "Not carried by Sephora/Ulta/Nordstrom/FragranceX or Versace's own site; only found on eBay/Etsy as vintage stock."
+        }
+      ],
+      "sources": [
+        {
+          "label": "eBay - Versus by Versace Fragrances",
+          "url": "https://www.ebay.com/b/Versus-by-Versace-Fragrances/180345/bn_7109932207"
+        },
+        {
+          "label": "Fragrantica - V/S Versus (1998)",
+          "url": "https://www.fragrantica.com/perfume/Versace/V-S-Versus-1758.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Companion body-care items from the discontinued Versus V/S line surface only on eBay/Etsy as old stock, typically $20-$40, with no current retail listing found."
+      }
+    },
+    {
+      "id": "versace-versus-time-for-energy-pour-femme-eau-de-toilette",
+      "productHandle": "versace-versus-time-for-energy-pour-femme-eau-de-toilette",
+      "title": "Versace Versus Time For Energy Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica lists Versus Time For Energy (2001) as discontinued; Parfumo and multiple eBay/Etsy sellers describe it as no longer produced and increasingly rare."
+        },
+        {
+          "type": "web",
+          "note": "Not available on Versace's current site or major retailers; only resale listings found."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Versus Time For Energy (2001)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Versus-Time-For-Energy-1767.html"
+        },
+        {
+          "label": "Etsy - Versace Versus Time for Energy 125ml",
+          "url": "https://www.etsy.com/hk-en/listing/1701277284/versace-versus-time-for-energy-125-ml-42"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay/Etsy resale listings for 4.2oz bottles run roughly $30-$60 as discontinued stock."
+      }
+    },
+    {
+      "id": "versace-versus-pour-homme-eau-de-toilette",
+      "productHandle": "versace-versus-pour-homme-eau-de-toilette",
+      "title": "Versace Versus Pour Homme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica describes Versus Uomo (1991) as 'now discontinued and increasingly rare'; multiple vintage/collector retailers (VisionScents, Le Parfumier) sell it explicitly as discontinued stock."
+        },
+        {
+          "type": "web",
+          "note": "Not listed on Versace's own site or mainstream retailers; only vintage/resale channels."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Versus Uomo (1991)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Versus-Uomo-1417.html"
+        },
+        {
+          "label": "eBay - Versus by Versace Men's Fragrance",
+          "url": "https://www.ebay.com/b/Versus-by-Versace-Mens-Fragrance/29585/bn_703086"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 100ml bottles trade on eBay/Etsy/VisionScents for roughly $50-$150 depending on condition/box."
+      }
+    },
+    {
+      "id": "versace-versus-pour-femme-savon",
+      "productHandle": "versace-versus-pour-femme-savon",
+      "title": "Versace Versus Pour Femme Savon",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Companion soap product to the Versus Donna line, which Fragrantica forum threads confirm as discontinued and sought by fans wanting it 'brought back'."
+        },
+        {
+          "type": "web",
+          "note": "No presence on brand site or major retailers; only vintage/collector listings found."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica forum - discontinued Versace Versus Donna",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=26000"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Discontinued Versus soap/bar items surface occasionally on eBay/Etsy as old stock, generally under $25."
+      }
+    },
+    {
+      "id": "versace-versus-pour-femme-eau-de-toilette",
+      "productHandle": "versace-versus-pour-femme-eau-de-toilette",
+      "title": "Versace Versus Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica Club threads reference 'discontinued VERSACE VERSUS DONNA' and TikTok discussion threads on 'Versus Versace Perfume Discontinued'."
+        },
+        {
+          "type": "web",
+          "note": "Not sold new by Versace or major retailers; only available via eBay/Etsy resale."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica forum - discontinued Versace Versus Donna",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=26000"
+        },
+        {
+          "label": "TikTok - Versus Versace Perfume Discontinued",
+          "url": "https://www.tiktok.com/discover/versus-versace-perfume-discontinued"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage Versus Donna EDT bottles resell on eBay for roughly $40-$100 depending on size."
+      }
+    },
+    {
+      "id": "versace-versense-pour-femme-eau-de-toilette",
+      "productHandle": "versace-versense-pour-femme-eau-de-toilette",
+      "title": "Versace Versense Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple sources (Fragrantica reviews, eBay listing titles) confirm Versense (2009) has been discontinued, though one older forum post called it a bestseller at the time."
+        },
+        {
+          "type": "web",
+          "note": "Not found on Versace's current site, Sephora, Ulta, or FragranceX; primarily on Amazon third-party sellers and eBay as remaining stock."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Versense (2009)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Versense-5752.html"
+        },
+        {
+          "label": "eBay - VERSACE Versense 3.4oz EDT",
+          "url": "https://www.ebay.com/itm/VERSACE-Versense-3-4-oz-edt-Perfume-women-New-Box-/362530989754"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "3.4oz EDT bottles sell for roughly $30-$50 on eBay/Amazon third-party listings as discontinued stock."
+      }
+    },
+    {
+      "id": "versace-versence-pour-femme-eau-de-toilette",
+      "productHandle": "versace-versence-pour-femme-eau-de-toilette",
+      "title": "Versace Versence Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Appears to be the same fragrance as Versense (2009) under an alternate spelling; that line is confirmed discontinued per Fragrantica and resale listings."
+        },
+        {
+          "type": "web",
+          "note": "No current listing found on Versace's site or major retailers under this name."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Versense (2009)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Versense-5752.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Same discontinued Versense line resells for roughly $30-$50 on eBay/Amazon third-party sellers."
+      }
+    },
+    {
+      "id": "versace-ve-pour-femme-vaporisateur-deodorant",
+      "productHandle": "versace-ve-pour-femme-vaporisateur-deodorant",
+      "title": "Versace V'E Pour Femme Vaporisateur Deodorant",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica lists V'E (1989) and its reviews describe it as discontinued; companion deodorant spray from this line is no longer produced."
+        },
+        {
+          "type": "web",
+          "note": "No listing on Versace's current site or major retailers; found only via vintage/collector sellers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - V'E (1989)",
+          "url": "https://www.fragrantica.com/perfume/Versace/V-E-7911.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Discontinued V'E-line deodorant/companion items appear occasionally on eBay as old stock, generally under $30."
+      }
+    },
+    {
+      "id": "versace-ve-pour-femme-gel-douche",
+      "productHandle": "versace-ve-pour-femme-gel-douche",
+      "title": "Versace V'E Pour Femme Gel Douche",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Companion shower gel to the discontinued V'E (1989) line, per Fragrantica reviews describing V'E as discontinued."
+        },
+        {
+          "type": "web",
+          "note": "No presence on brand site or major retailers; only vintage/collector resale listings."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - V'E (1989)",
+          "url": "https://www.fragrantica.com/perfume/Versace/V-E-7911.html"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Discontinued V'E-line shower gel/companion items surface occasionally on eBay/Etsy as old stock, generally under $25."
+      }
+    },
+    {
+      "id": "versace-ve-pour-femme-eau-de-parfum",
+      "productHandle": "versace-ve-pour-femme-eau-de-parfum",
+      "title": "Versace V'E Pour Femme Eau de Parfum",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica confirms V'E (launched 1989) has been discontinued; reviews describe it in past tense as a discontinued chypre floral."
+        },
+        {
+          "type": "web",
+          "note": "Not sold on Versace's site or major retailers; only found via eBay 'Versace Discontinued Fragrances for Women' category and similar resale listings."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - V'E (1989)",
+          "url": "https://www.fragrantica.com/perfume/Versace/V-E-7911.html"
+        },
+        {
+          "label": "eBay - Versace Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Versace-Discontinued-Fragrances-for-Women/11848/bn_7116758961"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage V'E EDP bottles resell on eBay for roughly $40-$90 depending on size and condition."
+      }
+    },
+    {
+      "id": "versace-vanitas-pour-femme-eau-de-toilette",
+      "productHandle": "versace-vanitas-pour-femme-eau-de-toilette",
+      "title": "Versace Vanitas Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica and multiple eBay listings confirm Vanitas (2011) is discontinued; German eBay listing explicitly titled 'NEU/OVR/RARE DISCONTINUED'."
+        },
+        {
+          "type": "web",
+          "note": "Fans on Fragrantica describe being 'devastated' it's discontinued and hard to find; not sold on Versace's site or major US retailers."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Vanitas (2011)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Vanitas-10574.html"
+        },
+        {
+          "label": "eBay.de - Versace Vanitas EDT 100ml NEU/OVR/RARE DISCONTINUED",
+          "url": "https://www.ebay.de/itm/388926760545"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale: ~$80-$100 for smaller EDT/EDP sizes, up to ~$130-$155 for 1.7oz bottles as discontinued stock."
+      }
+    },
+    {
+      "id": "versace-vanitas-pour-femme-eau-de-parfum",
+      "productHandle": "versace-vanitas-pour-femme-eau-de-parfum",
+      "title": "Versace Vanitas Pour Femme Eau de Parfum",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica confirms Vanitas (2011) discontinued; multiple eBay listings for the EDP explicitly market it as discontinued/rare."
+        },
+        {
+          "type": "web",
+          "note": "Not carried by Versace's own site or major retailers; only resale/specialty sellers (FragranceX legacy listing, Le Parfumier, eBay)."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Fragrantica - Vanitas (2011)",
+          "url": "https://www.fragrantica.com/perfume/Versace/Vanitas-10574.html"
+        },
+        {
+          "label": "eBay - Versace Vanitas for Women 3.4oz EDP",
+          "url": "https://www.ebay.com/p/1800538071"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay: 1oz EDP spray sold for ~$137.45 (10 sold); other listings ~$70-$80 for similar sizes."
+      }
+    },
+    {
+      "id": "versace-the-dreamer-pour-homme-eau-de-toilette-vintage",
+      "productHandle": "versace-the-dreamer-pour-homme-eau-de-toilette-vintage",
+      "title": "Versace The Dreamer Pour Homme Eau de Toilette Vintage",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Basenotes/Fragrantica threads titled 'Is Versace Dreamer discontinued?!' confirm it was discontinued (with a brief limited reissue at the NY boutique in 2010); Etsy markets current stock explicitly as 'Discontinued Vintage Formula and Extremely Rare'."
+        },
+        {
+          "type": "web",
+          "note": "Product title itself denotes 'Vintage', consistent with it being sold as legacy/discontinued stock rather than current production."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Basenotes - Is Versace Dreamer discontinued?!",
+          "url": "https://basenotes.com/community/threads/is-versace-dreamer-discontinued.479544/"
+        },
+        {
+          "label": "Etsy - The Dreamer Versace EDT 100ml Discontinued Vintage",
+          "url": "https://www.etsy.com/listing/4410326259/the-dreamer-versace-eau-de-toilette"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 100ml bottles list on Etsy/eBay as rare collector items, generally $80-$200+ depending on bottle era and condition."
+      }
+    },
+    {
+      "id": "versace-red-jeans-pour-femme-eau-de-toilette",
+      "productHandle": "versace-red-jeans-pour-femme-eau-de-toilette",
+      "title": "Versace Red Jeans Pour Femme Eau de Toilette",
+      "vendor": "VERSACE",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica Club thread titled 'Versace RED JEANS - discontinued?' plus retailer Amour Boutique explicitly lists it as 'Versace Red Jeans EDT (Discontinued)'; TikTok discourse asks 'Why Did Versace Stop Selling Versace Red Jeans Perfume'."
+        },
+        {
+          "type": "web",
+          "note": "Not sold on Versace's site or major retailers; primarily vintage/collector items on Etsy and eBay."
+        }
+      ],
+      "sources": [
+        {
+          "label": "Amour Boutique - Versace Red Jeans EDT (Discontinued)",
+          "url": "https://amourfragrances.com/en-us/products/versace-red-jeans-edt-discontinued"
+        },
+        {
+          "label": "Fragrantica forum - Versace RED JEANS - discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=27363"
+        }
+      ],
+      "notified": false,
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 1994-era 75ml bottles resell on Etsy/eBay generally in the $50-$120 range depending on condition and box."
+      }
     }
   ]
 }
