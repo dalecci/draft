@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 9;
+const APP_VERSION = 10;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -387,41 +387,50 @@ const DEMAND_WORDS = [
 
 // Arithmetic, not opinion. Every component is shown to the user under "why this
 // rank" so a number on screen can always be traced back to a reason.
+//
+// Weighting note: with most of the list already confirmed, evidence stops telling
+// two items apart and money starts. So certainty is worth 30 and the value of the
+// bottle is worth up to 25. A confirmed $400 Creed has to outrank a confirmed $29
+// cologne, because a buyer's week is finite and one of those is worth their time.
 function scoreFlag(f, product) {
   const parts = [];
   let total = 0;
   const add = (label, points) => { if (points > 0) { parts.push([label, points]); total += points; } };
 
-  if (f.status === "confirmed") add("Confirmed by several sources", 40);
-  else if (f.status === "rumored") add("Rumored, early chatter", 18);
+  if (f.status === "confirmed") add("Confirmed by several sources", 30);
+  else if (f.status === "rumored") add("Rumored, early chatter", 12);
 
   const nSources = (f.sources || []).length;
-  add(nSources + " independent source" + (nSources === 1 ? "" : "s"), Math.min(nSources, 4) * 5);
+  add(nSources + " independent source" + (nSources === 1 ? "" : "s"), Math.min(nSources, 4) * 4);
 
   const kinds = new Set((f.signals || []).map((s) => s.type).filter(Boolean));
-  add(kinds.size + " kinds of signal agree", Math.min(Math.max(kinds.size - 1, 0), 2) * 6);
+  add(kinds.size + " kinds of signal agree", Math.min(Math.max(kinds.size - 1, 0), 2) * 5);
 
   if (f.marketCheck && f.marketCheck.checked) {
     const note = String(f.marketCheck.note || "").toLowerCase();
-    if (DEMAND_WORDS.some((w) => note.includes(w))) add("Resale demand reads as rising", 16);
-    else add("Found on the secondary market", 8);
+    if (DEMAND_WORDS.some((w) => note.includes(w))) add("Resale demand reads as rising", 14);
+    else add("Found on the secondary market", 7);
   }
 
-  if (hasClearancePricing(product)) add("Your price already below compare at", 6);
+  if (hasClearancePricing(product)) add("Your price already below compare at", 5);
 
   const ref = referenceVariant(product);
   if (ref) {
-    if (ref.price >= 200) add("High value bottle, " + money(ref.price), 6);
-    else if (ref.price >= 100) add("Mid value bottle, " + money(ref.price), 4);
-    else if (ref.price >= 50) add("Value of the bottle, " + money(ref.price), 2);
+    const label = "Bottle worth " + money(ref.price);
+    if (ref.price >= 300) add(label, 25);
+    else if (ref.price >= 200) add(label, 20);
+    else if (ref.price >= 120) add(label, 15);
+    else if (ref.price >= 60) add(label, 9);
+    else if (ref.price >= 30) add(label, 4);
+    else add(label, 1);
   }
 
   return { total: Math.min(total, 100), parts };
 }
 
 function band(score) {
-  if (score >= 70) return { key: "act", label: "Act now" };
-  if (score >= 45) return { key: "watch", label: "Watch closely" };
+  if (score >= 75) return { key: "act", label: "Act now" };
+  if (score >= 55) return { key: "watch", label: "Watch closely" };
   return { key: "hold", label: "Monitor" };
 }
 
@@ -515,7 +524,8 @@ function renderBrief() {
   const open = all.filter((x) => x.flag.status !== "cleared");
   const confirmed = open.filter((x) => x.flag.status === "confirmed");
   const rumored = open.filter((x) => x.flag.status === "rumored");
-  const act = open.filter((x) => x.score >= 70);
+  const act = open.filter((x) => x.band.key === "act");
+  const undecided = act.filter((x) => x.decision === "review").length;
   const houses = new Set(open.map((x) => x.flag.vendor || "").filter(Boolean));
   const unitValue = open.reduce((s, x) => s + x.unitPrice, 0);
   const priced = open.filter((x) => x.unitPrice > 0).length;
@@ -553,7 +563,9 @@ function renderBrief() {
     {
       k: "Act now",
       v: String(act.length),
-      n: "Priority 70 and above",
+      n: undecided
+        ? "Priority 75 and above, " + undecided + " still undecided"
+        : "Priority 75 and above, all decided",
     },
     {
       k: "Unit value at risk",
