@@ -235,7 +235,7 @@
           "url": "https://www.maisonmargiela-fragrances.us/fragrances/replica-eau-de-toilette/replica-under-the-lemon-trees/MM013.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay resale for 100ml EDT bottles runs roughly $110 (new with box, e.g. ~AU$170/~US$111), comparable to or below original retail, consistent with sell-through of remaining stock."
@@ -355,7 +355,7 @@
           "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/hugo-boss"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings range roughly $25-$103 depending on size/condition, with one listing showing 502 sold at a discounted $33.27 (down from $72), indicating active discount sell-through."
@@ -939,7 +939,7 @@
           "url": "https://www.ulta.com/shop/fragrance/womens-fragrance/perfume?brand=Juicy+Couture"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for Juicy Couture Oui range from roughly $13 to over $150 depending on size/bundle, with some units found at Ulta on clearance with significant discounts."
@@ -1001,7 +1001,7 @@
           "url": "https://www.tiktok.com/discover/elie-saab-girl-of-now-discontinued"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay 90ml bottles listed around $64.99 (list price ~$114, a 43% discount), with sample vials also selling briskly (42 sold) — consistent with discount sell-through of remaining stock."
@@ -1481,7 +1481,7 @@
           "url": "https://www.ebay.com/b/Discontinued-Rive-Gauche-Fragrances-for-Women/11848/bn_7116773423"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Fragrance commands premium resale pricing on the secondary market as remaining stock is sold through; specific current eBay sold-price data was not itemized in search results but community sources consistently describe premium/above-average pricing for remaining bottles."
@@ -1617,7 +1617,7 @@
           "url": "https://www.tiktok.com/discover/is-cologne-bleu-discontinued-ysl"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay resale prices for 3.3oz bottles run roughly $69-$84, above typical discount territory, reflecting premium secondary-market pricing for a discontinued item rather than distress clearance."
@@ -2331,7 +2331,7 @@
           "url": "https://www.leparfumier.com/en/yves-saint-laurent-ysl-opium-for-women-body-oil.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for NWOB/vintage Opium perfumed body oil (100-125ml) range roughly $100-$350 depending on size/condition, well above typical body-oil retail pricing, consistent with discontinued/collector resale premium."
@@ -2401,7 +2401,7 @@
           "url": "https://poshmark.com/listing/Coach-Coach-Love-Eau-De-Parfum-Spray-17-Oz-Perfume-NIB-Discontinued-62c62353b512563185874a9e"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay sold listings show clearance-style pricing, e.g. 3.4oz EDP marked down from $111.99 to $37.08, and other listings around $98.50, consistent with sell-through of remaining discontinued stock."
@@ -3052,7 +3052,7 @@
           "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Opium-Pour-Homme-Eau-de-Parfum-28179.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for Opium Pour Homme bottles (mostly EDT, some EDP/vintage) run roughly $96-$220 depending on size and whether it's a limited edition or vintage formulation, reflecting collector/resale pricing for a discontinued line."
@@ -3122,7 +3122,7 @@
           "url": "https://www.ebay.com/itm/276694608077"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay vintage listings for boxed 'Champagne'-labeled EDT run roughly $125-$345 depending on size/condition; small parfum-strength vintage bottles have listed as high as $499. Yvresse (current name) sells far cheaper new ($42-$65 for 60ml on outlet sites), confirming the 'Champagne' name itself is discontinued stock/collectible."
@@ -3155,7 +3155,7 @@
           "url": "https://www.ebay.com/itm/297798958849"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Companion vintage 'Champagne' bottles (EDT/parfum) sell for $125-$500 on eBay depending on size and condition; the soap/savon format is a rarer ancillary item from the same discontinued line and turns up mainly on vintage/collector marketplaces rather than retail."
@@ -3192,7 +3192,7 @@
           "url": "https://kafkaesqueblog.com/2013/12/14/ysl-vintage-champagneyvresse-sparkling-elegance/"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay vintage parfum listings: 1oz bottle listed at ~$499.99, 0.25oz at ~$199.99; cheapest boxed 1.7oz EDT-strength vintage bottles start around $125, larger sizes averaging $195-$200."
@@ -3225,7 +3225,7 @@
           "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Black-Opium-Nuit-Blanche-34503.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay: 90ml (3oz) bottles listed/sold around $67-$79; some sealed listings priced up to ~$78-$120 depending on seller, sold as remaining/discontinued stock rather than new retail inventory."
@@ -3258,7 +3258,7 @@
           "url": "https://www.ebay.com/itm/126530110305"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay: 75ml/2.5oz bottles have sold around $71.95 (tester, new in box); active listings range roughly $65-$140 depending on condition/seller. FragranceNet lists remaining 1oz stock at ~$120.99."
@@ -3295,7 +3295,7 @@
           "url": "https://www.ebay.de/itm/267140517545"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for 90ml Black Opium Intense circulate as sealed 'discontinued' stock; comparable Black Opium flanker resale pricing runs roughly $60-$90 for 90ml bottles, well under typical $130+ department-store new pricing."
@@ -3328,7 +3328,7 @@
           "url": "https://www.fragrantica.com/perfume/Yves-Saint-Laurent/Black-Opium-Illicit-Green-71193.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Active eBay resale market with dozens of units sold across listings (one listing shows 40+ sold); sold as limited/leftover stock across 1oz-2.5oz sizes rather than fresh retail inventory."
@@ -3361,7 +3361,7 @@
           "url": "https://www.ebay.com/itm/286717474524"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay: 90ml bottles have sold around £65 (~$82); listings frame it as remaining/discontinued stock rather than current retail inventory."
@@ -3394,7 +3394,7 @@
           "url": "https://www.ebay.com/p/Yves-Saint-Laurent-Belle-DOpium-3oz-Womens-Eau-de-Parfum/139696452"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Companion Belle d'Opium EDP bottles sell around €190/$165 for 90ml on eBay.de resale listings, and 10ml minis around $27.95; the shower gel/gel douche format from the same discontinued line is a rarer ancillary item found mainly through vintage/bath-set resellers."
@@ -3427,7 +3427,7 @@
           "url": "https://fragrancevault.net/products/yves-st-laurent-belle-dopium-eau-de-parfum"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay/eBay.de listings: 90ml bottles around €190 (~$165); 10ml sample sprays around $27.95 (10+ sold). Prices trend at a premium versus original retail, consistent with discontinued/collectible status."
@@ -3460,7 +3460,7 @@
           "url": "https://www.etsy.com/listing/1770138910/baby-doll-by-yves-saint-laurent-ysl-eau"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Companion Baby Doll EDT 100ml bottles sell in roughly the $120-$180 range on eBay as deadstock/vintage; the gel douche (shower gel) format from the same discontinued line is a rarer bath-line item typically found only via the same vintage/deadstock resellers (eBay, Etsy)."
@@ -3497,7 +3497,7 @@
           "url": "https://www.ebay.com/itm/375603349008"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay/Etsy listings for 50-100ml EDT bottles marked 'discontinued/rare' typically priced roughly $80-180+ depending on size/condition; no longer sold new by official retailers, only resale/vintage stock."
@@ -3534,7 +3534,7 @@
           "url": "https://www.ebay.com/itm/336125741342"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Sealed 100ml bottles on eBay currently listed/selling in roughly $60-100 range (one comparable Y line sealed 100ml sold for $99.99); not available on official YSL Beauty US site."
@@ -3759,7 +3759,7 @@
           "url": "https://www.ebay.com/itm/375842215837"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for vintage/NOS bottles run roughly $20-$45 (e.g., 100ml EDT ~$20, 1oz NIB spray higher); no active sales through mainstream retailers, only secondhand/vintage stock."
@@ -3788,7 +3788,7 @@
           "url": "https://www.ebay.com/itm/321910189227"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay vintage listings range from ~$8 for minis to ~$40-$50 for full/larger bottles; a 2.25oz Parfum de Toilette spray sold at $39.99. Only secondhand/vintage market activity found, no new retail stock."
@@ -3817,7 +3817,7 @@
           "url": "https://www.coucoushop.com/vuarnet-1960-for-men-edp-60ml.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay/secondary-market listings for Vuarnet fragrance items range from ~$44-$69 for EDT sprays, with at least one item showing 12 units sold at $149; no aftershave-lotion-specific pricing found, but the line overall trades only as vintage/NOS stock."
@@ -3962,7 +3962,7 @@
           "url": "https://www.maxaroma.com/fragrance/men/viktor-rolf-spicebomb-infrared/pid/28213/3"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "MaxAroma lists Spicebomb Infrared EDT at a regular price of $128 marked down to a clearance price of ~$72; FragranceX prices it around $75-$86 (up to 80% off retail). Multiple active eBay listings for the 90ml/3.04oz bottle in the same discounted range, consistent with sell-through of discontinued stock."
@@ -3999,7 +3999,7 @@
           "url": "https://poshmark.com/listing/VIKTORROLF-FLOWERBOMB-MIDNIGHT-EDP-50ml-DISCONTINUED-662b498cce7065be497be13d"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "No longer sold new by the brand or major retailers (Macy's/FragranceNet listings appear to be sell-through of remaining stock). Resale/sell-through 3.4oz bottles are going for roughly $90-$110 on eBay."
@@ -4036,7 +4036,7 @@
           "url": "https://poshmark.com/listing/ViktorRolf-Viktor-Rolf-Eau-Mega-BNIB-1-oz-50ml-Sealed-Rare-Discontinued-Parfum-67b7c7bbf884711f1453d436"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Not available through the brand or mainstream retailers; eBay resale listings for 50ml-75ml bottles range roughly $140-$270, reflecting collector/discontinued pricing."
@@ -4065,7 +4065,7 @@
           "url": "https://www.ebay.com/itm/255765566263"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Only sold on eBay as remaining/vintage stock (50ml bottles); no current MSRP or brand listing exists since it was a one-season Bloomingdale's exclusive from 2017."
@@ -4144,7 +4144,7 @@
           "url": "https://www.ebay.com/b/Yellow-Jeans-by-Versace-Womens-Fragrances/11848/bn_732247"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay resale listings for vintage sealed 75ml (2.5oz) bottles run roughly $150-$240; used/partial bottles sell lower. No new stock exists at any retailer."
@@ -4173,7 +4173,7 @@
           "url": "https://www.versace.com/us/en/women/accessories/fragrances-body-care/yellow-diamond/"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for 3oz/1.7oz Yellow Diamond Intense EDP run roughly $30-$60 depending on set/size, sold as remaining/discounted stock rather than fresh production."
@@ -4202,7 +4202,7 @@
           "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/gianni-versace"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for 100ml/3.4oz Versace Woman EDP typically range roughly $25-$60 depending on condition and seller."
@@ -4231,7 +4231,7 @@
           "url": "https://www.ebay.com/b/Versace-White-Jeans-Fragrances-for-Women/11848/bn_704813"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay resale listings for vintage 75ml (2.5oz) bottles range roughly $54-$350 depending on rarity/condition/whether sealed; sold listings cluster around $50-$150."
@@ -4260,7 +4260,7 @@
           "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/gianni-versace"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay listings for 3.4oz/100ml V/S Versus EDT commonly run roughly $35-$50 for remaining/older stock."
@@ -4297,7 +4297,7 @@
           "url": "https://www.fragrantica.com/perfume/Versace/Versus-Uomo-1417.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Resold on eBay/Etsy as vintage stock, roughly $50-$180 depending on size/seller (Versus family range), no longer available new from brand or major retailers."
@@ -4330,7 +4330,7 @@
           "url": "https://www.fragrantica.com/perfume/Versace/V-S-Versus-1758.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Companion body-care items from the discontinued Versus V/S line surface only on eBay/Etsy as old stock, typically $20-$40, with no current retail listing found."
@@ -4363,7 +4363,7 @@
           "url": "https://www.etsy.com/hk-en/listing/1701277284/versace-versus-time-for-energy-125-ml-42"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay/Etsy resale listings for 4.2oz bottles run roughly $30-$60 as discontinued stock."
@@ -4396,7 +4396,7 @@
           "url": "https://www.ebay.com/b/Versus-by-Versace-Mens-Fragrance/29585/bn_703086"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Vintage 100ml bottles trade on eBay/Etsy/VisionScents for roughly $50-$150 depending on condition/box."
@@ -4425,7 +4425,7 @@
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=26000"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Discontinued Versus soap/bar items surface occasionally on eBay/Etsy as old stock, generally under $25."
@@ -4458,7 +4458,7 @@
           "url": "https://www.tiktok.com/discover/versus-versace-perfume-discontinued"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Vintage Versus Donna EDT bottles resell on eBay for roughly $40-$100 depending on size."
@@ -4491,7 +4491,7 @@
           "url": "https://www.ebay.com/itm/VERSACE-Versense-3-4-oz-edt-Perfume-women-New-Box-/362530989754"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "3.4oz EDT bottles sell for roughly $30-$50 on eBay/Amazon third-party listings as discontinued stock."
@@ -4520,7 +4520,7 @@
           "url": "https://www.fragrantica.com/perfume/Versace/Versense-5752.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Same discontinued Versense line resells for roughly $30-$50 on eBay/Amazon third-party sellers."
@@ -4549,7 +4549,7 @@
           "url": "https://www.fragrantica.com/perfume/Versace/V-E-7911.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Discontinued V'E-line deodorant/companion items appear occasionally on eBay as old stock, generally under $30."
@@ -4578,7 +4578,7 @@
           "url": "https://www.fragrantica.com/perfume/Versace/V-E-7911.html"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Discontinued V'E-line shower gel/companion items surface occasionally on eBay/Etsy as old stock, generally under $25."
@@ -4611,7 +4611,7 @@
           "url": "https://www.ebay.com/b/Versace-Discontinued-Fragrances-for-Women/11848/bn_7116758961"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Vintage V'E EDP bottles resell on eBay for roughly $40-$90 depending on size and condition."
@@ -4644,7 +4644,7 @@
           "url": "https://www.ebay.de/itm/388926760545"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay resale: ~$80-$100 for smaller EDT/EDP sizes, up to ~$130-$155 for 1.7oz bottles as discontinued stock."
@@ -4677,7 +4677,7 @@
           "url": "https://www.ebay.com/p/1800538071"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "eBay: 1oz EDP spray sold for ~$137.45 (10 sold); other listings ~$70-$80 for similar sizes."
@@ -4710,7 +4710,7 @@
           "url": "https://www.etsy.com/listing/4410326259/the-dreamer-versace-eau-de-toilette"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Vintage 100ml bottles list on Etsy/eBay as rare collector items, generally $80-$200+ depending on bottle era and condition."
@@ -4743,7 +4743,7 @@
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=27363"
         }
       ],
-      "notified": false,
+      "notified": true,
       "marketCheck": {
         "checked": true,
         "note": "Vintage 1994-era 75ml bottles resell on Etsy/eBay generally in the $50-$120 range depending on condition and box."
