@@ -1,6 +1,6 @@
 {
-  "lastScan": "2026-09-01T19:12:58Z",
-  "scanNote": "Discontinuation scan: checked 175 products (25 rumored re-checks + 150 rotation), 60 newly confirmed, 13 cleared.",
+  "lastScan": "2026-09-01T20:10:18Z",
+  "scanNote": "Discontinuation scan: checked 178 products (150 rotation + 28 rumored re-checks), 77 confirmed outcomes, 38 rumored outcomes, 5 cleared, 58 no signal.",
   "flags": [
     {
       "id": "dolce-gabbana-light-blue-eau-intense-pour-homme-eau-de-parfum",
@@ -591,7 +591,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Only turns up on Le Parfumier's own listing among major search results; this fragrance dates to 1996 and Le Parfumier positions its Mixx Perfume Bar catalog as rare/hard-to-find/discontinued stock. No mainstream retailer (Sephora, Ulta, FragranceX, Amazon) currently lists it, but no explicit brand-level discontinuation statement was found either — single-sourced, weak signal."
+          "note": "Recheck found no new corroborating or contradicting evidence beyond the prior pass; it still surfaces mainly through Le Parfumier's rare/discontinued Mixx Perfume Bar catalog with no mainstream retailer listing found."
         }
       ],
       "sources": [
@@ -600,7 +600,7 @@
           "url": "https://leparfumier.com/en/products/mixx-just-forbidden-for-men-millesime"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "guerlain-la-petite-robe-noire-ma-premiere-robe-eau-de-parfum",
@@ -1298,16 +1298,20 @@
       "productHandle": "disney-princess-belle-pour-filles-eau-de-toilette",
       "title": "Disney Princess Belle Pour Filles Eau de Toilette",
       "vendor": "DISNEY",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-08-31",
       "signals": [
         {
           "type": "web",
           "note": "Research for this item was inconclusive: web search tooling reached its session limit before this product could be checked, so no fresh corroborating or contradicting evidence was gathered this pass. Leaving the prior rumored flag in place rather than clearing it without verification; recommend re-checking this item in a follow-up pass."
+        },
+        {
+          "type": "web",
+          "note": "Recheck (prior pass was inconclusive due to a tooling limit) found it still sold new at Amazon (two active listings), Le Parfumier, LaBelle Perfumes and Perfume Boutique, with no genuine discontinuation chatter — looks like normal availability."
         }
       ],
       "sources": [],
-      "notified": false
+      "notified": null
     },
     {
       "id": "yves-saint-laurent-ysl-rive-gauche-pour-homme-gel-douche",
@@ -2284,7 +2288,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "eBay listings market the Eau de Parfum concentration specifically as 'rare/discontinued,' but YSL's official site still carries the Paris line (in EDT), leaving it ambiguous whether the EDP alone has been dropped — a single-sourced signal."
+          "note": "Recheck confirms the same split as before: eBay/Etsy list the EDP concentration specifically as rare/discontinued, while YSL Beauty's official Paris fragrance page remains live, so it's unclear if only the EDP has been dropped."
         }
       ],
       "sources": [
@@ -2297,7 +2301,7 @@
           "url": "https://www.yslbeauty.com/int/fragrance/fragrance-for-her/paris/"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "yves-saint-laurent-ysl-opium-pour-femme-huile-pour-le-corps",
@@ -2457,20 +2461,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "YSL Beauty's current shower-gel lineup page shows only L'Homme, with no Kouros shower gel listed; it's mainly findable now through third-party sites like Le Parfumier, a weak single-channel signal."
+          "note": "Recheck found Kouros shower gel isn't listed on the YSL USA site but does appear on other regional YSL sites (e.g. Singapore), pointing to a regional distribution gap rather than a full brand discontinuation."
         }
       ],
       "sources": [
         {
-          "label": "YSL Beauty shower gel category",
-          "url": "https://www.yslbeauty.com/int/fragrance/body-care/body-care-for-him/shower-gel/"
+          "label": "Basenotes - Kouros no longer listed on YSL website",
+          "url": "https://basenotes.com/threads/kouros-no-longer-listed-on-ysl-website.479965/"
         },
         {
-          "label": "Le Parfumier Kouros shower gel",
-          "url": "https://www.leparfumier.com/en/yves-saint-laurent-ysl-kouros-for-men-shower-gel.html"
+          "label": "YSL Beauty shower gel category",
+          "url": "https://www.yslbeauty.com/int/fragrance/body-care/body-care-for-him/shower-gel/"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "disney-donald-duck-eau-de-toilette",
@@ -3607,16 +3611,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "Torino 21 is one entry in Xerjoff's annual JTC/Nitto ATP Finals flanker series tied to the Turin, Italy host years (2021-2025) — by design each year's edition tends to be superseded by the next (Torino22, Torino23, etc.), making older years progressively harder to find at full retail. It's still sold through several niche/decant retailers, but no longer appears prominent on mainstream niche shelves, and no clear current listing on Xerjoff's own site was confirmed — a weak, single-category signal typical of limited annual editions rather than a full discontinuation."
+          "note": "Recheck found niche retailers (Osswald, Niche Essence, Scentrique) still list Torino 21 for sale, though some sizes show as out of stock elsewhere; no explicit brand discontinuation statement located."
         }
       ],
       "sources": [
         {
           "label": "Fragrantica - Torino21",
           "url": "https://www.fragrantica.com/perfume/Xerjoff/Torino21-70424.html"
+        },
+        {
+          "label": "Osswald NYC - JTC Torino 21",
+          "url": "https://www.osswaldnyc.com/products/xj-jtc-torino-21"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "xerjoff-shooting-stars-nio-eau-de-parfum",
@@ -3628,7 +3636,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Conflicting signals: the official Xerjoff site still has a live product page for Nio (Shooting Stars parfum), while reseller Coucoushop separately files it under a 'Sold out and Discontinued Fragrances' category — a single, contradicted source."
+          "note": "Recheck confirms the same contradiction: Xerjoff's official site still has a live Nio product page, while Coucoushop continues to file it under its 'Sold out and Discontinued Fragrances' section."
         }
       ],
       "sources": [
@@ -3641,7 +3649,7 @@
           "url": "https://www.coucoushop.com/xerjoff-shooting-stars-nio-edp-50ml.html"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "xerjoff-purple-accento-crystal-edition-eau-de-parfum",
@@ -3736,20 +3744,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "Worth is a legacy/niche house with an inconsistent retail footprint for Je Reviens; eBay runs a dedicated 'Je Reviens Discontinued Fragrances' category and the 2004 Couture relaunch was discontinued years ago, but a current EDT is still sold new on Amazon, so the signal stays single-sourced/weak."
+          "note": "Recheck found it still sold new at FragranceNet ($32.99) and Amazon, alongside continued vintage/discontinued resale chatter on eBay — mixed signal, no clear full discontinuation."
         }
       ],
       "sources": [
         {
-          "label": "eBay Je Reviens discontinued category",
-          "url": "https://www.ebay.com/b/Je-Reviens-Discontinued-Fragrances-for-Women/11848/bn_7116764775"
+          "label": "FragranceNet Je Reviens EDT",
+          "url": "https://www.fragrancenet.com/perfume/worth/je-reviens/edt"
         },
         {
           "label": "Amazon Worth Je Reviens EDT",
           "url": "https://www.amazon.com/Worth-Reviens-Women-Toilette-Ounces/dp/B000C1ZFFW"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "weil-kipling-pour-homme-eau-de-toilette",
@@ -3848,20 +3856,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "FragranceNet shows the body lotion as low stock, and forum/customer reports mention finding it discontinued when trying to repurchase. Availability now leans on a narrow set of retailers (Le Parfumier, eBay)."
+          "note": "Recheck found the main Vince Camuto women's fragrance line still active on vincecamuto.com, but the body lotion specifically remains scarce, relying on FragranceNet (low stock) and Le Parfumier/eBay."
         }
       ],
       "sources": [
         {
-          "label": "FragranceNet Vince Camuto Femme body lotion",
-          "url": "https://www.fragrancenet.com/perfume/vince-camuto/vince-camuto-femme/body-lotion"
+          "label": "Vince Camuto official women's fragrance collection",
+          "url": "https://www.vincecamuto.com/collections/womens-fragrance"
         },
         {
-          "label": "Le Parfumier body lotion listing",
-          "url": "https://leparfumier.com/en/products/vince-camuto-for-women-body-lotion"
+          "label": "FragranceNet Vince Camuto Femme body lotion",
+          "url": "https://www.fragrancenet.com/perfume/vince-camuto/vince-camuto-femme/body-lotion"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "vince-camuto-pour-femme-eau-de-parfum",
@@ -3873,20 +3881,20 @@
       "signals": [
         {
           "type": "web",
-          "note": "Same product family as Vince Camuto Femme: listed in eBay's dedicated Vince Camuto discontinued category and shows low stock at FragranceNet, but still sold new at FragranceOutlet, Le Parfumier and Amazon — weak, single-flavor signal."
+          "note": "Recheck found Vince Camuto's official site still sells a 3.4oz women's EDP, and Amazon carries it too, though eBay's dedicated discontinued category and FragranceNet low-stock status persist."
         }
       ],
       "sources": [
         {
-          "label": "eBay Vince Camuto discontinued category",
-          "url": "https://www.ebay.com/b/Vince-Camuto-Discontinued-Fragrances-for-Women/11848/bn_7116762311"
+          "label": "Vince Camuto official women's EDP spray",
+          "url": "https://www.vincecamuto.com/products/vince-camuto-women-3-4-oz-eau-de-parfum-spray"
         },
         {
-          "label": "Fragrance Outlet Femme listing",
-          "url": "https://www.fragranceoutlet.com/products/vince-camuto-femme-by-vince-camuto-for-women-eau-de-parfum-spray"
+          "label": "eBay Vince Camuto discontinued category",
+          "url": "https://www.ebay.com/b/Vince-Camuto-Discontinued-Fragrances-for-Women/11848/bn_7116762311"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "vince-camuto-fiori-pour-femme-eau-de-parfum",
@@ -3927,7 +3935,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "eBay runs a dedicated 'Vince Camuto Discontinued Fragrances for Women' category that lists Femme/Pour Femme, and FragranceNet shows it as low stock. But it's still sold new at FragranceNet, FragranceOutlet, and Le Parfumier, so this is only a weak, single-flavor signal."
+          "note": "Recheck unchanged from prior pass: still sold new at FragranceNet, FragranceOutlet and Le Parfumier despite eBay's dedicated Vince Camuto discontinued category."
         }
       ],
       "sources": [
@@ -3940,7 +3948,7 @@
           "url": "https://www.fragrancenet.com/perfume/vince-camuto/vince-camuto-femme/eau-de-parfum"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "viktor-rolf-spicebomb-infrared-pour-homme-eau-de-toilette",
@@ -4844,7 +4852,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "eBay listings and some community posts call it discontinued (in the US, since ~2013), but a Basenotes thread titled 'Versace Oud Noir NOT DISCONTINUED' reports it's still sold in Europe/Middle East with new packaging -- signal is mixed/single-market rather than a confirmed global discontinuation."
+          "note": "Recheck found continued contradiction: Fragrantica community treats it as discontinued and it's off Versace's official US site, but the Basenotes 'NOT DISCONTINUED' thread and a company rep quote say it's still sold outside the US, with select US dealers still carrying it."
         }
       ],
       "marketCheck": {
@@ -4861,7 +4869,7 @@
           "url": "https://www.ebay.com/itm/315288791409"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-metal-jeans-pour-femme-eau-de-toilette",
@@ -5182,12 +5190,16 @@
       "productHandle": "versace-eros-pour-homme-gel-douche",
       "title": "Versace Eros Pour Homme Gel Douche",
       "vendor": "VERSACE",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
           "type": "web",
           "note": "Some customer feedback/listings describe the Eros Invigorating Shower Gel as discontinued, but it remains actively listed at Amazon, Walmart, FragranceNet, and Le Parfumier -- weak, single-type signal against otherwise normal availability."
+        },
+        {
+          "type": "web",
+          "note": "Recheck found the standard Eros Invigorating Shower Gel still widely available at Amazon, FragranceNet, and multiple other retailers; the only discontinuation was a single retailer (Care to Beauty) and an unrelated Eros Flame variant, so the earlier flag looks like a false alarm."
         }
       ],
       "marketCheck": {
@@ -5200,7 +5212,7 @@
           "url": "https://www.walmart.com/ip/Versace-Eros-Invigorating-Shower-Gel-250ml-8-4-Oz/515799448"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-emotional-essence-pour-femme-eau-de-toilette",
@@ -5249,11 +5261,11 @@
       "signals": [
         {
           "type": "web",
-          "note": "The Dreamer line has years of recurring 'is it discontinued?' threads on Basenotes/Fragrantica with conflicting answers; ancillary body/face-care items from this line are the first to disappear even when the core EDT lingers in limited boutique stock."
+          "note": "No direct hit for the face emulsion SKU itself; risk is still inferred purely from the parent Dreamer EDT's now-confirmed discontinued status, not any independent report about this ancillary item."
         },
         {
-          "type": "web",
-          "note": "No direct retailer or community mention found specifically for the face emulsion; signal is inferred from the parent line's shaky status, not a direct hit."
+          "type": "retailer",
+          "note": "Face/body care extensions of discontinued fragrance lines are typically the first SKUs pulled from distribution, ahead of even the core juice, but no listing (in-stock or discontinued) for this specific emulsion turned up in search."
         }
       ],
       "marketCheck": {
@@ -5264,34 +5276,34 @@
         {
           "label": "Basenotes - Is Versace Dreamer discontinued?!",
           "url": "https://basenotes.com/community/threads/is-versace-dreamer-discontinued.479544/"
-        },
-        {
-          "label": "Fragrantica Club - Versace's Dreamer was discontinued?",
-          "url": "https://www.fragrantica.com/board/viewtopic.php?id=83329"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-dreamer-pour-homme-eau-de-toilette",
       "productHandle": "versace-dreamer-pour-homme-eau-de-toilette",
       "title": "Versace The Dreamer Pour Homme Eau de Toilette",
       "vendor": "VERSACE",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
-          "type": "web",
-          "note": "Multiple Basenotes threads over the years ask whether The Dreamer is discontinued; per one account Versace customer service said it was discontinued and only briefly reissued in limited boutique quantities."
+          "type": "community",
+          "note": "Etsy explicitly labels current stock 'Discontinued Vintage Formula and Extremely Rare,' and Basenotes has a recurring dedicated 'Is Versace Dreamer discontinued?!' thread confirming it."
         },
         {
-          "type": "web",
-          "note": "Etsy sellers market current stock as 'discontinued vintage formula'; however caretobeauty.com still listed a fresh 100ml EDT recently, so it's not a clean multi-source confirmation."
+          "type": "retailer",
+          "note": "FragranceOriginal.com files Versace Dreamer under its 'Discontinued Designer Perfume & Cologne' collection, and multiple eBay category pages ('Dreamer by Versace', 'Versace The Dreamer') are built around vintage/discontinued listings rather than current retail stock."
+        },
+        {
+          "type": "pricing",
+          "note": "Active resale market with wide price spread - tester bottles selling as low as $30.99 (18 sold) while vintage/first-edition bottles fetch up to $99.45, typical of a discontinued fragrance being sold off."
         }
       ],
       "marketCheck": {
-        "checked": false,
-        "note": ""
+        "checked": true,
+        "note": "eBay resale is active but discounted/inconsistent - testers going for ~$31 (18 sold) while vintage 100ml bottles reach ~$99, well below to roughly in line with original MSRP depending on condition."
       },
       "sources": [
         {
@@ -5301,9 +5313,13 @@
         {
           "label": "Etsy - The Dreamer Versace EDT, discontinued vintage formula",
           "url": "https://www.etsy.com/listing/4410326259/the-dreamer-versace-eau-de-toilette"
+        },
+        {
+          "label": "FragranceOriginal - Versace Dreamer (discontinued collection)",
+          "url": "https://fragranceoriginal.com/products/versace-dreamer-by-gianni-versace-for-men-edt-3-4-oz"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-crystal-noir-pour-femme-lotion-pour-le-corps",
@@ -5315,11 +5331,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Crystal Noir EDT is reported to have been pulled from US physical retail shelves though Versace apparently still produces it; body-care extensions of a fragrance line typically get cut before the core juice does."
-        },
-        {
-          "type": "web",
-          "note": "No lotion-specific listing/discontinuation report found directly; inferred risk from the line's declining US retail footprint."
+          "note": "No direct listing or discontinuation report found for the body lotion itself; still inferred only from the core EDT's reduced US physical-retail footprint."
         }
       ],
       "marketCheck": {
@@ -5332,7 +5344,7 @@
           "url": "https://basenotes.com/community/threads/versace-crystal-noir-edp-still-in-production-review.528349/"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-crystal-noir-pour-femme-eau-de-toilette",
@@ -5344,11 +5356,11 @@
       "signals": [
         {
           "type": "web",
-          "note": "Basenotes discussion states the Crystal Noir EDT 'was not a big seller in the US, and stores stopped carrying it in their physical stores,' though Versace reportedly still manufactures it."
+          "note": "Confirmed pulled from physical US/Canada retail shelves per Basenotes ('stores stopped carrying it'), but still sold on Versace's own brand website and TikTok chatter is mixed rather than unanimous."
         },
         {
           "type": "web",
-          "note": "Single-source signal; no corroborating report of a full discontinuation from a second independent outlet."
+          "note": "Versace reportedly reformulated Crystal Noir silently in 2021 without discontinuing it outright, per Fragrantica Club thread explicitly titled 'Crystal Noir EDP is NOT discontinued (never was.)' - signal remains genuinely contested."
         }
       ],
       "marketCheck": {
@@ -5359,9 +5371,13 @@
         {
           "label": "Basenotes - Is Versace Crystal Noir EDP Not Sold In The US?",
           "url": "https://basenotes.com/threads/is-versace-crystal-noir-edp-not-sold-in-the-us.489480/"
+        },
+        {
+          "label": "Fragrantica Club - Crystal Noir EDP is NOT discontinued (never was.)",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=281974"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "versace-bright-crystal-absolu-pour-femme-lotion-pour-le-corps",
@@ -5673,29 +5689,41 @@
       "productHandle": "vera-wang-rock-princess-pour-femme-eau-de-toilette",
       "title": "Vera Wang Rock Princess Pour Femme Eau de Toilette",
       "vendor": "VERA WANG",
-      "status": "rumored",
+      "status": "confirmed",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
+          "type": "retailer",
+          "note": "eBay runs a dedicated 'Rock Princess Discontinued Fragrances for Women' category, and Vera Wang's own current fragrance page no longer lists the original 2009 Rock Princess."
+        },
+        {
           "type": "web",
-          "note": "Not currently at Ulta/Sephora and Fragrance Outlet lists it sold out; eBay has a 'discontinued' listing category for it. However Vera Wang's own site still has a product page for it and discount retailers (FragranceNet, Jomashop, FragranceX, Perfumania) still list/sell it, and a reformulated 'Rock Princess 2023' exists — signal is weak/mixed."
+          "note": "Vera Wang launched a distinct 'Rock Princess 2023' as the successor scent (Fragrantica lists both as separate entries), confirming the original formula was retired and replaced rather than merely restocked slowly."
+        },
+        {
+          "type": "pricing",
+          "note": "Original-formula bottles now trade mainly through resale/clearance channels - single EDT bottles ~$55-85 on eBay, while 3-piece gift sets are being blown out at ~$17-25 per unit, well under typical set MSRP."
         }
       ],
       "marketCheck": {
-        "checked": false,
-        "note": ""
+        "checked": true,
+        "note": "eBay clearance activity is heavy - single bottles run ~$55-85 while multi-unit gift sets are being liquidated at roughly $17-25 per unit."
       },
       "sources": [
         {
-          "label": "Vera Wang - Rock Princess product page",
-          "url": "https://www.verawang.com/fragrance/rock-princess/"
+          "label": "eBay - Rock Princess Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Rock-Princess-Discontinued-Fragrances-for-Women/11848/bn_7116768250"
         },
         {
-          "label": "Fragrance Outlet - Rock Princess (sold out)",
-          "url": "https://fragrancemarket.com/products/vera-wang-rock-princess-by-vera-wang-for-women-eau-de-toilette-edt-s"
+          "label": "Fragrantica - Rock Princess 2023 (successor)",
+          "url": "https://www.fragrantica.com/perfume/Vera-Wang/Rock-Princess-2023-80688.html"
+        },
+        {
+          "label": "Vera Wang - current Fragrance page",
+          "url": "https://www.verawang.com/pages/fragrance"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "vera-wang-pour-homme-eau-de-toilette",
@@ -5772,8 +5800,12 @@
       "flaggedDate": "2026-09-01",
       "signals": [
         {
-          "type": "web",
-          "note": "Described by resale sellers as hard to find/discontinued and part of the broader discontinued 'Vera Wang for Men' line, but it's still listed for sale as a current product on at least one specialty retailer site, so the signal is weaker/less confirmed than the EDT/aftershave."
+          "type": "retailer",
+          "note": "Still actively listed as a current, in-stock product at Le Parfumier, 99perfume.com and PerfumeBlvd, even though the companion Vera Wang for Men EDT/aftershave sprays are confirmed discontinued."
+        },
+        {
+          "type": "community",
+          "note": "eBay sellers market it alongside the discontinued EDT line, but no source specifically labels the deodorant stick itself as discontinued."
         }
       ],
       "marketCheck": {
@@ -5782,15 +5814,15 @@
       },
       "sources": [
         {
-          "label": "eBay - Vera Wang for Men deodorant",
-          "url": "https://www.ebay.com/itm/274582780496"
-        },
-        {
           "label": "Le Parfumier - Vera Wang for Men Deodorant Stick",
           "url": "https://www.leparfumier.com/en/vera-wang-for-men-deodorant-stick.html"
+        },
+        {
+          "label": "fragrances4ever - Vera Wang for Men EDT (Discontinued)",
+          "url": "https://www.fragrances4ever.com/vera-wang-for-men-eau-de-toilette-3-4-oz-100-ml-spray-for-men/"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "vera-wang-pour-femme-eau-de-parfum",
@@ -5802,7 +5834,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Conflicting reports: some sources call the original 2002 Vera Wang women's EDP discontinued and note it can be found cheaply, but it also still appears on the brand's own site — signal is weak/single-sourced."
+          "note": "eBay's 'Vera Wang Discontinued Fragrances for Women' category includes the original 2002 EDP, but Fragrantica notes it as still on the Vera Wang website - status stays contested/mixed, no escalation from prior check."
         }
       ],
       "marketCheck": {
@@ -5811,11 +5843,15 @@
       },
       "sources": [
         {
+          "label": "eBay - Vera Wang Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Vera-Wang-Discontinued-Fragrances-for-Women/11848/bn_7116753079"
+        },
+        {
           "label": "Fragrantica - Vera Wang (2002)",
           "url": "https://www.fragrantica.com/perfume/Vera-Wang/Vera-Wang-1600.html"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "vera-wang-look-pour-femme-eau-de-parfum",
@@ -5992,7 +6028,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "A Fragrantica forum discussion refers to the So First flanker as discontinued, but Amazon's own listing for it shows 'Not Discontinued By Manufacturer' and it remains listed at FragranceX — a single, contested source rather than a confirmed signal."
+          "note": "Fragrantica Club claims the So First flanker was discontinued 'along with all the First flankers,' but Amazon's listing still reads 'Not Discontinued By Manufacturer' and FragranceX continues to sell it - genuinely contested, no resolution found."
         }
       ],
       "marketCheck": {
@@ -6001,7 +6037,7 @@
       },
       "sources": [
         {
-          "label": "Fragrantica forum - VC&A discontinuations discussion",
+          "label": "Fragrantica Club - Is Van Cleef & Arpels discontinuing all its perfumes?",
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=316379"
         },
         {
@@ -6009,7 +6045,7 @@
           "url": "https://www.amazon.com/Van-Cleef-Arpels-First-Parfum/dp/B01ERJEP46"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "van-cleef-arpels-pour-femme-eau-de-parfum-vintage-rare",
@@ -6136,12 +6172,16 @@
       "productHandle": "van-cleef-arpels-first-pour-femme-lotion-pour-le-corps",
       "title": "Van Cleef & Arpels First Pour Femme Lotion Pour le Corps",
       "vendor": "VAN CLEEF & ARPELS",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
           "type": "web",
           "note": "A 2023 Fragrantica community thread claimed First was 'soon to be discontinued', though the core EDT/EDP still show on the official VC&A site. Body lotion specifically now appears mainly bundled in gift sets rather than sold standalone, a weak availability signal."
+        },
+        {
+          "type": "web",
+          "note": "Body lotion is readily sold as current stock at Amazon, Saks OFF 5TH, Le Parfumier, Nandansons and CosmoStore, and VC&A has stated the core First line will not be discontinued as its signature scent - the earlier rumor looks like a false alarm."
         }
       ],
       "marketCheck": {
@@ -6154,19 +6194,23 @@
           "url": "https://www.fragrantica.com/board/viewtopic.php?id=311496"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "van-cleef-arpels-first-pour-femme-gel-douche",
       "productHandle": "van-cleef-arpels-first-pour-femme-gel-douche",
       "title": "Van Cleef & Arpels First Pour Femme Gel Douche",
       "vendor": "VAN CLEEF & ARPELS",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
           "type": "web",
           "note": "Same weak signal as the First body lotion: mostly found bundled in 3-piece gift sets (EDT + lotion + shower gel) rather than as a standalone SKU at major retailers, plus an older unconfirmed community rumor of discontinuation for the line."
+        },
+        {
+          "type": "web",
+          "note": "Shower gel is still actively sold standalone and in sets at Amazon, CosmoStore and Nandansons; no longer just found bundled-only, and the core First line is confirmed ongoing by the brand."
         }
       ],
       "marketCheck": {
@@ -6179,7 +6223,7 @@
           "url": "https://www.nandansons.com/vcava001c04/"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "van-cleef-arpels-birmane-pour-femme-eau-de-toilette",
@@ -6434,11 +6478,11 @@
       "signals": [
         {
           "type": "web",
-          "note": "Valentino body-lotion SKUs (Valentina and other lines) show up repeatedly on eBay/Etsy as 'vintage/discontinued'; Ulta currently lists only a single Valentino body-lotion product across the whole brand, suggesting most companion lotions have been pulled from major retail."
+          "note": "The parent Valentina Eau de Parfum is formally listed on Valentino Beauty's own official 'Discontinued Products' page, raising risk for companion body-care SKUs."
         },
         {
-          "type": "web",
-          "note": "Companion body care to a core Valentina EDP that Valentino's own site now lists as discontinued, but no direct brand confirmation found specifically for this lotion SKU."
+          "type": "retailer",
+          "note": "The lotion itself is still actively sold (not clearance-priced) at Strawberrynet and via 99perfume/Nordstrom-adjacent sellers at close-to-MSRP pricing (~$79-84 on eBay), so it hasn't clearly followed the EDP off the market yet."
         }
       ],
       "marketCheck": {
@@ -6447,15 +6491,15 @@
       },
       "sources": [
         {
-          "label": "eBay - Valentina Satin Body Lotion",
-          "url": "https://www.ebay.com/itm/156828471746"
+          "label": "Valentino Beauty - Discontinued Products archive",
+          "url": "https://www.valentino-beauty.us/discontinued"
         },
         {
-          "label": "Ulta - Valentino body lotions category",
-          "url": "https://www.ulta.com/brand/valentino?category=fragrance%2Cwomens-fragrance%2Cbody-lotions"
+          "label": "Strawberrynet - Valentina Satin Body Lotion 200ml",
+          "url": "https://www.strawberrynet.com/en-US/valentino-valentina-satin-body-lotion-200ml-6-8oz/148940"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "valentino-valentina-pour-femme-eau-de-parfum",
@@ -6504,11 +6548,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Valentina body cream ('Voluptuous Body Cream') turns up on Nordstrom and specialty sites, but broader Valentino body-care lines are heavily represented by 'discontinued/vintage' resale listings on eBay, and the core Valentina EDP it accompanies is on Valentino's own discontinued list."
-        },
-        {
-          "type": "web",
-          "note": "No direct brand-page confirmation found specifically for this cream SKU, so signal is inferential/weak rather than confirmed."
+          "note": "Same pattern as the companion lotion: parent Valentina EDP is on Valentino Beauty's official discontinued list, but the body cream SKU itself was not found on that list and is still sold at Nordstrom-linked and specialty sites."
         }
       ],
       "marketCheck": {
@@ -6517,15 +6557,15 @@
       },
       "sources": [
         {
-          "label": "Nordstrom - Valentina Voluptuous Body Cream",
-          "url": "https://www.nordstrom.com/s/valentino-valentina-voluptuous-body-cream/3437488"
-        },
-        {
           "label": "Valentino Beauty - Discontinued Products archive",
           "url": "https://www.valentino-beauty.us/discontinued"
+        },
+        {
+          "label": "Nordstrom - Valentina Voluptuous Body Cream",
+          "url": "https://www.nordstrom.com/s/valentino-valentina-voluptuous-body-cream/3437488"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "valentino-valentina-poudree-pour-femme-eau-de-parfum",
@@ -6900,7 +6940,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Legacy 'Valentino pour femme' EDT does not appear on current Sephora, Valentino, or major retailer listings; searches mostly surface it alongside other discontinued vintage Valentino women's lines (Very Valentino, Valentino V) on eBay's discontinued-fragrance categories, but no single source names this exact EDT as discontinued."
+          "note": "No dedicated report naming this exact legacy EDT as discontinued; it mostly surfaces alongside other retired vintage Valentino women's lines (Very Valentino, Valentino V) in eBay's discontinued-fragrance category, which is suggestive but not a direct confirmation."
         }
       ],
       "marketCheck": {
@@ -6913,7 +6953,7 @@
           "url": "https://www.ebay.com/b/Very-Valentino-Discontinued-Fragrances-for-Women/11848/bn_7116741893"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "valentino-pour-femme-eau-de-parfum-2009",
@@ -7011,7 +7051,7 @@
       "productHandle": "valentino-born-in-roma-yellow-dream-pour-homme-eau-de-toilette",
       "title": "Valentino Born In Roma Yellow Dream Pour Homme Eau De Toilette",
       "vendor": "VALENTINO",
-      "status": "rumored",
+      "status": "cleared",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
@@ -7021,6 +7061,10 @@
         {
           "type": "web",
           "note": "TikTok discourse asking whether it's discontinued, but it's still listed for sale on Amazon and Valentino's own site, so likely a retailer destock rather than a full discontinuation."
+        },
+        {
+          "type": "web",
+          "note": "Still an active listing on Valentino's own site and reviewed as in-stock at FragranceNet as recently as April/May 2026 with fresh eBay inventory too; the earlier Sephora-specific stockout looks like a temporary retailer destock, not a brand discontinuation."
         }
       ],
       "marketCheck": {
@@ -7041,7 +7085,7 @@
           "url": "https://www.tiktok.com/discover/is-valentino-born-in-roma-yellow-dream-discontinued"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "usher-pour-femme-eau-de-parfum-1757453178",
@@ -7127,7 +7171,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Companion shower gel to the Trussardi Uomo Fresh line, whose core EDT is confirmed discontinued (see sibling product); the shower gel itself still has an active product page at Le Parfumier so its own discontinuation isn't independently confirmed."
+          "note": "Core Trussardi Uomo Fresh EDT is described as discontinued with a cult following ('too quickly disappeared from shelves'), but the shower gel companion still has its own active product page at Le Parfumier with no independent discontinuation report."
         }
       ],
       "marketCheck": {
@@ -7140,7 +7184,7 @@
           "url": "https://leparfumier.com/en/products/trussardi-fresh-for-men-shower-gel"
         }
       ],
-      "notified": false
+      "notified": null
     },
     {
       "id": "trussardi-uomo-fresh-pour-homme-eau-de-toilette",
@@ -7189,7 +7233,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Companion deodorant to the Trussardi Uomo Fresh line, whose core EDT is confirmed discontinued (see sibling product); the deodorant spray itself has no independent discontinuation confirmation in search results."
+          "note": "Same pattern as the shower gel: core Trussardi Uomo Fresh EDT is discontinued, but the deodorant spray has no independent discontinuation confirmation in search results."
         }
       ],
       "marketCheck": {
@@ -7202,7 +7246,3043 @@
           "url": "https://leparfumier.com/en/products/trussardi-uomo-fresh-for-men-deodorant-spray"
         }
       ],
-      "notified": false
+      "notified": null
+    },
+    {
+      "id": "trussardi-uomo-fresh-pour-homme-apres-rasage-lotion",
+      "productHandle": "trussardi-uomo-fresh-pour-homme-apres-rasage-lotion",
+      "title": "Trussardi Uomo Fresh Pour Homme Apres Rasage Lotion",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica/Parfumo describe Fresh Uomo (launched 1999/2000) as having 'too quickly disappeared from the shelves' and gained a cult following after discontinuation."
+        },
+        {
+          "type": "retailer",
+          "note": "Not found on Sephora/Ulta/Nordstrom/FragranceX; only located via eBay and vintage-fragrance specialty sites, one eBay listing marked 'CURRENTLY SOLD OUT'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 100ml Fresh Uomo EDT bottles sell on eBay for roughly $65-$140, priced as a rare discontinued item."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Fresh Uomo Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Fresh-Uomo-4398.html"
+        },
+        {
+          "label": "Parfumo - Trussardi Uomo Fresh EDT",
+          "url": "https://www.parfumo.com/Perfumes/Trussardi/Trussardi_Uomo_Fresh_Eau_de_Toilette"
+        },
+        {
+          "label": "eBay - Fresh Uomo EDT 100ml Vintage Very RARE",
+          "url": "https://ebay.com/p/1703017864"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-skin-pour-femme-eau-de-parfum",
+      "productHandle": "trussardi-skin-pour-femme-eau-de-parfum",
+      "title": "Trussardi Skin Pour Femme Eau de Parfum",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica/Basenotes note Trussardi Skin (2002) as discontinued; a Parfumo/forum comment says 'after about 10 years of looking to buy it, it was impossible'."
+        },
+        {
+          "type": "retailer",
+          "note": "Multiple eBay listings explicitly titled 'SEALED TRUSSARDI SKIN ... DISCONTINUED' and 'RARE, very hard to find'; not listed on major current retailers."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only available as sealed/vintage stock on eBay marketed explicitly as discontinued and rare, with dedicated recreation companies now offering alternatives."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Trussardi Skin",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Trussardi-Skin-1038.html"
+        },
+        {
+          "label": "eBay - Sealed Trussardi Skin EDP 75ml DISCONTINUED",
+          "url": "https://www.ebay.com/itm/165741534822"
+        },
+        {
+          "label": "Fragrance Revival - Skin Trussardi type",
+          "url": "https://fragrancerevival.com/product/skin-trussardi-by-trussardi/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-python-pour-femme-gel-douche",
+      "productHandle": "trussardi-python-pour-femme-gel-douche",
+      "title": "Trussardi Python Pour Femme Gel Douche",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Coucoushop and Fragrantica list the Python (1999) line under 'Sold out and Discontinued Fragrances'; described as a vintage 1999 launch no longer produced."
+        },
+        {
+          "type": "retailer",
+          "note": "Line is absent from Sephora/Ulta/FragranceX; only vintage sellers (Perfumes of the Past, eBay, Etsy) carry remaining stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining 100ml Python bottles resell on eBay for roughly $100-$150, well above typical original MSRP."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Python Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Python-1625.html"
+        },
+        {
+          "label": "Coucoushop - Sold out/Discontinued: Trussardi Python",
+          "url": "https://www.coucoushop.com/trussardi-python-for-women-edt-30ml.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-python-pour-femme-eau-de-toilette",
+      "productHandle": "trussardi-python-pour-femme-eau-de-toilette",
+      "title": "Trussardi Python Pour Femme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Coucoushop/Fragrantica list Python (1999) as discontinued; secondary market prices cited at $100-150 due to rarity."
+        },
+        {
+          "type": "retailer",
+          "note": "Not carried by major current retailers; only vintage/resale sellers (eBay, Etsy, Perfumes of the Past) list stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 100ml Python EDT run roughly $130-$150, reflecting discontinued/collector pricing."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Python Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Python-1625.html"
+        },
+        {
+          "label": "eBay - Python Trussardi EDT 100ml vintage",
+          "url": "https://www.ebay.com/itm/127776965039"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-python-pour-femme-deodorant-en-vaporisateur",
+      "productHandle": "trussardi-python-pour-femme-deodorant-en-vaporisateur",
+      "title": "Trussardi Python Pour Femme Deodorant en Vaporisateur",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Python (1999) line confirmed discontinued per Fragrantica/Coucoushop; companion products (deodorant, gel douche) share the same discontinued core fragrance."
+        },
+        {
+          "type": "retailer",
+          "note": "No listings found on Sephora/Ulta/FragranceX; only fragrance/EDT bottles surface on resale sites, deodorant format is essentially unfindable."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Core Python EDT resells for ~$100-150 on eBay; the deodorant spray line-extension has essentially no active resale listings, indicating it's fully gone."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Python Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Python-1625.html"
+        },
+        {
+          "label": "Coucoushop - Sold out/Discontinued: Trussardi Python",
+          "url": "https://www.coucoushop.com/trussardi-python-for-women-edt-30ml.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-pour-femme-vaporisateur-deodorant",
+      "productHandle": "trussardi-pour-femme-vaporisateur-deodorant",
+      "title": "Trussardi Pour Femme Vaporisateur Deodorant",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Classic Trussardi Pour Femme (Donna Trussardi, 1994) is listed as vintage/discontinued on Etsy ('Vintage, Discontinued, Very Rare') and rareparfums.com."
+        },
+        {
+          "type": "retailer",
+          "note": "Not sold by any current mainstream retailer; only Etsy/eBay vintage listings and Le Parfumier's own 'vintage' labeled EDT remain."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage Donna Trussardi bottles are marketed on Etsy/eBay specifically as discontinued collector stock rather than current retail product."
+      },
+      "sources": [
+        {
+          "label": "Etsy - Trussardi Femme Classic EDT, Vintage, Discontinued",
+          "url": "https://www.etsy.com/listing/1820328542/trussardi-femme-classic-eau-de-toilette"
+        },
+        {
+          "label": "rareparfums.com - Trussardi vintage/discontinued",
+          "url": "https://rareparfums.com/brand/trussardi/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-pour-femme-lotion-pour-le-corps",
+      "productHandle": "trussardi-pour-femme-lotion-pour-le-corps",
+      "title": "Trussardi Pour Femme Lotion Pour Le Corps",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Classic 1994 Donna Trussardi/Pour Femme line confirmed vintage/discontinued across Etsy, rareparfums.com, and FragranceOriginal's discontinued-designer collection."
+        },
+        {
+          "type": "retailer",
+          "note": "Body lotion companion product not stocked by any active retailer; brand's current site does not list the classic Pour Femme line."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only vintage/collector listings exist for this classic line on Etsy and eBay; no current retail pricing found for the body lotion."
+      },
+      "sources": [
+        {
+          "label": "FragranceOriginal - Discontinued Trussardi collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/trussardi"
+        },
+        {
+          "label": "Etsy - Trussardi Femme Classic EDT, Vintage, Discontinued",
+          "url": "https://www.etsy.com/listing/1820328542/trussardi-femme-classic-eau-de-toilette"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-pour-femme-gel-douche",
+      "productHandle": "trussardi-pour-femme-gel-douche",
+      "title": "Trussardi Pour Femme Gel Douche",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Classic Donna Trussardi/Pour Femme (1994) confirmed discontinued via Etsy vintage listings and dedicated discontinued-fragrance retailers (FragranceOriginal, rareparfums.com)."
+        },
+        {
+          "type": "retailer",
+          "note": "Shower gel line-extension absent from all current retailers; core EDT only found in 'vintage/rare' listings."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only vintage/collector listings exist on Etsy for this 1994 line; no current retail stock or pricing found for the shower gel."
+      },
+      "sources": [
+        {
+          "label": "rareparfums.com - Trussardi vintage/discontinued",
+          "url": "https://rareparfums.com/brand/trussardi/"
+        },
+        {
+          "label": "Etsy - Trussardi Donna Fresh EDT, Vintage, Discontinued",
+          "url": "https://www.etsy.com/listing/1834529597/trussardi-donna-fresh-eau-de-toilette"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-pour-femme-eau-de-toilette-vintage",
+      "productHandle": "trussardi-pour-femme-eau-de-toilette-vintage",
+      "title": "Trussardi Pour Femme Eau de Toilette Vintage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Product title itself flags 'vintage'; matches Etsy listings for 'TRUSSARDI FEMME CLASSIC Eau De Toilette, Vintage, Discontinued, Very Rare'."
+        },
+        {
+          "type": "retailer",
+          "note": "Le Parfumier's own listing for this line is labeled 'Donna Trussardi For Women Eau de Toilette Vintage', consistent with a discontinued formula being sold through as vintage stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sold explicitly as vintage/discontinued stock on Etsy and by specialty vintage retailers rather than as an active current release."
+      },
+      "sources": [
+        {
+          "label": "Etsy - Trussardi Femme Classic EDT, Vintage, Discontinued",
+          "url": "https://www.etsy.com/listing/1820328542/trussardi-femme-classic-eau-de-toilette"
+        },
+        {
+          "label": "Le Parfumier - Donna Trussardi For Women EDT Vintage",
+          "url": "https://leparfumier.com/en/products/trussardi-donna-trussardi-for-women-eau-de-toilette-vintage"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-my-name-pour-femme-eau-de-parfum",
+      "productHandle": "trussardi-my-name-pour-femme-eau-de-parfum",
+      "title": "Trussardi My Name Pour Femme Eau de Parfum",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "My Name (launched 2013) is described as 'difficult to find in stores now, mostly available through resellers like eBay,' though no official discontinuation notice was found."
+        },
+        {
+          "type": "retailer",
+          "note": "Still turns up on some smaller EU retail sites (e.g. lojaglamourosa, secretsinbeauty) alongside eBay resale listings, so signal is mixed rather than confirmed."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - My Name Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/My-Name-18802.html"
+        },
+        {
+          "label": "eBay - Trussardi My Name EDP 100ml",
+          "url": "https://www.ebay.com/p/1324484901"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-luomo-pour-homme-lotion-apres-rasage",
+      "productHandle": "trussardi-luomo-pour-homme-lotion-apres-rasage",
+      "title": "Trussardi L'Uomo Pour Homme Lotion Apres-Rasage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica/Basenotes state L'Uomo (1995) 'is discontinued' and was last marketed by AB Parfums/Angelini Beauty."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay listing explicitly titled 'TRUSSARDI L'UOMO EDT VINTAGE, DISCONTINUED, VERY RARE'; not found at any current mainstream retailer."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage L'Uomo EDT bottles resell on eBay from roughly $69 up to $290 depending on size/condition."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - L'Uomo Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/L-Uomo-10518.html"
+        },
+        {
+          "label": "eBay - Trussardi L'Uomo EDT Vintage Discontinued 50ml",
+          "url": "https://www.ebay.com/itm/393504562616"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-luomo-pour-homme-gel-douche-1757453178",
+      "productHandle": "trussardi-luomo-pour-homme-gel-douche-1757453178",
+      "title": "Trussardi L'Uomo Pour Homme Gel Douche",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "L'Uomo (1995) line confirmed discontinued per Fragrantica/Basenotes, last marketed by AB Parfums/Angelini Beauty."
+        },
+        {
+          "type": "retailer",
+          "note": "Shower gel line-extension not sold by any current retailer; only the core EDT appears in vintage eBay listings."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Core L'Uomo EDT resells on eBay for roughly $69-$290; the shower gel companion has essentially no active listings, indicating it is fully gone."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - L'Uomo Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/L-Uomo-10518.html"
+        },
+        {
+          "label": "Basenotes - L'Uomo Trussardi EDT",
+          "url": "https://basenotes.com/fragrances/luomo-trussardi-by-trussardi.26120939"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-luomo-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-luomo-pour-homme-eau-de-toilette",
+      "title": "Trussardi L'Uomo Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica states plainly 'L'Uomo was launched in 1995, and it is discontinued,' last marketed by AB Parfums/Angelini Beauty."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay/ParfumVintage list it as 'Vintage Rare'; no listings found on Sephora, Ulta, Nordstrom, or FragranceX."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for L'Uomo EDT range from about $69 to $290 depending on bottle size and condition."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - L'Uomo Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/L-Uomo-10518.html"
+        },
+        {
+          "label": "ParfumVintage - L'Uomo di Trussardi 100ml Vintage Rare",
+          "url": "https://www.parfumvintage.com/en-us/products/l-39-uomo-di-trussardi-eau-de-toilette-100ml-spray-vintage-rare"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-luomo-pour-homme-baton-deodorant",
+      "productHandle": "trussardi-luomo-pour-homme-baton-deodorant",
+      "title": "Trussardi L'Uomo Pour Homme Baton Deodorant",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "L'Uomo (1995) core fragrance confirmed discontinued per Fragrantica; deodorant stick is a line-extension of an already-dead fragrance line."
+        },
+        {
+          "type": "retailer",
+          "note": "No current retailer carries any L'Uomo-branded product, including the deodorant stick; only the EDT surfaces occasionally on vintage resale sites."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "No active resale listings found for the deodorant stick specifically; core EDT fetches roughly $69-$290 on eBay, confirming the line is defunct."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - L'Uomo Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/L-Uomo-10518.html"
+        },
+        {
+          "label": "eBay - Trussardi L'Uomo EDT Vintage Discontinued 50ml",
+          "url": "https://www.ebay.com/itm/393504562616"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-light-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-light-pour-homme-eau-de-toilette",
+      "title": "Trussardi Light Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Sources describe Light Him (launched 1997) as discontinued around 2002, now a 'rare and hard-to-find vintage fragrance'."
+        },
+        {
+          "type": "retailer",
+          "note": "Etsy/eBay listings explicitly tagged 'DISCONTINUED, HARD TO FIND' and 'Vintage 1990s'; not carried by Sephora, Ulta, Nordstrom, or FragranceX."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only sold as vintage 75-125ml bottles on eBay and Etsy, explicitly marketed as discontinued/rare rather than current stock."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Light Him Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Light-Him-14466.html"
+        },
+        {
+          "label": "Etsy - Light for Him by Trussardi, Discontinued, Vintage 1990s",
+          "url": "https://www.etsy.com/uk/listing/822140919/light-for-him-by-trussardi-discontinued"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-light-pour-homme-baume-apres-rasage",
+      "productHandle": "trussardi-light-pour-homme-baume-apres-rasage",
+      "title": "Trussardi Light Pour Homme Baume Apres-Rasage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Light Him core fragrance (1997) confirmed discontinued around 2002 per Fragrantica/Etsy vintage listings; after-shave balm is a companion product of that same defunct line."
+        },
+        {
+          "type": "retailer",
+          "note": "No current retailer lists any Light Him product, including after-shave balm; only the EDT surfaces on vintage resale sites."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "No active resale listings found specifically for the after-shave balm; the EDT it accompanies is sold only as vintage/rare stock, confirming the line is defunct."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Light Him Trussardi",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Light-Him-14466.html"
+        },
+        {
+          "label": "Etsy - Light for Him by Trussardi, Discontinued, Vintage 1990s",
+          "url": "https://www.etsy.com/uk/listing/822140919/light-for-him-by-trussardi-discontinued"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-light-pour-femme-eau-de-toilette",
+      "productHandle": "trussardi-light-pour-femme-eau-de-toilette",
+      "title": "Trussardi Light Pour Femme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica/Basenotes list Light Her as a 1997 Trussardi release with no current-line retail presence found; Etsy/eBay listings explicitly market it as vintage and discontinued."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage sealed bottles resell on Etsy/eBay/Bonanza well above typical EDT pricing, e.g. a 125ml bottle listed at $349.90 on Bonanza, reflecting rarity."
+      },
+      "sources": [
+        {
+          "label": "Etsy - Trussardi Light Her vintage discontinued listing",
+          "url": "https://www.etsy.com/listing/1862160610/trussardi-light-her-eau-de-toilette-75ml"
+        },
+        {
+          "label": "Fragrantica - Light Him (companion fragrance, 1997)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Light-Him-14466.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-light-him-gel-douche-pour-homme-1757453178",
+      "productHandle": "trussardi-light-him-gel-douche-pour-homme-1757453178",
+      "title": "Trussardi Light Him Gel Douche Pour Homme",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "The matching Light Him/Light Her fragrance line (1997) is confirmed discontinued and sold only as vintage stock, but no source specifically addresses this companion shower gel SKU's own availability."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Light Him (1997, discontinued line)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Light-Him-14466.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-donna-trussardi-pour-femme-eau-de-toilette-vintage",
+      "productHandle": "trussardi-donna-trussardi-pour-femme-eau-de-toilette-vintage",
+      "title": "Trussardi Donna Trussardi Pour Femme Eau de Toilette Vintage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "rareparfums.com lists it under 'Vintage, Discontinued & Rare Fragrances' for Trussardi; product is explicitly labeled 'Vintage' rather than sold as a current line item."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 1990s Donna Trussardi EDT bottles trade on eBay mostly in the roughly $30-90 range depending on size and condition."
+      },
+      "sources": [
+        {
+          "label": "RareParfums - Trussardi vintage/discontinued fragrances",
+          "url": "https://rareparfums.com/brand/trussardi/"
+        },
+        {
+          "label": "Fragrantica - Donna Trussardi (1994)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Donna-Trussardi-882.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-donna-trussardi-pour-femme-eau-de-toilette",
+      "productHandle": "trussardi-donna-trussardi-pour-femme-eau-de-toilette",
+      "title": "Trussardi Donna Trussardi Pour Femme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Same underlying 1994 'Donna Trussardi' fragrance as the vintage SKU; superseded by the unrelated 2011 'Trussardi Donna' relaunch, with no current-production listing found for the original."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 1990s Donna Trussardi EDT bottles trade on eBay mostly in the roughly $30-90 range depending on size and condition."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Donna Trussardi (1994)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Donna-Trussardi-882.html"
+        },
+        {
+          "label": "RareParfums - Trussardi vintage/discontinued fragrances",
+          "url": "https://rareparfums.com/brand/trussardi/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-donna-trussardi-pour-femme-eau-de-parfum-vintage",
+      "productHandle": "trussardi-donna-trussardi-pour-femme-eau-de-parfum-vintage",
+      "title": "Trussardi Donna Trussardi Pour Femme Eau de Parfum Vintage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Coverage of the 1994 Donna Trussardi line notes the EDP variant was produced in small quantities and later taken out of production entirely, unlike the EDT."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage EDP bottles surface occasionally on eBay/Etsy as rare finds, generally priced higher than the more common EDT due to its small original production run."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Donna Trussardi (1994)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Donna-Trussardi-882.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-donna-pour-femme-eau-de-parfum",
+      "productHandle": "trussardi-donna-pour-femme-eau-de-parfum",
+      "title": "Trussardi Donna Pour Femme Eau de Parfum",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "FragranceOutlet lists it as sold out with a promised restock, and some eBay listings tag it 'discontinued,' but Amazon and other retailers continue selling it as a current product."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Amazon - Trussardi Donna EDP (current packaging)",
+          "url": "https://www.amazon.com/Trussardi-Donna-Parfum-Spray-Packaging/dp/B00BLXIX4U"
+        },
+        {
+          "label": "Fragrance Outlet - Trussardi Donna",
+          "url": "https://www.fragranceoutlet.com/products/trussardi-donna-by-trussardi-for-women-edt-spray"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-blue-land-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-blue-land-pour-homme-eau-de-toilette",
+      "title": "Trussardi Blue Land Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "coucoushop.com explicitly lists Blue Land under 'Sold out and Discontinued Fragrances'; rareparfums.com carries it in its discontinued/rare Trussardi catalog."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining stock is being sold through discount off-price sellers, e.g. World of Watches marking down the 1.7oz EDT to $61.98."
+      },
+      "sources": [
+        {
+          "label": "Coucoushop - Blue Land listed as sold out/discontinued",
+          "url": "https://www.coucoushop.com/trussardi-blue-land-edt-50ml.html"
+        },
+        {
+          "label": "RareParfums - Blue Land",
+          "url": "https://rareparfums.com/p/blue-land-eau-de-toilette/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-black-extreme-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-black-extreme-pour-homme-eau-de-toilette",
+      "title": "Trussardi Black Extreme Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "One eBay listing labels it discontinued and ties it to past Angelini Beauty distribution, but Perfume.com and FragranceOutlet still sell it as current in-stock inventory."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Perfume.com - Trussardi Black Extreme (current listing)",
+          "url": "https://www.perfume.com/trussardi/trussardi-black-extreme/men-cologne"
+        },
+        {
+          "label": "Fragrance Outlet - Black Extreme",
+          "url": "https://www.fragranceoutlet.com/products/black-extreme-by-trussardi-for-men-eau-de-toilette-spray"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-bianco-pour-femme-eau-de-toilette",
+      "productHandle": "trussardi-bianco-pour-femme-eau-de-toilette",
+      "title": "Trussardi Bianco Pour Femme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Multiple eBay US/UK listings explicitly market it as 'DISCONTINUED, VERY RARE'; a 2006 Alberto Morillas fragrance with no current-line retailer presence found."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sealed 2.5oz/75ml bottles resell on eBay well above typical EDT pricing, roughly $150-250 per bottle, reflecting scarcity."
+      },
+      "sources": [
+        {
+          "label": "eBay - Trussardi Bianco EDT, discontinued/very rare listing",
+          "url": "https://www.ebay.com/itm/TRUSSARDI-BIANCO-for-Women-EDT-75ml-DISCONTINUED-VERY-RARE-NEW-SEALED-/302219901678"
+        },
+        {
+          "label": "eBay UK - Trussardi Bianco EDT discontinued listing",
+          "url": "https://www.ebay.co.uk/itm/374975052625"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-a-way-for-him-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-a-way-for-him-pour-homme-eau-de-toilette",
+      "title": "Trussardi A Way For Him Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "A fragrance-forum comment speculated it might be discontinued within a couple of years of its 2014 launch, but Amazon, MaxAroma and FragranceOutlet all currently list it as active."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Amazon - Trussardi A Way for Him",
+          "url": "https://www.amazon.com/Trussardi-Mens-Toilette-Spray-Ounce/dp/B00K4V6FPE"
+        },
+        {
+          "label": "MaxAroma - Trussardi A Way For Him",
+          "url": "https://www.maxaroma.com/fragrance/men-fragrances/trussardi-trussardi-a-way-for-him-cologne/pid/16459/3"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-amber-oud-pour-homme-eau-de-parfum",
+      "productHandle": "trussardi-amber-oud-pour-homme-eau-de-parfum",
+      "title": "Trussardi Amber Oud Pour Homme Eau de Parfum",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "fragrancerevival.com sells a 'type'/dupe oil specifically framed around the original being discontinued; it's tied to AB Parfums/Angelini's past Trussardi licensing with no current Trussardi Parfums retail listing found."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sealed 100ml bottles trade on eBay around $85, consistent with remaining-stock clearance rather than a growing collector premium."
+      },
+      "sources": [
+        {
+          "label": "Fragrance Revival - Amber Oud type/dupe (implies original discontinued)",
+          "url": "https://fragrancerevival.com/product/trussardi-amber-oud-by-trussardi-type/"
+        },
+        {
+          "label": "eBay - Amber Oud sealed 100ml listing",
+          "url": "https://www.ebay.com/itm/326900707436"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-sport-pour-homme-gel-douche",
+      "productHandle": "trussardi-action-sport-pour-homme-gel-douche",
+      "title": "Trussardi Action Sport Pour Homme Gel Douche",
+      "vendor": "TRUSSARDI",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "The matching Action Sport fragrance (1993) is confirmed discontinued and sold only via vintage retailers, but no source specifically addresses this companion shower gel SKU."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Action Sport (1993)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Action-Sport-46326.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-sport-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-action-sport-pour-homme-eau-de-toilette",
+      "title": "Trussardi Action Sport Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Basenotes/Fragrantica date it to 1993 and note it was 'last marketed by Angelini Beauty'; Etsy and ParfumVintage sell remaining bottles explicitly as 'Vintage Rare' stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining bottles are sold through vintage/collector specialty shops like ParfumVintage and Etsy rather than mainstream retail, at collector-driven prices."
+      },
+      "sources": [
+        {
+          "label": "Basenotes - Action Sport (1993)",
+          "url": "https://basenotes.com/fragrances/action-sport-by-trussardi.26120046"
+        },
+        {
+          "label": "ParfumVintage - Action Sport vintage rare listing",
+          "url": "https://www.parfumvintage.com/en-us/products/trussardi-action-sport-di-trussardi-eau-de-sport-50ml-vintage-rare"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-homme-savon",
+      "productHandle": "trussardi-action-pour-homme-savon",
+      "title": "Trussardi Action Pour Homme Savon",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Trussardi Action Uomo line launched 1990; parent EDT/EDT companion pieces are only found via vintage/discontinued sellers, none listed as current-production items on major fragrance retailers."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay and vintage specialty shops (ParfumVintage, FragranceRevival) sell remaining Trussardi Action soap/companion stock explicitly tagged 'vintage' or 'discontinued'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Trussardi Action companion items (soap/lotion/balm) only turn up as old vintage stock on eBay/Etsy, generally in the $15-30 range for small-format pieces, well below what a current-production item would command."
+      },
+      "sources": [
+        {
+          "label": "eBay - Trussardi Action For Men Soap listing",
+          "url": "https://leparfumier.com/en/products/trussardi-action-for-men-soap"
+        },
+        {
+          "label": "eBay - Trussardi Vintage Fragrances for Men",
+          "url": "https://www.ebay.com/b/Trussardi-Vintage-Fragrances-for-Men/29585/bn_7116875766"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-homme-lotion-apres-rasage",
+      "productHandle": "trussardi-action-pour-homme-lotion-apres-rasage",
+      "title": "Trussardi Action Pour Homme Lotion Apres-Rasage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Trussardi Action Uomo aftershave lotion not carried by any current mainstream retailer; only vintage/collector listings found (Etsy 'rare vintage', eBay 'discontinued fragrance')."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica board thread notes aftershave lotions like Trussardi's are largely gone from modern lineups industry-wide."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining bottles sell only as vintage/collector stock on Etsy and eBay, typically $20-40 depending on size and condition."
+      },
+      "sources": [
+        {
+          "label": "Etsy - Trussardi Uomo aftershave lotion, rare vintage",
+          "url": "https://www.etsy.com/uk/listing/1092841860/trussardi-uomo-by-trussardi-after-shave"
+        },
+        {
+          "label": "Fragrantica board - aftershave lotions disappearing",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=296796"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-homme-gel-douche",
+      "productHandle": "trussardi-action-pour-homme-gel-douche",
+      "title": "Trussardi Action Pour Homme Gel Douche",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Trussardi Action Uomo shower gel shares the same defunct 1990s companion-line status as the rest of the Action Uomo bath line; no current listings at major fragrance retailers."
+        },
+        {
+          "type": "retailer",
+          "note": "Only Trussardi Uomo-adjacent bath/body items found are on vintage-focused shops, not on FragranceX/FragranceNet/Sephora/Ulta."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "No active shower gel listings found at all outside occasional old-stock eBay lots, consistent with the rest of the discontinued Action Uomo companion line."
+      },
+      "sources": [
+        {
+          "label": "ParfumVintage - Trussardi Action man vintage line",
+          "url": "https://www.parfumvintage.com/en-us/products/trussardi-action-man-di-trussardi-eau-de-toilette-100ml-spray-vintage-rare"
+        },
+        {
+          "label": "eBay - Trussardi Aftershave/Bath Fragrances for Men",
+          "url": "https://www.ebay.com/b/Trussardi-Aftershave-Fragrances-for-Men/29585/bn_7116835673"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-homme-eau-de-toilette",
+      "productHandle": "trussardi-action-pour-homme-eau-de-toilette",
+      "title": "Trussardi Action Pour Homme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Etsy listing explicitly labels Trussardi Action Uomo EDT 100ml 'Vintage, Discontinued, Very Rare'."
+        },
+        {
+          "type": "retailer",
+          "note": "Only vintage-specialist shops (ParfumVintage, FragranceRevival) and eBay carry it; not found at Sephora, Ulta, Macy's, FragranceX, or FragranceNet as a current listing."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "100ml EDT bottles trade on eBay/Etsy as vintage stock roughly in the $40-70 range, well above typical mass-market EDT pricing, reflecting scarcity rather than active production."
+      },
+      "sources": [
+        {
+          "label": "Etsy - Trussardi Action Uomo EDT, Vintage Discontinued Very Rare",
+          "url": "https://www.etsy.com/listing/1812780318/trussardi-action-uomo-eau-de-toilette"
+        },
+        {
+          "label": "ParfumVintage - Trussardi Action man EDT vintage rare",
+          "url": "https://www.parfumvintage.com/en-us/products/trussardi-action-man-di-trussardi-eau-de-toilette-100ml-spray-vintage-rare"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-homme-baume-apres-rasage",
+      "productHandle": "trussardi-action-pour-homme-baume-apres-rasage",
+      "title": "Trussardi Action Pour Homme Baume Apres-Rasage",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Aftershave balm from the Trussardi Action Uomo line is not found at any current fragrance retailer; only the EDT and vintage bath-line items surface, all tagged discontinued/vintage."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica community discussion notes aftershave balms/lotions from older designer lines like Trussardi have broadly disappeared from retail shelves."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "No current listings found; any remaining balm stock would only surface via the same vintage eBay/Etsy sellers carrying the rest of the discontinued Action Uomo line, typically $15-30."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica board - aftershave products disappearing",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=296796"
+        },
+        {
+          "label": "eBay - Trussardi Aftershave Fragrances for Men",
+          "url": "https://www.ebay.com/b/Trussardi-Aftershave-Fragrances-for-Men/29585/bn_7116835673"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-femme-savon",
+      "productHandle": "trussardi-action-pour-femme-savon",
+      "title": "Trussardi Action Pour Femme Savon",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Trussardi Action Donna (women's) fragrance launched 1990 and Fragrantica lists it as a legacy release with no current production; companion soap not found at any active retailer."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay/vintage shops are the only sellers of Trussardi Action Donna items, consistently marketed as vintage/rare."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Companion soap items from this line only appear as vintage eBay lots, typically $15-25, with no current-production listings anywhere."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Trussardi Action Donna (1990)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Trussardi-Action-Donna-7013.html"
+        },
+        {
+          "label": "ParfumVintage - Trussardi Action woman vintage rare",
+          "url": "https://www.parfumvintage.com/en-us/products/trussardi-action-woman-di-trussardi-eau-de-toilette-100ml-vintage-rare"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "trussardi-action-pour-femme-eau-de-toilette",
+      "productHandle": "trussardi-action-pour-femme-eau-de-toilette",
+      "title": "Trussardi Action Pour Femme Eau de Toilette",
+      "vendor": "TRUSSARDI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica confirms Trussardi Action Donna launched in 1990 with no current-production status; vintage retailers (ParfumVintage) explicitly sell it as 'vintage rare'."
+        },
+        {
+          "type": "retailer",
+          "note": "Not found at Sephora, Ulta, Macy's, FragranceX, or FragranceNet; only eBay and vintage specialty shops carry remaining bottles."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "100ml EDT bottles trade as vintage stock on eBay/ParfumVintage roughly in the $40-70 range, consistent with a long-discontinued release rather than active retail."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Trussardi Action Donna (1990)",
+          "url": "https://www.fragrantica.com/perfume/Trussardi/Trussardi-Action-Donna-7013.html"
+        },
+        {
+          "label": "ParfumVintage - Trussardi Action woman EDT vintage rare",
+          "url": "https://www.parfumvintage.com/en-us/products/trussardi-action-woman-di-trussardi-eau-de-toilette-100ml-vintage-rare"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "true-religion-for-women-pour-femme-eau-de-parfum",
+      "productHandle": "true-religion-for-women-pour-femme-eau-de-parfum",
+      "title": "True Religion  For Women Pour Femme Eau de Parfum",
+      "vendor": "TRUE RELIGION",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "eBay maintains a dedicated 'True Religion Discontinued Fragrances for Women' category covering the original True Religion EDP."
+        },
+        {
+          "type": "community",
+          "note": "Buyers on resale sites note the fragrance is discontinued and increasingly expensive to find as remaining stock dries up; True Religion's own site now pushes a different current women's scent ('Fruity Floral') rather than the original 2008 EDP."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay sold listings show the original True Religion women's EDP clearing at discounted prices such as $19.97-$39.97 (down from $75-80 MSRP), consistent with sell-through of discontinued stock."
+      },
+      "sources": [
+        {
+          "label": "eBay - True Religion Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/True-Religion-Discontinued-Fragrances-for-Women/11848/bn_7116764853"
+        },
+        {
+          "label": "Fragrantica - True Religion (2008)",
+          "url": "https://www.fragrantica.com/perfume/True-Religion/True-Religion-4965.html"
+        },
+        {
+          "label": "TrueReligion.com - current women's fragrance (different SKU)",
+          "url": "https://www.truereligion.com/tr-womens-fragrance---fruity-floral-/TRFFWFR.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-true-star-pour-homme-eau-de-toilette",
+      "productHandle": "tommy-hilfiger-true-star-pour-homme-eau-de-toilette",
+      "title": "Tommy Hilfiger TRUE Star Pour Homme Eau de Toilette",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica confirms True Star Men launched 2005; multiple eBay listings explicitly tag sealed/NIB stock as 'Discontinued 2005'."
+        },
+        {
+          "type": "retailer",
+          "note": "Not carried as a current listing at FragranceNet/FragranceX/Macy's alongside other active Tommy Hilfiger lines (Tommy, Freedom, Tommy Jeans) — only True Star is absent and only appears on resale/discontinued-specialist sites."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for 3.4oz True Star Men run roughly $35-99 depending on condition/seller, with sold listings around $35-65, reflecting discontinued-collectible resale pricing rather than standard discount-retail pricing."
+      },
+      "sources": [
+        {
+          "label": "eBay - True Star Men EDT, sealed, Discontinued 2005",
+          "url": "https://www.ebay.com/itm/205703064852"
+        },
+        {
+          "label": "Fragrantica - True Star Men (2005)",
+          "url": "https://www.fragrantica.com/perfume/Tommy-Hilfiger/True-Star-Men-1397.html"
+        },
+        {
+          "label": "FragranceOriginal - Discontinued Tommy Hilfiger collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/tommy-hilfiger"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-t-pour-homme-eau-de-toilette",
+      "productHandle": "tommy-hilfiger-tommy-t-pour-homme-eau-de-toilette",
+      "title": "Tommy Hilfiger Tommy T Pour Homme Eau de Toilette",
+      "vendor": "TOMMY HILFIGER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica's current Tommy Hilfiger men's lineup (Athletics, Freedom, T by Tommy, Tommy 10, Tommy Jeans, Tommy Summer, True Star) does not clearly list 'Tommy T' as an active current release, suggesting it may be an older/renamed sub-line."
+        },
+        {
+          "type": "retailer",
+          "note": "A single eBay listing shows 'Tommy T Men' still sold as new-in-box stock, so it isn't clearly pulled from all channels yet — signal is mixed rather than confirmed."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "eBay - Tommy T Men EDT, new in box",
+          "url": "https://www.ebay.com/itm/386403967495"
+        },
+        {
+          "label": "Fragrantica - Tommy Hilfiger designer page",
+          "url": "https://www.fragrantica.com/designers/Tommy-Hilfiger.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-pour-homme-savon",
+      "productHandle": "tommy-hilfiger-tommy-pour-homme-savon",
+      "title": "Tommy Hilfiger Tommy Pour Homme Savon",
+      "vendor": "TOMMY HILFIGER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "The main 'Tommy for Men' EDT/cologne remains widely available (FragranceNet, FragranceX, Amazon, Walmart), but the companion bar soap specifically was not found in stock at those major retailers in this check."
+        },
+        {
+          "type": "web",
+          "note": "Tommy Hilfiger bath & body items (soap dispensers, body wash) turn up mostly on eBay/older specialty sites (e.g. Cosmic-Perfume) rather than current mainstream retail listings, suggesting the soap format specifically may be winding down even though the core fragrance is fine."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "eBay - Tommy Hilfiger Bath & Body listings",
+          "url": "https://www.ebay.com/b/Tommy-Hilfiger-Bath-Body/11838/bn_8280649"
+        },
+        {
+          "label": "Cosmic-Perfume - Tommy Hilfiger for Men Soap Bar",
+          "url": "https://cosmic-perfume.com/collections/soap/products/tommy-hilfiger-for-men-by-tommy-hilfiger-soap-bar-4-4-oz-125-gr"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-pour-homme-baume-apres-rasage",
+      "productHandle": "tommy-hilfiger-tommy-pour-homme-baume-apres-rasage",
+      "title": "Tommy Hilfiger Tommy Pour Homme Baume Apres-Rasage",
+      "vendor": "TOMMY HILFIGER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Not listed on major mainstream fragrance retail sites; only turns up as unboxed/used stock on eBay and specialty resellers."
+        },
+        {
+          "type": "community",
+          "note": "Sellers market it as hard-to-find aftershave balm from the 1995 Tommy line, but no brand-level discontinuation confirmation found."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "eBay - Tommy Hilfiger Aftershave Fragrances for Men",
+          "url": "https://www.ebay.com/b/Tommy-Hilfiger-Tommy-Aftershave-Fragrances-for-Men/29585/bn_7116823791"
+        },
+        {
+          "label": "wemakebeauty.com - Tommy Aftershave Balm unboxed listing",
+          "url": "https://www.wemakebeauty.com/Tommy-Hilfiger-Tommy-Aftershave-Balm-p/mf-tom34asbunb.htm"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-pour-homme-baton-deodorant",
+      "productHandle": "tommy-hilfiger-tommy-pour-homme-baton-deodorant",
+      "title": "Tommy Hilfiger Tommy Pour Homme Baton Deodorant",
+      "vendor": "TOMMY HILFIGER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Product mainly surfaces on eBay and niche fragrance sites rather than major mass retailers, suggesting reduced production."
+        },
+        {
+          "type": "web",
+          "note": "Companion aftershave balm from the same 1995 Tommy line shows the same weak-availability pattern."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Amazon - Tommy for Men Deodorant Stick listing",
+          "url": "https://www.amazon.com/Tommy-Hilfiger-Men-Deodorant-Stick/dp/B000XEDFEQ"
+        },
+        {
+          "label": "Le Parfumier - Tommy For Men Deodorant Stick",
+          "url": "https://leparfumier.com/en/products/tommy-hilfiger-tommy-for-men-deodorant-stick"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-jeans-pour-homme-eau-de-cologne",
+      "productHandle": "tommy-hilfiger-tommy-jeans-pour-homme-eau-de-cologne",
+      "title": "Tommy Hilfiger Tommy Jeans Pour Homme Eau de Cologne",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Search results indicate Tommy Jeans cologne is discontinued according to Estee Lauder (Tommy Hilfiger's fragrance licensee)."
+        },
+        {
+          "type": "retailer",
+          "note": "Only available through secondary markets and discontinued-fragrance specialty retailers, not current mainstream listings."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining bottles are sold mainly through discontinued-fragrance specialty retailers (e.g. FragranceOriginal, 99Perfume) at or above original retail rather than at mass-market discounters."
+      },
+      "sources": [
+        {
+          "label": "Basenotes - Tommy Jeans by Tommy Hilfiger",
+          "url": "https://basenotes.com/fragrances/tommy-jeans-by-tommy-hilfiger.26122607"
+        },
+        {
+          "label": "FragranceOriginal - Discontinued Tommy Hilfiger collection",
+          "url": "https://fragranceoriginal.com/collections/designer-discontinued-perfume-cologne/tommy-hilfiger"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-girl-summer-pour-femme-eau-de-toilette",
+      "productHandle": "tommy-hilfiger-tommy-girl-summer-pour-femme-eau-de-toilette",
+      "title": "Tommy Hilfiger Tommy Girl Summer Pour Femme Eau de Toilette",
+      "vendor": "TOMMY HILFIGER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "The original 2002 Tommy Girl Summer edition is called discontinued on resale/fan sites, but the brand releases a new 'Summer' limited edition most years (e.g. a 2024 'Vibrant' version), so the line itself continues under the same name."
+        },
+        {
+          "type": "retailer",
+          "note": "Older Tommy Girl Summer stock is sold as discontinued on FragranceNet/eBay while newer seasonal editions remain in current retail."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Parfumo - Tommy Girl Summer Edition",
+          "url": "https://www.parfumo.com/Perfumes/Tommy_Hilfiger/tommy-girl-summer-edition"
+        },
+        {
+          "label": "Wikiparfum - Tommy Girl Summer Vibrant 2024",
+          "url": "https://www.wikiparfum.com/en/fragrances/tommy-girl-summer-vibrant-2024"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-girl-pour-femme-baton-deodorant",
+      "productHandle": "tommy-hilfiger-tommy-girl-pour-femme-baton-deodorant",
+      "title": "Tommy Hilfiger Tommy Girl Pour Femme Baton Deodorant",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Le Parfumier lists the Tommy Girl deodorant stick as out of stock, and CosmoStore lists the 75ml/2.6oz stick as not in stock."
+        },
+        {
+          "type": "community",
+          "note": "eBay listings explicitly market remaining Tommy Girl deodorant spray/stick stock as 'rare' and discontinued."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining stock is being sold off via eBay listings marketed as 'rare' at prices comparable to or above original retail rather than restocked by retailers."
+      },
+      "sources": [
+        {
+          "label": "Le Parfumier - Tommy Girl Deodorant Stick",
+          "url": "https://www.leparfumier.com/en/tommy-hilfiger-tommy-girl-for-women-deodorant-stic.html"
+        },
+        {
+          "label": "CosmoStore - Tommy Girl Antiperspirant Deodorant Stick",
+          "url": "https://www.cosmostore.org/catalog/product/tommy_girl_antiperspirant_deodorant_stick/"
+        },
+        {
+          "label": "eBay - Tommy Girl Deodorant Spray rare listing",
+          "url": "https://www.ebay.com/itm/256096493389"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-girl-jeans-pour-femme-eau-de-cologne",
+      "productHandle": "tommy-hilfiger-tommy-girl-jeans-pour-femme-eau-de-cologne",
+      "title": "Tommy Hilfiger Tommy Girl Jeans Pour Femme Eau de Cologne",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Search results indicate Tommy Girl Jeans (2003) has been discontinued according to Estee Lauder."
+        },
+        {
+          "type": "community",
+          "note": "Fragrance Revival created a 'type' recreation of the scent specifically because the original is no longer produced and is hard to find."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining bottles are sold as expensive/hard-to-find items on eBay rather than at normal retail pricing."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Tommy Girl Jeans",
+          "url": "https://www.fragrantica.com/perfume/Tommy-Hilfiger/Tommy-Girl-Jeans-1398.html"
+        },
+        {
+          "label": "Fragrance Revival - Tommy Girl Jeans type",
+          "url": "https://fragrancerevival.com/product/tommy-girl-jeans-by-tommy-hilfiger-type/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-tommy-10-pour-homme-eau-de-toilette",
+      "productHandle": "tommy-hilfiger-tommy-10-pour-homme-eau-de-toilette",
+      "title": "Tommy Hilfiger Tommy 10 Pour Homme Eau de Toilette",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Perfumeonline.ca lists the product name itself as 'Tommy 10 Hilfiger (Discontinued)'."
+        },
+        {
+          "type": "community",
+          "note": "eBay listings describe remaining bottles as 'Discontinued & Rare' 2006 10th-anniversary edition."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sold as discontinued/rare stock on eBay and specialty sites like Le Parfumier rather than at mainstream retailers, generally at or above standard EDT pricing."
+      },
+      "sources": [
+        {
+          "label": "Perfumeonline.ca - Tommy 10 Hilfiger (Discontinued)",
+          "url": "https://perfumeonline.ca/products/tommy-10-hilfiger-discontinued"
+        },
+        {
+          "label": "eBay - Tommy 10 for Men Discontinued & Rare",
+          "url": "https://www.ebay.com/itm/386883782849"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-freedom-pour-homme-eau-de-toilette",
+      "productHandle": "tommy-hilfiger-freedom-pour-homme-eau-de-toilette",
+      "title": "Tommy Hilfiger Freedom Pour Homme Eau de Toilette",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "eBay listing explicitly titled 'ORIGINAL Freedom Tommy Hilfiger for Men 1.7 OZ EDT SP Cologne DISCONTINUED'."
+        },
+        {
+          "type": "web",
+          "note": "Fragrantica lists two separate Freedom entries (1999 original, 2012 reformulation), and the original 1999 version is the one being sold as discontinued/vintage."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Original 1999 Freedom bottles are selling at a premium on eBay as discontinued/vintage stock, well above typical EDT pricing."
+      },
+      "sources": [
+        {
+          "label": "eBay - Freedom Tommy Hilfiger DISCONTINUED listing",
+          "url": "https://www.ebay.com/itm/284486580494"
+        },
+        {
+          "label": "Fragrantica - Freedom for Him (1999)",
+          "url": "https://www.fragrantica.com/perfume/Tommy-Hilfiger/Freedom-for-Him-1388.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-dreaming-pour-femme-lotion-pour-le-corps",
+      "productHandle": "tommy-hilfiger-dreaming-pour-femme-lotion-pour-le-corps",
+      "title": "Tommy Hilfiger Dreaming Pour Femme Lotion Pour Le Corps",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Since the Dreaming EDP fragrance itself is discontinued, the companion body lotion is confirmed no longer in production per fragrance retailer summaries."
+        },
+        {
+          "type": "retailer",
+          "note": "Only found bundled in vintage 'EDP + Body Lotion' gift sets on eBay/Etsy, not sold new individually."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only available as part of vintage gift sets on eBay/Etsy, no current new-production listings found."
+      },
+      "sources": [
+        {
+          "label": "eBay - Dreaming EDP Spray Lotion Body Wash Set NIB",
+          "url": "https://www.ebay.com/itm/195306510659"
+        },
+        {
+          "label": "Etsy - Tommy Hilfiger Dreaming EDP Vintage Set With Body Lotion",
+          "url": "https://www.etsy.com/listing/1615193352/set-tommy-hilfiger-dreaming-edp-profumo"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-dreaming-pour-femme-eau-de-parfum",
+      "productHandle": "tommy-hilfiger-dreaming-pour-femme-eau-de-parfum",
+      "title": "Tommy Hilfiger Dreaming Pour Femme Eau de Parfum",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Amour Boutique lists it directly as 'Dreaming By Tommy Hilfiger EDP (Discontinued)'."
+        },
+        {
+          "type": "community",
+          "note": "Etsy and eBay listings describe remaining stock as 'discontinued, very rare' and 'HTF, Discontinued'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sold as rare/discontinued vintage stock on Etsy and eBay, generally priced at or above original retail rather than discounted."
+      },
+      "sources": [
+        {
+          "label": "Amour Boutique - Dreaming by Tommy Hilfiger EDP (Discontinued)",
+          "url": "https://amourfragrances.com/products/dreaming-by-tommy-hilfiger-edp-discontinued"
+        },
+        {
+          "label": "Etsy - Tommy Hilfiger Dreaming EDP, Discontinued, Very Rare",
+          "url": "https://www.etsy.com/listing/4382274477/tommy-hilfiger-dreaming-eau-de-parfum"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-athletics-pour-homme-lotion-pour-le-corps",
+      "productHandle": "tommy-hilfiger-athletics-pour-homme-lotion-pour-le-corps",
+      "title": "Tommy Hilfiger Athletics Pour Homme Lotion Pour le Corps",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Companion product to the discontinued 1998 Athletics cologne; not found on mainstream retail sites, only on eBay/specialty sellers."
+        },
+        {
+          "type": "retailer",
+          "note": "Le Parfumier carries a listing for it as a legacy/vintage item rather than current mainstream stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only found as older/collector eBay stock and on legacy-fragrance specialty sites, not current mainstream retail."
+      },
+      "sources": [
+        {
+          "label": "eBay - Hilfiger Athletics Vitamin Enriched Body Lotion",
+          "url": "https://www.ebay.com/itm/134762891164"
+        },
+        {
+          "label": "Le Parfumier - Athletics For Men Body Lotion",
+          "url": "https://leparfumier.com/en/products/tommy-hilfiger-athletics-for-men-body-lotion"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tommy-hilfiger-athletics-pour-homme-eau-de-cologne",
+      "productHandle": "tommy-hilfiger-athletics-pour-homme-eau-de-cologne",
+      "title": "Tommy Hilfiger Athletics Pour Homme Eau de Cologne",
+      "vendor": "TOMMY HILFIGER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "Basenotes and Fragrantica describe Hilfiger Athletics (1998) as discontinued, prompting Fragrance Revival to create a recreation 'type' version."
+        },
+        {
+          "type": "retailer",
+          "note": "No longer found at mainstream fragrance retailers; only via eBay and discontinued-fragrance specialty sites."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage bottles sell on eBay at prices above original retail, and third parties now sell 'type' recreations since the original is gone."
+      },
+      "sources": [
+        {
+          "label": "Basenotes - Hilfiger Athletics similar fragrance discussion",
+          "url": "https://basenotes.com/threads/hilfiger-athletics-similar-fragrance.322697/"
+        },
+        {
+          "label": "Fragrance Revival - Athletics by Tommy Hilfiger Type",
+          "url": "https://fragrancerevival.com/product/athletics-by-tommmy-hilfiger-type/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-white-patchouli-pour-femme-eau-de-parfum",
+      "productHandle": "tom-ford-white-patchouli-pour-femme-eau-de-parfum",
+      "title": "Tom Ford White Patchouli Pour Femme Eau De Parfum",
+      "vendor": "TOM FORD",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "Multiple eBay/Poshmark listings market bottles as 'Rare Discontinued Vintage', but Fragrance Vault and Perfumania still list and sell it as a current catalog product."
+        },
+        {
+          "type": "retailer",
+          "note": "Mixed retail signal: still findable at some fragrance retailers (Perfumania, Fragrance Vault) despite reseller claims of discontinuation."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "eBay - Tom Ford White Patchouli Rare Discontinued Vintage",
+          "url": "https://www.ebay.com/itm/277915682233"
+        },
+        {
+          "label": "Perfumania - Tom Ford White Patchouli",
+          "url": "https://perfumania.com/products/white-patchouli-eau-de-parfum-spray-for-women-and-men-by-tom-ford"
+        },
+        {
+          "label": "Fragrance Vault - Tom Ford White Patchouli EDP",
+          "url": "https://fragrancevault.net/products/tom-ford-white-patchouli-eau-de-parfum"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-violet-blonde-pour-femme-eau-de-parfum",
+      "productHandle": "tom-ford-violet-blonde-pour-femme-eau-de-parfum",
+      "title": "Tom Ford Violet Blonde Pour Femme Eau de Parfum",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica retrospective piece 'Remembering Violet Blonde by Tom Ford' treats it as a past/discontinued release; multiple blogs and decant sites (Kafkaesque, smelltoimpress) explicitly label it a discontinued fragrance."
+        },
+        {
+          "type": "retailer",
+          "note": "No longer listed on TomFordBeauty.com or major department-store fragrance counters; only sold via secondary/vault sellers (fragrancevault.net lists it as 'vaulted')."
+        },
+        {
+          "type": "community",
+          "note": "Described by collectors as a 'unicorn' that vanished from shelves a few years after its 2011 launch, now sought after on resale sites."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay 3.4oz/100ml bottles are reselling roughly $145-$290, well above the original retail price, consistent with discontinued-collector pricing."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Remembering Violet Blonde by Tom Ford",
+          "url": "https://www.fragrantica.com/news/Remembering-Violet-Blonde-by-Tom-Ford-16512.html"
+        },
+        {
+          "label": "smelltoimpress - Violet Blonde (Discontinued)",
+          "url": "https://smelltoimpress.com/products/tom-ford-violet-blonde"
+        },
+        {
+          "label": "Fragrance Vault - Violet Blonde EDP (vaulted)",
+          "url": "https://fragrancevault.net/products/tom-ford-violet-blonde-edp"
+        },
+        {
+          "label": "eBay - Discontinued Violet Blonde 100ml listings",
+          "url": "https://www.ebay.com/b/tom-ford-violet-blonde/bn_7024904975"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-pour-homme-eau-de-toilette",
+      "productHandle": "tom-ford-pour-homme-eau-de-toilette",
+      "title": "Tom Ford Pour Homme Eau de Toilette",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Original 2007 'Tom Ford for Men' / Pour Homme is no longer on TomFordBeauty.com's current lineup; multiple eBay listings for both EDT and EDP explicitly title it 'DISCONTINUED, Original Formula'."
+        },
+        {
+          "type": "community",
+          "note": "Fragrance communities note the original formula is harder to find than newer TF Signature releases and is treated as a collector's item."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Original-formula bottles are being resold on eBay/Mercari as sealed 'discontinued' collector stock, with sellers marketing scarcity rather than everyday inventory."
+      },
+      "sources": [
+        {
+          "label": "eBay - Tom Ford for Men EDT (Discontinued)",
+          "url": "https://www.ebay.com/itm/225166296408"
+        },
+        {
+          "label": "eBay - Tom Ford for Men EDT (Discontinued)",
+          "url": "https://www.ebay.com/itm/374886081938"
+        },
+        {
+          "label": "Fragrantica - Tom Ford for Men (2007)",
+          "url": "https://www.fragrantica.com/perfume/Tom-Ford/Tom-Ford-for-Men-1172.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-noir-pour-homme-eau-de-parfum",
+      "productHandle": "tom-ford-noir-pour-homme-eau-de-parfum",
+      "title": "Tom Ford Noir Pour Homme Eau de Parfum",
+      "vendor": "TOM FORD",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "One search summary states the original 2012 Tom Ford Noir EDP 'was discontinued in 2020', while it still appears on Sephora France's site, giving a mixed picture."
+        },
+        {
+          "type": "retailer",
+          "note": "Nordstrom's current Tom Ford Noir listings surface Noir Extreme, Noir de Noir, and Noir EDT prominently, but the plain Noir EDP did not turn up as a distinct current US listing in search results."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Sephora France - Noir Eau de Parfum",
+          "url": "https://www.sephora.fr/p/tom-ford-noir---eau-de-parfum-P1182022.html"
+        },
+        {
+          "label": "Fragrantica - Noir (2012)",
+          "url": "https://www.fragrantica.com/perfume/Tom-Ford/Noir-15727.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-noir-pour-femme-eau-de-parfum",
+      "productHandle": "tom-ford-noir-pour-femme-eau-de-parfum",
+      "title": "Tom Ford Noir Pour Femme Eau De Parfum",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Sold as an explicitly labeled '(Discontinued)' product on resale/decant site Maison Drakos; Sephora's own community forum has a thread discussing its disappearance."
+        },
+        {
+          "type": "community",
+          "note": "Search summary reports the 2015 launch 'failed to find footing and was quickly discontinued', with fragrance sites now offering only decants/impressions."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay/UK listings for 100ml bottles are running roughly £170-£245 (well above typical discounted TF pricing), reflecting discontinued/collector resale value."
+      },
+      "sources": [
+        {
+          "label": "Maison Drakos - Tom Ford Noir Pour Femme (Discontinued)",
+          "url": "https://www.maisondrakos.com/product-page/tom-ford-noir-pour-femme-discontinued"
+        },
+        {
+          "label": "Sephora Beauty Insider Community - Tom Ford Noir Pour Femme",
+          "url": "https://community.sephora.com/t5/Fragrance-Fans/Tom-Ford-Noir-Pour-Femme/m-p/6307363"
+        },
+        {
+          "label": "eBay - Noir Pour Femme 100ml (discontinued, sealed)",
+          "url": "https://www.ebay.com/itm/318396118294"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-metallique-pour-homme-eau-de-parfum",
+      "productHandle": "tom-ford-metallique-pour-homme-eau-de-parfum",
+      "title": "Tom Ford Metallique Pour Femme Eau de Parfum",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple independent sources (Mercari's 'Tom Ford Discontinued Fragrances for Women' shop, Sephora community thread, eBay listings titled 'DISCONTINUED PARFUM') agree Metallique (2019) is no longer in production."
+        },
+        {
+          "type": "retailer",
+          "note": "FragranceNet still lists it, suggesting sell-through of remaining stock rather than active brand production."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay has 50ml bottles around $119 and small decant vials near $16, with sellers marketing it as discontinued/sought-after by fans."
+      },
+      "sources": [
+        {
+          "label": "Mercari - Tom Ford Discontinued Fragrances for Women",
+          "url": "https://www.mercari.com/us/shop/tom-ford-discontinued-fragrances-for-women/"
+        },
+        {
+          "label": "eBay - Tom Ford Metallique 50ml (Discontinued)",
+          "url": "https://www.ebay.com/itm/336523241125"
+        },
+        {
+          "label": "FragranceNet - Tom Ford Metallique",
+          "url": "https://www.fragrancenet.com/perfume/tom-ford/tom-ford-metallique/eau-de-parfum"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-fougere-platine-eau-de-parfum",
+      "productHandle": "tom-ford-fougere-platine-eau-de-parfum",
+      "title": "Tom Ford Fougere Platine Eau de Parfum",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple independent eBay listings and decant/vault retailers (decantboutique.com, fragrancevault.net) explicitly label Fougere Platine (Private Blend, 2018) as 'Discontinued'."
+        },
+        {
+          "type": "community",
+          "note": "An Instagram fragrance post from 2024 tags it '(2018, discontinued)', consistent with resale listings."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "50ml bottles are reselling around $225 on eBay plus shipping, well above typical Private Blend discount pricing, reflecting discontinued/collector status."
+      },
+      "sources": [
+        {
+          "label": "The Fragrance Decant Boutique - Fougere Platine EDP (Discontinued)",
+          "url": "https://decantboutique.com/product/tom-ford-fougere-platine-edp/"
+        },
+        {
+          "label": "eBay - Fougere Platine 50ml Discontinued",
+          "url": "https://www.ebay.com/itm/388262613373"
+        },
+        {
+          "label": "Fragrance Vault - Fougere Platine EDP",
+          "url": "https://fragrancevault.net/products/copy-of-tom-ford-fougere-platine-eau-de-parfum"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "tom-ford-beau-de-jour-pour-homme-eau-de-parfum",
+      "productHandle": "tom-ford-beau-de-jour-pour-homme-eau-de-parfum",
+      "title": "Tom Ford Beau De Jour Pour Homme Eau De Parfum",
+      "vendor": "TOM FORD",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Basenotes community thread titled 'Beau de Jour likely discontinued' (multiple pages of discussion) and a fragrance FAQ site both address its discontinued/out-of-stock status."
+        },
+        {
+          "type": "retailer",
+          "note": "Out of stock on Tom Ford's own site and marked down roughly 50% at several retailers; only a few sellers like Belk still show inventory, and specialty sellers list Private Blend decants as 'Discontinued - Last Call'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Retailers are clearing remaining stock at roughly 50% off list price while most locations show it out of stock, consistent with a sell-through/discontinuation pattern."
+      },
+      "sources": [
+        {
+          "label": "Basenotes - Beau de Jour likely discontinued",
+          "url": "https://basenotes.com/threads/beau-de-jour-likely-discontinued.566064/"
+        },
+        {
+          "label": "The Perfumed Court - Beau de Jour EdP (Discontinued, Last Call)",
+          "url": "https://theperfumedcourt.com/products/tfbeaujour"
+        },
+        {
+          "label": "Perfume Nez - Is It Discontinued: Tom Ford Beau De Jour",
+          "url": "https://perfumenez.com/blogs/perfume-faqs/is-it-discontinued-tom-ford-beau-de-jour"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "todd-oldham-pour-femme-eau-de-parfum",
+      "productHandle": "todd-oldham-pour-femme-eau-de-parfum",
+      "title": "Todd Oldham Pour Femme Eau de Parfum",
+      "vendor": "TODD OLDHAM",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Launched in 1995, sold poorly, and was discontinued shortly after; no current listing on any mainstream fragrance retailer, only vintage/resale sellers."
+        },
+        {
+          "type": "retailer",
+          "note": "Every current listing found (eBay, Mercari, fragrancerevival.com) is for vintage/old stock explicitly marked 'DISCONTINUED'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 4.2oz bottles trade on eBay from roughly $50 up to $275 depending on fill level and condition, per Fragrantica community reports."
+      },
+      "sources": [
+        {
+          "label": "eBay - Todd Oldham Perfume 4.2oz (Discontinued)",
+          "url": "https://www.ebay.com/itm/314248911892"
+        },
+        {
+          "label": "Fragrantica - Todd Oldham (1995)",
+          "url": "https://www.fragrantica.com/perfume/Todd-Oldham/Todd-Oldham-2577.html"
+        },
+        {
+          "label": "Fragrance Revival - Todd Oldham Type",
+          "url": "https://fragrancerevival.com/product/todd-oldham-by-todd-oldham-type/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-womanity-pour-femme-gel-douche",
+      "productHandle": "thierry-mugler-womanity-pour-femme-gel-douche",
+      "title": "Thierry Mugler Womanity Pour Femme Gel Douche",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site lists Womanity under its 'discontinued-products' section (mugler.com/discontinued-products/womanity/)."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica forum thread 'Womanity Discontinued?' confirms fans report it pulled from sale; discontinued reported around March 2024."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Womanity EDP bottles now resell on eBay/Etsy for roughly $150-$200 for 50ml, well above typical discount pricing, reflecting collector demand for the discontinued line."
+      },
+      "sources": [
+        {
+          "label": "Mugler official discontinued-products page for Womanity",
+          "url": "https://www.mugler.com/discontinued-products/womanity/M01090105.html"
+        },
+        {
+          "label": "Fragrantica forum: Womanity Discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=83037"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-womanity-pour-femme-eau-de-parfum",
+      "productHandle": "thierry-mugler-womanity-pour-femme-eau-de-parfum",
+      "title": "Thierry Mugler Womanity Pour Femme Eau de Parfum",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site lists Womanity under its 'discontinued-products' section (mugler.com/discontinued-products/womanity/)."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica forum thread and multiple eBay/Etsy listings explicitly label Womanity EDP as discontinued and rare."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "50ml Womanity EDP bottles are reselling on eBay for roughly $150-$200, above typical retail, as collectors buy remaining stock."
+      },
+      "sources": [
+        {
+          "label": "Mugler official discontinued-products page for Womanity",
+          "url": "https://www.mugler.com/discontinued-products/womanity/M01090105.html"
+        },
+        {
+          "label": "Fragrantica forum: Womanity Discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=83037"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-womanity-pour-femme-creme-pour-le-corps",
+      "productHandle": "thierry-mugler-womanity-pour-femme-creme-pour-le-corps",
+      "title": "Thierry Mugler Womanity Pour Femme Creme Pour Le Corps",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site lists Womanity under its 'discontinued-products' section, covering the full Womanity range including body care."
+        },
+        {
+          "type": "retailer",
+          "note": "Womanity body/bath items no longer found on mugler.com's active fragrance catalog; only resale listings remain."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining Womanity stock (EDP and body items) is being resold via eBay/Etsy at collector premiums around $150+ per bottle since the line was pulled."
+      },
+      "sources": [
+        {
+          "label": "Mugler official discontinued-products page for Womanity",
+          "url": "https://www.mugler.com/discontinued-products/womanity/M01090105.html"
+        },
+        {
+          "label": "Fragrantica forum: Womanity Discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=83037"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-secret-pour-femme-eau-de-toilette",
+      "productHandle": "thierry-mugler-secret-pour-femme-eau-de-toilette",
+      "title": "Thierry Mugler Secret Pour Femme Eau De Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "eBay/resale listings and product pages describe Secret EDT as a 'hard to find discontinued product,' but it is not listed on Mugler's official discontinued-products page."
+        },
+        {
+          "type": "web",
+          "note": "Still shown as sold by third-party retailers (FragranceNet, theperfumeshopusa, Le Parfumier) suggesting sell-through of existing stock rather than a confirmed brand-wide pull."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Fragrantica: Secret Eau de Toilette",
+          "url": "https://www.fragrantica.com/perfume/Mugler/Secret-Eau-de-Toilette-53826.html"
+        },
+        {
+          "label": "FragranceNet listing for Mugler Secret",
+          "url": "https://www.fragrancenet.com/perfume/thierry-mugler/mugler-secret/edt"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-miroir-des-majestes-eau-de-parfum",
+      "productHandle": "thierry-mugler-miroir-des-majestes-eau-de-parfum",
+      "title": "Thierry Mugler Miroir des Majestés Eau de Parfum",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple sources (Fragrantica, eBay, niche resellers like Meliora Parfums, Amour Boutique) consistently describe Miroir des Majestés from the 2012 Mirror Mirror collection as discontinued."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica calls it 'a rare, discontinued gem from Mugler's Mirror Mirror collection,' with the whole limited collection (2010-2013) pulled from sale."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Secondary-market prices for Miroir des Majestés vary widely, roughly $70-$330 per bottle depending on fill level and seller."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica: Mirror Mirror Collection - Miroir des Majestes",
+          "url": "https://www.fragrantica.com/perfume/Mugler/Mirror-Mirror-Collection-Miroir-des-Majestes-14720.html"
+        },
+        {
+          "label": "eBay: Miroir Des Majestes 50ml Rare and Discontinued",
+          "url": "https://www.ebay.com/itm/176146692751"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-eau-de-star-pour-femme-eau-de-toilette",
+      "productHandle": "thierry-mugler-eau-de-star-pour-femme-eau-de-toilette",
+      "title": "Thierry Mugler Eau De Star Pour Femme Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Fragrantica's dedicated article 'Eau de Star, a Juicy Slice of Discontinued Mugler' confirms production ended; only sold via resale channels now."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay/Etsy listings explicitly labeled 'Rare Discontinued' for this 2007 fragrance, no longer on Mugler's active site."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Eau de Star bottles are sold used/NIB on eBay and Etsy as a rare discontinued item, with fans noting they stocked up once they learned of the discontinuation."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica: Eau de Star, a Juicy Slice of Discontinued Mugler",
+          "url": "https://www.fragrantica.com/news/Eau-de-Star-a-Juicy-Slice-of-Discontinued-Mugler-9926.html"
+        },
+        {
+          "label": "eBay: Rare Discontinued Mugler Eau de Star",
+          "url": "https://www.ebay.com/itm/196007891293"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-cologne-run-free-eau-de-toilette",
+      "productHandle": "thierry-mugler-cologne-run-free-eau-de-toilette",
+      "title": "Thierry Mugler Cologne Run Free Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "An eBay listing labels a bottle 'Discontinued,' but Mugler's official site (mugler.com) still hosts live product pages for Cologne Run Free EDT."
+        },
+        {
+          "type": "web",
+          "note": "Still sold new by Strawberrynet, FragranceNet, and Fandi Perfume, suggesting it remains in the active Mugler Cologne collection rather than pulled."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Mugler official product page: Mugler Cologne Run Free",
+          "url": "https://www.mugler.com/fragrance/unisex-fragrances/mugler-cologne/mugler-cologne-run-free/M020604029.html"
+        },
+        {
+          "label": "eBay listing labeled Discontinued",
+          "url": "https://www.ebay.com/itm/127234548477"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-b-men-pour-homme-eau-de-toilette-recharge-1757453178",
+      "productHandle": "thierry-mugler-b-men-pour-homme-eau-de-toilette-recharge-1757453178",
+      "title": "Thierry Mugler B men Pour Homme Eau de Toilette Recharge",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple resellers (Decant Boutique, Fragrance Vault) explicitly title listings 'B*MEN EDT (Discontinued)'; Fragrantica notes production ended."
+        },
+        {
+          "type": "retailer",
+          "note": "No longer listed on Mugler's active fragrance catalog; only available via eBay and discontinued-fragrance specialty retailers."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "B*Men bottles/refills are sold as discontinued collector stock via eBay and dedicated discontinued-fragrance resellers rather than mainstream retail."
+      },
+      "sources": [
+        {
+          "label": "Decant Boutique: Thierry Mugler B*MEN EDT (Discontinued)",
+          "url": "https://decantboutique.com/product/thierry-mugler-bmen-edt-discontinued/"
+        },
+        {
+          "label": "Fragrantica: B*Men",
+          "url": "https://www.fragrantica.com/perfume/Mugler/B-Men-706.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-b-men-pour-homme-eau-de-toilette-gomme",
+      "productHandle": "thierry-mugler-b-men-pour-homme-eau-de-toilette-gomme",
+      "title": "Thierry Mugler B men Pour Homme Eau de Toilette Gomme",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Multiple resellers (Decant Boutique, Fragrance Vault) explicitly title listings 'B*MEN EDT (Discontinued)'; Fragrantica notes production ended."
+        },
+        {
+          "type": "retailer",
+          "note": "No longer listed on Mugler's active fragrance catalog; only available via eBay and discontinued-fragrance specialty retailers."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "B*Men bottles/refills are sold as discontinued collector stock via eBay and dedicated discontinued-fragrance resellers rather than mainstream retail."
+      },
+      "sources": [
+        {
+          "label": "Decant Boutique: Thierry Mugler B*MEN EDT (Discontinued)",
+          "url": "https://decantboutique.com/product/thierry-mugler-bmen-edt-discontinued/"
+        },
+        {
+          "label": "Fragrantica: B*Men",
+          "url": "https://www.fragrantica.com/perfume/Mugler/B-Men-706.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-aura-mugler-pour-femme-lotion-pour-le-corps",
+      "productHandle": "thierry-mugler-aura-mugler-pour-femme-lotion-pour-le-corps",
+      "title": "Thierry Mugler Aura Mugler Pour Femme Lotion Pour Le Corps",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site lists both the Aura Mugler EDP and EDT under its 'discontinued-products' section, confirming the whole Aura Mugler line was pulled."
+        },
+        {
+          "type": "retailer",
+          "note": "Aura body-care items no longer appear in Mugler's active catalog; resale-only via eBay."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Aura Mugler items resell on eBay mostly in the $115-$200 range for 50-90ml bottles, marked new/sealed as discontinued stock."
+      },
+      "sources": [
+        {
+          "label": "Mugler official: Aura Mugler Eau de Parfum (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-parfum/M020604002.html"
+        },
+        {
+          "label": "Mugler official: Aura Mugler Eau de Toilette (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-toilette/M020604067.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-aura-mugler-pour-femme-eau-de-toilette",
+      "productHandle": "thierry-mugler-aura-mugler-pour-femme-eau-de-toilette",
+      "title": "Thierry Mugler Aura Mugler Pour Femme Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site explicitly lists 'Aura Mugler Eau de Toilette' under its 'discontinued-products' section."
+        },
+        {
+          "type": "retailer",
+          "note": "eBay listings for the 90ml EDT are labeled 'New in box discontinued.'"
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Aura Mugler EDT bottles (90ml) sell for roughly $115-$170 on eBay as discontinued new-in-box stock."
+      },
+      "sources": [
+        {
+          "label": "Mugler official: Aura Mugler Eau de Toilette (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-toilette/M020604067.html"
+        },
+        {
+          "label": "eBay: Aura EDT 3oz 90ml discontinued",
+          "url": "https://www.ebay.com/itm/315861156344"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-aura-mugler-pour-femme-eau-de-parfum-sensuelle",
+      "productHandle": "thierry-mugler-aura-mugler-pour-femme-eau-de-parfum-sensuelle",
+      "title": "Thierry Mugler Aura Mugler Pour Femme Eau de Parfum Sensuelle",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "eBay listings explicitly label 'AURA MUGLER, EAU DE PARFUM SENSUELLE...discontinued!'; Fragrantica comments describe fans disappointed it was pulled."
+        },
+        {
+          "type": "web",
+          "note": "Parent Aura Mugler EDP line is confirmed discontinued directly on mugler.com's discontinued-products page, and Sensuelle is a flanker of that discontinued line."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Aura EDP Sensuelle 50ml bottles are being resold on eBay (UK/US) as rare/discontinued new stock, similar $100-200 range to other Aura variants."
+      },
+      "sources": [
+        {
+          "label": "eBay: Aura Mugler EDP Sensuelle discontinued",
+          "url": "https://www.ebay.com/itm/187998637649"
+        },
+        {
+          "label": "Mugler official: Aura Mugler Eau de Parfum (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-parfum/M020604002.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-aura-mugler-pour-femme-eau-de-parfum",
+      "productHandle": "thierry-mugler-aura-mugler-pour-femme-eau-de-parfum",
+      "title": "Thierry Mugler Aura Mugler Pour Femme Eau de Parfum",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site explicitly lists 'Aura Mugler Eau de Parfum' under its 'discontinued-products' section."
+        },
+        {
+          "type": "retailer",
+          "note": "Multiple eBay listings (1oz, 3oz sizes) labeled 'discontinued,' 'rare,' sold as sealed collector stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Aura Mugler EDP bottles resell for roughly $115-$200+ on eBay depending on size, marketed as discontinued/rare."
+      },
+      "sources": [
+        {
+          "label": "Mugler official: Aura Mugler Eau de Parfum (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-parfum/M020604002.html"
+        },
+        {
+          "label": "eBay: Aura EDP 3oz discontinued NIB",
+          "url": "https://www.ebay.com/itm/277709680242"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-aura-mugler-pour-femme-creme-pour-le-corps",
+      "productHandle": "thierry-mugler-aura-mugler-pour-femme-creme-pour-le-corps",
+      "title": "Thierry Mugler Aura Mugler Pour Femme Creme Pour Le Corps",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official site lists the Aura Mugler fragrance line under its 'discontinued-products' section, and matching body-care items are no longer in the active catalog."
+        },
+        {
+          "type": "retailer",
+          "note": "Aura body cream is absent from mugler.com's current body-care lineup; only resale/closeout stock found."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Related Aura Mugler fragrance items resell for roughly $115-$200 on eBay as discontinued stock; body cream would follow the same discontinued line."
+      },
+      "sources": [
+        {
+          "label": "Mugler official: Aura Mugler Eau de Parfum (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-parfum/M020604002.html"
+        },
+        {
+          "label": "Mugler official: Aura Mugler Eau de Toilette (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/aura-mugler-eau-de-toilette/M020604067.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-angel-eau-sucree-pour-femme-eau-de-toilette",
+      "productHandle": "thierry-mugler-angel-eau-sucree-pour-femme-eau-de-toilette",
+      "title": "Thierry Mugler Angel Eau Sucree Pour Femme Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Angel Eau Sucrée was a 2015 limited-edition Angel flanker; it is absent from Mugler's current site catalog and major retailers (Sephora, Ulta, Macy's) no longer list it."
+        },
+        {
+          "type": "retailer",
+          "note": "Multiple listings explicitly market it as 'Limited Edition' / 'Vintage 2015 Edition', consistent with a discontinued flanker."
+        },
+        {
+          "type": "community",
+          "note": "Nearly all live inventory found was on eBay reseller listings, several noting 'Rare' or 'read description' condition caveats typical of discontinued stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resellers are moving 50ml bottles of Angel Eau Sucrée around $73-$79 each, in line with or above typical Angel EDT pricing for a bottle no longer produced by the brand."
+      },
+      "sources": [
+        {
+          "label": "eBay - Angel Eau Sucree 50ml Limited Edition",
+          "url": "https://www.ebay.com/itm/267624611978"
+        },
+        {
+          "label": "eBay - Angel Eau Sucree 2015 Edition Vintage",
+          "url": "https://www.ebay.com/itm/393900037552"
+        },
+        {
+          "label": "Mugler official site - discontinued products section",
+          "url": "https://www.mugler.com/discontinued-products/"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-alien-man-pour-homme-eau-de-toilette",
+      "productHandle": "thierry-mugler-alien-man-pour-homme-eau-de-toilette",
+      "title": "Thierry Mugler Alien Man Pour Homme Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Official mugler.com hosts this SKU (M020604061) under its /discontinued-products/ URL path, explicitly labeling it discontinued."
+        },
+        {
+          "type": "retailer",
+          "note": "Macy's sells a 'Created for Macy's' exclusive Alien Man EDT, suggesting the standard line SKU has been folded into retailer-exclusive packaging rather than sold generally."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining bottles are being cleared through eBay resellers and a Macy's-exclusive repack, with third-party listings in roughly the $40-70 range."
+      },
+      "sources": [
+        {
+          "label": "Mugler official - Alien Man Cologne EDT (discontinued-products path)",
+          "url": "https://www.mugler.com/discontinued-products/alien-man-eau-de-toilette-cologne/M020604061.html"
+        },
+        {
+          "label": "Macy's - Alien Man EDT (Created for Macy's exclusive)",
+          "url": "https://www.macys.com/shop/product/mugler-mens-alien-man-eau-de-toilette-spray-3.4-oz.-created-for-macys?ID=7788579"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-alien-man-fusion-pour-homme-eau-de-toilette",
+      "productHandle": "thierry-mugler-alien-man-fusion-pour-homme-eau-de-toilette",
+      "title": "Thierry Mugler Alien Man Fusion Pour Homme Eau de Toilette",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Multiple independent eBay listings (3.4oz and 1.7oz sizes) explicitly title the item 'Discontinued'."
+        },
+        {
+          "type": "community",
+          "note": "Fragrantica lists it as a 2019 flanker no longer featured on Mugler's current men's fragrance lineup pages."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay sellers are moving remaining 1.7oz-3.4oz bottles as 'hard to find/discontinued' stock at standard-to-slightly-discounted retail prices."
+      },
+      "sources": [
+        {
+          "label": "eBay - Alien Man Fusion 3.4oz EDT, marked Discontinued",
+          "url": "https://www.ebay.com/itm/176861953940"
+        },
+        {
+          "label": "Fragrantica - Alien Man Fusion",
+          "url": "https://www.fragrantica.com/perfume/Mugler/Alien-Man-Fusion-53459.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-alien-fusion-pour-femme-eau-de-parfum",
+      "productHandle": "thierry-mugler-alien-fusion-pour-femme-eau-de-parfum",
+      "title": "Thierry Mugler Alien Fusion Pour Femme Eau de Parfum",
+      "vendor": "THIERRY MUGLER",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "web",
+          "note": "Mugler's own official product page for Alien Fusion EDP states 'this product has been discontinued' and lives under the /discontinued-products/ path."
+        },
+        {
+          "type": "retailer",
+          "note": "FragranceNet, Jomashop and Walmart continue listing sealed stock, consistent with sell-through of remaining inventory rather than an active line item."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Sealed 1oz bottles are selling on eBay for roughly $120-$134, i.e. above typical discount pricing, reflecting discontinued-item demand."
+      },
+      "sources": [
+        {
+          "label": "Mugler official - Alien Fusion EDP (discontinued)",
+          "url": "https://www.mugler.com/discontinued-products/alien-fusion/M020604101.html"
+        },
+        {
+          "label": "eBay - Alien Fusion 1oz NIB sealed",
+          "url": "https://www.ebay.com/itm/285531825428"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "thierry-mugler-alien-flora-futura-pour-femme-eau-de-toilette-flacon-talisman",
+      "productHandle": "thierry-mugler-alien-flora-futura-pour-femme-eau-de-toilette-flacon-talisman",
+      "title": "Thierry Mugler Alien Flora Futura Pour Femme Eau de Toilette Flacon Talisman",
+      "vendor": "THIERRY MUGLER",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "One eBay listing markets the Flacon Talisman bottle as discontinued/limited edition, but the item still appears on Mugler's standard /fragrance/ product path (not the discontinued-products path) and at FragranceNet/Jomashop."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "eBay - Alien Flora Futura Flacon Talisman, limited edition",
+          "url": "https://www.ebay.com/itm/134040504888"
+        },
+        {
+          "label": "Mugler official - Alien Flora Futura EDT (standard fragrance path)",
+          "url": "https://www.mugler.com/fragrance/alien-flora-futura/M020604059.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "ted-lapidus-rumba-pour-femme-eau-de-toilette",
+      "productHandle": "ted-lapidus-rumba-pour-femme-eau-de-toilette",
+      "title": "Ted Lapidus Rumba Pour Femme Eau de Toilette",
+      "vendor": "BALENCIAGA",
+      "status": "rumored",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "A handful of resellers describe remaining Rumba (1989) stock as discontinued/vintage, but Fragrantica and other listings don't explicitly confirm the brand has dropped it, and it's still findable at standard fragrance discounters."
+        }
+      ],
+      "marketCheck": {
+        "checked": false,
+        "note": ""
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Rumba by Ted Lapidus",
+          "url": "https://www.fragrantica.com/perfume/Ted-Lapidus/Rumba-22894.html"
+        },
+        {
+          "label": "99Perfume - Rumba EDT listing",
+          "url": "https://99perfume.com/products/ted-lapidus-rumba-perfume-eau-de-toilette"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "ted-lapidus-lapidus-pour-homme-apres-rasage-vaporisateur",
+      "productHandle": "ted-lapidus-lapidus-pour-homme-apres-rasage-vaporisateur",
+      "title": "Ted Lapidus  Lapidus Pour Homme Après Rasage Vaporisateur",
+      "vendor": "TED LAPIDUS",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Amazon UK lists the Lapidus Pour Homme After Shave Balm as 'discontinued by manufacturer'."
+        },
+        {
+          "type": "community",
+          "note": "Parfumo entries for both the 1978 and 1987 Ted Lapidus pour Homme after-shave formulations note production has ended, with only vintage/resale stock available."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Only vintage/used bottles turn up on eBay and specialty vintage-fragrance sites (e.g. Fragrance Vault) rather than any current retailer."
+      },
+      "sources": [
+        {
+          "label": "Amazon UK - Lapidus Pour Homme Aftershave (discontinued by manufacturer)",
+          "url": "https://www.amazon.co.uk/Ted-Lapidus-Homme-Aftershave-Spray/dp/B000Q39V5G"
+        },
+        {
+          "label": "Parfumo - Lapidus pour Homme After Shave",
+          "url": "https://www.parfumo.com/Perfumes/Ted_Lapidus/Lapidus_pour_Homme_After_Shave"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "ted-lapidus-fantasme-pour-femme-eau-de-toilette",
+      "productHandle": "ted-lapidus-fantasme-pour-femme-eau-de-toilette",
+      "title": "Ted Lapidus Fantasme Pour Femme Eau de Toilette",
+      "vendor": "TED LAPIDUS",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "Parfumo/Fragrantica note that Fantasme (1992) production has ended for this legacy Ted Lapidus line."
+        },
+        {
+          "type": "retailer",
+          "note": "FragranceNet, Perfume.com and Perfumania all sell it as deep-discount clearance stock (Perfume.com advertises up to 70% off retail) rather than a current full-price release."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "FragranceNet currently sells the 3oz EDT for $36.39 and Perfume.com advertises it at up to 70% off retail, typical of sell-through of discontinued stock."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica - Fantasme by Ted Lapidus",
+          "url": "https://www.fragrantica.com/perfume/Ted-Lapidus/Fantasme-2742.html"
+        },
+        {
+          "label": "FragranceNet - Fantasme EDT ($36.39)",
+          "url": "https://www.fragrancenet.com/perfume/ted-lapidus/fantasme/edt"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "taylor-swift-wonderstruck-pour-femme-eau-de-parfum",
+      "productHandle": "taylor-swift-wonderstruck-pour-femme-eau-de-parfum",
+      "title": "Taylor Swift Wonderstruck Pour Femme Eau de Parfum",
+      "vendor": "TAYLOR SWIFT",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "Fragrantica forum threads and multiple eBay/Poshmark category pages confirm Wonderstruck (Elizabeth Arden's 2011 Taylor Swift license) has been off the market for years."
+        },
+        {
+          "type": "pricing",
+          "note": "Yahoo Lifestyle reports resale prices have 'skyrocketed' as supply dwindled after production ended."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale listings for the 3.4oz EDP run roughly $75-$350 depending on condition and sealed/box status."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica board - Wonderstruck discontinued?",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=171074"
+        },
+        {
+          "label": "Yahoo - Taylor Swift's Rare Wonderstruck Perfume Price Has Skyrocketed",
+          "url": "https://www.yahoo.com/lifestyle/taylor-swift-rare-wonderstruck-perfume-235349276.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "taylor-swift-enchanted-wonderstruck-pour-femme-eau-de-parfum",
+      "productHandle": "taylor-swift-enchanted-wonderstruck-pour-femme-eau-de-parfum",
+      "title": "Taylor Swift Enchanted Wonderstruck Pour Femme Eau de Parfum",
+      "vendor": "TAYLOR SWIFT",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "Same discontinued Taylor Swift/Elizabeth Arden license as Wonderstruck; eBay/Poshmark listings explicitly label bottles 'discontinued'."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay resale prices range widely by size, roughly $140 for 0.5oz up to $260+ for 1.7oz and $800 for a rare gift set."
+      },
+      "sources": [
+        {
+          "label": "eBay - Enchanted Wonderstruck, labeled Discontinued",
+          "url": "https://www.ebay.com/itm/226325519322"
+        },
+        {
+          "label": "eBay - Wonderstruck Enchanted, Limited Edition Discontinued with charms",
+          "url": "https://www.ebay.com/itm/389311797778"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "swarovski-miss-aura-pour-femme-eau-de-toilette",
+      "productHandle": "swarovski-miss-aura-pour-femme-eau-de-toilette",
+      "title": "Swarovski Miss Aura Pour Femme Eau de Toilette",
+      "vendor": "SWAROVSKI",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "community",
+          "note": "FragranceRevival and multiple eBay listings explicitly tag Miss Aura (2013) as discontinued."
+        },
+        {
+          "type": "retailer",
+          "note": "No current listing found on Sephora/Ulta/Nordstrom; availability is now limited to specialty discontinued-fragrance retailers and resale."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for the related Aura/Miss Aura bottles are marketed as discontinued, sold near or above standard retail as scarce stock."
+      },
+      "sources": [
+        {
+          "label": "Fragrance Revival - Miss Aura by Swarovski Type",
+          "url": "https://fragrancerevival.com/product/miss-aura-by-swarovski-type/"
+        },
+        {
+          "label": "Fragrantica - Miss Aura Swarovski",
+          "url": "https://www.fragrantica.com/perfume/Swarovski/Miss-Aura-18806.html"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stetson-sierra-pour-homme-eau-de-cologne-vintage",
+      "productHandle": "stetson-sierra-pour-homme-eau-de-cologne-vintage",
+      "title": "Stetson Sierra Pour Homme Eau De Cologne Vintage",
+      "vendor": "STETSON",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Stetson's official site (stetson.com/collections/fragrance) currently lists only Original, Legend and the Untamed collection — Sierra is absent entirely from the current lineup."
+        },
+        {
+          "type": "community",
+          "note": "Numerous eBay and Etsy listings explicitly market it as 'Rare & Discontinued, Original Formula', with buyer comments like 'I couldn't believe my eyes when I read Stetson is ending the Sierra fragrance!'"
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Vintage 1.5oz bottles resell on eBay from roughly $20-30 for used/no-box units up to ~$194 for new-in-box stock, well above typical drugstore cologne pricing."
+      },
+      "sources": [
+        {
+          "label": "Stetson official fragrance collection (no Sierra)",
+          "url": "https://stetson.com/collections/fragrance"
+        },
+        {
+          "label": "Fragrantica - Stetson Sierra (Coty, 1993)",
+          "url": "https://www.fragrantica.com/perfume/Coty/Stetson-Sierra-5510.html"
+        },
+        {
+          "label": "eBay - vintage Stetson Sierra, discontinued",
+          "url": "https://www.ebay.com/itm/146363901722"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stetson-country-pour-homme-lotion-apres-rasage",
+      "productHandle": "stetson-country-pour-homme-lotion-apres-rasage",
+      "title": "Stetson Country Pour Homme Lotion Apres Rasage",
+      "vendor": "STETSON",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Stetson's official site no longer lists the Country line at all (only Original, Legend, Untamed) — the aftershave/lotion companion product has no current retail path."
+        },
+        {
+          "type": "community",
+          "note": "eBay listings for the Country aftershave/lotion set are tagged 'Original Vintage' and sold as discontinued stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining Country aftershave/lotion stock trades on eBay in the roughly $15-40 range depending on size and condition."
+      },
+      "sources": [
+        {
+          "label": "Stetson official fragrance collection (no Country)",
+          "url": "https://stetson.com/collections/fragrance"
+        },
+        {
+          "label": "eBay - Stetson Country aftershave set, vintage",
+          "url": "https://www.ebay.com/itm/127383543054"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stetson-country-pour-homme-eau-de-cologne",
+      "productHandle": "stetson-country-pour-homme-eau-de-cologne",
+      "title": "Stetson Country Pour Homme Eau de Cologne",
+      "vendor": "STETSON",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Stetson's official site no longer carries the Country cologne — current lineup is limited to Original, Legend and Untamed."
+        },
+        {
+          "type": "pricing",
+          "note": "eBay listing explicitly labeled 'STETSON COUNTRY COLOGNE SPLASH...NEW No BOX DISCONTINUED!'"
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay trending/sold prices for Stetson Country cologne run roughly $40-150 depending on size and whether boxed/vintage."
+      },
+      "sources": [
+        {
+          "label": "Stetson official fragrance collection (no Country)",
+          "url": "https://stetson.com/collections/fragrance"
+        },
+        {
+          "label": "eBay - Stetson Country cologne, discontinued",
+          "url": "https://www.ebay.com/itm/126723675921"
+        },
+        {
+          "label": "Parfumo - Stetson Country",
+          "url": "https://www.parfumo.com/Perfumes/Stetson/Stetson_Country_After_Shave"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stetson-country-pour-homme-cologne",
+      "productHandle": "stetson-country-pour-homme-cologne",
+      "title": "Stetson Country Pour Homme Cologne",
+      "vendor": "STETSON",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Same Country cologne as tracked under the eau-de-cologne SKU — absent from stetson.com's current fragrance lineup."
+        },
+        {
+          "type": "pricing",
+          "note": "eBay listing explicitly labeled discontinued; multiple resale listings across sizes."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay trending/sold prices for Stetson Country cologne run roughly $40-150 depending on size and whether boxed/vintage."
+      },
+      "sources": [
+        {
+          "label": "Stetson official fragrance collection (no Country)",
+          "url": "https://stetson.com/collections/fragrance"
+        },
+        {
+          "label": "eBay - Stetson Country cologne, discontinued",
+          "url": "https://www.ebay.com/itm/126723675921"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stetson-country-pour-homme-apres-rasage",
+      "productHandle": "stetson-country-pour-homme-apres-rasage",
+      "title": "Stetson Country Pour Homme Apres Rasage",
+      "vendor": "STETSON",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Country aftershave is absent from stetson.com's current fragrance collection (Original, Legend, Untamed only)."
+        },
+        {
+          "type": "community",
+          "note": "eBay listings for the Country aftershave describe it as 'Original Vintage' resale stock."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "Remaining Country aftershave stock trades on eBay in the roughly $15-40 range depending on size and condition."
+      },
+      "sources": [
+        {
+          "label": "Stetson official fragrance collection (no Country)",
+          "url": "https://stetson.com/collections/fragrance"
+        },
+        {
+          "label": "eBay - Stetson Country aftershave set, vintage",
+          "url": "https://www.ebay.com/itm/127383543054"
+        }
+      ],
+      "notified": null
+    },
+    {
+      "id": "stella-mccartney-stella-pour-femme-eau-de-toilette",
+      "productHandle": "stella-mccartney-stella-pour-femme-eau-de-toilette",
+      "title": "Stella McCartney Stella Pour Femme Eau De Toilette",
+      "vendor": "STELLA MCCARTNEY",
+      "status": "confirmed",
+      "flaggedDate": "2026-09-01",
+      "signals": [
+        {
+          "type": "retailer",
+          "note": "Fragrantica Club forum thread 'Stella McCartney no longer at Sephora???' confirms the brand's fragrance line was pulled from Sephora shelves."
+        },
+        {
+          "type": "community",
+          "note": "eBay maintains dedicated 'Stella McCartney Discontinued Fragrances for Women' and 'Stella Discontinued Fragrances for Women' categories; TikTok discourse discusses finding a 'Stella McCartney perfume replacement' now that it's hard to source."
+        }
+      ],
+      "marketCheck": {
+        "checked": true,
+        "note": "eBay listings for the Stella EDT/EDP range roughly $48 up to $150+ depending on size, well within typical resale range for a delisted designer fragrance."
+      },
+      "sources": [
+        {
+          "label": "Fragrantica forum - Stella McCartney no longer at Sephora",
+          "url": "https://www.fragrantica.com/board/viewtopic.php?id=226366"
+        },
+        {
+          "label": "eBay - Stella McCartney Discontinued Fragrances for Women",
+          "url": "https://www.ebay.com/b/Stella-McCartney-Discontinued-Fragrances-for-Women/11848/bn_7116768261"
+        }
+      ],
+      "notified": null
     }
   ]
 }
