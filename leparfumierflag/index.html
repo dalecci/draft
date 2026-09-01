@@ -4,173 +4,296 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Le Parfumier: FLAG</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚩</text></svg>">
+<meta name="description" content="Discontinuation watch for the Le Parfumier catalog.">
+<meta name="theme-color" content="#1a1622">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2216%22 fill=%22%231a1622%22/><text x=%2250%22 y=%2270%22 text-anchor=%22middle%22 font-family=%22Georgia,serif%22 font-size=%2252%22 fill=%22%23c68ec3%22>LP</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=8">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=9">
+<script>
+  // Applied before first paint so a saved theme choice never flashes the other palette.
+  try {
+    var t = localStorage.getItem("lpf_theme");
+    if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+</script>
 </head>
 <body>
 
+<!-- ============================================================ lock gate -->
 <div id="lock" class="lock">
   <div class="lock-card">
     <div class="crest">LP</div>
     <div class="lock-mark">FLAG</div>
     <div class="lock-title">Le Parfumier</div>
-    <p class="lock-sub">Enter the access code to continue.</p>
-    <input id="lock-input" class="lock-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••">
+    <p class="lock-sub">Discontinuation watch. Enter the access code.</p>
+    <input id="lock-input" class="lock-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="0000" aria-label="Access code">
     <button id="lock-btn" class="lock-btn">Unlock</button>
-    <p id="lock-error" class="lock-error"></p>
+    <p id="lock-error" class="lock-error" role="status"></p>
   </div>
 </div>
 
+<!-- ================================================================== app -->
 <div id="app" class="app hidden">
 
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">LP</span>
-      <span class="brand-name">Le Parfumier</span>
-      <span class="brand-tag">FLAG</span>
-    </div>
-    <nav class="tabs">
-      <button class="tab-btn active" data-tab="flagged">Flagged</button>
-      <button class="tab-btn" data-tab="inventory">Inventory</button>
-      <button class="tab-btn" data-tab="about">How this works</button>
+  <!-- ------------------------------------------------------------- rail -->
+  <aside class="rail">
+    <div class="rail-crest">LP</div>
+    <div class="rail-mark">FLAG</div>
+
+    <nav class="rail-nav" aria-label="Sections">
+      <button class="rail-btn active" data-tab="watch" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4.5h9l-1.2 3.2L14 11H5"/><path d="M5 4.5V3"/></svg>
+        Watch
+        <span class="rail-count hidden" id="rail-count"></span>
+      </button>
+      <button class="rail-btn" data-tab="houses">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l5-4 5 4v11"/><path d="M14 20V12h6v8"/><path d="M2 20h20"/></svg>
+        Houses
+      </button>
+      <button class="rail-btn" data-tab="catalog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="7" height="7"/><rect x="13" y="3" width="7" height="7"/><rect x="4" y="14" width="7" height="7"/><rect x="13" y="14" width="7" height="7"/></svg>
+        Catalog
+      </button>
+      <button class="rail-btn" data-tab="method">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v6"/><path d="M12 7.6v.6"/></svg>
+        Method
+      </button>
     </nav>
-    <button id="settings-btn" class="icon-btn" title="Data connection settings">⚙</button>
-  </header>
 
-  <div class="statbar" id="statbar"></div>
-
-  <main>
-    <section id="tab-flagged" class="tab-panel">
-      <div class="panel-head">
-        <h1>Flagged for discontinuation</h1>
-        <p class="panel-sub" id="flagged-sub">Products showing signs of being discontinued by the brand. Reviewed and act on these before they disappear.</p>
-      </div>
-
-      <div class="flag-controls">
-        <select id="flag-sort" class="select">
-          <option value="newest">Sort: newest flagged</option>
-          <option value="status">Sort: status</option>
-          <option value="brand">Sort: brand A to Z</option>
-          <option value="ordered">Sort: ordered quantity</option>
-        </select>
-        <select id="filter-ai-status" class="select">
-          <option value="">AI status: all</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="rumored">Rumored</option>
-          <option value="cleared">Cleared</option>
-        </select>
-        <select id="filter-review" class="select">
-          <option value="">Your review: all</option>
-          <option value="unreviewed">Not yet reviewed</option>
-          <option value="confirmed">You confirmed</option>
-          <option value="rejected">You rejected</option>
-        </select>
-        <select id="filter-order" class="select">
-          <option value="">Order status: all</option>
-          <option value="ordered">Ordered</option>
-          <option value="not-ordered">Not ordered</option>
-        </select>
-      </div>
-
-      <div class="select-bar">
-        <label class="select-all"><input type="checkbox" id="select-all-flags"> Select all shown</label>
-        <span id="select-count" class="select-count"></span>
-        <button id="check-stock-btn" class="ghost-btn small" disabled>Check stock for selected</button>
-      </div>
-
-      <div id="flagged-list" class="flag-list"></div>
-      <div id="flagged-empty" class="empty-state hidden">
-        <p>Nothing flagged yet. Once the first scan runs, anything at risk will show up here.</p>
-      </div>
-    </section>
-
-    <section id="tab-inventory" class="tab-panel hidden">
-      <div class="panel-head">
-        <h1>Inventory</h1>
-        <p class="panel-sub">Your current catalog, loaded from the last uploaded export.</p>
-      </div>
-      <div class="controls">
-        <input id="search" class="search" type="search" placeholder="Search by product or brand...">
-        <select id="brand-filter" class="select"></select>
-        <select id="status-filter" class="select">
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="draft">Draft</option>
-          <option value="archived">Archived</option>
-        </select>
-      </div>
-      <div id="inventory-count" class="result-count"></div>
-      <div id="inventory-list" class="product-grid"></div>
-      <div class="pager">
-        <button id="page-prev" class="page-btn">Previous</button>
-        <span id="page-info" class="page-info"></span>
-        <button id="page-next" class="page-btn">Next</button>
-      </div>
-    </section>
-
-    <section id="tab-about" class="tab-panel hidden">
-      <div class="panel-head">
-        <h1>How this works</h1>
-      </div>
-      <div class="about-card">
-        <h2>What FLAG does</h2>
-        <p>Every few days, an automated scan walks through your inventory and checks each product for signs the brand is discontinuing it: brand site listing status, major retailer availability, and community chatter (forums, resale listings, social posts). Anything suspicious lands here on the Flagged page with the reason and the sources behind it.</p>
-        <h2>Confirmed vs rumored</h2>
-        <p><strong>Rumored</strong> means early chatter, worth watching. <strong>Confirmed</strong> means multiple independent sources agree. Once confirmed, FLAG also checks what the item is reselling for elsewhere, so you can judge the premium before deciding whether to buy in.</p>
-        <h2>Notifications</h2>
-        <p>You get emailed once per new flag. Already flagged items will not keep resurfacing in your inbox, they just stay listed here.</p>
-        <h2>Reviewing and ordering</h2>
-        <p>Every flag has a Confirm and Reject button, that is your own read on it, separate from the AI's status. There is also an ordered quantity field for anything you decide to buy in. Sort and filter by either one to see where things stand.</p>
-        <h2>Checking stock</h2>
-        <p>Select one or more flagged items with the checkboxes, then Check stock for selected to upload a current supplier price list. It matches by barcode where possible and shows what that supplier currently has for each item you picked.</p>
-        <h2>Data connection</h2>
-        <p>This page always shows the current flag list, no setup needed. Connect a token in the gear icon for two extras: wholesale cost on Inventory, and saving your review checkmarks and order quantities so they show up on every device instead of just this browser.</p>
-      </div>
-    </section>
-  </main>
-
-  <div id="settings" class="settings hidden">
-    <div class="settings-card">
-      <h2>Data connection</h2>
-      <p class="settings-sub">Paste a GitHub access token for the private Le Parfumier data store. Read only shows wholesale cost on Inventory. Read and write also saves your review checkmarks and ordered quantities here so they show up on every device, not just this browser. Stays only in this browser, never sent anywhere else.</p>
-      <input id="token-input" class="lock-input" type="password" placeholder="GitHub token" autocomplete="off">
-      <div class="settings-row">
-        <button id="token-save" class="lock-btn">Save</button>
-        <button id="token-clear" class="ghost-btn">Clear</button>
-        <button id="settings-close" class="ghost-btn">Close</button>
-      </div>
-      <p id="token-status" class="settings-status"></p>
+    <div class="rail-foot">
+      <button id="theme-btn" class="rail-icon" title="Switch between light and dark" aria-label="Switch between light and dark">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13.5A8.5 8.5 0 0 1 10.5 4a8.5 8.5 0 1 0 9.5 9.5Z"/></svg>
+      </button>
+      <button id="settings-btn" class="rail-icon" title="Data connection" aria-label="Data connection">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+      </button>
+      <div class="rail-ver" id="rail-ver"></div>
     </div>
-  </div>
+  </aside>
 
-  <div id="stock-modal" class="settings hidden">
-    <div class="settings-card wide">
-      <h2>Stock report for selected items</h2>
-      <p class="settings-sub">Upload one or more supplier price lists (.xls, .xlsx, or .csv, select several at once or add more after). Reports which of the <span id="stock-selected-count">0</span> item(s) you selected on the Flagged page show up in each list, by barcode first, by brand and name if a row has no barcode.</p>
-      <input id="stock-file-input" type="file" accept=".xls,.xlsx,.csv" class="lock-input file-input" multiple>
-      <div id="stock-file-list" class="stock-file-list"></div>
-      <div id="stock-results" class="stock-results"></div>
-      <div class="settings-row">
-        <button id="stock-pdf-btn" class="lock-btn hidden">Download PDF report</button>
-        <button id="stock-excel-btn" class="ghost-btn hidden">Download Excel</button>
-        <button id="stock-modal-close" class="ghost-btn">Close</button>
+  <!-- ----------------------------------------------------------- canvas -->
+  <div class="canvas">
+
+    <header class="masthead">
+      <div class="wrap masthead-in">
+        <h1 class="wordmark">Le Parfumier<span>Discontinuation watch</span></h1>
+        <div class="masthead-meta" id="masthead-meta"></div>
       </div>
-    </div>
-  </div>
+    </header>
 
+    <div class="brief" id="brief"><div class="wrap"><div class="brief-in" id="brief-in"></div></div></div>
+
+    <main>
+
+      <!-- ---------------------------------------------------- watch tab -->
+      <section id="tab-watch" class="panel">
+        <div class="wrap">
+          <div class="panel-head">
+            <div>
+              <h1>What to act on</h1>
+              <p class="panel-sub">Every product the scan believes a house is about to stop making, ranked by how strong the evidence is and how much the item is worth to you. Work down from the top.</p>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <input id="flag-search" class="field grow" type="search" placeholder="Search flagged items by name or house">
+            <select id="flag-sort" class="field" aria-label="Sort order">
+              <option value="priority">Sort: priority</option>
+              <option value="newest">Sort: newest flagged</option>
+              <option value="value">Sort: unit value</option>
+              <option value="house">Sort: house A to Z</option>
+              <option value="committed">Sort: committed value</option>
+            </select>
+            <select id="filter-status" class="field" aria-label="Filter by scan status">
+              <option value="">Scan status: all</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="rumored">Rumored</option>
+              <option value="cleared">Cleared</option>
+            </select>
+            <select id="filter-decision" class="field" aria-label="Filter by your decision">
+              <option value="">Your decision: all</option>
+              <option value="review">To review</option>
+              <option value="buying">Buying</option>
+              <option value="ordered">Ordered</option>
+              <option value="passed">Passed</option>
+            </select>
+            <div class="toolbar-gap"></div>
+            <button id="export-pdf" class="btn quiet">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 20h16"/></svg>
+              Buy list PDF
+            </button>
+            <button id="export-xls" class="btn quiet">Excel</button>
+          </div>
+
+          <div class="selectbar">
+            <label class="checkline"><input type="checkbox" id="select-all"> Select all shown</label>
+            <span class="count" id="select-count"></span>
+            <div class="toolbar-gap"></div>
+            <button id="check-stock" class="btn" disabled>Check supplier stock</button>
+          </div>
+
+          <div id="fiches" class="fiches"></div>
+          <div id="fiches-empty" class="empty hidden"></div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------- houses tab -->
+      <section id="tab-houses" class="panel hidden">
+        <div class="wrap">
+          <div class="panel-head">
+            <div>
+              <h1>Houses under pressure</h1>
+              <p class="panel-sub">The same flags grouped by the house behind them. One flag is a product decision. Several flags at one house is usually a line being pruned, and that is a conversation with the rep rather than a single order.</p>
+            </div>
+          </div>
+          <div class="panel-body" style="padding-top:22px">
+            <div class="houses-note" id="houses-note"></div>
+            <div class="table-scroll">
+              <table class="grid">
+                <thead>
+                  <tr>
+                    <th>House</th>
+                    <th>Flags</th>
+                    <th>Confirmed against rumored</th>
+                    <th>Top priority</th>
+                    <th>Unit value at risk</th>
+                    <th>Catalog</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="houses-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------- catalog tab -->
+      <section id="tab-catalog" class="panel hidden">
+        <div class="wrap">
+          <div class="panel-head">
+            <div>
+              <h1>Catalog</h1>
+              <p class="panel-sub">Your full product list from the last export. Anything the scan has flagged is marked here too.</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <input id="search" class="field grow" type="search" placeholder="Search by product or house">
+            <select id="brand-filter" class="field" aria-label="Filter by house"></select>
+            <select id="status-filter" class="field" aria-label="Filter by product status">
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+            <label class="checkline" style="margin-left:6px"><input type="checkbox" id="only-flagged"> Flagged only</label>
+          </div>
+          <div id="catalog-count" class="result-count"></div>
+          <div id="catalog-list" class="catalog"></div>
+          <div class="pager">
+            <button id="page-prev" class="btn quiet">Previous</button>
+            <span id="page-info" class="info"></span>
+            <button id="page-next" class="btn quiet">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- --------------------------------------------------- method tab -->
+      <section id="tab-method" class="panel hidden">
+        <div class="wrap">
+          <div class="panel-head"><div><h1>How this works</h1></div></div>
+          <div class="panel-body" style="padding-top:22px">
+            <div class="prose">
+              <h2>What the scan does</h2>
+              <p>Twice a week, Monday and Thursday morning, an automated scan works through your catalog and checks products for signs a house is retiring them: whether the house still lists the product, whether the major retailers still carry it, and what the fragrance community is saying in forums, resale listings and social posts. Anything suspicious arrives here with the reasoning and the sources behind it.</p>
+
+              <h2>Confirmed against rumored</h2>
+              <p><strong>Rumored</strong> is early chatter worth watching. <strong>Confirmed</strong> means several independent sources agree. Once an item is confirmed, the scan also checks what it is reselling for elsewhere, so you can read the premium before deciding whether to buy in.</p>
+
+              <h2>How the priority score is built</h2>
+              <p>Every flag carries a score out of 100 so the list arrives in the order worth working. It is arithmetic, not opinion, and every flag will show you its own breakdown under "why this rank".</p>
+              <ul>
+                <li><strong>Scan status</strong>, up to 40. Confirmed scores far above rumored.</li>
+                <li><strong>Independent sources</strong>, up to 20. Five points each, counted to four.</li>
+                <li><strong>Kinds of signal</strong>, up to 12. A web signal plus a pricing signal is stronger than two of the same kind.</li>
+                <li><strong>Resale demand</strong>, up to 16. Whether the market check found it selling on, and whether that check reads as rising demand.</li>
+                <li><strong>Your own clearance pricing</strong>, 6. A compare at price sitting above your current price often means the item is already being run down.</li>
+                <li><strong>Value of the item</strong>, up to 6. An expensive bottle is worth more attention than an inexpensive one.</li>
+              </ul>
+              <div class="scale-key">
+                <div><span class="swatch act"></span> <strong>70 and above.</strong> Act now. Decide this week.</div>
+                <div><span class="swatch watch"></span> <strong>45 to 69.</strong> Watch closely. Worth a call to the rep.</div>
+                <div><span class="swatch hold"></span> <strong>Below 45.</strong> Monitor. The scan keeps checking.</div>
+              </div>
+
+              <h2>Your decision, separate from the scan</h2>
+              <p>The pill on the right is what the scan concluded. The four buttons underneath are yours: <strong>To review</strong>, <strong>Buying</strong>, <strong>Ordered</strong> and <strong>Passed</strong>. Add the quantity you are taking and the app works out what that commits at retail. Notes are for anything the scan cannot know, a call with the rep, an allocation, a promise.</p>
+
+              <h2>What the money figures mean</h2>
+              <p>Unit value is your own retail price for the largest bottle of that item, and the size it refers to is printed beside it. Committed value is that price multiplied by the quantity you entered. These are retail figures. Connect a token in settings and your wholesale cost comes across too, which turns the same figures into margin.</p>
+              <p>The figures do not know how many bottles you already hold, because this pilot reads an uploaded export rather than live stock. Connecting Shopify is what closes that gap.</p>
+
+              <h2>Notifications</h2>
+              <p>You get one email per new flag, with confirmed and rumored listed separately. Items already flagged do not come back to your inbox, they simply stay on this page.</p>
+
+              <h2>Checking supplier stock</h2>
+              <p>Tick the items you care about, then Check supplier stock and upload one or more current supplier price lists. Matching is by barcode where the file has one, by house and name where it does not, and every match tells you which of the two it used. The report exports to PDF or Excel.</p>
+
+              <h2>Coverage, stated plainly</h2>
+              <p>Searching all 4,825 products individually twice a week is not practical. Each run covers a rotating slice of roughly 150 products, which brings the whole catalog round in about a month, and it rechecks everything already flagged as rumored on every single run. So a confirmed item is never more than a few days stale, while a quiet corner of the catalog is on a monthly cycle. Connecting live Shopify sales data is what would let the scan look at your fastest moving products first instead of working alphabetically through the shelf.</p>
+
+              <h2>Your data</h2>
+              <p>Nothing here has touched the live store. The catalog comes from an export you uploaded. Wholesale cost is never published with the site, it only appears once a token is connected in this browser.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
 </div>
+
+<!-- ============================================================== modals -->
+<div id="settings" class="modal hidden">
+  <div class="modal-card">
+    <h2>Data connection</h2>
+    <p class="modal-sub">Paste a GitHub access token for the private Le Parfumier data store. Read only adds wholesale cost and margin. Read and write also saves your decisions and quantities to the shared store, so they follow you to every device instead of living in this browser. The token stays in this browser and is never sent anywhere else.</p>
+    <input id="token-input" class="text-input" type="password" placeholder="GitHub token" autocomplete="off">
+    <div class="modal-row">
+      <button id="token-save" class="btn">Save</button>
+      <button id="token-clear" class="btn quiet">Clear</button>
+      <button id="settings-close" class="btn quiet">Close</button>
+    </div>
+    <p id="token-status" class="modal-status"></p>
+  </div>
+</div>
+
+<div id="stock-modal" class="modal hidden">
+  <div class="modal-card wide">
+    <h2>Supplier stock check</h2>
+    <p class="modal-sub">Upload one or more supplier price lists in .xls, .xlsx or .csv. Pick several at once, or add more after. The report says which of the <span id="stock-count">0</span> selected items appear in each list, matched on barcode first and on house and name where a row carries no barcode.</p>
+    <input id="stock-file" type="file" accept=".xls,.xlsx,.csv" class="text-input file-input" multiple>
+    <div id="stock-files" class="file-rows"></div>
+    <div id="stock-results"></div>
+    <div class="modal-row">
+      <button id="stock-pdf" class="btn hidden">Download PDF</button>
+      <button id="stock-xls" class="btn quiet hidden">Download Excel</button>
+      <button id="stock-close" class="btn quiet">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"><span class="dot"></span><span id="toast-text"></span></div>
 
 <script src="vendor/xlsx.full.min.js?v=4"></script>
 <script src="vendor/jspdf.umd.min.js?v=6"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
-<script src="app.js?v=8"></script>
-<!-- Bump the ?v= on every tag above on every future deploy that changes app.js or
-     style.css. app.js/style.css/data files are served with several minutes of cache,
-     so without a version bump, browsers that already visited (Jordan included) can
-     keep running old code after a fix ships. See deploy.ps1. -->
+<script src="app.js?v=9"></script>
+<!-- Bump the ?v= on every tag above, and APP_VERSION in app.js, on every deploy that
+     changes app.js or style.css. GitHub Pages caches both for ten minutes, so without
+     a bump anyone who already opened the page keeps running the old build. -->
 
 </body>
 </html>

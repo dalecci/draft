@@ -1,579 +1,1137 @@
-// Le Parfumier: FLAG — client app. No build step, no dependencies except the
-// vendored SheetJS (public/vendor/xlsx.full.min.js) used for the stock-check upload.
+// Le Parfumier: FLAG, client app. No build step. The only dependencies are the
+// vendored SheetJS and jsPDF used for the supplier stock check and the exports.
 //
-// Bump this on every deploy that changes app.js, style.css, or index.html,
-// and bump the ?v= query params in index.html's <link>/<script> tags to match
-// (see deploy.ps1's cache warning). Shown in the status bar so Jordan can tell
-// at a glance whether a browser tab is running the latest build.
-const APP_VERSION = 8;
+// Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
+// and bump the matching ?v= query params in index.html so browsers that already
+// have the page do not keep running the old build for ten minutes.
+const APP_VERSION = 9;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
 const GH_DATA_REPO = "leparfumierflag-data";
 const TOKEN_KEY = "lpf_token";
 const UNLOCK_KEY = "lpf_unlocked";
-const OVERRIDES_KEY = "lpf_overrides"; // { [flagId]: {userConfirmed, orderedQty, orderedDate} }, per-browser
-// fallback + sync source of truth once a token is connected.
+const THEME_KEY = "lpf_theme";
+// { [flagId]: {decision, userConfirmed, orderedQty, orderedDate, note} }, this browser,
+// and the source we replay onto the shared store once a token is connected.
+const OVERRIDES_KEY = "lpf_overrides";
+
+const DECISIONS = ["review", "buying", "ordered", "passed"];
+const DECISION_LABEL = { review: "To review", buying: "Buying", ordered: "Ordered", passed: "Passed" };
 
 const state = {
   products: [],
   flags: [],
+  flaggedHandles: new Set(),
   lastScan: null,
   dataSource: "bundled", // bundled | live
-  flagsSha: null, // GitHub blob sha for flags.json, needed to write updates back
+  productsLoaded: false,
+  tab: "watch",
   page: 0,
   pageSize: 60,
-  sort: "newest",
-  filterAiStatus: "",
-  filterReview: "",
-  filterOrder: "",
-  selected: new Set(), // flag ids selected via checkbox, for the stock-check upload
+  sort: "priority",
+  search: "",
+  filterStatus: "",
+  filterDecision: "",
+  onlyFlagged: false,
+  selected: new Set(),
 };
 
-// ---------- Lock screen ----------
+// ---------------------------------------------------------------- helpers ---
 
-function tryUnlock() {
-  const val = document.getElementById("lock-input").value.trim();
-  const err = document.getElementById("lock-error");
-  if (val === PIN) {
-    localStorage.setItem(UNLOCK_KEY, "1");
-    document.getElementById("lock").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    boot();
-  } else {
-    err.textContent = "That code is not right.";
-  }
+function escapeHtml(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+  );
 }
-
-function initLock() {
-  if (localStorage.getItem(UNLOCK_KEY) === "1") {
-    document.getElementById("lock").classList.add("hidden");
-    document.getElementById("app").classList.remove("hidden");
-    boot();
-    return;
-  }
-  document.getElementById("lock-btn").addEventListener("click", tryUnlock);
-  document.getElementById("lock-input").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") tryUnlock();
-  });
-  document.getElementById("lock-input").focus();
-}
-
-// ---------- Tabs ----------
-
-function initTabs() {
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.add("hidden"));
-      document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
-    });
-  });
-}
-
-// ---------- Settings / token ----------
-
-function initSettings() {
-  const modal = document.getElementById("settings");
-  document.getElementById("settings-btn").addEventListener("click", () => {
-    modal.classList.remove("hidden");
-    const saved = localStorage.getItem(TOKEN_KEY);
-    document.getElementById("token-status").textContent = saved
-      ? "A token is currently saved in this browser."
-      : "No token saved. Cost data stays hidden, and review/order changes save to this browser only.";
-  });
-  document.getElementById("settings-close").addEventListener("click", () => modal.classList.add("hidden"));
-  document.getElementById("token-save").addEventListener("click", async () => {
-    const val = document.getElementById("token-input").value.trim();
-    if (!val) return;
-    localStorage.setItem(TOKEN_KEY, val);
-    document.getElementById("token-input").value = "";
-    document.getElementById("token-status").textContent = "Saved. Reloading live data...";
-    await loadData();
-    renderAll();
-    // Push anything saved locally before a token existed, so it's not stranded on this device.
-    scheduleGithubSync();
-    document.getElementById("token-status").textContent = "Saved and connected.";
-  });
-  document.getElementById("token-clear").addEventListener("click", () => {
-    localStorage.removeItem(TOKEN_KEY);
-    document.getElementById("token-status").textContent = "Token cleared. Review/order changes will save to this browser only from now on.";
-  });
-}
-
-// ---------- Data loading ----------
-
-async function fetchJsonSafe(url, opts) {
-  try {
-    // no-store: these files change on every scan/redeploy, a cached copy would show
-    // stale flags. Small files, fetched once at boot, the cost of skipping cache is negligible.
-    const res = await fetch(url, { cache: "no-store", ...opts });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function loadData() {
-  // Baseline: the snapshot bundled alongside the deployed site (updated by the scheduled
-  // scan directly, see README — not gated behind a token, a flag list carries no cost data).
-  const [bundledProducts, bundledFlags] = await Promise.all([
-    fetchJsonSafe("data/products.json"),
-    fetchJsonSafe("data/flags.json"),
-  ]);
-  if (bundledProducts) state.products = bundledProducts;
-  if (bundledFlags) {
-    state.flags = bundledFlags.flags || [];
-    state.lastScan = bundledFlags.lastScan || null;
-  }
-
-  // Live overlay: if a token is saved, pull the full product list (this one DOES carry
-  // wholesale cost) and the authoritative flags.json (with its sha, so we can write updates
-  // back) from the private data repo instead of the redacted/possibly-a-few-days-old bundle.
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (token) {
-    const [liveProducts, liveFlagsMeta] = await Promise.all([
-      fetchGithubJson("products.json", token),
-      fetchGithubFileMeta("flags.json", token),
-    ]);
-    if (liveProducts) {
-      state.products = liveProducts;
-      state.dataSource = "live";
-    }
-    if (liveFlagsMeta) {
-      try {
-        const parsed = JSON.parse(decodeBase64Utf8(liveFlagsMeta.content));
-        state.flags = parsed.flags || [];
-        state.lastScan = parsed.lastScan || null;
-        state.flagsSha = liveFlagsMeta.sha;
-      } catch {
-        /* leave bundled flags in place if the live file is somehow unparseable */
-      }
-    }
-  }
-
-  applyLocalOverrides();
-}
-
-async function fetchGithubJson(path, token) {
-  try {
-    const res = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/${path}`,
-      { cache: "no-store", headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3.raw" } }
-    );
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-// Same endpoint, default (non-raw) Accept header: returns {sha, content (base64), ...} so we
-// have the blob sha a follow-up write needs.
-async function fetchGithubFileMeta(path, token) {
-  try {
-    const res = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/${path}`,
-      { cache: "no-store", headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" } }
-    );
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-function decodeBase64Utf8(b64) {
-  return decodeURIComponent(escape(atob(b64.replace(/\n/g, ""))));
-}
-function encodeUtf8Base64(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-
-// ---------- Review / order tracking, with local + GitHub persistence ----------
-
-function loadOverrides() {
-  try {
-    return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-function saveOverrides(overrides) {
-  localStorage.setItem(OVERRIDES_KEY, JSON.stringify(overrides));
-}
-function applyLocalOverrides() {
-  const overrides = loadOverrides();
-  state.flags.forEach((f) => {
-    if (overrides[f.id]) Object.assign(f, overrides[f.id]);
-  });
-}
-
-let syncTimer = null;
-
-// Updates one flag's review/order fields: instant local update + localStorage (always works,
-// this browser only), then a debounced push to the private data repo if a token is connected
-// (syncs across every device). Jordan asked for this to answer "where are we", it needs to
-// survive a refresh at minimum, and ideally be shared, hence the two tiers.
-function updateFlagField(flagId, changes) {
-  const flag = state.flags.find((f) => f.id === flagId);
-  if (!flag) return;
-  Object.assign(flag, changes);
-
-  const overrides = loadOverrides();
-  overrides[flagId] = { ...(overrides[flagId] || {}), ...changes };
-  saveOverrides(overrides);
-
-  renderFlagged();
-  scheduleGithubSync();
-}
-
-function scheduleGithubSync() {
-  const token = localStorage.getItem(TOKEN_KEY);
-  const statusEl = document.getElementById("sync-status");
-  if (!token) {
-    if (statusEl) { statusEl.textContent = "Saved on this device. Connect a token in settings to sync everywhere."; statusEl.classList.add("show"); }
-    return;
-  }
-  if (statusEl) { statusEl.textContent = "Saving..."; statusEl.classList.add("show"); }
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => syncOverridesToGithub(token), 1000);
-}
-
-async function syncOverridesToGithub(token) {
-  const statusEl = document.getElementById("sync-status");
-  try {
-    const meta = await fetchGithubFileMeta("flags.json", token);
-    if (!meta) throw new Error("could not read current flags.json");
-    const current = JSON.parse(decodeBase64Utf8(meta.content));
-    const overrides = loadOverrides();
-    (current.flags || []).forEach((f) => {
-      if (overrides[f.id]) Object.assign(f, overrides[f.id]);
-    });
-    const res = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/flags.json`,
-      {
-        method: "PUT",
-        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: "Update review/order status from the FLAG app",
-          content: encodeUtf8Base64(JSON.stringify(current, null, 2)),
-          sha: meta.sha,
-        }),
-      }
-    );
-    if (!res.ok) throw new Error("write rejected");
-    state.flagsSha = (await res.json()).content.sha;
-    if (statusEl) statusEl.textContent = "Saved and synced.";
-  } catch {
-    if (statusEl) statusEl.textContent = "Saved on this device, sync failed, will retry on your next change.";
-  }
-}
-
-// ---------- Rendering ----------
+const escapeAttr = escapeHtml;
 
 function money(v) {
   const n = parseFloat(v);
   if (isNaN(n)) return "";
-  return "$" + n.toFixed(2);
+  return "$" + n.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function moneyShort(v) {
+  const n = Math.round(parseFloat(v) || 0);
+  return "$" + n.toLocaleString("en-CA");
+}
+function el(id) { return document.getElementById(id); }
+
+let toastTimer = null;
+function toast(msg, kind) {
+  const box = el("toast");
+  el("toast-text").textContent = msg;
+  box.classList.toggle("warn", kind === "warn");
+  box.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => box.classList.remove("show"), 3200);
 }
 
-function priceRange(product) {
-  const prices = (product.variants || [])
-    .map((v) => parseFloat(v.price))
-    .filter((n) => !isNaN(n));
-  if (!prices.length) return "";
-  const lo = Math.min(...prices), hi = Math.max(...prices);
-  return lo === hi ? money(lo) : `${money(lo)} to ${money(hi)}`;
+// ------------------------------------------------------------------ theme ---
+
+function initTheme() {
+  el("theme-btn").addEventListener("click", () => {
+    const root = document.documentElement;
+    const current =
+      root.getAttribute("data-theme") ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  });
 }
 
-function renderStatbar() {
-  const brands = new Set(state.products.map((p) => p.vendor).filter(Boolean));
-  const flaggedOpen = state.flags.filter((f) => f.status !== "cleared").length;
-  const scanTxt = state.lastScan ? new Date(state.lastScan).toLocaleString() : "not yet run";
-  document.getElementById("statbar").innerHTML = `
-    <span><strong>${state.products.length.toLocaleString()}</strong> products</span>
-    <span><strong>${brands.size.toLocaleString()}</strong> brands</span>
-    <span class="${flaggedOpen ? "warn" : ""}"><strong>${flaggedOpen}</strong> currently flagged</span>
-    <span>Last scan: ${scanTxt}</span>
-    <span>Cost data: ${state.dataSource === "live" ? "connected" : "hidden, connect in settings"}</span>
-    <span id="sync-status" class="save-tick"></span>
-    <span class="version-tag" title="Bump the ?v= in index.html and APP_VERSION in app.js on every deploy">Site v${APP_VERSION}</span>
-  `;
+// ------------------------------------------------------------------- lock ---
+
+function unlockApp() {
+  el("lock").classList.add("hidden");
+  el("app").classList.remove("hidden");
+  boot();
+}
+
+function tryUnlock() {
+  if (el("lock-input").value.trim() === PIN) {
+    try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
+    unlockApp();
+  } else {
+    el("lock-error").textContent = "That code is not right.";
+    el("lock-input").value = "";
+    el("lock-input").focus();
+  }
+}
+
+function initLock() {
+  let unlocked = false;
+  try { unlocked = localStorage.getItem(UNLOCK_KEY) === "1"; } catch (e) {}
+  if (unlocked) { unlockApp(); return; }
+  el("lock-btn").addEventListener("click", tryUnlock);
+  el("lock-input").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  el("lock-input").focus();
+}
+
+// ------------------------------------------------------------------- tabs ---
+
+function initTabs() {
+  document.querySelectorAll(".rail-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.tab = btn.dataset.tab;
+      document.querySelectorAll(".rail-btn").forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("active", on);
+        if (on) b.setAttribute("aria-current", "page");
+        else b.removeAttribute("aria-current");
+      });
+      document.querySelectorAll(".panel").forEach((p) => p.classList.add("hidden"));
+      el("tab-" + state.tab).classList.remove("hidden");
+      // The briefing band belongs to the watch view; the other tabs get the room back.
+      el("brief").classList.toggle("hidden", state.tab !== "watch");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    });
+  });
+}
+
+// --------------------------------------------------------------- settings ---
+
+function initSettings() {
+  const modal = el("settings");
+  el("settings-btn").addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    el("token-status").textContent = localStorage.getItem(TOKEN_KEY)
+      ? "A token is saved in this browser."
+      : "No token saved. Cost stays hidden and your decisions save to this browser only.";
+  });
+  el("settings-close").addEventListener("click", () => modal.classList.add("hidden"));
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
+
+  el("token-save").addEventListener("click", async () => {
+    const val = el("token-input").value.trim();
+    if (!val) return;
+    localStorage.setItem(TOKEN_KEY, val);
+    el("token-input").value = "";
+    el("token-status").textContent = "Saved. Loading live data...";
+    await loadFlags();
+    await loadProducts();
+    renderAll();
+    scheduleSync(); // push anything decided before a token existed
+    el("token-status").textContent = "Saved and connected.";
+  });
+
+  el("token-clear").addEventListener("click", () => {
+    localStorage.removeItem(TOKEN_KEY);
+    el("token-status").textContent = "Token cleared. Decisions save to this browser only from now on.";
+  });
+}
+
+// ----------------------------------------------------------- data loading ---
+
+async function fetchJsonSafe(url) {
+  try {
+    // no-store: these files change on every scan, a cached copy would show stale flags.
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchGithubRaw(path, token) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/${path}`, {
+      cache: "no-store",
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3.raw" },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+// Same endpoint with the default Accept header, so we also get the blob sha a write needs.
+async function fetchGithubMeta(path, token) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/${path}`, {
+      cache: "no-store",
+      headers: { Authorization: `token ${token}`, Accept: "application/vnd.github.v3+json" },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function decodeBase64Utf8(b64) { return decodeURIComponent(escape(atob(String(b64).replace(/\n/g, "")))); }
+function encodeUtf8Base64(str) { return btoa(unescape(encodeURIComponent(str))); }
+
+// Flags are small and are what the page is actually for, so they load first and the
+// list paints before the multi megabyte catalog has finished arriving.
+async function loadFlags() {
+  const bundled = await fetchJsonSafe("data/flags.json");
+  if (bundled) {
+    state.flags = bundled.flags || [];
+    state.lastScan = bundled.lastScan || null;
+  }
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    const meta = await fetchGithubMeta("flags.json", token);
+    if (meta && meta.content) {
+      try {
+        const parsed = JSON.parse(decodeBase64Utf8(meta.content));
+        state.flags = parsed.flags || [];
+        state.lastScan = parsed.lastScan || null;
+      } catch (e) { /* keep the bundled copy if the live file will not parse */ }
+    }
+  }
+  applyOverrides();
+  state.flaggedHandles = new Set(state.flags.map((f) => f.productHandle));
+}
+
+async function loadProducts() {
+  const bundled = await fetchJsonSafe("data/products.json");
+  if (bundled) state.products = bundled;
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    const live = await fetchGithubRaw("products.json", token);
+    if (live) { state.products = live; state.dataSource = "live"; }
+  }
+  indexProducts();
+  state.productsLoaded = true;
+}
+
+// ------------------------------------------------- decisions and overrides ---
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(OVERRIDES_KEY) || "{}"); } catch (e) { return {}; }
+}
+function saveOverrides(o) {
+  try { localStorage.setItem(OVERRIDES_KEY, JSON.stringify(o)); } catch (e) {}
+}
+function applyOverrides() {
+  const o = loadOverrides();
+  state.flags.forEach((f) => { if (o[f.id]) Object.assign(f, o[f.id]); });
+}
+
+// v8 stored only userConfirmed plus a quantity. Read those forward so nothing a
+// previous session recorded is lost when the four state pipeline replaces them.
+function decisionOf(f) {
+  if (f.decision && DECISIONS.includes(f.decision)) return f.decision;
+  if (f.userConfirmed === false) return "passed";
+  if (f.orderedQty > 0) return "ordered";
+  if (f.userConfirmed === true) return "buying";
+  return "review";
+}
+
+let syncTimer = null;
+
+function updateFlag(flagId, changes, opts) {
+  const flag = state.flags.find((f) => f.id === flagId);
+  if (!flag) return;
+  Object.assign(flag, changes);
+
+  const o = loadOverrides();
+  o[flagId] = Object.assign({}, o[flagId] || {}, changes);
+  saveOverrides(o);
+
+  if (!opts || opts.rerender !== false) { renderFiches(); }
+  renderBrief();
+  scheduleSync();
+}
+
+function setDecision(flagId, decision) {
+  // userConfirmed is kept in step so the scheduled scan and anything reading the
+  // shared store still see the yes or no it already understands.
+  const userConfirmed = decision === "passed" ? false : decision === "review" ? null : true;
+  const changes = { decision, userConfirmed };
+  if (decision === "review" || decision === "passed") {
+    changes.orderedQty = null;
+    changes.orderedDate = null;
+  }
+  updateFlag(flagId, changes);
+}
+
+function scheduleSync() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) { toast("Saved on this device. Connect a token to sync everywhere.", "warn"); return; }
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => syncToGithub(token), 900);
+}
+
+async function syncToGithub(token) {
+  try {
+    const meta = await fetchGithubMeta("flags.json", token);
+    if (!meta) throw new Error("cannot read flags.json");
+    const current = JSON.parse(decodeBase64Utf8(meta.content));
+    const o = loadOverrides();
+    (current.flags || []).forEach((f) => { if (o[f.id]) Object.assign(f, o[f.id]); });
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/flags.json`, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: "Update decisions from the FLAG app",
+        content: encodeUtf8Base64(JSON.stringify(current, null, 2)),
+        sha: meta.sha,
+      }),
+    });
+    if (!res.ok) throw new Error("write rejected");
+    toast("Saved and synced.");
+  } catch (e) {
+    toast("Saved here. Sync failed, it will retry on your next change.", "warn");
+  }
+}
+
+// ------------------------------------------------------- product and value ---
+
+// Handle lookups run for every flag on every render, so they go through an index
+// instead of scanning 4,825 products each time.
+let productIndex = new Map();
+let houseCounts = new Map();
+
+function indexProducts() {
+  productIndex = new Map();
+  houseCounts = new Map();
+  state.products.forEach((p) => {
+    productIndex.set(p.handle, p);
+    const house = p.vendor || "Unattributed";
+    houseCounts.set(house, (houseCounts.get(house) || 0) + 1);
+  });
 }
 
 function findProduct(handle) {
-  return state.products.find((p) => p.handle === handle);
+  return productIndex.get(handle);
 }
 
-function getFilteredSortedFlags() {
-  let items = state.flags.filter((f) => {
-    if (state.filterAiStatus && f.status !== state.filterAiStatus) return false;
-    if (state.filterReview === "unreviewed" && (f.userConfirmed === true || f.userConfirmed === false)) return false;
-    if (state.filterReview === "confirmed" && f.userConfirmed !== true) return false;
-    if (state.filterReview === "rejected" && f.userConfirmed !== false) return false;
-    if (state.filterOrder === "ordered" && !(f.orderedQty > 0)) return false;
-    if (state.filterOrder === "not-ordered" && f.orderedQty > 0) return false;
+// A gift set or a miniature is not what a buy in gets measured in, so those sizes
+// are skipped unless an item has nothing else on file.
+const SET_SIZE = /\b(ensemble|coffret|set|gift|duo|trio|collection|miniature|sample|vial|refill|recharge|produits)\b/i;
+
+// The reference unit is the dearest plain bottle of an item. Every money figure on
+// the page is built from it, and the size is always printed beside the number so
+// nobody has to guess which variant a total refers to.
+function referenceVariant(product) {
+  if (!product) return null;
+  const priced = (product.variants || [])
+    .map((v) => ({ price: parseFloat(v.price), size: v.size || "", cost: parseFloat(v.cost) || 0 }))
+    .filter((v) => !isNaN(v.price) && v.price > 0);
+  if (!priced.length) return null;
+  const bottles = priced.filter((v) => !SET_SIZE.test(v.size));
+  const pool = bottles.length ? bottles : priced;
+  return pool.reduce((best, v) => (!best || v.price > best.price ? v : best), null);
+}
+
+function hasClearancePricing(product) {
+  return (product && product.variants || []).some((v) => {
+    const p = parseFloat(v.price), c = parseFloat(v.compareAtPrice);
+    return !isNaN(p) && !isNaN(c) && c > p;
+  });
+}
+
+function priceRange(product) {
+  const prices = (product.variants || []).map((v) => parseFloat(v.price)).filter((n) => !isNaN(n) && n > 0);
+  if (!prices.length) return "";
+  const lo = Math.min.apply(null, prices), hi = Math.max.apply(null, prices);
+  return lo === hi ? money(lo) : money(lo) + " to " + money(hi);
+}
+
+// ------------------------------------------------------------------ score ---
+
+const DEMAND_WORDS = [
+  "resel", "resale", "secondhand", "second hand", "backup", "back up", "climb",
+  "rising", "rise", "premium", "sought", "hard to find", "before it", "snapping up",
+];
+
+// Arithmetic, not opinion. Every component is shown to the user under "why this
+// rank" so a number on screen can always be traced back to a reason.
+function scoreFlag(f, product) {
+  const parts = [];
+  let total = 0;
+  const add = (label, points) => { if (points > 0) { parts.push([label, points]); total += points; } };
+
+  if (f.status === "confirmed") add("Confirmed by several sources", 40);
+  else if (f.status === "rumored") add("Rumored, early chatter", 18);
+
+  const nSources = (f.sources || []).length;
+  add(nSources + " independent source" + (nSources === 1 ? "" : "s"), Math.min(nSources, 4) * 5);
+
+  const kinds = new Set((f.signals || []).map((s) => s.type).filter(Boolean));
+  add(kinds.size + " kinds of signal agree", Math.min(Math.max(kinds.size - 1, 0), 2) * 6);
+
+  if (f.marketCheck && f.marketCheck.checked) {
+    const note = String(f.marketCheck.note || "").toLowerCase();
+    if (DEMAND_WORDS.some((w) => note.includes(w))) add("Resale demand reads as rising", 16);
+    else add("Found on the secondary market", 8);
+  }
+
+  if (hasClearancePricing(product)) add("Your price already below compare at", 6);
+
+  const ref = referenceVariant(product);
+  if (ref) {
+    if (ref.price >= 200) add("High value bottle, " + money(ref.price), 6);
+    else if (ref.price >= 100) add("Mid value bottle, " + money(ref.price), 4);
+    else if (ref.price >= 50) add("Value of the bottle, " + money(ref.price), 2);
+  }
+
+  return { total: Math.min(total, 100), parts };
+}
+
+function band(score) {
+  if (score >= 70) return { key: "act", label: "Act now" };
+  if (score >= 45) return { key: "watch", label: "Watch closely" };
+  return { key: "hold", label: "Monitor" };
+}
+
+// Everything the views and the exports need about one flag, worked out once.
+function enrich(f) {
+  const product = findProduct(f.productHandle);
+  const ref = referenceVariant(product);
+  const scored = scoreFlag(f, product);
+  const decision = decisionOf(f);
+  const qty = parseInt(f.orderedQty, 10) || 0;
+  const counts = qty > 0 && decision !== "passed";
+  return {
+    flag: f,
+    product: product,
+    image: product && product.image ? product.image : "",
+    ref: ref,
+    unitPrice: ref ? ref.price : 0,
+    unitCost: ref ? ref.cost : 0,
+    score: scored.total,
+    parts: scored.parts,
+    band: band(scored.total),
+    decision: decision,
+    qty: qty,
+    committed: counts ? qty * (ref ? ref.price : 0) : 0,
+    committedCost: counts ? qty * (ref ? ref.cost : 0) : 0,
+  };
+}
+
+function daysSince(dateStr) {
+  if (!dateStr) return null;
+  const then = new Date(dateStr + "T00:00:00");
+  if (isNaN(then.getTime())) return null;
+  return Math.max(0, Math.floor((Date.now() - then.getTime()) / 86400000));
+}
+
+function ageLabel(dateStr) {
+  const d = daysSince(dateStr);
+  if (d === null) return "";
+  if (d === 0) return "Flagged today";
+  if (d === 1) return "Flagged 1 day ago";
+  return "Flagged " + d + " days ago";
+}
+
+// ------------------------------------------------------ filtering, sorting ---
+
+function visibleFlags() {
+  const q = state.search.trim().toLowerCase();
+  let items = state.flags.map(enrich).filter((x) => {
+    if (state.filterStatus && x.flag.status !== state.filterStatus) return false;
+    if (state.filterDecision && x.decision !== state.filterDecision) return false;
+    if (q) {
+      const hay = (x.flag.title + " " + (x.flag.vendor || "")).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     return true;
   });
 
-  const statusRank = { confirmed: 0, rumored: 1, cleared: 2 };
-  items = [...items];
-  if (state.sort === "status") {
-    items.sort((a, b) => (statusRank[a.status] ?? 9) - (statusRank[b.status] ?? 9));
-  } else if (state.sort === "brand") {
-    items.sort((a, b) => (a.vendor || "").localeCompare(b.vendor || ""));
-  } else if (state.sort === "ordered") {
-    items.sort((a, b) => (b.orderedQty || 0) - (a.orderedQty || 0));
-  } else {
-    items.sort((a, b) => (b.flaggedDate || "").localeCompare(a.flaggedDate || ""));
-  }
+  const by = {
+    priority: (a, b) => b.score - a.score || (b.unitPrice - a.unitPrice),
+    newest: (a, b) => String(b.flag.flaggedDate || "").localeCompare(String(a.flag.flaggedDate || "")) || b.score - a.score,
+    value: (a, b) => b.unitPrice - a.unitPrice,
+    house: (a, b) => String(a.flag.vendor || "").localeCompare(String(b.flag.vendor || "")) || b.score - a.score,
+    committed: (a, b) => b.committed - a.committed || b.score - a.score,
+  };
+  items.sort(by[state.sort] || by.priority);
   return items;
 }
 
-function renderFlagged() {
-  const list = document.getElementById("flagged-list");
-  const empty = document.getElementById("flagged-empty");
+// -------------------------------------------------------------- rendering ---
+
+function renderMasthead() {
+  const houses = new Set(state.products.map((p) => p.vendor).filter(Boolean));
+  const scanTxt = state.lastScan
+    ? new Date(state.lastScan).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" })
+    : "not yet run";
+  const catalogTxt = state.productsLoaded
+    ? state.products.length.toLocaleString() + " products, " + houses.size.toLocaleString() + " houses"
+    : "loading...";
+  const cost = state.dataSource === "live"
+    ? '<span class="live">connected</span>'
+    : '<span class="off">hidden</span>';
+  el("masthead-meta").innerHTML =
+    '<div><b>Catalog</b>' + catalogTxt + "</div>" +
+    "<div><b>Last scan</b>" + escapeHtml(scanTxt) + "</div>" +
+    "<div><b>Wholesale cost</b>" + cost + "</div>";
+  el("rail-ver").textContent = "v" + APP_VERSION;
+}
+
+function renderBrief() {
+  const all = state.flags.map(enrich);
+  const open = all.filter((x) => x.flag.status !== "cleared");
+  const confirmed = open.filter((x) => x.flag.status === "confirmed");
+  const rumored = open.filter((x) => x.flag.status === "rumored");
+  const act = open.filter((x) => x.score >= 70);
+  const houses = new Set(open.map((x) => x.flag.vendor || "").filter(Boolean));
+  const unitValue = open.reduce((s, x) => s + x.unitPrice, 0);
+  const priced = open.filter((x) => x.unitPrice > 0).length;
+
+  const committedItems = all.filter((x) => x.committed > 0);
+  const committed = committedItems.reduce((s, x) => s + x.committed, 0);
+  const committedCost = committedItems.reduce((s, x) => s + x.committedCost, 0);
+  const bottles = committedItems.reduce((s, x) => s + x.qty, 0);
+
+  let committedNote;
+  if (!committedItems.length) {
+    committedNote = "Mark items Buying or Ordered and add a quantity";
+  } else if (state.dataSource === "live" && committedCost > 0) {
+    committedNote =
+      bottles.toLocaleString() + " bottles across " + committedItems.length + " item" +
+      (committedItems.length === 1 ? "" : "s") + ", " + moneyShort(committed - committedCost) + " gross margin";
+  } else {
+    committedNote =
+      bottles.toLocaleString() + " bottles across " + committedItems.length + " item" +
+      (committedItems.length === 1 ? "" : "s") + " at retail";
+  }
+
+  const cards = [
+    {
+      k: "On watch",
+      v: String(open.length),
+      n: houses.size ? "Across " + houses.size + " houses" : "Nothing flagged yet",
+    },
+    {
+      k: "Confirmed",
+      v: String(confirmed.length),
+      n: rumored.length + " more still rumored",
+      cls: "risk",
+    },
+    {
+      k: "Act now",
+      v: String(act.length),
+      n: "Priority 70 and above",
+    },
+    {
+      k: "Unit value at risk",
+      v: state.productsLoaded ? moneyShort(unitValue) : "&mdash;",
+      n: state.productsLoaded
+        ? "One bottle of each at your retail price, " + priced + " of " + open.length + " priced"
+        : "Waiting for the catalog",
+      cls: "money",
+    },
+    {
+      k: "Committed to buy",
+      v: moneyShort(committed),
+      n: committedNote,
+      cls: "money",
+    },
+  ];
+
+  el("brief-in").innerHTML = cards
+    .map(
+      (c) =>
+        '<div class="stat ' + (c.cls || "") + '">' +
+        '<div class="stat-k">' + escapeHtml(c.k) + "</div>" +
+        '<span class="stat-v">' + c.v + "</span>" +
+        '<div class="stat-n">' + escapeHtml(c.n) + "</div>" +
+        "</div>"
+    )
+    .join("");
+
+  const count = el("rail-count");
+  count.textContent = String(act.length);
+  count.classList.toggle("hidden", act.length === 0);
+}
+
+function decideButtons(x) {
+  return (
+    '<div class="decide">' +
+    DECISIONS.map(
+      (d) =>
+        '<button class="dbtn ' + d + (x.decision === d ? " on" : "") + '" data-decision="' + d + '">' +
+        DECISION_LABEL[d] +
+        "</button>"
+    ).join("") +
+    "</div>"
+  );
+}
+
+function whyBlock(x) {
+  const rows = x.parts
+    .map((p) => "<tr><td>" + escapeHtml(p[0]) + "</td><td>+" + p[1] + "</td></tr>")
+    .join("");
+  return (
+    '<details class="why"><summary>Why this rank</summary>' +
+    '<table class="why-table"><tbody>' + rows +
+    '<tr class="total"><td>Priority score</td><td>' + x.score + " / 100</td></tr>" +
+    "</tbody></table></details>"
+  );
+}
+
+function renderFiches() {
+  const list = el("fiches");
+  const empty = el("fiches-empty");
+
   if (!state.flags.length) {
     list.innerHTML = "";
     empty.classList.remove("hidden");
-    empty.querySelector("p").textContent = "Nothing flagged yet. Once the first scan runs, anything at risk will show up here.";
+    empty.innerHTML =
+      "<strong>Nothing flagged yet</strong>The scan runs Monday and Thursday. Anything at risk will arrive here.";
     updateSelectBar([]);
     return;
   }
 
-  const items = getFilteredSortedFlags();
+  const items = visibleFlags();
   if (!items.length) {
     list.innerHTML = "";
     empty.classList.remove("hidden");
-    empty.querySelector("p").textContent = "Nothing matches these filters.";
-    updateSelectBar(items);
+    empty.innerHTML = "<strong>Nothing matches</strong>Try clearing a filter or the search box.";
+    updateSelectBar([]);
     return;
   }
   empty.classList.add("hidden");
 
   list.innerHTML = items
-    .map((f) => {
-      const product = findProduct(f.productHandle);
-      const img = product && product.image ? product.image : "";
-      const signals = (f.signals || []).map((s) => `<li>${escapeHtml(s.note)}</li>`).join("");
-      const market = f.marketCheck && f.marketCheck.checked
-        ? `<div class="flag-market"><strong>Market check:</strong> ${escapeHtml(f.marketCheck.note)}</div>`
-        : "";
-      const sources = (f.sources || [])
-        .map((s) => `<a href="${escapeAttr(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.label)}</a>`)
+    .map((x, i) => {
+      const f = x.flag;
+      const ledger = (f.signals || [])
+        .map(
+          (s) =>
+            "<li><span class=\"kind\">" + escapeHtml(s.type || "note") + "</span>" +
+            escapeHtml(s.note) + "</li>"
+        )
         .join("");
-      const checked = state.selected.has(f.id) ? "checked" : "";
-      const confirmActive = f.userConfirmed === true ? "active" : "";
-      const rejectActive = f.userConfirmed === false ? "active" : "";
-      const rejectedClass = f.userConfirmed === false ? "rejected" : "";
-      const qty = f.orderedQty || "";
-      return `
-        <article class="flag-card ${rejectedClass}" data-flag-id="${escapeAttr(f.id)}">
-          <input type="checkbox" class="flag-select" ${checked}>
-          <div class="flag-thumb" style="background-image:url('${escapeAttr(img)}')"></div>
-          <div class="flag-body">
-            <p class="flag-title">${escapeHtml(f.title)}</p>
-            <p class="flag-vendor">${escapeHtml(f.vendor || "")}</p>
-            <ul class="flag-signals">${signals}</ul>
-            ${market}
-            <div class="flag-sources">${sources}</div>
-            <div class="flag-actions">
-              <button class="review-btn confirm ${confirmActive}" data-action="confirm">✓ Confirm</button>
-              <button class="review-btn reject ${rejectActive}" data-action="reject">✗ Reject</button>
-              <label class="flag-order">Ordered
-                <input type="number" min="0" step="1" class="order-qty" value="${escapeAttr(qty)}" placeholder="0">
-              </label>
-            </div>
-          </div>
-          <div class="flag-side">
-            <span class="status-pill ${f.status}">${f.status}</span>
-            <span class="flag-date">Flagged ${f.flaggedDate || ""}</span>
-          </div>
-        </article>
-      `;
+
+      const market =
+        f.marketCheck && f.marketCheck.checked
+          ? '<div class="market"><b>Market check</b>' + escapeHtml(f.marketCheck.note) + "</div>"
+          : "";
+
+      const sources = (f.sources || [])
+        .map(
+          (s) =>
+            '<a href="' + escapeAttr(s.url) + '" target="_blank" rel="noopener">' +
+            escapeHtml(s.label) + "</a>"
+        )
+        .join("");
+
+      const refLine = x.ref
+        ? '<div class="refprice"><div class="k">Unit value<s>' + escapeHtml(x.ref.size) + "</s></div>" +
+          '<div class="v">' + money(x.ref.price) + "</div></div>"
+        : '<div class="refprice"><div class="k">Unit value<s>' +
+          (state.productsLoaded ? "no price on file" : "loading catalog") +
+          '</s></div><div class="v">&mdash;</div></div>';
+
+      const showQty = x.decision === "buying" || x.decision === "ordered";
+      const qtyRow = showQty
+        ? '<div class="qty-row">Quantity' +
+          '<input type="number" min="0" step="1" class="qty" value="' + (x.qty || "") + '" placeholder="0" aria-label="Quantity">' +
+          '<span class="qty-total">' + (x.committed ? money(x.committed) : "&mdash;") +
+          "<small>committed</small></span></div>"
+        : "";
+
+      const noteOpen = f.note ? true : false;
+      const noteBlock =
+        '<button class="note-toggle" data-note-toggle>' +
+        (noteOpen ? "Hide note" : f.note ? "Edit note" : "Add a note") +
+        "</button>" +
+        '<textarea class="note-box' + (noteOpen ? "" : " hidden") +
+        '" placeholder="A call with the rep, an allocation, anything the scan cannot know">' +
+        escapeHtml(f.note || "") + "</textarea>";
+
+      return (
+        '<article class="fiche is-' + escapeAttr(f.status) +
+        (x.decision === "passed" ? " is-passed" : "") +
+        '" data-flag-id="' + escapeAttr(f.id) + '">' +
+          '<div class="fiche-rank">' +
+            '<input type="checkbox" class="pick"' + (state.selected.has(f.id) ? " checked" : "") +
+            ' aria-label="Select this item">' +
+            '<span class="rank-no">' + String(i + 1).padStart(2, "0") + "</span>" +
+          "</div>" +
+          '<div class="fiche-plate" style="background-image:url(\'' + escapeAttr(x.image) + '\')"></div>' +
+          '<div class="fiche-main">' +
+            '<p class="fiche-house">' + escapeHtml(f.vendor || "") + "</p>" +
+            '<h2 class="fiche-title">' + escapeHtml(f.title) + "</h2>" +
+            '<ul class="ledger">' + ledger + "</ul>" +
+            market +
+            '<div class="sources">' + sources + "</div>" +
+            whyBlock(x) +
+          "</div>" +
+          '<div class="fiche-side">' +
+            '<div class="side-top">' +
+              '<span class="pill ' + escapeAttr(f.status) + '">' + escapeHtml(f.status) + "</span>" +
+              '<span class="age">' + escapeHtml(ageLabel(f.flaggedDate)) + "</span>" +
+            "</div>" +
+            '<div class="score ' + x.band.key + '">' +
+              '<div class="score-row"><span class="score-band">' + x.band.label + "</span>" +
+              '<span class="score-val">' + x.score + " / 100</span></div>" +
+              '<div class="score-bar"><i style="width:' + x.score + '%"></i></div>' +
+            "</div>" +
+            refLine +
+            decideButtons(x) +
+            qtyRow +
+            noteBlock +
+          "</div>" +
+        "</article>"
+      );
     })
     .join("");
 
   updateSelectBar(items);
 }
 
-function updateSelectBar(visibleItems) {
-  const count = state.selected.size;
-  document.getElementById("select-count").textContent = count ? `${count} selected` : "";
-  document.getElementById("check-stock-btn").disabled = count === 0;
-  const selectAll = document.getElementById("select-all-flags");
-  const visibleIds = visibleItems.map((f) => f.id);
-  selectAll.checked = visibleIds.length > 0 && visibleIds.every((id) => state.selected.has(id));
+function updateSelectBar(items) {
+  const n = state.selected.size;
+  el("select-count").textContent = n ? n + " selected" : "";
+  el("check-stock").disabled = n === 0;
+  const ids = items.map((x) => x.flag.id);
+  el("select-all").checked = ids.length > 0 && ids.every((id) => state.selected.has(id));
 }
 
-// Event delegation on the list container: cards are re-rendered wholesale on every change,
-// so listeners are attached once here rather than re-bound per card.
-function initFlaggedList() {
-  const list = document.getElementById("flagged-list");
+function initFicheEvents() {
+  const list = el("fiches");
 
   list.addEventListener("click", (e) => {
-    const btn = e.target.closest(".review-btn");
-    if (!btn) return;
-    const card = e.target.closest(".flag-card");
-    const flagId = card.dataset.flagId;
-    const action = btn.dataset.action;
-    const flag = state.flags.find((f) => f.id === flagId);
-    const next = action === "confirm"
-      ? (flag.userConfirmed === true ? null : true)
-      : (flag.userConfirmed === false ? null : false);
-    updateFlagField(flagId, { userConfirmed: next });
+    const card = e.target.closest(".fiche");
+    if (!card) return;
+    const id = card.dataset.flagId;
+
+    const dbtn = e.target.closest(".dbtn");
+    if (dbtn) {
+      const next = dbtn.dataset.decision;
+      // Clicking the state an item is already in returns it to To review.
+      setDecision(id, decisionOf(state.flags.find((f) => f.id === id)) === next ? "review" : next);
+      return;
+    }
+
+    if (e.target.matches("[data-note-toggle]")) {
+      const box = card.querySelector(".note-box");
+      const hidden = box.classList.toggle("hidden");
+      e.target.textContent = hidden ? (box.value ? "Edit note" : "Add a note") : "Hide note";
+      if (!hidden) box.focus();
+    }
   });
 
   list.addEventListener("change", (e) => {
-    const card = e.target.closest(".flag-card");
+    const card = e.target.closest(".fiche");
     if (!card) return;
-    const flagId = card.dataset.flagId;
-    if (e.target.classList.contains("flag-select")) {
-      if (e.target.checked) state.selected.add(flagId);
-      else state.selected.delete(flagId);
-      updateSelectBar(getFilteredSortedFlags());
+    const id = card.dataset.flagId;
+    if (e.target.classList.contains("pick")) {
+      if (e.target.checked) state.selected.add(id);
+      else state.selected.delete(id);
+      updateSelectBar(visibleFlags());
+    }
+  });
+
+  // Quantity and notes update without re-rendering, so the field keeps focus while
+  // the briefing band and the item's own total follow along live.
+  let noteTimer = null;
+  list.addEventListener("input", (e) => {
+    const card = e.target.closest(".fiche");
+    if (!card) return;
+    const id = card.dataset.flagId;
+
+    if (e.target.classList.contains("qty")) {
+      const qty = Math.max(0, parseInt(e.target.value, 10) || 0);
+      updateFlag(
+        id,
+        { orderedQty: qty || null, orderedDate: qty ? new Date().toISOString().slice(0, 10) : null },
+        { rerender: false }
+      );
+      const x = enrich(state.flags.find((f) => f.id === id));
+      const totalEl = card.querySelector(".qty-total");
+      if (totalEl) totalEl.innerHTML = (x.committed ? money(x.committed) : "&mdash;") + "<small>committed</small>";
       return;
     }
-    if (e.target.classList.contains("order-qty")) {
-      const qty = Math.max(0, parseInt(e.target.value, 10) || 0);
-      updateFlagField(flagId, { orderedQty: qty || null, orderedDate: qty ? new Date().toISOString().slice(0, 10) : null });
+
+    if (e.target.classList.contains("note-box")) {
+      const value = e.target.value;
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(() => updateFlag(id, { note: value || null }, { rerender: false }), 600);
     }
   });
 }
 
-function initFlaggedControls() {
-  document.getElementById("flag-sort").addEventListener("change", (e) => { state.sort = e.target.value; renderFlagged(); });
-  document.getElementById("filter-ai-status").addEventListener("change", (e) => { state.filterAiStatus = e.target.value; renderFlagged(); });
-  document.getElementById("filter-review").addEventListener("change", (e) => { state.filterReview = e.target.value; renderFlagged(); });
-  document.getElementById("filter-order").addEventListener("change", (e) => { state.filterOrder = e.target.value; renderFlagged(); });
-  document.getElementById("select-all-flags").addEventListener("change", (e) => {
-    const visible = getFilteredSortedFlags();
-    if (e.target.checked) visible.forEach((f) => state.selected.add(f.id));
-    else visible.forEach((f) => state.selected.delete(f.id));
-    renderFlagged();
+function initWatchControls() {
+  el("flag-search").addEventListener("input", (e) => { state.search = e.target.value; renderFiches(); });
+  el("flag-sort").addEventListener("change", (e) => { state.sort = e.target.value; renderFiches(); });
+  el("filter-status").addEventListener("change", (e) => { state.filterStatus = e.target.value; renderFiches(); });
+  el("filter-decision").addEventListener("change", (e) => { state.filterDecision = e.target.value; renderFiches(); });
+  el("select-all").addEventListener("change", (e) => {
+    const visible = visibleFlags();
+    visible.forEach((x) => {
+      if (e.target.checked) state.selected.add(x.flag.id);
+      else state.selected.delete(x.flag.id);
+    });
+    renderFiches();
   });
-  document.getElementById("check-stock-btn").addEventListener("click", openStockModal);
+  el("check-stock").addEventListener("click", openStockModal);
+  el("export-pdf").addEventListener("click", exportWatchPdf);
+  el("export-xls").addEventListener("click", exportWatchExcel);
 }
 
-function populateBrandFilter() {
-  const sel = document.getElementById("brand-filter");
-  const brands = [...new Set(state.products.map((p) => p.vendor).filter(Boolean))].sort();
-  sel.innerHTML = `<option value="">All brands</option>` + brands.map((b) => `<option value="${escapeAttr(b)}">${escapeHtml(b)}</option>`).join("");
+// ----------------------------------------------------------------- houses ---
+
+function houseRows() {
+  const map = new Map();
+  state.flags.map(enrich).forEach((x) => {
+    if (x.flag.status === "cleared") return;
+    const key = x.flag.vendor || "Unattributed";
+    if (!map.has(key)) map.set(key, { house: key, items: [], confirmed: 0, rumored: 0, value: 0, top: 0 });
+    const row = map.get(key);
+    row.items.push(x);
+    if (x.flag.status === "confirmed") row.confirmed++;
+    else row.rumored++;
+    row.value += x.unitPrice;
+    row.top = Math.max(row.top, x.score);
+  });
+  const rows = [...map.values()];
+  rows.forEach((r) => { r.catalogCount = houseCounts.get(r.house) || 0; });
+  rows.sort((a, b) => b.items.length - a.items.length || b.top - a.top);
+  return rows;
+}
+
+function renderHouses() {
+  const rows = houseRows();
+  const multi = rows.filter((r) => r.items.length >= 2);
+
+  el("houses-note").innerHTML = rows.length
+    ? "<strong>" + multi.length + " house" + (multi.length === 1 ? " has" : "s have") +
+      " more than one item flagged.</strong> A single flag is a product decision. Several at the same house is more often a line being pruned, so those are the calls worth making first."
+    : "Nothing flagged yet, so there is nothing to group.";
+
+  el("houses-body").innerHTML = rows
+    .map((r) => {
+      const total = r.confirmed + r.rumored;
+      const cPct = total ? (r.confirmed / total) * 100 : 0;
+      const b = band(r.top);
+      return (
+        "<tr>" +
+        '<td><span class="house">' + escapeHtml(r.house) + "</span></td>" +
+        '<td class="n">' + total + "</td>" +
+        '<td><div class="spread"><div class="spread-bar">' +
+          '<i class="c" style="width:' + cPct + '%"></i><i class="r" style="width:' + (100 - cPct) + '%"></i>' +
+          '</div><span class="spread-key">' + r.confirmed + " / " + r.rumored + "</span></div></td>" +
+        '<td class="n">' + r.top + " <span style=\"color:var(--ink-3)\">" + escapeHtml(b.label) + "</span></td>" +
+        '<td class="n">' + (state.productsLoaded ? moneyShort(r.value) : "&mdash;") + "</td>" +
+        '<td class="n">' + (state.productsLoaded ? r.catalogCount.toLocaleString() : "&mdash;") + "</td>" +
+        '<td><button class="linkish" data-house="' + escapeAttr(r.house) + '">See items</button></td>' +
+        "</tr>"
+      );
+    })
+    .join("");
+}
+
+function initHouseEvents() {
+  el("houses-body").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-house]");
+    if (!btn) return;
+    state.search = btn.dataset.house;
+    el("flag-search").value = btn.dataset.house;
+    state.filterStatus = "";
+    state.filterDecision = "";
+    el("filter-status").value = "";
+    el("filter-decision").value = "";
+    renderFiches();
+    document.querySelector('.rail-btn[data-tab="watch"]').click();
+  });
+}
+
+// ---------------------------------------------------------------- catalog ---
+
+function populateHouseFilter() {
+  const sel = el("brand-filter");
+  const houses = [...new Set(state.products.map((p) => p.vendor).filter(Boolean))].sort();
+  sel.innerHTML =
+    '<option value="">All houses</option>' +
+    houses.map((b) => '<option value="' + escapeAttr(b) + '">' + escapeHtml(b) + "</option>").join("");
 }
 
 function filteredProducts() {
-  const q = document.getElementById("search").value.trim().toLowerCase();
-  const brand = document.getElementById("brand-filter").value;
-  const status = document.getElementById("status-filter").value;
+  const q = el("search").value.trim().toLowerCase();
+  const house = el("brand-filter").value;
+  const status = el("status-filter").value;
   return state.products.filter((p) => {
-    if (brand && p.vendor !== brand) return false;
+    if (house && p.vendor !== house) return false;
     if (status && p.status !== status) return false;
+    if (state.onlyFlagged && !state.flaggedHandles.has(p.handle)) return false;
     if (q && !((p.title || "").toLowerCase().includes(q) || (p.vendor || "").toLowerCase().includes(q))) return false;
     return true;
   });
 }
 
-function renderInventory() {
+function renderCatalog() {
+  if (!state.productsLoaded) {
+    el("catalog-count").textContent = "Loading the catalog...";
+    el("catalog-list").innerHTML = "";
+    el("page-info").textContent = "";
+    return;
+  }
   const items = filteredProducts();
-  document.getElementById("inventory-count").textContent = `${items.length.toLocaleString()} product${items.length === 1 ? "" : "s"}`;
+  el("catalog-count").textContent =
+    items.length.toLocaleString() + " product" + (items.length === 1 ? "" : "s");
 
   const totalPages = Math.max(1, Math.ceil(items.length / state.pageSize));
   if (state.page >= totalPages) state.page = totalPages - 1;
   const start = state.page * state.pageSize;
-  const pageItems = items.slice(start, start + state.pageSize);
 
-  document.getElementById("inventory-list").innerHTML = pageItems
-    .map((p) => `
-      <div class="product-card">
-        <div class="product-thumb" style="background-image:url('${escapeAttr(p.image || "")}')"></div>
-        <p class="product-title">${escapeHtml(p.title || "(untitled)")}</p>
-        <p class="product-vendor">${escapeHtml(p.vendor || "")}</p>
-        <p class="product-price">${priceRange(p)}</p>
-        <p class="product-status">${escapeHtml(p.status || "")}</p>
-      </div>
-    `)
+  el("catalog-list").innerHTML = items
+    .slice(start, start + state.pageSize)
+    .map(
+      (p) =>
+        '<div class="card">' +
+        '<div class="card-plate" style="background-image:url(\'' + escapeAttr(p.image || "") + '\')"></div>' +
+        '<p class="card-house">' + escapeHtml(p.vendor || "") + "</p>" +
+        '<p class="card-title">' + escapeHtml(p.title || "(untitled)") + "</p>" +
+        '<div class="card-foot"><span class="card-price">' + priceRange(p) + "</span>" +
+        '<span class="card-state">' + escapeHtml(p.status || "") + "</span></div>" +
+        (state.flaggedHandles.has(p.handle) ? '<span class="card-flagged">Flagged</span>' : "") +
+        "</div>"
+    )
     .join("");
 
-  document.getElementById("page-info").textContent = `Page ${state.page + 1} of ${totalPages}`;
-  document.getElementById("page-prev").disabled = state.page <= 0;
-  document.getElementById("page-next").disabled = state.page >= totalPages - 1;
+  el("page-info").textContent = "Page " + (state.page + 1) + " of " + totalPages;
+  el("page-prev").disabled = state.page <= 0;
+  el("page-next").disabled = state.page >= totalPages - 1;
 }
 
-function renderAll() {
-  renderStatbar();
-  renderFlagged();
-  populateBrandFilter();
-  renderInventory();
+function initCatalogControls() {
+  el("search").addEventListener("input", () => { state.page = 0; renderCatalog(); });
+  el("brand-filter").addEventListener("change", () => { state.page = 0; renderCatalog(); });
+  el("status-filter").addEventListener("change", () => { state.page = 0; renderCatalog(); });
+  el("only-flagged").addEventListener("change", (e) => { state.onlyFlagged = e.target.checked; state.page = 0; renderCatalog(); });
+  el("page-prev").addEventListener("click", () => { state.page = Math.max(0, state.page - 1); renderCatalog(); window.scrollTo(0, 0); });
+  el("page-next").addEventListener("click", () => { state.page += 1; renderCatalog(); window.scrollTo(0, 0); });
 }
 
-function escapeHtml(s) {
-  return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// ------------------------------------------------------------ buy list out ---
+
+function buyListRows() {
+  return visibleFlags().map((x, i) => ({
+    rank: i + 1,
+    title: x.flag.title,
+    house: x.flag.vendor || "",
+    status: x.flag.status,
+    score: x.score,
+    bandLabel: x.band.label,
+    decision: DECISION_LABEL[x.decision],
+    qty: x.qty || "",
+    unit: x.unitPrice ? x.unitPrice.toFixed(2) : "",
+    size: x.ref ? x.ref.size : "",
+    committed: x.committed ? x.committed.toFixed(2) : "",
+    flagged: x.flag.flaggedDate || "",
+    note: x.flag.note || "",
+  }));
 }
-function escapeAttr(s) {
-  return escapeHtml(s);
+
+function stamp() { return new Date().toISOString().slice(0, 10); }
+
+function exportWatchExcel() {
+  const rows = buyListRows();
+  if (!rows.length) { toast("Nothing to export with these filters.", "warn"); return; }
+  const sheet = rows.map((r) => ({
+    Rank: r.rank,
+    Item: r.title,
+    House: r.house,
+    "Scan status": r.status,
+    "Priority score": r.score,
+    Action: r.bandLabel,
+    "Your decision": r.decision,
+    Quantity: r.qty,
+    "Reference size": r.size,
+    "Unit retail": r.unit,
+    "Committed retail": r.committed,
+    "First flagged": r.flagged,
+    Note: r.note,
+  }));
+  const ws = XLSX.utils.json_to_sheet(sheet);
+  ws["!cols"] = [{ wch: 6 }, { wch: 46 }, { wch: 20 }, { wch: 12 }, { wch: 13 }, { wch: 14 },
+                 { wch: 13 }, { wch: 10 }, { wch: 22 }, { wch: 11 }, { wch: 16 }, { wch: 12 }, { wch: 40 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Buy list");
+  XLSX.writeFile(wb, "leparfumier-buy-list-" + stamp() + ".xlsx");
+  toast("Excel buy list downloaded.");
 }
 
-// ---------- Inventory controls ----------
+const INK_RGB = [26, 22, 34];
+const IRIS_RGB = [109, 46, 107];
+const VERM_RGB = [174, 50, 38];
 
-function initInventoryControls() {
-  document.getElementById("search").addEventListener("input", () => { state.page = 0; renderInventory(); });
-  document.getElementById("brand-filter").addEventListener("change", () => { state.page = 0; renderInventory(); });
-  document.getElementById("status-filter").addEventListener("change", () => { state.page = 0; renderInventory(); });
-  document.getElementById("page-prev").addEventListener("click", () => { state.page = Math.max(0, state.page - 1); renderInventory(); window.scrollTo(0, 0); });
-  document.getElementById("page-next").addEventListener("click", () => { state.page += 1; renderInventory(); window.scrollTo(0, 0); });
+function pdfMasthead(doc, title, subtitle) {
+  const w = doc.internal.pageSize.getWidth();
+  doc.setFillColor.apply(doc, INK_RGB);
+  doc.rect(0, 0, w, 26, "F");
+  doc.setTextColor(239, 234, 244);
+  doc.setFont("times", "normal");
+  doc.setFontSize(19);
+  doc.text("Le Parfumier", 14, 15);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(198, 142, 195);
+  doc.text(title.toUpperCase(), 14, 21);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(120, 112, 132);
+  doc.text(subtitle, 14, 33);
 }
 
-// ---------- Stock check (Excel upload) ----------
+function exportWatchPdf() {
+  const rows = buyListRows();
+  if (!rows.length) { toast("Nothing to export with these filters.", "warn"); return; }
+  const doc = new window.jspdf.jsPDF({ orientation: "landscape" });
 
-const STOCK_HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
+  const committed = rows.reduce((s, r) => s + (parseFloat(r.committed) || 0), 0);
+  const acting = rows.filter((r) => r.bandLabel === "Act now").length;
+
+  pdfMasthead(
+    doc,
+    "Discontinuation buy list",
+    "Generated " + new Date().toLocaleString("en-CA") + "   |   " + rows.length + " items   |   " +
+      acting + " at act now   |   " + moneyShort(committed) + " committed at retail"
+  );
+
+  doc.autoTable({
+    startY: 39,
+    head: [["#", "Item", "House", "Status", "Score", "Action", "Decision", "Qty", "Unit", "Committed"]],
+    body: rows.map((r) => [
+      r.rank, r.title, r.house, r.status, r.score, r.bandLabel, r.decision,
+      r.qty === "" ? "" : String(r.qty),
+      r.unit ? "$" + r.unit : "",
+      r.committed ? "$" + r.committed : "",
+    ]),
+    theme: "striped",
+    headStyles: { fillColor: INK_RGB, textColor: [245, 240, 248], fontStyle: "bold", fontSize: 8 },
+    alternateRowStyles: { fillColor: [246, 244, 248] },
+    styles: { fontSize: 8, cellPadding: 3, overflow: "linebreak" },
+    columnStyles: {
+      0: { cellWidth: 9, halign: "right" },
+      1: { cellWidth: 76 },
+      2: { cellWidth: 34 },
+      3: { cellWidth: 20 },
+      4: { cellWidth: 13, halign: "right" },
+      5: { cellWidth: 24 },
+      6: { cellWidth: 20 },
+      7: { cellWidth: 13, halign: "right" },
+      8: { cellWidth: 18, halign: "right" },
+      9: { cellWidth: 22, halign: "right" },
+    },
+    didParseCell: (data) => {
+      if (data.section !== "body") return;
+      if (data.column.index === 3 && data.cell.raw === "confirmed") data.cell.styles.textColor = VERM_RGB;
+      if (data.column.index === 5 && data.cell.raw === "Act now") {
+        data.cell.styles.textColor = VERM_RGB;
+        data.cell.styles.fontStyle = "bold";
+      }
+      if (data.column.index === 6 && data.cell.raw === "Ordered") data.cell.styles.textColor = [61, 106, 71];
+    },
+    didDrawPage: () => {
+      const w = doc.internal.pageSize.getWidth();
+      const h = doc.internal.pageSize.getHeight();
+      doc.setFontSize(7.5);
+      doc.setTextColor(150, 143, 160);
+      doc.text(
+        "Unit prices are your own retail price for the largest bottle of each item. Reference sizes are in the Excel version.",
+        14, h - 8
+      );
+      doc.text("Page " + doc.internal.getCurrentPageInfo().pageNumber, w - 26, h - 8);
+    },
+  });
+
+  doc.save("leparfumier-buy-list-" + stamp() + ".pdf");
+  toast("PDF buy list downloaded.");
+}
+
+// -------------------------------------------------------- supplier stock ---
+
+const HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
 const STOP_WORDS = new Set(["pour", "de", "eau", "homme", "femme", "et", "the", "for", "men", "women", "toilette", "parfum", "edt", "edp", "ml", "oz"]);
 
-let lastReport = null; // [{flag, matches: [{fileName, qty, confidence}]}], kept for the PDF/Excel downloads
+let lastReport = null;
 
 function openStockModal() {
-  document.getElementById("stock-selected-count").textContent = state.selected.size;
-  document.getElementById("stock-file-list").innerHTML = "";
-  document.getElementById("stock-results").innerHTML = "";
-  document.getElementById("stock-file-input").value = "";
-  document.getElementById("stock-pdf-btn").classList.add("hidden");
-  document.getElementById("stock-excel-btn").classList.add("hidden");
+  el("stock-count").textContent = String(state.selected.size);
+  el("stock-files").innerHTML = "";
+  el("stock-results").innerHTML = "";
+  el("stock-file").value = "";
+  el("stock-pdf").classList.add("hidden");
+  el("stock-xls").classList.add("hidden");
   lastReport = null;
-  document.getElementById("stock-modal").classList.remove("hidden");
+  el("stock-modal").classList.remove("hidden");
 }
 
 function initStockModal() {
-  document.getElementById("stock-modal-close").addEventListener("click", () => document.getElementById("stock-modal").classList.add("hidden"));
-  document.getElementById("stock-file-input").addEventListener("change", (e) => {
+  const modal = el("stock-modal");
+  el("stock-close").addEventListener("click", () => modal.classList.add("hidden"));
+  modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
+  el("stock-file").addEventListener("change", (e) => {
     const files = [...e.target.files];
     if (files.length) handleStockFiles(files);
   });
-  document.getElementById("stock-pdf-btn").addEventListener("click", exportReportPdf);
-  document.getElementById("stock-excel-btn").addEventListener("click", exportReportExcel);
+  el("stock-pdf").addEventListener("click", exportStockPdf);
+  el("stock-xls").addEventListener("click", exportStockExcel);
 }
 
 function findHeaderRow(rows) {
   for (let i = 0; i < Math.min(rows.length, 20); i++) {
-    const rowText = (rows[i] || []).map((c) => String(c || "").toLowerCase()).join(" | ");
-    const hits = STOCK_HEADER_KEYWORDS.filter((kw) => rowText.includes(kw)).length;
-    if (hits >= 2) return i;
+    const text = (rows[i] || []).map((c) => String(c || "").toLowerCase()).join(" | ");
+    if (HEADER_KEYWORDS.filter((kw) => text.includes(kw)).length >= 2) return i;
   }
   return -1;
 }
 
-function findColumn(headerRow, matchers) {
-  for (let i = 0; i < headerRow.length; i++) {
-    const cell = String(headerRow[i] || "").toLowerCase();
+function findColumn(header, matchers) {
+  for (let i = 0; i < header.length; i++) {
+    const cell = String(header[i] || "").toLowerCase();
     if (matchers.some((m) => cell.includes(m))) return i;
   }
   return -1;
 }
 
-function digitsOnly(s) {
-  return String(s || "").replace(/\D/g, "");
-}
+function digitsOnly(s) { return String(s || "").replace(/\D/g, ""); }
 
 function significantWords(title) {
   return String(title || "")
@@ -583,8 +1141,7 @@ function significantWords(title) {
     .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 }
 
-// Reads and parses one uploaded file. Never throws — resolves with an `error` field
-// instead, so one bad file in a multi-file batch doesn't stop the others.
+// Resolves rather than throws, so one unreadable file never stops the rest of a batch.
 function parseWorkbookFile(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -593,23 +1150,24 @@ function parseWorkbookFile(file) {
         const wb = XLSX.read(e.target.result, { type: "array" });
         const sheet = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
-
         const headerIdx = findHeaderRow(rows);
         if (headerIdx === -1) {
-          resolve({ fileName: file.name, error: "no recognizable header row (looked for UPC, Item, Description, Qty, ...)" });
+          resolve({ fileName: file.name, error: "no header row found, looked for UPC, Item, Description, Qty" });
           return;
         }
         const header = rows[headerIdx];
-        const dataRows = rows.slice(headerIdx + 1).filter((r) => r.some((c) => String(c || "").trim()));
-        const cols = {
-          upcCol: findColumn(header, ["upc", "barcode", "ean"]),
-          qtyCol: findColumn(header, ["qty", "quantity", "stock", "avail"]),
-          descCol: findColumn(header, ["description", "item description", "name"]),
-          itemCol: findColumn(header, ["item", "sku"]),
-        };
-        resolve({ fileName: file.name, rows: dataRows, cols });
+        resolve({
+          fileName: file.name,
+          rows: rows.slice(headerIdx + 1).filter((r) => r.some((c) => String(c || "").trim())),
+          cols: {
+            upcCol: findColumn(header, ["upc", "barcode", "ean"]),
+            qtyCol: findColumn(header, ["qty", "quantity", "stock", "avail"]),
+            descCol: findColumn(header, ["description", "item description", "name"]),
+            itemCol: findColumn(header, ["item", "sku"]),
+          },
+        });
       } catch (err) {
-        resolve({ fileName: file.name, error: err.message || "could not be read, is this a real .xls, .xlsx, or .csv export?" });
+        resolve({ fileName: file.name, error: "could not be read, is this a real .xls, .xlsx or .csv export?" });
       }
     };
     reader.onerror = () => resolve({ fileName: file.name, error: "could not be read" });
@@ -618,26 +1176,23 @@ function parseWorkbookFile(file) {
 }
 
 async function handleStockFiles(files) {
-  const fileListEl = document.getElementById("stock-file-list");
-  const resultsEl = document.getElementById("stock-results");
-  fileListEl.innerHTML = files
-    .map((f) => `<div class="stock-file-row" data-file="${escapeAttr(f.name)}"><span>${escapeHtml(f.name)}</span><span class="file-status">reading...</span></div>`)
+  const filesEl = el("stock-files");
+  filesEl.innerHTML = files
+    .map((f) => '<div class="file-row" data-file="' + escapeAttr(f.name) + '"><span>' + escapeHtml(f.name) + '</span><span class="st">reading...</span></div>')
     .join("");
-  resultsEl.innerHTML = "";
+  el("stock-results").innerHTML = "";
 
   const parsed = await Promise.all(files.map(parseWorkbookFile));
-
   parsed.forEach((p) => {
-    const row = fileListEl.querySelector(`[data-file="${CSS.escape(p.fileName)}"] .file-status`);
+    const row = filesEl.querySelector('[data-file="' + CSS.escape(p.fileName) + '"] .st');
     if (!row) return;
     if (p.error) { row.textContent = p.error; row.classList.add("err"); }
-    else { row.textContent = `${p.rows.length} rows`; row.classList.add("ok"); }
+    else { row.textContent = p.rows.length.toLocaleString() + " rows"; row.classList.add("ok"); }
   });
 
   renderStockReport(parsed.filter((p) => !p.error));
 }
 
-// One flag matched against one already-parsed file: barcode first, brand+name fallback.
 function matchFlagInFile(flag, product, parsed) {
   const barcodes = product ? (product.variants || []).map((v) => digitsOnly(v.barcode)).filter(Boolean) : [];
   const words = significantWords(flag.title).concat(significantWords(flag.vendor));
@@ -649,209 +1204,217 @@ function matchFlagInFile(flag, product, parsed) {
     if (row) confidence = "exact barcode match";
   }
   if (!row && parsed.cols.descCol !== -1) {
-    const vendorWord = (flag.vendor || "").toLowerCase().split(/\s+/)[0];
+    const houseWord = String(flag.vendor || "").toLowerCase().split(/\s+/)[0];
     row = parsed.rows.find((r) => {
       const desc = String(r[parsed.cols.descCol] || "").toLowerCase();
-      if (vendorWord && !desc.includes(vendorWord)) return false;
+      if (houseWord && !desc.includes(houseWord)) return false;
       return words.filter((w) => desc.includes(w)).length >= 2;
     });
-    if (row) confidence = "possible match by name, not barcode, verify before ordering";
+    if (row) confidence = "matched on name, not barcode, verify before ordering";
   }
   if (!row) return null;
   const hasQtyColumn = parsed.cols.qtyCol !== -1;
-  const qty = hasQtyColumn ? cleanQty(row[parsed.cols.qtyCol]) : null;
-  return { fileName: parsed.fileName, qty, hasQtyColumn, confidence };
+  return {
+    fileName: parsed.fileName,
+    qty: hasQtyColumn ? cleanQty(row[parsed.cols.qtyCol]) : null,
+    hasQtyColumn: hasQtyColumn,
+    confidence: confidence,
+  };
 }
 
-// Some supplier spreadsheets carry a currency-style number format on their Qty column, a
-// source-data quirk confirmed against a real Le Parfumier supplier file: cells read back as
-// "$7" even though Excel's own display shows plain 7. Strip everything but the number itself
-// so quantity never shows a dollar sign no matter what formatting the source file applied.
+// Some supplier sheets carry a currency number format on their quantity column, so a
+// cell reads back as "$7" where Excel shows 7. Strip to the number either way.
 function cleanQty(v) {
-  const s = String(v ?? "").replace(/[^0-9.\-]/g, "").trim();
+  const s = String(v == null ? "" : v).replace(/[^0-9.\-]/g, "").trim();
   return s === "" || s === "-" ? null : s;
 }
 
 function qtyLabel(m) {
-  if (m.qty !== null) return `${escapeHtml(m.qty)} in stock`;
-  return m.hasQtyColumn ? "found, quantity not listed for this row" : "found, no quantity column in this file";
+  if (m.qty !== null) return m.qty + " in stock";
+  return m.hasQtyColumn ? "found, no quantity on this row" : "found, no quantity column in this file";
 }
 
 function renderStockReport(parsedFiles) {
-  const resultsEl = document.getElementById("stock-results");
-  const pdfBtn = document.getElementById("stock-pdf-btn");
-  const excelBtn = document.getElementById("stock-excel-btn");
-  const selectedFlags = state.flags.filter((f) => state.selected.has(f.id));
+  const out = el("stock-results");
+  const pdfBtn = el("stock-pdf");
+  const xlsBtn = el("stock-xls");
+  const selected = state.flags.filter((f) => state.selected.has(f.id));
 
   if (!parsedFiles.length) {
-    resultsEl.innerHTML = `<p class="stock-note">No file could be read, see the status above each one.</p>`;
+    out.innerHTML = '<div class="report-note warn">No file could be read. The status beside each one says why.</div>';
     pdfBtn.classList.add("hidden");
-    excelBtn.classList.add("hidden");
+    xlsBtn.classList.add("hidden");
     lastReport = null;
     return;
   }
 
-  const noUpcFiles = parsedFiles.filter((p) => p.cols.upcCol === -1).map((p) => p.fileName);
-  const upcWarning = noUpcFiles.length
-    ? `<p class="stock-note">${escapeHtml(noUpcFiles.join(", "))} ${noUpcFiles.length > 1 ? "have" : "has"} no UPC/barcode column, matched by brand and name instead, less reliable, double check before ordering.</p>`
+  lastReport = selected.map((f) => ({
+    flag: f,
+    matches: parsedFiles.map((p) => matchFlagInFile(f, findProduct(f.productHandle), p)).filter(Boolean),
+  }));
+
+  const noUpc = parsedFiles.filter((p) => p.cols.upcCol === -1).map((p) => p.fileName);
+  const warning = noUpc.length
+    ? '<div class="report-note warn">' + escapeHtml(noUpc.join(", ")) + " " +
+      (noUpc.length > 1 ? "have" : "has") +
+      " no barcode column, so those were matched on house and name instead. Double check before ordering.</div>"
     : "";
 
-  lastReport = selectedFlags.map((f) => {
-    const product = findProduct(f.productHandle);
-    const matches = parsedFiles
-      .map((p) => matchFlagInFile(f, product, p))
-      .filter(Boolean);
-    return { flag: f, matches };
-  });
+  const totalRows = parsedFiles.reduce((s, p) => s + p.rows.length, 0);
+  const found = lastReport.filter((r) => r.matches.length).length;
 
-  const blocksHtml = lastReport
-    .map(({ flag: f, matches }) => {
-      const sourcesHtml = matches.length
-        ? `<ul class="stock-source-list">${matches
-            .map((m) => `
-              <li class="stock-source-row">
-                <span><span class="stock-source-file">${escapeHtml(m.fileName)}</span> — <span class="stock-source-note">${escapeHtml(m.confidence)}</span></span>
-                <span class="stock-source-qty">${qtyLabel(m)}</span>
-              </li>
-            `)
-            .join("")}</ul>`
-        : "";
-      return `
-        <div class="stock-item-block">
-          <div class="stock-item-head">
-            <div>
-              <div class="stock-row-title">${escapeHtml(f.title)}</div>
-              <div class="stock-row-vendor">${escapeHtml(f.vendor || "")}</div>
-            </div>
-            <span class="stock-item-status ${matches.length ? "found" : "not-found"}">${matches.length ? `In ${matches.length} of ${parsedFiles.length} list${parsedFiles.length === 1 ? "" : "s"}` : "Not found in any uploaded list"}</span>
-          </div>
-          ${sourcesHtml}
-        </div>
-      `;
-    })
-    .join("");
-
-  const totalRows = parsedFiles.reduce((sum, p) => sum + p.rows.length, 0);
-  resultsEl.innerHTML =
-    `<p class="stock-note">Report across ${parsedFiles.length} list${parsedFiles.length === 1 ? "" : "s"} (${totalRows.toLocaleString()} rows total) for ${selectedFlags.length} selected item${selectedFlags.length === 1 ? "" : "s"}.</p>` +
-    upcWarning + blocksHtml;
+  out.innerHTML =
+    '<div class="report-note">Checked ' + selected.length + " item" + (selected.length === 1 ? "" : "s") +
+    " against " + parsedFiles.length + " list" + (parsedFiles.length === 1 ? "" : "s") + ", " +
+    totalRows.toLocaleString() + " rows. Found " + found + " of " + selected.length + ".</div>" +
+    warning +
+    lastReport
+      .map((r) => {
+        const sources = r.matches.length
+          ? '<ul class="report-sources">' +
+            r.matches
+              .map(
+                (m) =>
+                  "<li><span><span class=\"f\">" + escapeHtml(m.fileName) + "</span> " +
+                  escapeHtml(m.confidence) + '</span><span class="q">' + escapeHtml(qtyLabel(m)) + "</span></li>"
+              )
+              .join("") +
+            "</ul>"
+          : "";
+        return (
+          '<div class="report-block"><div class="report-head"><div>' +
+          '<div class="report-title">' + escapeHtml(r.flag.title) + "</div>" +
+          '<div class="report-house">' + escapeHtml(r.flag.vendor || "") + "</div></div>" +
+          '<span class="report-state ' + (r.matches.length ? "found" : "missing") + '">' +
+          (r.matches.length
+            ? "In " + r.matches.length + " of " + parsedFiles.length
+            : "Not found") +
+          "</span></div>" + sources + "</div>"
+        );
+      })
+      .join("");
 
   pdfBtn.classList.toggle("hidden", !lastReport.length);
-  excelBtn.classList.toggle("hidden", !lastReport.length);
+  xlsBtn.classList.toggle("hidden", !lastReport.length);
 }
 
-// Picks which supplier to order an item from, out of everywhere it was found: most
-// quantity wins (they can actually fill the order), an exact barcode match beats a
-// name-only guess at equal quantity, and "found but no qty column" ranks below any
-// list that actually states a number.
+// Most quantity wins, since that supplier can actually fill the order. An exact
+// barcode match breaks a tie, and "found but no quantity stated" ranks below any
+// list that gives a number.
 function pickRecommendation(matches) {
   if (!matches.length) return null;
-  const scored = matches.map((m) => ({
-    m,
-    qty: m.qty !== null ? parseFloat(m.qty) || 0 : -1,
-    exact: m.confidence.startsWith("exact") ? 1 : 0,
-  }));
-  scored.sort((a, b) => b.qty - a.qty || b.exact - a.exact);
-  return scored[0].m;
+  return matches
+    .map((m) => ({ m: m, qty: m.qty !== null ? parseFloat(m.qty) || 0 : -1, exact: m.confidence.indexOf("exact") === 0 ? 1 : 0 }))
+    .sort((a, b) => b.qty - a.qty || b.exact - a.exact)[0].m;
 }
 
-function buildReportRows() {
-  return lastReport.map(({ flag: f, matches }) => {
-    const best = pickRecommendation(matches);
+function stockReportRows() {
+  return lastReport.map((r) => {
+    const best = pickRecommendation(r.matches);
     return {
-      title: f.title,
-      vendor: f.vendor || "",
-      aiStatus: f.status,
+      title: r.flag.title,
+      house: r.flag.vendor || "",
+      status: r.flag.status,
       supplier: best ? best.fileName : "",
       qty: best && best.qty !== null ? best.qty : "",
       confidence: best ? best.confidence : "not found in any uploaded list",
-      allSources: matches.map((m) => `${m.fileName} (${m.qty !== null ? m.qty : "qty n/a"})`).join("; "),
+      all: r.matches.map((m) => m.fileName + " (" + (m.qty !== null ? m.qty : "qty n/a") + ")").join("; "),
     };
   });
 }
 
-function exportReportExcel() {
+function exportStockExcel() {
   if (!lastReport || !lastReport.length) return;
-  const rows = buildReportRows().map((r) => ({
-    "Item": r.title,
-    "Brand": r.vendor,
-    "AI Status": r.aiStatus,
-    "Recommended Supplier": r.supplier,
-    "Available Qty": r.qty,
-    "Match Confidence": r.confidence,
-    "All Suppliers Checked": r.allSources,
-  }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws["!cols"] = [{ wch: 42 }, { wch: 20 }, { wch: 12 }, { wch: 26 }, { wch: 13 }, { wch: 34 }, { wch: 50 }];
+  const ws = XLSX.utils.json_to_sheet(
+    stockReportRows().map((r) => ({
+      Item: r.title,
+      House: r.house,
+      "Scan status": r.status,
+      "Best supplier": r.supplier,
+      "Available quantity": r.qty,
+      "Match confidence": r.confidence,
+      "All lists checked": r.all,
+    }))
+  );
+  ws["!cols"] = [{ wch: 44 }, { wch: 22 }, { wch: 12 }, { wch: 28 }, { wch: 18 }, { wch: 38 }, { wch: 50 }];
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Stock Report");
-  XLSX.writeFile(wb, `leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  XLSX.utils.book_append_sheet(wb, ws, "Stock report");
+  XLSX.writeFile(wb, "leparfumier-stock-report-" + stamp() + ".xlsx");
+  toast("Excel stock report downloaded.");
 }
 
-function exportReportPdf() {
+function exportStockPdf() {
   if (!lastReport || !lastReport.length) return;
-  const rows = buildReportRows();
+  const rows = stockReportRows();
   const doc = new window.jspdf.jsPDF({ orientation: "landscape" });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const goldRGB = [199, 156, 90];
-  const darkRGB = [23, 19, 15];
+  const found = rows.filter((r) => r.supplier).length;
 
-  doc.setFillColor(...darkRGB);
-  doc.rect(0, 0, pageWidth, 24, "F");
-  doc.setTextColor(...goldRGB);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("Le Parfumier", 14, 15);
-  doc.setFontSize(11);
-  doc.setTextColor(230, 224, 214);
-  doc.setFont("helvetica", "normal");
-  doc.text("Stock Availability Report", 14, 21);
-
-  doc.setTextColor(90, 80, 70);
-  doc.setFontSize(9);
-  const generated = new Date().toLocaleString();
-  const foundCount = rows.filter((r) => r.supplier).length;
-  doc.text(
-    `Generated ${generated}  ·  ${rows.length} item${rows.length === 1 ? "" : "s"} checked  ·  ${foundCount} found in at least one supplier list`,
-    14, 31
+  pdfMasthead(
+    doc,
+    "Supplier stock report",
+    "Generated " + new Date().toLocaleString("en-CA") + "   |   " + rows.length + " items checked   |   " +
+      found + " found in at least one list"
   );
 
   doc.autoTable({
-    startY: 36,
-    head: [["Item", "Brand", "AI Status", "Recommended Supplier", "Qty", "Confidence"]],
-    body: rows.map((r) => [r.title, r.vendor, r.aiStatus, r.supplier || "Not found", r.qty !== "" ? String(r.qty) : "-", r.confidence]),
+    startY: 39,
+    head: [["Item", "House", "Status", "Best supplier", "Qty", "Match confidence"]],
+    body: rows.map((r) => [r.title, r.house, r.status, r.supplier || "Not found", r.qty !== "" ? String(r.qty) : "-", r.confidence]),
     theme: "striped",
-    headStyles: { fillColor: darkRGB, textColor: [255, 245, 230], fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [250, 246, 240] },
-    styles: { fontSize: 9, cellPadding: 4 },
+    headStyles: { fillColor: INK_RGB, textColor: [245, 240, 248], fontStyle: "bold", fontSize: 8 },
+    alternateRowStyles: { fillColor: [246, 244, 248] },
+    styles: { fontSize: 8.5, cellPadding: 3.5, overflow: "linebreak" },
     columnStyles: { 4: { halign: "right" } },
     didParseCell: (data) => {
       if (data.section === "body" && data.column.index === 3 && data.cell.raw === "Not found") {
-        data.cell.styles.textColor = [170, 90, 80];
+        data.cell.styles.textColor = VERM_RGB;
       }
     },
     didDrawPage: () => {
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.setTextColor(150, 140, 130);
-      doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, pageWidth - 30, doc.internal.pageSize.getHeight() - 8);
+      const w = doc.internal.pageSize.getWidth();
+      const h = doc.internal.pageSize.getHeight();
+      doc.setFontSize(7.5);
+      doc.setTextColor(150, 143, 160);
+      doc.text("Page " + doc.internal.getCurrentPageInfo().pageNumber, w - 26, h - 8);
     },
   });
 
-  doc.save(`leparfumier-stock-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save("leparfumier-stock-report-" + stamp() + ".pdf");
+  toast("PDF stock report downloaded.");
 }
 
-// ---------- Boot ----------
+// ------------------------------------------------------------------- boot ---
+
+function renderAll() {
+  renderMasthead();
+  renderBrief();
+  renderFiches();
+  renderHouses();
+  populateHouseFilter();
+  renderCatalog();
+}
 
 async function boot() {
-  initInventoryControls();
-  initFlaggedControls();
-  initFlaggedList();
+  initWatchControls();
+  initFicheEvents();
+  initHouseEvents();
+  initCatalogControls();
   initStockModal();
-  await loadData();
+
+  // Flags are 45 KB and are what the page is for, so paint on those and let the
+  // multi megabyte catalog fill in the prices and thumbnails when it lands.
+  await loadFlags();
+  renderMasthead();
+  renderBrief();
+  renderFiches();
+  renderHouses();
+  renderCatalog();
+
+  await loadProducts();
   renderAll();
 }
 
-initLock();
+initTheme();
 initTabs();
 initSettings();
+initLock();
