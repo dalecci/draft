@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -16,8 +16,12 @@ const THEME_KEY = "lpf_theme";
 // and the source we replay onto the shared store once a token is connected.
 const OVERRIDES_KEY = "lpf_overrides";
 
-const DECISIONS = ["review", "buying", "ordered", "passed"];
-const DECISION_LABEL = { review: "To review", buying: "Buying", ordered: "Ordered", passed: "Passed" };
+// Accept and Reject are your verdict on the scan. Need to buy and Ordered are what
+// you are doing about it. Nothing selected means nobody has looked at it yet, which
+// is why there is no button for that state: it is the absence of one.
+const DECISIONS = ["accept", "reject", "needbuy", "ordered"];
+const DECISION_LABEL = { accept: "Accept", reject: "Reject", needbuy: "Need to buy", ordered: "Ordered" };
+const BUYING_DECISIONS = ["needbuy", "ordered"];
 
 const state = {
   products: [],
@@ -252,14 +256,21 @@ function applyOverrides() {
   state.flags.forEach((f) => { if (o[f.id]) Object.assign(f, o[f.id]); });
 }
 
-// v8 stored only userConfirmed plus a quantity. Read those forward so nothing a
-// previous session recorded is lost when the four state pipeline replaces them.
+// Two earlier shapes have to keep working: v8 stored only userConfirmed plus a
+// quantity, and v9 used the names review/buying/passed. Both are read forward so no
+// decision anyone already recorded is lost. Returns "" for not yet reviewed.
 function decisionOf(f) {
-  if (f.decision && DECISIONS.includes(f.decision)) return f.decision;
-  if (f.userConfirmed === false) return "passed";
+  var d = f.decision;
+  if (d) {
+    if (DECISIONS.indexOf(d) !== -1) return d;
+    if (d === "buying") return "needbuy";
+    if (d === "passed") return "reject";
+    if (d === "review") return "";
+  }
+  if (f.userConfirmed === false) return "reject";
   if (f.orderedQty > 0) return "ordered";
-  if (f.userConfirmed === true) return "buying";
-  return "review";
+  if (f.userConfirmed === true) return "accept";
+  return "";
 }
 
 let syncTimer = null;
@@ -281,9 +292,11 @@ function updateFlag(flagId, changes, opts) {
 function setDecision(flagId, decision) {
   // userConfirmed is kept in step so the scheduled scan and anything reading the
   // shared store still see the yes or no it already understands.
-  const userConfirmed = decision === "passed" ? false : decision === "review" ? null : true;
-  const changes = { decision, userConfirmed };
-  if (decision === "review" || decision === "passed") {
+  const userConfirmed = decision === "reject" ? false : decision === "" ? null : true;
+  const changes = { decision: decision || null, userConfirmed: userConfirmed };
+  // Rejecting it, or clearing the decision, drops any quantity with it. Accepting
+  // does not: you can agree a bottle is going and still be deciding on the number.
+  if (decision === "" || decision === "reject") {
     changes.orderedQty = null;
     changes.orderedDate = null;
   }
@@ -440,7 +453,9 @@ function enrich(f) {
   const scored = scoreFlag(f, product);
   const decision = decisionOf(f);
   const qty = parseInt(f.orderedQty, 10) || 0;
-  const counts = qty > 0 && decision !== "passed";
+  // Committed money only counts once you have said you want it, not merely that
+  // you agree it is being discontinued.
+  const counts = qty > 0 && BUYING_DECISIONS.indexOf(decision) !== -1;
   return {
     flag: f,
     product: product,
@@ -479,7 +494,8 @@ function visibleFlags() {
   const q = state.search.trim().toLowerCase();
   let items = state.flags.map(enrich).filter((x) => {
     if (state.filterStatus && x.flag.status !== state.filterStatus) return false;
-    if (state.filterDecision && x.decision !== state.filterDecision) return false;
+    if (state.filterDecision === "none" && x.decision !== "") return false;
+    if (state.filterDecision && state.filterDecision !== "none" && x.decision !== state.filterDecision) return false;
     if (q) {
       const hay = (x.flag.title + " " + (x.flag.vendor || "")).toLowerCase();
       if (!hay.includes(q)) return false;
@@ -524,7 +540,7 @@ function renderBrief() {
   const confirmed = open.filter((x) => x.flag.status === "confirmed");
   const rumored = open.filter((x) => x.flag.status === "rumored");
   const act = open.filter((x) => x.band.key === "act");
-  const undecided = act.filter((x) => x.decision === "review").length;
+  const undecided = act.filter((x) => x.decision === "").length;
   const houses = new Set(open.map((x) => x.flag.vendor || "").filter(Boolean));
 
   // Gross margin sitting in the at risk list. Gated on cost actually being present
@@ -686,7 +702,7 @@ function renderFiches() {
           (state.productsLoaded ? "no price on file" : "loading catalog") +
           '</s></div><div class="v">&mdash;</div></div>';
 
-      const showQty = x.decision === "buying" || x.decision === "ordered";
+      const showQty = BUYING_DECISIONS.indexOf(x.decision) !== -1;
       const qtyRow = showQty
         ? '<div class="qty-row">Quantity' +
           '<input type="number" min="0" step="1" class="qty" value="' + (x.qty || "") + '" placeholder="0" aria-label="Quantity">' +
@@ -705,7 +721,7 @@ function renderFiches() {
 
       return (
         '<article class="fiche is-' + escapeAttr(f.status) +
-        (x.decision === "passed" ? " is-passed" : "") +
+        (x.decision === "reject" ? " is-rejected" : "") +
         '" data-flag-id="' + escapeAttr(f.id) + '">' +
           '<div class="fiche-rank">' +
             '<input type="checkbox" class="pick"' + (state.selected.has(f.id) ? " checked" : "") +
@@ -764,7 +780,8 @@ function initFicheEvents() {
     if (dbtn) {
       const next = dbtn.dataset.decision;
       // Clicking the state an item is already in returns it to To review.
-      setDecision(id, decisionOf(state.flags.find((f) => f.id === id)) === next ? "review" : next);
+      // Clicking the state it is already in clears it back to not reviewed.
+      setDecision(id, decisionOf(state.flags.find((f) => f.id === id)) === next ? "" : next);
       return;
     }
 
@@ -1108,7 +1125,15 @@ function exportWatchPdf() {
 // -------------------------------------------------------- supplier stock ---
 
 const HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
-const STOP_WORDS = new Set(["pour", "de", "eau", "homme", "femme", "et", "the", "for", "men", "women", "toilette", "parfum", "edt", "edp", "ml", "oz"]);
+
+// Words that appear in almost every fragrance name and so identify nothing on their
+// own. Note that size and concentration are NOT in here: they are the two things
+// that actually separate two bottles of the same scent, and they get used as
+// discriminators further down rather than thrown away.
+const STOP_WORDS = new Set([
+  "pour", "de", "du", "la", "le", "les", "eau", "homme", "hommes", "femme", "femmes",
+  "et", "the", "for", "men", "women", "unisex", "spray", "sp", "by", "with", "and",
+]);
 
 let lastReport = null;
 
@@ -1153,12 +1178,61 @@ function findColumn(header, matchers) {
 
 function digitsOnly(s) { return String(s || "").replace(/\D/g, ""); }
 
-function significantWords(title) {
-  return String(title || "")
+// A UPC cell is only a barcode if it is actually digits. These supplier sheets put
+// internal item codes like I0087354 in the same column, and 630 of one file's 1,419
+// rows are exactly that, so anything short or non numeric is treated as absent.
+function asBarcode(s) {
+  const d = digitsOnly(s);
+  return d.length >= 8 ? d : "";
+}
+
+// UPC-A is 12 digits, EAN-13 is 13, GTIN-14 is 14, and the same product differs only
+// by leading zeros between them. Compare on the last 12 so the three forms agree.
+function normBarcode(s) {
+  const d = asBarcode(s);
+  if (!d) return "";
+  return d.length > 12 ? d.slice(-12) : d.padStart(12, "0");
+}
+
+// Whole tokens, never substrings. The old code asked whether the description
+// contained "tom", which is true of "ATOMIZER", so every Tom Ford item matched a
+// King of Kings bottle sold with an atomizer.
+function tokenize(s) {
+  return String(s || "")
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/[^a-z0-9.]+/g, " ")
+    .trim()
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+    .filter(Boolean);
+}
+
+function contentTokens(s) {
+  return [...new Set(tokenize(s).filter((w) => w.length > 2 && !STOP_WORDS.has(w) && !/^\d/.test(w)))];
+}
+
+// "3.4oz", "100 ml", "3.4 OZ" all reduce to the same key so two spellings of one
+// bottle size compare equal.
+function sizeKeys(s) {
+  const out = new Set();
+  const re = /(\d+(?:\.\d+)?)\s*(oz|ml)\b/gi;
+  let m;
+  while ((m = re.exec(String(s || "")))) {
+    const n = parseFloat(m[1]);
+    if (!isNaN(n)) out.add(n.toFixed(2) + m[2].toLowerCase());
+  }
+  return out;
+}
+
+// EDT and EDP are different products at different prices. The old stop word list
+// deleted both before matching, which is why an Eau de Toilette could match an
+// Eau de Parfum row.
+function concentration(s) {
+  const t = " " + String(s || "").toLowerCase().replace(/[^a-z ]+/g, " ") + " ";
+  if (/ eau de parfum | edp /.test(t)) return "edp";
+  if (/ eau de toilette | edt /.test(t)) return "edt";
+  if (/ eau de cologne | edc | cologne /.test(t)) return "edc";
+  if (/ extrait | parfum /.test(t)) return "parfum";
+  return "";
 }
 
 // Resolves rather than throws, so one unreadable file never stops the rest of a batch.
@@ -1214,32 +1288,79 @@ async function handleStockFiles(files) {
 }
 
 function matchFlagInFile(flag, product, parsed) {
-  const barcodes = product ? (product.variants || []).map((v) => digitsOnly(v.barcode)).filter(Boolean) : [];
-  const words = significantWords(flag.title).concat(significantWords(flag.vendor));
-
-  let row = null;
-  let confidence = "";
-  if (parsed.cols.upcCol !== -1 && barcodes.length) {
-    row = parsed.rows.find((r) => barcodes.includes(digitsOnly(r[parsed.cols.upcCol])));
-    if (row) confidence = "exact barcode match";
-  }
-  if (!row && parsed.cols.descCol !== -1) {
-    const houseWord = String(flag.vendor || "").toLowerCase().split(/\s+/)[0];
-    row = parsed.rows.find((r) => {
-      const desc = String(r[parsed.cols.descCol] || "").toLowerCase();
-      if (houseWord && !desc.includes(houseWord)) return false;
-      return words.filter((w) => desc.includes(w)).length >= 2;
-    });
-    if (row) confidence = "matched on name, not barcode, verify before ordering";
-  }
-  if (!row) return null;
   const hasQtyColumn = parsed.cols.qtyCol !== -1;
-  return {
+  const descOf = (r) => (parsed.cols.descCol === -1 ? "" : String(r[parsed.cols.descCol] || "").trim());
+  const result = (row, confidence, exact) => ({
     fileName: parsed.fileName,
     qty: hasQtyColumn ? cleanQty(row[parsed.cols.qtyCol]) : null,
     hasQtyColumn: hasQtyColumn,
     confidence: confidence,
-  };
+    exact: !!exact,
+    desc: descOf(row),
+  });
+
+  // 1. Barcode. The only identification that is actually proof.
+  const ourCodes = new Set(
+    (product ? product.variants || [] : []).map((v) => normBarcode(v.barcode)).filter(Boolean)
+  );
+  if (parsed.cols.upcCol !== -1 && ourCodes.size) {
+    const hit = parsed.rows.find((r) => {
+      const code = normBarcode(r[parsed.cols.upcCol]);
+      return code && ourCodes.has(code);
+    });
+    if (hit) return result(hit, "barcode match", true);
+  }
+
+  if (parsed.cols.descCol === -1) return null;
+
+  // 2. Name. The brand has to be present as a whole token, and it is then excluded
+  //    from the evidence: the old scoring counted the brand twice, once as the gate
+  //    and again toward the threshold, so a brand hit alone was enough to "match".
+  const brandTokens = contentTokens(flag.vendor);
+  const distinctive = contentTokens(flag.title).filter((w) => !brandTokens.includes(w));
+
+  // Nothing left to tell this apart from every other bottle by the same house, e.g.
+  // "Tom Ford Pour Homme Eau de Toilette" reduces to the brand and nothing else.
+  // Guessing here is what produced the wrong report, so it declines instead.
+  if (!distinctive.length) {
+    return null;
+  }
+
+  const wantSizes = sizeKeys(flag.title);
+  const wantConc = concentration(flag.title);
+  const need = Math.min(2, distinctive.length);
+
+  let best = null;
+  for (const r of parsed.rows) {
+    const desc = descOf(r);
+    if (!desc) continue;
+    const descTokens = tokenize(desc);
+    if (brandTokens.length && !brandTokens.every((b) => descTokens.includes(b))) continue;
+
+    const hits = distinctive.filter((w) => descTokens.includes(w));
+    if (hits.length < need) continue;
+
+    // A different concentration is a different product, so never cross that line.
+    const rowConc = concentration(desc);
+    if (wantConc && rowConc && rowConc !== wantConc) continue;
+
+    const rowSizes = sizeKeys(desc);
+    let sizeMatch = 0;
+    if (wantSizes.size && rowSizes.size) {
+      sizeMatch = [...wantSizes].some((s) => rowSizes.has(s)) ? 1 : -1;
+    }
+
+    const score = hits.length * 10 + (wantConc && rowConc === wantConc ? 4 : 0) + sizeMatch * 6;
+    if (!best || score > best.score) best = { row: r, score: score, hits: hits, sizeMatch: sizeMatch };
+  }
+
+  if (!best) return null;
+
+  const bits = [best.hits.length + " of " + distinctive.length + " name words"];
+  if (best.sizeMatch === 1) bits.push("size agrees");
+  else if (best.sizeMatch === -1) bits.push("SIZE DIFFERS");
+  if (wantConc) bits.push(concentration(descOf(best.row)) === wantConc ? wantConc + " agrees" : wantConc + " unconfirmed");
+  return result(best.row, "name only, " + bits.join(", ") + ", verify before ordering", false);
 }
 
 // Some supplier sheets carry a currency number format on their quantity column, so a
@@ -1296,7 +1417,12 @@ function renderStockReport(parsedFiles) {
               .map(
                 (m) =>
                   "<li><span><span class=\"f\">" + escapeHtml(m.fileName) + "</span> " +
-                  escapeHtml(m.confidence) + '</span><span class="q">' + escapeHtml(qtyLabel(m)) + "</span></li>"
+                  escapeHtml(m.confidence) +
+                  // Always show the supplier's own line. Without it a wrong match is
+                  // invisible: the report says "matched on name" and you cannot see
+                  // that the name it matched was a different product entirely.
+                  (m.desc ? '<span class="matched-line">' + escapeHtml(m.desc) + "</span>" : "") +
+                  '</span><span class="q">' + escapeHtml(qtyLabel(m)) + "</span></li>"
               )
               .join("") +
             "</ul>"
@@ -1324,8 +1450,8 @@ function renderStockReport(parsedFiles) {
 function pickRecommendation(matches) {
   if (!matches.length) return null;
   return matches
-    .map((m) => ({ m: m, qty: m.qty !== null ? parseFloat(m.qty) || 0 : -1, exact: m.confidence.indexOf("exact") === 0 ? 1 : 0 }))
-    .sort((a, b) => b.qty - a.qty || b.exact - a.exact)[0].m;
+    .map((m) => ({ m: m, qty: m.qty !== null ? parseFloat(m.qty) || 0 : -1, exact: m.exact ? 1 : 0 }))
+    .sort((a, b) => b.exact - a.exact || b.qty - a.qty)[0].m;
 }
 
 function stockReportRows() {
@@ -1338,6 +1464,7 @@ function stockReportRows() {
       supplier: best ? best.fileName : "",
       qty: best && best.qty !== null ? best.qty : "",
       confidence: best ? best.confidence : "not found in any uploaded list",
+      matchedLine: best ? best.desc : "",
       all: r.matches.map((m) => m.fileName + " (" + (m.qty !== null ? m.qty : "qty n/a") + ")").join("; "),
     };
   });
@@ -1353,10 +1480,11 @@ function exportStockExcel() {
       "Best supplier": r.supplier,
       "Available quantity": r.qty,
       "Match confidence": r.confidence,
+      "Supplier line matched": r.matchedLine,
       "All lists checked": r.all,
     }))
   );
-  ws["!cols"] = [{ wch: 44 }, { wch: 22 }, { wch: 12 }, { wch: 28 }, { wch: 18 }, { wch: 38 }, { wch: 50 }];
+  ws["!cols"] = [{ wch: 44 }, { wch: 22 }, { wch: 12 }, { wch: 28 }, { wch: 18 }, { wch: 38 }, { wch: 58 }, { wch: 40 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Stock report");
   XLSX.writeFile(wb, "leparfumier-stock-report-" + stamp() + ".xlsx");
@@ -1378,16 +1506,26 @@ function exportStockPdf() {
 
   doc.autoTable({
     startY: 39,
-    head: [["Item", "House", "Status", "Best supplier", "Qty", "Match confidence"]],
-    body: rows.map((r) => [r.title, r.house, r.status, r.supplier || "Not found", r.qty !== "" ? String(r.qty) : "-", r.confidence]),
+    head: [["Item", "House", "Best supplier", "Qty", "Match confidence", "Supplier line matched"]],
+    body: rows.map((r) => [
+      r.title, r.house, r.supplier || "Not found",
+      r.qty !== "" ? String(r.qty) : "-", r.confidence, r.matchedLine || "",
+    ]),
     theme: "striped",
     headStyles: { fillColor: INK_RGB, textColor: [245, 240, 248], fontStyle: "bold", fontSize: 8 },
     alternateRowStyles: { fillColor: [246, 244, 248] },
     styles: { fontSize: 8.5, cellPadding: 3.5, overflow: "linebreak" },
-    columnStyles: { 4: { halign: "right" } },
+    columnStyles: {
+      0: { cellWidth: 58 }, 1: { cellWidth: 28 }, 2: { cellWidth: 40 },
+      3: { cellWidth: 12, halign: "right" }, 4: { cellWidth: 52 }, 5: { cellWidth: 68 },
+    },
     didParseCell: (data) => {
-      if (data.section === "body" && data.column.index === 3 && data.cell.raw === "Not found") {
-        data.cell.styles.textColor = VERM_RGB;
+      if (data.section !== "body") return;
+      if (data.column.index === 2 && data.cell.raw === "Not found") data.cell.styles.textColor = VERM_RGB;
+      // Anything not confirmed by a barcode is flagged in the colour of a warning,
+      // because a name match is a lead to check, not a fact to order against.
+      if (data.column.index === 4 && String(data.cell.raw).indexOf("name only") === 0) {
+        data.cell.styles.textColor = [139, 103, 8];
       }
     },
     didDrawPage: () => {
