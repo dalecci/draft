@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 
 const PIN = "4545";
 const GH_OWNER = "dalecci";
@@ -559,7 +559,7 @@ function renderBrief() {
 
   let committedNote;
   if (!committedItems.length) {
-    committedNote = "Mark items Buying or Ordered and add a quantity";
+    committedNote = "Mark items Need to buy or Ordered and add a quantity";
   } else if (committedCost > 0) {
     committedNote =
       bottles.toLocaleString() + " bottles across " + committedItems.length + " item" +
@@ -779,7 +779,7 @@ function initFicheEvents() {
     const dbtn = e.target.closest(".dbtn");
     if (dbtn) {
       const next = dbtn.dataset.decision;
-      // Clicking the state an item is already in returns it to To review.
+      // Clicking the state an item is already in clears it back to not reviewed.
       // Clicking the state it is already in clears it back to not reviewed.
       setDecision(id, decisionOf(state.flags.find((f) => f.id === id)) === next ? "" : next);
       return;
