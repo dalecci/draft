@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 15;
+const APP_VERSION = 16;
 
 const PIN = "4545";
 
@@ -151,6 +151,16 @@ async function showLockStat() {
     if (p < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
+}
+
+// Back out to the welcome screen and ask for the code again. Needed on a shared
+// shop device, and needed to be able to show the first page at all once a browser
+// has remembered the unlock.
+function initLockOut() {
+  el("lockout-btn").addEventListener("click", () => {
+    try { localStorage.removeItem(UNLOCK_KEY); } catch (e) {}
+    location.reload();
+  });
 }
 
 function initLock() {
@@ -1701,6 +1711,7 @@ async function boot() {
 
 initSupabase();
 initTheme();
+initLockOut();
 initTabs();
 initSettings();
 initLock();

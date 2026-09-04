@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 <script>
   // Dark is the default in the stylesheet. This only reapplies a saved light
   // override, before first paint, so the page never flashes dark then turns light.
@@ -85,6 +85,9 @@
       </button>
       <button id="settings-btn" class="rail-icon" title="Data connection" aria-label="Data connection">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></svg>
+      </button>
+      <button id="lockout-btn" class="rail-icon" title="Lock and ask for the code again" aria-label="Lock and ask for the code again">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="9.5" rx="1.6"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
       </button>
       <div class="rail-ver" id="rail-ver"></div>
     </div>
@@ -319,7 +322,7 @@
 <script src="vendor/xlsx.full.min.js?v=4"></script>
 <script src="vendor/jspdf.umd.min.js?v=6"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
-<script src="app.js?v=15"></script>
+<script src="app.js?v=16"></script>
 <!-- Bump the ?v= on every tag above, and APP_VERSION in app.js, on every deploy that
      changes app.js or style.css. GitHub Pages caches both for ten minutes, so without
      a bump anyone who already opened the page keeps running the old build. -->
