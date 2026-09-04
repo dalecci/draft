@@ -218,6 +218,122 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
   color: var(--rail-accent);
 }
 .lock-sub { font-size: 12.5px; color: var(--rail-ink-2); margin: 20px 0 26px; }
+
+/* --- the welcome --------------------------------------------------------- */
+/* The first thing anyone sees, so it earns a little more warmth than the rest
+   of the tool. Everything here is restrained enough to still read as a serious
+   instrument rather than a splash screen. */
+
+.lock-welcome {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--rail-ink);
+  margin: 22px 0 0;
+}
+.lock-welcome em {
+  font-style: italic;
+  color: var(--rail-accent);
+}
+.lock-hook {
+  font-size: 13px;
+  color: var(--rail-ink-2);
+  margin: 9px 0 0;
+}
+.lock-stat {
+  min-height: 16px;
+  margin: 18px 0 24px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: #7e7290;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.lock-stat.in { opacity: 1; }
+.lock-stat b { color: var(--rail-accent); font-weight: 500; }
+
+/* Staggered entrance. Each piece arrives just behind the one above it, which
+   reads as the page assembling itself rather than simply appearing. */
+.reveal { animation: rise 0.55s var(--ease) both; }
+.r1 { animation-delay: 0.05s; }
+.r2 { animation-delay: 0.13s; }
+.r3 { animation-delay: 0.20s; }
+.r4 { animation-delay: 0.28s; }
+.r5 { animation-delay: 0.36s; }
+.r6 { animation-delay: 0.44s; }
+.r7 { animation-delay: 0.52s; }
+
+/* A slow sheen across the wordmark. Long period on purpose: noticed once, then
+   forgotten, which is the difference between charm and a distraction. */
+.lock-mark {
+  background: linear-gradient(100deg,
+    var(--rail-ink) 34%, #f4dcf2 47%, var(--rail-accent) 53%, var(--rail-ink) 66%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: rise 0.55s var(--ease) both, sheen 7s ease-in-out 1.6s infinite;
+}
+@keyframes sheen {
+  0%, 62%, 100% { background-position: 130% 0; }
+  86%           { background-position: -30% 0; }
+}
+
+/* --- the verified moment ------------------------------------------------- */
+.lock-done {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--rail-2);
+  opacity: 0;
+  pointer-events: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--rail-accent);
+}
+.lock-card.verified .lock-done { opacity: 1; transition: opacity 0.25s ease; }
+.lock-card.verified > .reveal,
+.lock-card.verified > .crest,
+.lock-card.verified > .lock-mark,
+.lock-card.verified > .lock-title { opacity: 0; transition: opacity 0.2s ease; }
+.lock-done svg { width: 54px; height: 54px; fill: none; overflow: visible; }
+.lock-done .tick-ring {
+  stroke: var(--rail-accent);
+  stroke-width: 2;
+  stroke-dasharray: 145;
+  stroke-dashoffset: 145;
+}
+.lock-done .tick-mark {
+  stroke: var(--rail-accent);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+}
+.lock-card.verified .tick-ring { animation: draw 0.45s ease forwards; }
+.lock-card.verified .tick-mark { animation: draw 0.3s ease 0.32s forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* The whole card lifts away once the tick has landed. */
+.lock-card.wrong { animation: shake 0.34s ease; }
+@keyframes shake {
+  20%, 60% { transform: translateX(-7px); }
+  40%, 80% { transform: translateX(7px); }
+}
+
+.lock.leaving { animation: liftOff 0.5s var(--ease) forwards; }
+@keyframes liftOff {
+  to { opacity: 0; transform: scale(1.04); }
+}
 .lock-input {
   width: 100%;
   background: transparent;

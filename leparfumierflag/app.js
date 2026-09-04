@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 14;
+const APP_VERSION = 15;
 
 const PIN = "4545";
 
@@ -106,15 +106,51 @@ function unlockApp() {
   boot();
 }
 
+// Draws the tick, lifts the card away, then hands over to the app. Skipped
+// entirely for anyone who has asked for reduced motion.
+function unlockWithFlourish() {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) { unlockApp(); return; }
+  el("lock-card").classList.add("verified");
+  setTimeout(() => el("lock").classList.add("leaving"), 780);
+  setTimeout(unlockApp, 1220);
+}
+
 function tryUnlock() {
   if (el("lock-input").value.trim() === PIN) {
     try { localStorage.setItem(UNLOCK_KEY, "1"); } catch (e) {}
-    unlockApp();
+    el("lock-btn").disabled = true;
+    unlockWithFlourish();
   } else {
+    const card = el("lock-card");
     el("lock-error").textContent = "That code is not right.";
+    card.classList.remove("wrong");
+    void card.offsetWidth; // restart the animation on a repeat wrong entry
+    card.classList.add("wrong");
     el("lock-input").value = "";
     el("lock-input").focus();
   }
+}
+
+// A number that is already true before anyone has logged in. It says the thing
+// has been working while you were away, which is the whole pitch of a watch tool.
+async function showLockStat() {
+  const box = el("lock-stat");
+  const data = await fetchJsonSafe("data/flags.json");
+  const open = (data && data.flags ? data.flags : []).filter((f) => f.status === "confirmed");
+  if (!open.length) return;
+
+  box.innerHTML = '<b>0</b> confirmed and counting';
+  box.classList.add("in");
+  const target = open.length;
+  const started = performance.now();
+  const tick = (now) => {
+    const p = Math.min(1, (now - started) / 900);
+    const eased = 1 - Math.pow(1 - p, 3);
+    box.querySelector("b").textContent = Math.round(target * eased).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function initLock() {
@@ -124,6 +160,7 @@ function initLock() {
   el("lock-btn").addEventListener("click", tryUnlock);
   el("lock-input").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
   el("lock-input").focus();
+  showLockStat();
 }
 
 // ------------------------------------------------------------------- tabs ---

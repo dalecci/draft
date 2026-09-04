@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 <script>
   // Dark is the default in the stylesheet. This only reapplies a saved light
   // override, before first paint, so the page never flashes dark then turns light.
@@ -25,14 +25,29 @@
 
 <!-- ============================================================ lock gate -->
 <div id="lock" class="lock">
-  <div class="lock-card">
-    <div class="crest">LP</div>
-    <div class="lock-mark">FLAG</div>
-    <div class="lock-title">Le Parfumier</div>
-    <p class="lock-sub">Discontinuation watch. Enter the access code.</p>
-    <input id="lock-input" class="lock-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="0000" aria-label="Access code">
-    <button id="lock-btn" class="lock-btn">Unlock</button>
-    <p id="lock-error" class="lock-error" role="status"></p>
+  <div class="lock-card" id="lock-card">
+    <!-- The greeting is the one bit of copy meant to be edited per client. -->
+    <div class="crest reveal r1">LP</div>
+    <div class="lock-mark reveal r2">FLAG</div>
+    <div class="lock-title reveal r3">Le Parfumier</div>
+
+    <h1 class="lock-welcome reveal r4">Welcome <em id="lock-name">Michael</em></h1>
+    <p class="lock-hook reveal r5">Let's get an edge on the competition!</p>
+
+    <!-- Filled from the live flag list, so the very first screen already proves
+         the thing is running rather than just asking for a password. -->
+    <p class="lock-stat reveal r6" id="lock-stat" aria-live="polite"></p>
+
+    <div class="reveal r7">
+      <input id="lock-input" class="lock-input" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="0000" aria-label="Access code">
+      <button id="lock-btn" class="lock-btn">Verify now</button>
+      <p id="lock-error" class="lock-error" role="status"></p>
+    </div>
+
+    <div class="lock-done" id="lock-done" aria-hidden="true">
+      <svg viewBox="0 0 52 52" aria-hidden="true"><circle class="tick-ring" cx="26" cy="26" r="23"/><path class="tick-mark" d="M15 27l8 8 15-16"/></svg>
+      <span>Verified</span>
+    </div>
   </div>
 </div>
 
@@ -304,7 +319,7 @@
 <script src="vendor/xlsx.full.min.js?v=4"></script>
 <script src="vendor/jspdf.umd.min.js?v=6"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 <!-- Bump the ?v= on every tag above, and APP_VERSION in app.js, on every deploy that
      changes app.js or style.css. GitHub Pages caches both for ten minutes, so without
      a bump anyone who already opened the page keeps running the old build. -->
