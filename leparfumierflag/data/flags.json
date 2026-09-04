@@ -1,4 +1,4 @@
-{
+﻿{
   "lastScan": "2026-09-03T10:19:24Z",
   "scanNote": "Discontinuation scan: checked 188 products (150 rotation + 38 rumored re-checks), 80 confirmed outcomes, 76 rumored outcomes, 6 cleared, 26 no signal.",
   "flags": [
@@ -178,7 +178,7 @@
     {
       "id": "salvatore-ferragamo-amo-pour-femme-eau-de-parfum-edition-special",
       "productHandle": "salvatore-ferragamo-amo-pour-femme-eau-de-parfum-edition-special",
-      "title": "Salvatore Ferragamo Amo Pour Femme Eau de Parfum Edition Spécial",
+      "title": "Salvatore Ferragamo Amo Pour Femme Eau de Parfum Edition SpÃ©cial",
       "vendor": "SALVATORE FERRAGAMO",
       "status": "cleared",
       "flaggedDate": "2026-08-28",
@@ -302,7 +302,7 @@
     {
       "id": "hermes-jour-dhermes-pour-femme-eau-de-parfum",
       "productHandle": "hermes-jour-dhermes-pour-femme-eau-de-parfum",
-      "title": "Hermes Jour d'Hermès Pour Femme Eau De Parfum",
+      "title": "Hermes Jour d'HermÃ¨s Pour Femme Eau De Parfum",
       "vendor": "HERMES",
       "status": "cleared",
       "flaggedDate": "2026-08-28",
@@ -396,7 +396,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Chanel currently sells 'N°5 The Body Oil' (8.4 FL. OZ.) directly on chanel.com. An earlier version had reportedly been pulled from sale, but it is back as a current listing on the brand's own site."
+          "note": "Chanel currently sells 'NÂ°5 The Body Oil' (8.4 FL. OZ.) directly on chanel.com. An earlier version had reportedly been pulled from sale, but it is back as a current listing on the brand's own site."
         }
       ],
       "sources": [
@@ -605,7 +605,7 @@
     {
       "id": "guerlain-la-petite-robe-noire-ma-premiere-robe-eau-de-parfum",
       "productHandle": "guerlain-la-petite-robe-noire-ma-premiere-robe-eau-de-parfum",
-      "title": "Guerlain La Petite Robe Noire Ma Première Robe Eau de Parfum",
+      "title": "Guerlain La Petite Robe Noire Ma PremiÃ¨re Robe Eau de Parfum",
       "vendor": "GUERLAIN",
       "status": "confirmed",
       "flaggedDate": "2026-08-28",
@@ -625,7 +625,7 @@
           "url": "https://fragrancerevival.com/product/la-petite-robe-noire-limited-edition-2015-ma-premiere-robe-by-guerlain-type/"
         },
         {
-          "label": "Fragrantica - La Petite Robe Noire Ma Première Robe",
+          "label": "Fragrantica - La Petite Robe Noire Ma PremiÃ¨re Robe",
           "url": "https://www.fragrantica.com/perfume/Guerlain/La-Petite-Robe-Noire-Ma-Premiere-Robe-32848.html"
         }
       ],
@@ -1004,7 +1004,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "eBay 90ml bottles listed around $64.99 (list price ~$114, a 43% discount), with sample vials also selling briskly (42 sold) — consistent with discount sell-through of remaining stock."
+        "note": "eBay 90ml bottles listed around $64.99 (list price ~$114, a 43% discount), with sample vials also selling briskly (42 sold) â€” consistent with discount sell-through of remaining stock."
       }
     },
     {
@@ -1083,16 +1083,16 @@
       "signals": [
         {
           "type": "web",
-          "note": "CH Pasión for Him (launched 2023) is actively sold on the official Carolina Herrera site and at Amazon, Sweetcare, ThePerfumeSpot and ForeverLux; no discontinuation chatter found for this specific product."
+          "note": "CH PasiÃ³n for Him (launched 2023) is actively sold on the official Carolina Herrera site and at Amazon, Sweetcare, ThePerfumeSpot and ForeverLux; no discontinuation chatter found for this specific product."
         }
       ],
       "sources": [
         {
-          "label": "Carolina Herrera official - CH Men Pasión",
+          "label": "Carolina Herrera official - CH Men PasiÃ³n",
           "url": "https://www.carolinaherrera.com/ww/en/p-fragrance/ch-men-pasion"
         },
         {
-          "label": "Fragrantica - CH Pasión for Him (2023)",
+          "label": "Fragrantica - CH PasiÃ³n for Him (2023)",
           "url": "https://www.fragrantica.com/perfume/Carolina-Herrera/CH-Pasion-for-Him-78641.html"
         }
       ],
@@ -1307,7 +1307,7 @@
         },
         {
           "type": "web",
-          "note": "Recheck (prior pass was inconclusive due to a tooling limit) found it still sold new at Amazon (two active listings), Le Parfumier, LaBelle Perfumes and Perfume Boutique, with no genuine discontinuation chatter — looks like normal availability."
+          "note": "Recheck (prior pass was inconclusive due to a tooling limit) found it still sold new at Amazon (two active listings), Le Parfumier, LaBelle Perfumes and Perfume Boutique, with no genuine discontinuation chatter â€” looks like normal availability."
         }
       ],
       "sources": [],
@@ -1665,7 +1665,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Actively listed and in stock at multiple major retailers (Macy's, Walmart, Target, Hot Topic) with no discontinuation chatter found — looks normal/available."
+          "note": "Actively listed and in stock at multiple major retailers (Macy's, Walmart, Target, Hot Topic) with no discontinuation chatter found â€” looks normal/available."
         }
       ],
       "sources": [
@@ -1683,7 +1683,7 @@
     {
       "id": "zino-davidoff-pour-homme-baton-deodorant",
       "productHandle": "zino-davidoff-pour-homme-baton-deodorant",
-      "title": "Zino Davidoff Pour Homme Bâton Déodorant",
+      "title": "Zino Davidoff Pour Homme BÃ¢ton DÃ©odorant",
       "vendor": "DAVIDOFF",
       "status": "confirmed",
       "flaggedDate": "2026-08-31",
@@ -1896,7 +1896,7 @@
         },
         {
           "type": "web",
-          "note": "Not listed among YSL's current La Nuit de L'Homme lineup on the official YSL Beauty site (which instead promotes Bleu Électrique/other current flankers)."
+          "note": "Not listed among YSL's current La Nuit de L'Homme lineup on the official YSL Beauty site (which instead promotes Bleu Ã‰lectrique/other current flankers)."
         }
       ],
       "sources": [
@@ -2288,7 +2288,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck: same split persists — eBay/Etsy continue marketing the EDP specifically as rare/discontinued, while YSL Beauty's official Paris fragrance page (US and international) remains live and sells Paris EDP/EDT directly. No new resolution either way."
+          "note": "Recheck: same split persists â€” eBay/Etsy continue marketing the EDP specifically as rare/discontinued, while YSL Beauty's official Paris fragrance page (US and international) remains live and sells Paris EDP/EDT directly. No new resolution either way."
         }
       ],
       "sources": [
@@ -2732,7 +2732,7 @@
     {
       "id": "marvel-deadpool-pour-garcon-eau-de-toilette",
       "productHandle": "marvel-deadpool-pour-garcon-eau-de-toilette",
-      "title": "Marvel Deadpool Pour Garçon Eau De Toilette",
+      "title": "Marvel Deadpool Pour GarÃ§on Eau De Toilette",
       "vendor": "MARVEL",
       "status": "cleared",
       "flaggedDate": "2026-08-31",
@@ -3091,7 +3091,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "eBay sold listings for 3oz (90-100ml) EDP bottles are running roughly $80-$118 depending on condition and edition (e.g. Cinema Festival d'Ete variant), with active resale volume — a well-stocked secondary market typical of a confirmed discontinuation."
+        "note": "eBay sold listings for 3oz (90-100ml) EDP bottles are running roughly $80-$118 depending on condition and edition (e.g. Cinema Festival d'Ete variant), with active resale volume â€” a well-stocked secondary market typical of a confirmed discontinuation."
       }
     },
     {
@@ -3371,7 +3371,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "eBay: 90ml bottles have sold around £65 (~$82); listings frame it as remaining/discontinued stock rather than current retail inventory."
+        "note": "eBay: 90ml bottles have sold around Â£65 (~$82); listings frame it as remaining/discontinued stock rather than current retail inventory."
       }
     },
     {
@@ -3404,7 +3404,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "Companion Belle d'Opium EDP bottles sell around €190/$165 for 90ml on eBay.de resale listings, and 10ml minis around $27.95; the shower gel/gel douche format from the same discontinued line is a rarer ancillary item found mainly through vintage/bath-set resellers."
+        "note": "Companion Belle d'Opium EDP bottles sell around â‚¬190/$165 for 90ml on eBay.de resale listings, and 10ml minis around $27.95; the shower gel/gel douche format from the same discontinued line is a rarer ancillary item found mainly through vintage/bath-set resellers."
       }
     },
     {
@@ -3437,7 +3437,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "eBay/eBay.de listings: 90ml bottles around €190 (~$165); 10ml sample sprays around $27.95 (10+ sold). Prices trend at a premium versus original retail, consistent with discontinued/collectible status."
+        "note": "eBay/eBay.de listings: 90ml bottles around â‚¬190 (~$165); 10ml sample sprays around $27.95 (10+ sold). Prices trend at a premium versus original retail, consistent with discontinued/collectible status."
       }
     },
     {
@@ -3550,7 +3550,7 @@
     {
       "id": "yves-saint-laurent-opium-trousse-a-cosmetique-1757453178",
       "productHandle": "yves-saint-laurent-opium-trousse-a-cosmetique-1757453178",
-      "title": "Yves Saint Laurent Opium Trousse à Cosmétique",
+      "title": "Yves Saint Laurent Opium Trousse Ã  CosmÃ©tique",
       "vendor": "YVES SAINT LAURENT YSL",
       "status": "cleared",
       "flaggedDate": "2026-09-01",
@@ -3744,7 +3744,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck found it still sold new at FragranceNet ($32.99) and Amazon, alongside continued vintage/discontinued resale chatter on eBay — mixed signal, no clear full discontinuation."
+          "note": "Recheck found it still sold new at FragranceNet ($32.99) and Amazon, alongside continued vintage/discontinued resale chatter on eBay â€” mixed signal, no clear full discontinuation."
         }
       ],
       "sources": [
@@ -3881,7 +3881,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck found Vince Camuto's official site still sells a 3.4oz women's EDP, and Amazon carries it too, though eBay's dedicated discontinued category and FragranceNet low-stock status persist — no new development since prior scan."
+          "note": "Recheck found Vince Camuto's official site still sells a 3.4oz women's EDP, and Amazon carries it too, though eBay's dedicated discontinued category and FragranceNet low-stock status persist â€” no new development since prior scan."
         }
       ],
       "sources": [
@@ -4124,7 +4124,7 @@
       "notified": true,
       "marketCheck": {
         "checked": true,
-        "note": "Sell-through stock still findable at Nordstrom Rack at regular-to-discount pricing, and on eBay with multiple active listings (50ml/90ml bottles, minis) — consistent with a brand discontinuation being sold off through remaining retail inventory rather than a fresh restock."
+        "note": "Sell-through stock still findable at Nordstrom Rack at regular-to-discount pricing, and on eBay with multiple active listings (50ml/90ml bottles, minis) â€” consistent with a brand discontinuation being sold off through remaining retail inventory rather than a fresh restock."
       }
     },
     {
@@ -4852,7 +4852,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck: contradiction unchanged — the Basenotes 'NOT DISCONTINUED' thread and reports of a Versace rep confirming it's still sold internationally/select US dealers persist alongside eBay listings explicitly titled 'Versace Oud Noir Pour Homme Discontinued Perfume' and its absence from Versace's own US site."
+          "note": "Recheck: contradiction unchanged â€” the Basenotes 'NOT DISCONTINUED' thread and reports of a Versace rep confirming it's still sold internationally/select US dealers persist alongside eBay listings explicitly titled 'Versace Oud Noir Pour Homme Discontinued Perfume' and its absence from Versace's own US site."
         }
       ],
       "marketCheck": {
@@ -5851,7 +5851,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "A February 2026 Slickdeals listing shows the 3.4oz EDP discounted to $21.59, well below typical designer EDP pricing, alongside eBay's dedicated discontinued-fragrance category — sell-through-at-a-discount pattern."
+        "note": "A February 2026 Slickdeals listing shows the 3.4oz EDP discounted to $21.59, well below typical designer EDP pricing, alongside eBay's dedicated discontinued-fragrance category â€” sell-through-at-a-discount pattern."
       },
       "sources": [
         {
@@ -6077,7 +6077,7 @@
         },
         {
           "type": "web",
-          "note": "No listing found on the current Van Cleef & Arpels official fragrance site or major retailers (Sephora/Nordstrom/FragranceX) — only vintage/secondary-market sellers carry it."
+          "note": "No listing found on the current Van Cleef & Arpels official fragrance site or major retailers (Sephora/Nordstrom/FragranceX) â€” only vintage/secondary-market sellers carry it."
         }
       ],
       "marketCheck": {
@@ -6564,7 +6564,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck: same ambiguity — Fragrantica's 'Valentina discontinued??' thread persists, and one retailer shows the body cream as currently unavailable, but it's still not on Valentino Beauty's official discontinued list and other sites (Sabina, Nordstrom-linked) still carry Valentina body/bath items, so no clear resolution."
+          "note": "Recheck: same ambiguity â€” Fragrantica's 'Valentina discontinued??' thread persists, and one retailer shows the body cream as currently unavailable, but it's still not on Valentino Beauty's official discontinued list and other sites (Sabina, Nordstrom-linked) still carry Valentina body/bath items, so no clear resolution."
         }
       ],
       "marketCheck": {
@@ -6663,7 +6663,7 @@
         },
         {
           "type": "web",
-          "note": "Still actively sold through discount/outlet fragrance retailers (FragranceNet, PerfumeHeadquarters, Amazon) — consistent with retailers selling through remaining stock rather than the brand actively supplying it."
+          "note": "Still actively sold through discount/outlet fragrance retailers (FragranceNet, PerfumeHeadquarters, Amazon) â€” consistent with retailers selling through remaining stock rather than the brand actively supplying it."
         }
       ],
       "marketCheck": {
@@ -7224,7 +7224,7 @@
         },
         {
           "type": "web",
-          "note": "No current listings found at mainstream retailers (Amazon/FragranceX/Ulta) — only vintage/resale channels."
+          "note": "No current listings found at mainstream retailers (Amazon/FragranceX/Ulta) â€” only vintage/resale channels."
         }
       ],
       "marketCheck": {
@@ -8079,7 +8079,7 @@
       "signals": [
         {
           "type": "community",
-          "note": "Recheck found nothing new: same weak pattern as before — general web claims call it discontinued, but MaxAroma, Eauparfum.ca and Perfumeonline.ca all continue to list and sell it as current inventory."
+          "note": "Recheck found nothing new: same weak pattern as before â€” general web claims call it discontinued, but MaxAroma, Eauparfum.ca and Perfumeonline.ca all continue to list and sell it as current inventory."
         }
       ],
       "marketCheck": {
@@ -8467,7 +8467,7 @@
         },
         {
           "type": "retailer",
-          "note": "Not carried as a current listing at FragranceNet/FragranceX/Macy's alongside other active Tommy Hilfiger lines (Tommy, Freedom, Tommy Jeans) — only True Star is absent and only appears on resale/discontinued-specialist sites."
+          "note": "Not carried as a current listing at FragranceNet/FragranceX/Macy's alongside other active Tommy Hilfiger lines (Tommy, Freedom, Tommy Jeans) â€” only True Star is absent and only appears on resale/discontinued-specialist sites."
         }
       ],
       "marketCheck": {
@@ -9093,7 +9093,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Recheck: still mixed — original Noir EDP resale listings (and a related Noir Pour Femme EDP eBay listing) are marked discontinued, while FragranceNet currently lists 'Tom Ford Noir Eau De Parfum' as available and Tom Ford now pushes Noir Extreme as the flagship Noir variant, so the plain Noir EDP's status remains unresolved."
+          "note": "Recheck: still mixed â€” original Noir EDP resale listings (and a related Noir Pour Femme EDP eBay listing) are marked discontinued, while FragranceNet currently lists 'Tom Ford Noir Eau De Parfum' as available and Tom Ford now pushes Noir Extreme as the flagship Noir variant, so the plain Noir EDP's status remains unresolved."
         }
       ],
       "marketCheck": {
@@ -9131,7 +9131,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "eBay/UK listings for 100ml bottles are running roughly £170-£245 (well above typical discounted TF pricing), reflecting discontinued/collector resale value."
+        "note": "eBay/UK listings for 100ml bottles are running roughly Â£170-Â£245 (well above typical discounted TF pricing), reflecting discontinued/collector resale value."
       },
       "sources": [
         {
@@ -9428,14 +9428,14 @@
     {
       "id": "thierry-mugler-miroir-des-majestes-eau-de-parfum",
       "productHandle": "thierry-mugler-miroir-des-majestes-eau-de-parfum",
-      "title": "Thierry Mugler Miroir des Majestés Eau de Parfum",
+      "title": "Thierry Mugler Miroir des MajestÃ©s Eau de Parfum",
       "vendor": "THIERRY MUGLER",
       "status": "confirmed",
       "flaggedDate": "2026-09-01",
       "signals": [
         {
           "type": "web",
-          "note": "Multiple sources (Fragrantica, eBay, niche resellers like Meliora Parfums, Amour Boutique) consistently describe Miroir des Majestés from the 2012 Mirror Mirror collection as discontinued."
+          "note": "Multiple sources (Fragrantica, eBay, niche resellers like Meliora Parfums, Amour Boutique) consistently describe Miroir des MajestÃ©s from the 2012 Mirror Mirror collection as discontinued."
         },
         {
           "type": "community",
@@ -9444,7 +9444,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "Secondary-market prices for Miroir des Majestés vary widely, roughly $70-$330 per bottle depending on fill level and seller."
+        "note": "Secondary-market prices for Miroir des MajestÃ©s vary widely, roughly $70-$330 per bottle depending on fill level and seller."
       },
       "sources": [
         {
@@ -9761,7 +9761,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Angel Eau Sucrée was a 2015 limited-edition Angel flanker; it is absent from Mugler's current site catalog and major retailers (Sephora, Ulta, Macy's) no longer list it."
+          "note": "Angel Eau SucrÃ©e was a 2015 limited-edition Angel flanker; it is absent from Mugler's current site catalog and major retailers (Sephora, Ulta, Macy's) no longer list it."
         },
         {
           "type": "retailer",
@@ -9774,7 +9774,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "eBay resellers are moving 50ml bottles of Angel Eau Sucrée around $73-$79 each, in line with or above typical Angel EDT pricing for a bottle no longer produced by the brand."
+        "note": "eBay resellers are moving 50ml bottles of Angel Eau SucrÃ©e around $73-$79 each, in line with or above typical Angel EDT pricing for a bottle no longer produced by the brand."
       },
       "sources": [
         {
@@ -9952,7 +9952,7 @@
     {
       "id": "ted-lapidus-lapidus-pour-homme-apres-rasage-vaporisateur",
       "productHandle": "ted-lapidus-lapidus-pour-homme-apres-rasage-vaporisateur",
-      "title": "Ted Lapidus  Lapidus Pour Homme Après Rasage Vaporisateur",
+      "title": "Ted Lapidus  Lapidus Pour Homme AprÃ¨s Rasage Vaporisateur",
       "vendor": "TED LAPIDUS",
       "status": "confirmed",
       "flaggedDate": "2026-09-01",
@@ -10120,7 +10120,7 @@
       "signals": [
         {
           "type": "retailer",
-          "note": "Stetson's official site (stetson.com/collections/fragrance) currently lists only Original, Legend and the Untamed collection — Sierra is absent entirely from the current lineup."
+          "note": "Stetson's official site (stetson.com/collections/fragrance) currently lists only Original, Legend and the Untamed collection â€” Sierra is absent entirely from the current lineup."
         },
         {
           "type": "community",
@@ -10157,7 +10157,7 @@
       "signals": [
         {
           "type": "retailer",
-          "note": "Stetson's official site no longer lists the Country line at all (only Original, Legend, Untamed) — the aftershave/lotion companion product has no current retail path."
+          "note": "Stetson's official site no longer lists the Country line at all (only Original, Legend, Untamed) â€” the aftershave/lotion companion product has no current retail path."
         },
         {
           "type": "community",
@@ -10190,7 +10190,7 @@
       "signals": [
         {
           "type": "retailer",
-          "note": "Stetson's official site no longer carries the Country cologne — current lineup is limited to Original, Legend and Untamed."
+          "note": "Stetson's official site no longer carries the Country cologne â€” current lineup is limited to Original, Legend and Untamed."
         },
         {
           "type": "pricing",
@@ -10227,7 +10227,7 @@
       "signals": [
         {
           "type": "retailer",
-          "note": "Same Country cologne as tracked under the eau-de-cologne SKU — absent from stetson.com's current fragrance lineup."
+          "note": "Same Country cologne as tracked under the eau-de-cologne SKU â€” absent from stetson.com's current fragrance lineup."
         },
         {
           "type": "pricing",
@@ -11360,7 +11360,7 @@
     {
       "id": "sonia-rykiel-rykiel-homme-pour-homme-lotion-apres-rasage",
       "productHandle": "sonia-rykiel-rykiel-homme-pour-homme-lotion-apres-rasage",
-      "title": "Sonia Rykiel Rykiel Homme Pour Homme Lotion Après-Rasage",
+      "title": "Sonia Rykiel Rykiel Homme Pour Homme Lotion AprÃ¨s-Rasage",
       "vendor": "SONIA RYKIEL",
       "status": "confirmed",
       "flaggedDate": "2026-09-03",
@@ -11384,7 +11384,7 @@
           "url": "https://www.ebay.com/itm/232407032153"
         },
         {
-          "label": "Parfumo - Rykiel Homme Lotion Après-Rasage",
+          "label": "Parfumo - Rykiel Homme Lotion AprÃ¨s-Rasage",
           "url": "https://www.parfumo.com/Perfumes/Sonia_Rykiel/Rykiel_Homme_Lotion_Apres_Rasage"
         }
       ],
@@ -11733,7 +11733,7 @@
     {
       "id": "rochas-poupee-pour-femme-eau-de-toilette",
       "productHandle": "rochas-poupee-pour-femme-eau-de-toilette",
-      "title": "Rochas Poupée Pour Femme Eau de Toilette",
+      "title": "Rochas PoupÃ©e Pour Femme Eau de Toilette",
       "vendor": "ROCHAS",
       "status": "confirmed",
       "flaggedDate": "2026-09-03",
@@ -11753,7 +11753,7 @@
       },
       "sources": [
         {
-          "label": "Fragrantica - The Rochas Chronicles: Rochas Poupée, The Abandoned Doll",
+          "label": "Fragrantica - The Rochas Chronicles: Rochas PoupÃ©e, The Abandoned Doll",
           "url": "https://www.fragrantica.com/news/The-Rochas-Chronicles-No1-Rochas-Poupee-The-Abandoned-Doll-12385.html"
         },
         {
@@ -12004,7 +12004,7 @@
         },
         {
           "type": "retailer",
-          "note": "Still sold new/sealed on Amazon, eBay, and Luxury Perfume as ordinary current stock — no explicit discontinued labeling found on the base Samba for Men."
+          "note": "Still sold new/sealed on Amazon, eBay, and Luxury Perfume as ordinary current stock â€” no explicit discontinued labeling found on the base Samba for Men."
         }
       ],
       "sources": [
@@ -12426,7 +12426,7 @@
     {
       "id": "shao-ko-celeste-pour-enfants-eau-de-toilette",
       "productHandle": "shao-ko-celeste-pour-enfants-eau-de-toilette",
-      "title": "Shao Ko Céleste Pour Enfants Eau de Toilette",
+      "title": "Shao Ko CÃ©leste Pour Enfants Eau de Toilette",
       "vendor": "SHAO KO",
       "status": "confirmed",
       "flaggedDate": "2026-09-03",
@@ -12599,7 +12599,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "Discount retailers (Jomashop, FragranceNet) offer remaining bottles around the €40/100ml range, well below original launch pricing, indicating sell-through of discontinued stock."
+        "note": "Discount retailers (Jomashop, FragranceNet) offer remaining bottles around the â‚¬40/100ml range, well below original launch pricing, indicating sell-through of discontinued stock."
       },
       "sources": [
         {
@@ -12910,7 +12910,7 @@
     {
       "id": "simon-chang-maestro-apres-rasage",
       "productHandle": "simon-chang-maestro-apres-rasage",
-      "title": "Simon Chang Maestro Après Rasage",
+      "title": "Simon Chang Maestro AprÃ¨s Rasage",
       "vendor": "SIMON CHANG",
       "status": "rumored",
       "flaggedDate": "2026-09-03",
@@ -12980,7 +12980,7 @@
       ],
       "marketCheck": {
         "checked": true,
-        "note": "Marked-down eBay listings show ~$25-33 vs. an original ~$93 MSRP, with one listing showing 465+ units sold — classic sell-through-remaining-stock pattern."
+        "note": "Marked-down eBay listings show ~$25-33 vs. an original ~$93 MSRP, with one listing showing 465+ units sold â€” classic sell-through-remaining-stock pattern."
       },
       "sources": [
         {
@@ -13137,7 +13137,7 @@
       "signals": [
         {
           "type": "web",
-          "note": "Original 1997 Dalimix Gold is discontinued per Fragrantica, but Cofinluxe reformulated and relaunched a version under the same name that wholesale distributors (Nandansons, ScentsWorld) currently still sell — ambiguous which version is in current inventory."
+          "note": "Original 1997 Dalimix Gold is discontinued per Fragrantica, but Cofinluxe reformulated and relaunched a version under the same name that wholesale distributors (Nandansons, ScentsWorld) currently still sell â€” ambiguous which version is in current inventory."
         }
       ],
       "sources": [
@@ -13249,7 +13249,7 @@
       "signals": [
         {
           "type": "community",
-          "note": "An eBay EDP listing is tagged discontinued, but a Fragrantica commenter noted 'seems it is not discontinued yet, it was hard for me to find' — and several Italian retailers (ditano, lamalizia, greta.shop) still list the shower gel in stock, so signal is weak/mixed."
+          "note": "An eBay EDP listing is tagged discontinued, but a Fragrantica commenter noted 'seems it is not discontinued yet, it was hard for me to find' â€” and several Italian retailers (ditano, lamalizia, greta.shop) still list the shower gel in stock, so signal is weak/mixed."
         }
       ],
       "sources": [
@@ -13594,7 +13594,7 @@
     {
       "id": "rochas-fleur-deau-pour-femme-vaporisateur-deodorant",
       "productHandle": "rochas-fleur-deau-pour-femme-vaporisateur-deodorant",
-      "title": "Rochas Fleur D'Eau Pour Femme Vaporisateur Déodorant",
+      "title": "Rochas Fleur D'Eau Pour Femme Vaporisateur DÃ©odorant",
       "vendor": "ROCHAS",
       "status": "confirmed",
       "flaggedDate": "2026-09-03",
@@ -13729,7 +13729,7 @@
       "signals": [
         {
           "type": "community",
-          "note": "eBay lists the 1989-launch Kimono EDT as 'Rare! Vintage', and general web summaries call the line discontinued, but this reads as a small/niche Canadian designer brand with thin distribution rather than a confirmed pulled product — no retailer explicitly marks it out of production."
+          "note": "eBay lists the 1989-launch Kimono EDT as 'Rare! Vintage', and general web summaries call the line discontinued, but this reads as a small/niche Canadian designer brand with thin distribution rather than a confirmed pulled product â€” no retailer explicitly marks it out of production."
         }
       ],
       "sources": [

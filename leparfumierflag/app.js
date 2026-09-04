@@ -4,11 +4,23 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 
 const PIN = "4545";
+
+// Two stores, and the split matters. GitHub holds what the SCAN produces, flags and
+// products, and it rewrites flags.json twice a week. Supabase holds what a PERSON
+// decides. Keeping them apart is what stops Monday's scan from erasing Friday's
+// buying decisions, which is exactly what the old single store design risked.
 const GH_OWNER = "dalecci";
 const GH_DATA_REPO = "leparfumierflag-data";
+
+// Same Supabase project as the other J3 apps. The anon key is public by design;
+// row level security is the guard, and no cost data is ever stored here.
+const SUPABASE_URL = "https://ikypiznimyzidmyzzoys.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlreXBpem5pbXl6aWRteXp6b3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzUzODIsImV4cCI6MjA5MzMxMTM4Mn0.Ee0FWPHjLBSOIFXWmdPSjG8oT3QmKyKG14BF8oPGgjk";
+const DECISIONS_TABLE = "leparfumier_flag_decisions";
+
 const TOKEN_KEY = "lpf_token";
 const UNLOCK_KEY = "lpf_unlocked";
 const THEME_KEY = "lpf_theme";
@@ -39,6 +51,8 @@ const state = {
   filterDecision: "",
   onlyFlagged: false,
   selected: new Set(),
+  syncMode: "local", // local | cloud
+  cloudCount: 0,
 };
 
 // ---------------------------------------------------------------- helpers ---
@@ -155,7 +169,6 @@ function initSettings() {
     await loadFlags();
     await loadProducts();
     renderAll();
-    scheduleSync(); // push anything decided before a token existed
     el("token-status").textContent = "Saved and connected.";
   });
 
@@ -286,7 +299,7 @@ function updateFlag(flagId, changes, opts) {
 
   if (!opts || opts.rerender !== false) { renderFiches(); }
   renderBrief();
-  scheduleSync();
+  scheduleSync(flagId);
 }
 
 function setDecision(flagId, decision) {
@@ -303,37 +316,107 @@ function setDecision(flagId, decision) {
   updateFlag(flagId, changes);
 }
 
-function scheduleSync() {
-  const token = localStorage.getItem(TOKEN_KEY);
-  if (!token) { toast("Saved on this device. Connect a token to sync everywhere.", "warn"); return; }
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => syncToGithub(token), 900);
+// ------------------------------------------------------------ decision sync ---
+// Supabase, no token and no setup. localStorage stays underneath as the offline
+// mirror, so the app keeps working on a dead connection and catches up later.
+
+let supa = null;
+const pendingPush = new Set();
+
+function initSupabase() {
+  try {
+    if (window.supabase && window.supabase.createClient) {
+      supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  } catch (e) {
+    supa = null;
+  }
 }
 
-async function syncToGithub(token) {
+function decisionRow(f) {
+  const d = decisionOf(f);
+  return {
+    flag_id: f.id,
+    decision: d || null,
+    ordered_qty: f.orderedQty || null,
+    ordered_date: f.orderedDate || null,
+    note: f.note || null,
+  };
+}
+
+// Cloud wins where it has a row. Where it does not, anything decided on this
+// device before the cloud knew about it is kept and pushed up, so switching a
+// browser online never silently discards work.
+async function loadDecisions() {
+  if (!supa) { state.syncMode = "local"; return; }
   try {
-    const meta = await fetchGithubMeta("flags.json", token);
-    if (!meta) throw new Error("cannot read flags.json");
-    const current = JSON.parse(decodeBase64Utf8(meta.content));
-    const o = loadOverrides();
-    (current.flags || []).forEach((f) => { if (o[f.id]) Object.assign(f, o[f.id]); });
-    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_DATA_REPO}/contents/flags.json`, {
-      method: "PUT",
-      headers: {
-        Authorization: `token ${token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: "Update decisions from the FLAG app",
-        content: encodeUtf8Base64(JSON.stringify(current, null, 2)),
-        sha: meta.sha,
-      }),
+    const res = await supa.from(DECISIONS_TABLE).select("*");
+    if (res.error) throw res.error;
+    const cloud = new Map((res.data || []).map((r) => [r.flag_id, r]));
+    const local = loadOverrides();
+    const catchUp = [];
+
+    state.flags.forEach((f) => {
+      const r = cloud.get(f.id);
+      if (r) {
+        f.decision = r.decision || null;
+        f.orderedQty = r.ordered_qty || null;
+        f.orderedDate = r.ordered_date || null;
+        f.note = r.note || null;
+        f.userConfirmed = r.decision === "reject" ? false : r.decision ? true : null;
+      } else if (local[f.id] && (local[f.id].decision || local[f.id].orderedQty || local[f.id].note)) {
+        Object.assign(f, local[f.id]);
+        catchUp.push(f);
+      }
     });
-    if (!res.ok) throw new Error("write rejected");
-    toast("Saved and synced.");
+
+    state.syncMode = "cloud";
+    state.cloudCount = cloud.size;
+    if (catchUp.length) {
+      await pushRows(catchUp.map(decisionRow));
+      toast("Synced " + catchUp.length + " decision" + (catchUp.length === 1 ? "" : "s") + " made offline.");
+    }
   } catch (e) {
+    state.syncMode = "local";
+  }
+}
+
+async function pushRows(rows) {
+  if (!supa || !rows.length) return false;
+  const res = await supa.from(DECISIONS_TABLE).upsert(rows, { onConflict: "flag_id" });
+  if (res.error) throw res.error;
+  return true;
+}
+
+function scheduleSync(flagId) {
+  if (flagId) pendingPush.add(flagId);
+  if (!supa) { toast("Saved on this device. Cloud sync is unavailable.", "warn"); return; }
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(flushSync, 700);
+}
+
+async function flushSync() {
+  if (!pendingPush.size) return;
+  const ids = [...pendingPush];
+  // Cleared BEFORE the await, not after. If an edit lands while this push is in
+  // flight it re-adds itself and gets its own flush; clearing afterwards would
+  // mark that newer edit as already sent and quietly lose it.
+  ids.forEach((id) => pendingPush.delete(id));
+  const rows = ids
+    .map((id) => state.flags.find((f) => f.id === id))
+    .filter(Boolean)
+    .map(decisionRow);
+  try {
+    await pushRows(rows);
+    state.syncMode = "cloud";
+    toast("Saved and synced.");
+    renderMasthead();
+  } catch (e) {
+    // Put them back so the next change retries them along with itself.
+    ids.forEach((id) => pendingPush.add(id));
+    state.syncMode = "local";
     toast("Saved here. Sync failed, it will retry on your next change.", "warn");
+    renderMasthead();
   }
 }
 
@@ -527,9 +610,13 @@ function renderMasthead() {
   const cost = state.dataSource === "live"
     ? '<span class="live">connected</span>'
     : '<span class="off">hidden</span>';
+  const sync = state.syncMode === "cloud"
+    ? '<span class="live">syncing</span>'
+    : '<span class="off">this device only</span>';
   el("masthead-meta").innerHTML =
     '<div><b>Catalog</b>' + catalogTxt + "</div>" +
     "<div><b>Last scan</b>" + escapeHtml(scanTxt) + "</div>" +
+    "<div><b>Decisions</b>" + sync + "</div>" +
     "<div><b>Wholesale cost</b>" + cost + "</div>";
   el("rail-ver").textContent = "v" + APP_VERSION;
 }
@@ -1562,6 +1649,9 @@ async function boot() {
   // Flags are 45 KB and are what the page is for, so paint on those and let the
   // multi megabyte catalog fill in the prices and thumbnails when it lands.
   await loadFlags();
+  // Decisions come from Supabase, not from the flag file, so they survive the
+  // scan rewriting flags.json twice a week.
+  await loadDecisions();
   renderMasthead();
   renderBrief();
   renderFiches();
@@ -1572,6 +1662,7 @@ async function boot() {
   renderAll();
 }
 
+initSupabase();
 initTheme();
 initTabs();
 initSettings();

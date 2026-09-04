@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 <script>
   // Dark is the default in the stylesheet. This only reapplies a saved light
   // override, before first paint, so the page never flashes dark then turns light.
@@ -243,6 +243,10 @@
               <p>Unit value is your own retail price for the largest bottle of that item, and the size it refers to is printed beside it. Committed value is that price multiplied by the quantity you entered. These are retail figures. Connect a token in settings and your wholesale cost comes across too, which turns the same figures into margin.</p>
               <p>The figures do not know how many bottles you already hold, because this pilot reads an uploaded export rather than live stock. Connecting Shopify is what closes that gap.</p>
 
+              <h2>Where your decisions live</h2>
+              <p>Two stores, kept deliberately apart. <strong>GitHub</strong> holds what the scan produces, the flag list and the catalog, and it rewrites that file twice a week. <strong>Supabase</strong> holds what you decide: Accept, Reject, Need to buy, Ordered, quantities and notes.</p>
+              <p>Splitting them is the point. When both lived in the same file, Monday morning scan could overwrite Friday afternoon decisions. Now the scan cannot touch your side of it. Decisions save the moment you click, on every device, with no token and no setup, and the masthead says <strong>syncing</strong> when that is working. If the connection drops, the app keeps working, saves to the device, and pushes everything up the next time it can reach the cloud.</p>
+
               <h2>Notifications</h2>
               <p>You get one email per new flag, with confirmed and rumored listed separately. Items already flagged do not come back to your inbox, they simply stay on this page.</p>
 
@@ -267,7 +271,7 @@
 <div id="settings" class="modal hidden">
   <div class="modal-card">
     <h2>Data connection</h2>
-    <p class="modal-sub">Paste a GitHub access token for the private Le Parfumier data store. Read only adds wholesale cost and margin. Read and write also saves your decisions and quantities to the shared store, so they follow you to every device instead of living in this browser. The token stays in this browser and is never sent anywhere else.</p>
+    <p class="modal-sub">Your decisions already sync on their own, with no token and nothing to set up, so this is only about money. Paste a GitHub token that can read the private Le Parfumier data store and wholesale cost, margin and the gross margin figure appear. Read only access is enough. The token stays in this browser and is never sent anywhere else.</p>
     <input id="token-input" class="text-input" type="password" placeholder="GitHub token" autocomplete="off">
     <div class="modal-row">
       <button id="token-save" class="btn">Save</button>
@@ -295,10 +299,12 @@
 
 <div id="toast" class="toast"><span class="dot"></span><span id="toast-text"></span></div>
 
+<!-- Supabase, for decision sync. Same project as the other J3 apps. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="vendor/xlsx.full.min.js?v=4"></script>
 <script src="vendor/jspdf.umd.min.js?v=6"></script>
 <script src="vendor/jspdf.plugin.autotable.min.js?v=6"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 <!-- Bump the ?v= on every tag above, and APP_VERSION in app.js, on every deploy that
      changes app.js or style.css. GitHub Pages caches both for ten minutes, so without
      a bump anyone who already opened the page keeps running the old build. -->
