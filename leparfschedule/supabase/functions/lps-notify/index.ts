@@ -155,11 +155,17 @@ async function sendEmail(to: string[], subject: string, text: string, htmlBody: 
   if (!r.ok) throw new Error("resend failed: " + JSON.stringify(data));
   return data;
 }
-function emailHtml(text: string, links: { approve: string; decline: string } | null, appLink: string) {
+// Gmail folds any block that repeats an earlier message in the thread behind "…", so the
+// buttons sit right under the first line and every mail carries a unique footer.
+function emailHtml(text: string, links: { approve: string; decline: string } | null, appLink: string, ref: string) {
   const btn = (href: string, label: string, bg: string) => `<a href="${href}" style="display:inline-block;background:${bg};color:#1a1622;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:700;margin:0 8px 8px 0">${label}</a>`;
-  return `<div style="font-family:Georgia,serif;max-width:560px;color:#1a1622"><p style="letter-spacing:.3em;font-size:11px;color:#a86fa5">LE PARFUMIER · SCHEDULE</p>${text.split("\n").map((l) => `<p style="margin:6px 0;font-family:Arial,sans-serif;font-size:15px">${esc(l)}</p>`).join("")}
-  ${links ? `<p style="margin-top:22px">${btn(links.approve, "✓ Approve", "#87be90")}${btn(links.decline, "✕ Decline", "#e9796b")}</p><p style="font-family:Arial,sans-serif;font-size:12px;color:#777">Either button opens a one-tap confirmation where you pick your name.</p>` : ""}
-  <p style="margin-top:18px"><a href="${appLink}" style="font-family:Arial,sans-serif;color:#a86fa5">Open the schedule</a></p></div>`;
+  const lines = text.split("\n").filter((l) => l.trim());
+  const first = lines.shift() || "";
+  const p = (l: string) => `<p style="margin:6px 0;font-family:Arial,sans-serif;font-size:15px">${esc(l)}</p>`;
+  return `<div style="font-family:Georgia,serif;max-width:560px;color:#1a1622"><p style="letter-spacing:.3em;font-size:11px;color:#a86fa5">LE PARFUMIER · SCHEDULE</p>${p(first)}
+  ${links ? `<p style="margin:16px 0 4px">${btn(links.approve, "✓ Approve", "#87be90")}${btn(links.decline, "✕ Decline", "#e9796b")}</p><p style="font-family:Arial,sans-serif;font-size:12px;color:#777;margin:0 0 14px">Tap a button, pick your name, done. Ref ${esc(ref)}</p>` : ""}
+  ${lines.map(p).join("")}
+  <p style="margin-top:18px;font-family:Arial,sans-serif;font-size:12px"><a href="${appLink}" style="color:#a86fa5">Open the schedule</a> · ${esc(ref)}</p></div>`;
 }
 
 // -------------------------------------------------------------------- serve
@@ -196,7 +202,8 @@ Deno.serve(async (req) => {
   const base = `${SUPABASE_URL}/functions/v1/lps-notify`;
   const links = payload.decide && SERVICE && ["off", "swap"].includes(payload.decide.kind) && payload.decide.id ? await decideLinks(payload.decide.kind, payload.decide.id, base) : null;
   const appLink = payload.app || APP_URL + "#requests";
-  const text = (payload.text || "") + (links ? `\n\nApprove: ${links.approve}\nDecline: ${links.decline}` : "") + `\n\nOpen the schedule: ${appLink}`;
-  try { const data = await sendEmail(to, payload.subject || "Le Parfumier schedule", text, emailHtml(payload.text || "", links, appLink)); return json({ ok: true, id: data.id, buttons: !!links }); }
+  const ref = (payload.decide && payload.decide.id ? String(payload.decide.id).slice(0, 8) : Math.random().toString(36).slice(2, 8)) + " · " + new Date().toISOString().slice(0, 16).replace("T", " ");
+  const text = (payload.text || "") + (links ? `\n\nApprove: ${links.approve}\nDecline: ${links.decline}` : "") + `\n\nOpen the schedule: ${appLink}\nRef ${ref}`;
+  try { const data = await sendEmail(to, payload.subject || "Le Parfumier schedule", text, emailHtml(payload.text || "", links, appLink, ref)); return json({ ok: true, id: data.id, buttons: !!links }); }
   catch (e) { return json({ error: String((e as Error).message || e) }, 502); }
 });
