@@ -18,7 +18,7 @@
 // =============================================================================
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
-const FROM = Deno.env.get("LPS_FROM_EMAIL") || "Le Parfumier Schedule <onboarding@resend.dev>";
+const FROM = Deno.env.get("LPS_FROM_EMAIL") || "Le Parfumier Schedule <schedule@j3taviation.com>"; // j3taviation.com is verified in Resend
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
 const APP_URL = "https://draft.j3taviation.com/leparfschedule/";
