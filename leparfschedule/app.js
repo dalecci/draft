@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes any js/css/html file, and bump the
 // matching ?v= query params in index.html.
 "use strict";
-const APP_VERSION = 4;
+const APP_VERSION = 5;
 
 // Same Supabase project as the FLAG pilot and the other J3 apps. The anon key is
 // public by design; the app is PIN-gated and row level security lets anon write.
@@ -271,8 +271,9 @@ function storeHours(code, date) {
   for (const o of ov) {
     if (o.on === false) continue;
     if (o.store !== "ALL" && o.store !== code) continue;
-    if (o.dates && Object.prototype.hasOwnProperty.call(o.dates, date)) { const v = o.dates[date]; return v && v.length === 2 ? v : null; }
-    if (o.from && o.to && inRange(date, o.from, o.to) && o.hours) { const v = o.hours[dowOf(date)]; if (v !== undefined) return v && v.length === 2 ? v : null; }
+    const reg = (store(code).hours || {})[dowOf(date)];
+    if (o.dates && Object.prototype.hasOwnProperty.call(o.dates, date)) return resolveHoursVal(o.dates[date], reg);
+    if (o.from && o.to && inRange(date, o.from, o.to) && o.hours) { const v = o.hours[dowOf(date)]; if (v !== undefined) return resolveHoursVal(v, reg); }
   }
   const h = store(code).hours || {}; const v = h[dowOf(date)];
   return v && v.length === 2 ? v : null;
@@ -370,18 +371,58 @@ function parseSheet(text) {
   }
   return { people, errors, storeHours: storeHoursOut };
 }
-// "Dec 24: 10 to 3" / "Dec 25: closed" / "Dec 26 - Dec 31: 12 to 5" → { 'YYYY-MM-DD': [o,c] | null }
+// Temporary hours typed loosely, one date per line. The month carries over between lines:
+//   Dec 24 10-3          → 10a–3p
+//   25 closed            → closed
+//   26 open til 5        → regular opening time, closes 5p   ({ close })
+//   27 open at 12        → opens 12p, regular closing time   ({ open })
+//   Dec 28 - Jan 2: 12 to 5
+// Returns { dates: { 'YYYY-MM-DD': [o,c] | null | {open?,close?} }, errors }.
+function parseHoursPhrase(txt) {
+  const t = (txt || "").trim();
+  if (!t) return { err: "no hours" };
+  if (/\b(closed|close|off|shut)\b/i.test(t) && !/\d/.test(t)) return { v: null };
+  const r = parseTimeRange(t);
+  if (r && r !== "OFF") return { v: [r.start_min, r.end_min] };
+  let m = t.match(/(?:til{1,2}|until|to|close[sd]?(?:\s*at)?|-)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?(?![a-z])/i);
+  if (m) return { v: { close: parseHour(m[1], m[2], m[3], true) } };
+  m = t.match(/(?:open(?:s|ing)?(?:\s*at)?|from|start(?:s)?(?:\s*at)?|at)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a|p)?(?![a-z])/i);
+  if (m) return { v: { open: parseHour(m[1], m[2], m[3], false) } };
+  return { err: `couldn't read "${t}"` };
+}
 function parseDatedHours(text) {
-  const out = {}, errors = [];
+  const out = {}, errors = []; let month = null;
+  const year0 = new Date().getFullYear();
+  const mk = (mon, d) => { let y = year0; if (ymd(new Date(y, mon, d)) < addDays(today(), -60)) y++; return ymd(new Date(y, mon, d)); };
   text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).forEach((line) => {
-    const idx = line.search(/[:=]|\s{2,}|\t/); const datePart = idx >= 0 ? line.slice(0, idx) : line, hoursPart = idx >= 0 ? line.slice(idx + 1) : "";
-    let list = parseDates(datePart);
-    const rm = datePart.match(/([A-Za-z]{3,9}\.?\s+\d{1,2})\s*(?:-|–|to)\s*([A-Za-z]{3,9}\.?\s+\d{1,2})/);
-    if (rm) { const a = parseDates(rm[1])[0], b = parseDates(rm[2])[0]; if (a && b && b >= a) { list = []; for (let d = a; d <= b; d = addDays(d, 1)) list.push(d); } }
-    if (!list.length) { errors.push(`No date in "${line}"`); return; }
-    const r = parseTimeRange(hoursPart);
-    if (r === null && !/closed|off/i.test(hoursPart)) { errors.push(`No hours in "${line}"`); return; }
-    list.forEach((d) => { out[d] = r === "OFF" || r === null ? null : [r.start_min, r.end_min]; });
+    let rest = line;
+    const mm = rest.match(/^([A-Za-z]{3,9})\.?\s+(?=\d)/);
+    let mon = month;
+    if (mm && MONTH_TOKENS[mm[1].toLowerCase()] !== undefined) { mon = MONTH_TOKENS[mm[1].toLowerCase()]; month = mon; rest = rest.slice(mm[0].length); }
+    const dm = rest.match(/^(\d{1,2})(?:st|nd|rd|th)?(?:\s*(?:-|–|to|through|thru)\s*(?:([A-Za-z]{3,9})\.?\s+)?(\d{1,2})(?:st|nd|rd|th)?)?\s*[:,=]?\s*/);
+    if (!dm || mon === null) { errors.push(`No date in "${line}" (start with a month, e.g. "Dec 24 10-3")`); return; }
+    rest = rest.slice(dm[0].length);
+    const d1 = Number(dm[1]); let mon2 = mon, d2 = dm[3] ? Number(dm[3]) : d1;
+    if (dm[2] && MONTH_TOKENS[dm[2].toLowerCase()] !== undefined) { mon2 = MONTH_TOKENS[dm[2].toLowerCase()]; month = mon2; }
+    const from = mk(mon, d1), to = mk(mon2, d2);
+    if (to < from) { errors.push(`Range runs backwards in "${line}"`); return; }
+    const h = parseHoursPhrase(rest);
+    if (h.err) { errors.push(`${h.err} in "${line}"`); return; }
+    for (let d = from; d <= to; d = addDays(d, 1)) out[d] = h.v;
   });
   return { dates: out, errors };
+}
+// A stored hours value may be [open, close], null (closed) or a partial { open?, close? }
+// that overrides only one end of the regular hours.
+function resolveHoursVal(v, regular) {
+  if (v === null) return null;
+  if (Array.isArray(v)) return v.length === 2 ? v : null;
+  if (v && typeof v === "object") { const base = regular && regular.length === 2 ? regular : [600, 1080]; return [v.open ?? base[0], v.close ?? base[1]]; }
+  return regular && regular.length === 2 ? regular : null;
+}
+function fmtHoursVal(v) {
+  if (v === null) return "closed";
+  if (Array.isArray(v)) return fmtRange(v[0], v[1]);
+  if (v && typeof v === "object") return (v.open != null ? "opens " + fmtT(v.open) : "") + (v.open != null && v.close != null ? ", " : "") + (v.close != null ? "closes " + fmtT(v.close) : "");
+  return "";
 }
