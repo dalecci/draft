@@ -14,7 +14,7 @@ async function sendEmail(to, subject, text, hash = "#requests", decide = null) {
   if (state.offline || !sb) return { skipped: "offline" };
   try {
     const { data, error } = await sb.functions.invoke(NOTIFY_FN, { body: { to: recipients, subject, text, app: link, decide } });
-    if (error) throw error;
+    if (error) { let detail = ""; try { const body = error.context && error.context.json ? await error.context.json() : null; detail = body && body.error ? String(body.error) : ""; } catch (_) {} throw new Error(detail || error.message || String(error)); }
     return data || { ok: true };
   } catch (e) { console.warn("email not sent", e); return { error: String(e.message || e) }; }
 }
@@ -269,19 +269,38 @@ function onShiftClick(s) {
   if (s.employee_id === state.me.id) myShiftSheet(s); else theirShiftSheet(s);
 }
 function offRequestSheet(date) {
+  let kind = "blockout", from = date, to = date, picking = false, view = date.slice(0, 7);
   const c = openSheet(`
     <h3>Ask for time off</h3>
     <p class="sub">Block-outs are days you can't work (appointments, school). PTO is paid time off. Both go to the manager for approval, and the schedule is rebuilt around them once approved.</p>
     <div class="tabs"><button class="tab active" data-k="blockout">Block out</button><button class="tab" data-k="pto">PTO</button></div>
-    <div class="field-row"><div><label class="lbl">From</label><input class="field" id="from" type="date" value="${esc(date)}"></div><div><label class="lbl">To</label><input class="field" id="to" type="date" value="${esc(date)}"></div></div>
+    <label class="lbl">Days · tap the first day, then the last</label>
+    <div class="rcal" id="rcal"></div>
+    <p class="small muted" id="rsum" style="margin:8px 0 0"></p>
     <label class="lbl">Reason</label><input class="field" id="reason" placeholder="e.g. Family wedding" maxlength="140">
     <div class="actions"><button class="btn" id="cancel">Cancel</button><button class="btn primary" id="send">Send for approval</button></div>`);
-  let kind = "blockout";
-  $$(".tab", c).forEach((t) => (t.onclick = () => { $$(".tab", c).forEach((x) => x.classList.remove("active")); t.classList.add("active"); kind = t.dataset.k; }));
+  const drawCal = () => {
+    const [y, m] = view.split("-").map(Number);
+    const first = ymd(new Date(y, m - 1, 1)), last = ymd(new Date(y, m, 0)), t = today();
+    const cells = []; for (let d = mondayOf(first); d <= addDays(mondayOf(last), 6); d = addDays(d, 1)) cells.push(d);
+    const canBack = view > t.slice(0, 7);
+    const dayBtn = (d) => {
+      const out = d < first || d > last, past = d < t;
+      const cls = [out ? "out" : "", past ? "past" : "", d === from ? "a" : "", d === to ? "b" : "", d > from && d < to ? "in" : "", d === t ? "today" : ""].join(" ");
+      return `<button type="button" class="rday ${cls}" data-rd="${d}" ${out || past ? "disabled" : ""}>${out ? "" : parseYmd(d).getDate()}</button>`;
+    };
+    $("#rcal", c).innerHTML = `<div class="rhead"><button type="button" class="btn sm" data-rm="-1" ${canBack ? "" : "disabled"}>‹</button><b>${MONTHS[m - 1]} ${y}</b><button type="button" class="btn sm" data-rm="1">›</button></div>
+      <div class="rgrid">${DOW.map((d) => `<span class="rd">${d[0]}</span>`).join("")}${cells.map(dayBtn).join("")}</div>`;
+    const n = daysBetween(from, to) + 1;
+    $("#rsum", c).innerHTML = picking ? `From <b>${esc(fmtDate(from, true))}</b> — now tap the <b>last</b> day (tap it again for a single day).` : `<b>${esc(fmtRangeDates(from, to))}</b> · ${n} day${n === 1 ? "" : "s"}. Tap a day to start a new range.`;
+    $$("[data-rm]", c).forEach((b) => (b.onclick = () => { const d = new Date(y, m - 1 + Number(b.dataset.rm), 1); view = d.getFullYear() + "-" + pad(d.getMonth() + 1); drawCal(); }));
+    $$("[data-rd]", c).forEach((b) => (b.onclick = () => { const d = b.dataset.rd; if (!picking) { from = to = d; picking = true; } else { if (d < from) { to = from; from = d; } else to = d; picking = false; } drawCal(); }));
+  };
+  drawCal();
+  $$(".tab", c).forEach((tb) => (tb.onclick = () => { $$(".tab", c).forEach((x) => x.classList.remove("active")); tb.classList.add("active"); kind = tb.dataset.k; }));
   $("#cancel", c).onclick = closeSheet;
   $("#send", c).onclick = async () => {
-    const from = $("#from", c).value, to = $("#to", c).value || from;
-    if (!from || to < from) return toast("Check the dates.", "err");
+    if (picking) { to = from; picking = false; drawCal(); }
     $("#send", c).disabled = true;
     try { await createOffRequest({ kind, from, to, reason: $("#reason", c).value.trim() }); closeSheet(); render(); } catch (e) { toast(e.message, "err"); $("#send", c).disabled = false; }
   };
@@ -311,7 +330,7 @@ function wire(root) {
   $$("[data-shift]", root).forEach((el) => (el.onclick = (ev) => { ev.stopPropagation(); const s = shiftById(el.dataset.shift); if (s) onShiftClick(s); }));
   $$("[data-week]", root).forEach((el) => (el.onclick = () => { state.week = el.dataset.week === "today" ? mondayOf(today()) : addDays(state.week, Number(el.dataset.week)); render(); }));
   $$("[data-month]", root).forEach((el) => (el.onclick = () => { const [y, m] = state.month.split("-").map(Number); if (el.dataset.month === "today") state.month = today().slice(0, 7); else { const d = new Date(y, m - 1 + Number(el.dataset.month), 1); state.month = d.getFullYear() + "-" + pad(d.getMonth() + 1); } render(); ensureMonth(); }));
-  $$("[data-year]", root).forEach((el) => (el.onclick = () => { state.year = el.dataset.year === "today" ? Number(today().slice(0, 4)) : state.year + Number(el.dataset.year); render(); }));
+  $$("[data-year]", root).forEach((el) => (el.onclick = () => { const cur = state.toStart || defaultToStart(); if (el.dataset.year === "today") state.toStart = defaultToStart(); else { const [y, m] = cur.split("-").map(Number); const d = new Date(y, m - 1 + Number(el.dataset.year), 1); state.toStart = d.getFullYear() + "-" + pad(d.getMonth() + 1); } render(); }));
   $$("[data-mstore]", root).forEach((el) => (el.onclick = () => { state.masterStore = el.dataset.mstore; render(); }));
   $$("[data-go]", root).forEach((el) => (el.onclick = () => go(el.dataset.go)));
   $$("[data-add]", root).forEach((el) => (el.onclick = () => { const [employee_id, date, st] = el.dataset.add.split("|"); editShiftSheet(null, { employee_id, date, store: st }); }));
@@ -396,7 +415,7 @@ function renderMaster() {
   return `<section class="panel">
     <div class="panel-head"><div><div class="kicker">Master schedule</div><h1>Everyone, <em>every store</em></h1><p class="panel-sub">Tap your own shift to ask for a cover; tap someone else's to ask to take it. ${isSup() ? "As manager you can edit any cell, then use Week tools → Learn to make the edits permanent." : ""}</p></div>${weekNav()}</div>
     <div class="tabs"><button class="tab ${state.masterStore === "all" ? "active" : ""}" data-mstore="all">All stores</button>${stores().map((s) => `<button class="tab ${state.masterStore === s.code ? "active" : ""}" data-mstore="${esc(s.code)}">${esc(s.name)}</button>`).join("")}</div>
-    ${issues.length ? `<div class="card attn" style="margin-bottom:22px"><div class="row"><span class="pill warn">${issues.length} flag${issues.length > 1 ? "s" : ""} this week</span><span class="small muted">Compromises the solver had to make, or things only a person can decide.</span></div><ul class="small" style="margin:8px 0 0 18px;padding:0">${issues.slice(0, 12).map((i) => `<li>${esc(i.text)}</li>`).join("")}${issues.length > 12 ? `<li class="dim">…and ${issues.length - 12} more</li>` : ""}</ul></div>` : `<div class="row" style="margin-bottom:22px"><span class="pill good">Every open hour is covered and everyone is within limits</span></div>`}
+    ${!isSup() ? "" : issues.length ? `<div class="card attn" style="margin-bottom:22px"><div class="row"><span class="pill warn">${issues.length} flag${issues.length > 1 ? "s" : ""} this week</span><span class="small muted">Compromises the solver had to make, or things only a person can decide.</span></div><ul class="small" style="margin:8px 0 0 18px;padding:0">${issues.slice(0, 12).map((i) => `<li>${esc(i.text)}</li>`).join("")}${issues.length > 12 ? `<li class="dim">…and ${issues.length - 12} more</li>` : ""}</ul></div>` : `<div class="row" style="margin-bottom:22px"><span class="pill good">Every open hour is covered and everyone is within limits</span></div>`}
     ${shown.map((st) => {
       const people = staff().filter((e) => worksStore(e, st.code) || weekShifts(state.week).some((s) => s.employee_id === e.id && s.store === st.code));
       const rows = people.filter((e) => weekShifts(state.week).some((s) => s.employee_id === e.id && s.store === st.code) || e.home_store === st.code);
@@ -508,9 +527,12 @@ function approvalChecks(s) {
 }
 
 // ---- Time off (year calendar)
+function defaultToStart() { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return d.getFullYear() + "-" + pad(d.getMonth() + 1); }
 function renderTimeOff() {
-  const me = state.me, t = today(); if (!state.year) state.year = Number(t.slice(0, 4));
-  const y = state.year;
+  const me = state.me, t = today(); if (!state.toStart) state.toStart = defaultToStart();
+  const [sy, sm] = state.toStart.split("-").map(Number);
+  const months = Array.from({ length: 12 }, (_, i) => { const d = new Date(sy, sm - 1 + i, 1); return { y: d.getFullYear(), mi: d.getMonth() }; });
+  const label = `${MONTHS[months[0].mi].slice(0, 3)} ${months[0].y} – ${MONTHS[months[11].mi].slice(0, 3)} ${months[11].y}`, isDefault = state.toStart === defaultToStart();
   const mineReqs = state.data.off_requests.filter((o) => isSup() || o.employee_id === me.id).sort(by((o) => -new Date(o.created_at).getTime()));
   const statusFor = (d) => {
     if (isSup()) { const all = state.data.off_requests.filter((o) => inRange(d, o.date_from, o.date_to) && ["pending", "approved"].includes(o.status)); return all.length ? { cls: all.some((o) => o.status === "pending") ? "pend" : "ok", n: all.length, names: all.map((o) => firstName(ename(o.employee_id)) + (o.status === "pending" ? " (pending)" : "")).join(", ") } : null; }
@@ -521,9 +543,9 @@ function renderTimeOff() {
   };
   return `<section class="panel">
     <div class="panel-head"><div><div class="kicker">Time off</div><h1>Block-outs &amp; <em>PTO</em></h1><p class="panel-sub">${isSup() ? "Everyone's requests, all year. Pending ones are amber; approve or decline them below or under Manage." : "Tap a day to ask for a block-out (a day you can't work) or PTO. The manager approves it, and the schedule is rebuilt around it."}</p></div>
-      <div class="weeknav"><button class="btn sm" data-year="-1">‹</button><div class="wk">${y}<small>${y === Number(t.slice(0, 4)) ? "this year" : ""}</small></div><button class="btn sm" data-year="1">›</button>${y === Number(t.slice(0, 4)) ? "" : `<button class="btn sm ghost" data-year="today">Today</button>`}</div></div>
-    <div class="ygrid">${MONTHS.map((mn, mi) => {
-      const first = ymd(new Date(y, mi, 1)), last = ymd(new Date(y, mi + 1, 0)); const start = mondayOf(first); const cells = []; for (let d = start; d <= addDays(mondayOf(last), 6); d = addDays(d, 1)) cells.push(d);
+      <div class="weeknav"><button class="btn sm" data-year="-12">‹</button><div class="wk">${esc(label)}<small>${isDefault ? "last month onward" : ""}</small></div><button class="btn sm" data-year="12">›</button>${isDefault ? "" : `<button class="btn sm ghost" data-year="today">Today</button>`}</div></div>
+    <div class="ygrid">${months.map(({ y, mi }) => {
+      const mn = MONTHS[mi] + (y !== Number(t.slice(0, 4)) ? " " + y : ""); const first = ymd(new Date(y, mi, 1)), last = ymd(new Date(y, mi + 1, 0)); const start = mondayOf(first); const cells = []; for (let d = start; d <= addDays(mondayOf(last), 6); d = addDays(d, 1)) cells.push(d);
       return `<div class="ymonth"><div class="ym">${mn}</div><div class="yd">${DOW.map((d) => `<span>${d[0]}</span>`).join("")}${cells.map((d) => { const out = d < first || d > last; const st = out ? null : statusFor(d); return `<button class="yday ${out ? "out" : ""} ${d === t ? "today" : ""} ${d < t ? "past" : ""} ${st ? st.cls : ""}" ${out || d < t ? "disabled" : `data-offday="${d}"`} title="${st ? esc(st.names) : esc(d)}">${out ? "" : parseYmd(d).getDate()}${st && isSup() && st.n > 1 ? `<i>${st.n}</i>` : ""}</button>`; }).join("")}</div></div>`;
     }).join("")}</div>
     <div class="legend"><span><i style="background:var(--moss)"></i>approved</span><span><i style="background:var(--ochre)"></i>waiting on manager</span><span><i style="background:var(--vermilion)"></i>declined</span></div>

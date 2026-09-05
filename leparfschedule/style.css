@@ -355,3 +355,17 @@ details summary{cursor:pointer}
   .mh{font-size:9px;letter-spacing:.05em}
   .ygrid{grid-template-columns:1fr 1fr}
 }
+
+/* range calendar in the time-off sheet */
+.rcal{background:var(--surface-2);border:1px solid var(--rule-soft);border-radius:12px;padding:10px}
+.rhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.rhead b{font-family:var(--serif);font-weight:500;font-size:17px}
+.rgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.rd{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);text-align:center;padding-bottom:2px}
+.rday{aspect-ratio:1;border-radius:8px;border:1px solid transparent;background:var(--paper-sunk);color:var(--ink-2);font-family:var(--mono);font-size:12px;padding:0;cursor:pointer}
+.rday:hover:not(:disabled){border-color:var(--iris);color:var(--ink)}
+.rday.out{background:transparent}
+.rday.past{opacity:.3;cursor:default}
+.rday.today{border-color:var(--iris)}
+.rday.in{background:var(--iris-wash);color:var(--ink)}
+.rday.a,.rday.b{background:var(--iris);color:#1a1622;font-weight:600}
