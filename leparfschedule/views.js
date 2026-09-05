@@ -334,6 +334,7 @@ function editingNow() {
 }
 function render() {
   if (!state.me) return;
+  if (!(state.route === "#admin" && state.adminTab === "ai")) state.aiUnlocked = false;
   updateBadges();
   const view = { "#mine": renderMine, "#week": renderWeek, "#master": renderMaster, "#requests": renderRequests, "#timeoff": renderTimeOff, "#admin": renderAdmin }[state.route] || renderMine;
   const main = $("#main"); main.innerHTML = view(); wire(main);
