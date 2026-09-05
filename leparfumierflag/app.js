@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes app.js, style.css or index.html,
 // and bump the matching ?v= query params in index.html so browsers that already
 // have the page do not keep running the old build for ten minutes.
-const APP_VERSION = 16;
+const APP_VERSION = 17;
 
 const PIN = "4545";
 
@@ -31,9 +31,9 @@ const OVERRIDES_KEY = "lpf_overrides";
 // Accept and Reject are your verdict on the scan. Need to buy and Ordered are what
 // you are doing about it. Nothing selected means nobody has looked at it yet, which
 // is why there is no button for that state: it is the absence of one.
-const DECISIONS = ["accept", "reject", "needbuy", "ordered"];
+const VERDICTS = ["accept", "reject"];
+const ACTIONS = ["needbuy", "ordered"];
 const DECISION_LABEL = { accept: "Accept", reject: "Reject", needbuy: "Need to buy", ordered: "Ordered" };
-const BUYING_DECISIONS = ["needbuy", "ordered"];
 
 const state = {
   products: [],
@@ -316,21 +316,57 @@ function applyOverrides() {
   state.flags.forEach((f) => { if (o[f.id]) Object.assign(f, o[f.id]); });
 }
 
-// Two earlier shapes have to keep working: v8 stored only userConfirmed plus a
-// quantity, and v9 used the names review/buying/passed. Both are read forward so no
-// decision anyone already recorded is lost. Returns "" for not yet reviewed.
-function decisionOf(f) {
-  var d = f.decision;
-  if (d) {
-    if (DECISIONS.indexOf(d) !== -1) return d;
-    if (d === "buying") return "needbuy";
-    if (d === "passed") return "reject";
-    if (d === "review") return "";
-  }
+// Two independent questions, so two independent answers.
+//   verdict: is the scan right about this?   accept | reject | ""
+//   action:  what are you doing about it?    needbuy | ordered | ""
+// Accept and Need to buy can both be on, which is the normal case for anything you
+// intend to order. Reject clears the action, since you do not buy what you have
+// just said is not really being discontinued.
+//
+// Three earlier shapes are read forward here so nothing already recorded is lost:
+// v8 stored only userConfirmed plus a quantity, v9 used review/buying/passed, and
+// v10 to v16 used one combined accept/reject/needbuy/ordered field.
+function verdictOf(f) {
+  if (f.verdict === "accept" || f.verdict === "reject") return f.verdict;
+  if (f.verdict === "") return "";
+  const d = f.decision;
+  if (d === "reject" || d === "passed") return "reject";
+  if (d === "accept" || d === "needbuy" || d === "ordered" || d === "buying") return "accept";
+  if (d === "review") return "";
   if (f.userConfirmed === false) return "reject";
-  if (f.orderedQty > 0) return "ordered";
   if (f.userConfirmed === true) return "accept";
   return "";
+}
+
+function actionOf(f) {
+  if (f.action === "needbuy" || f.action === "ordered") return f.action;
+  if (f.action === "") return "";
+  const d = f.decision;
+  if (d === "ordered") return "ordered";
+  if (d === "needbuy" || d === "buying") return "needbuy";
+  return "";
+}
+
+// A rejection stops you looking at something, it does not settle it forever. After
+// the cooling off period the item comes back unreviewed, because a house can change
+// its mind and six months is long enough for the market to have moved.
+const REJECT_COOLDOWN_DAYS = 182;
+
+function rejectionExpired(f) {
+  if (verdictOf(f) !== "reject" || !f.rejectedDate) return false;
+  const age = daysSince(f.rejectedDate);
+  return age !== null && age >= REJECT_COOLDOWN_DAYS;
+}
+
+// The verdict as the interface should treat it. An expired rejection reads as
+// unreviewed; nothing is written back until someone actually touches it again.
+function liveVerdict(f) {
+  return rejectionExpired(f) ? "" : verdictOf(f);
+}
+
+function rejectDaysLeft(f) {
+  const age = daysSince(f.rejectedDate);
+  return age === null ? REJECT_COOLDOWN_DAYS : Math.max(0, REJECT_COOLDOWN_DAYS - age);
 }
 
 let syncTimer = null;
@@ -349,16 +385,44 @@ function updateFlag(flagId, changes, opts) {
   scheduleSync(flagId);
 }
 
-function setDecision(flagId, decision) {
-  // userConfirmed is kept in step so the scheduled scan and anything reading the
-  // shared store still see the yes or no it already understands.
-  const userConfirmed = decision === "reject" ? false : decision === "" ? null : true;
-  const changes = { decision: decision || null, userConfirmed: userConfirmed };
-  // Rejecting it, or clearing the decision, drops any quantity with it. Accepting
-  // does not: you can agree a bottle is going and still be deciding on the number.
-  if (decision === "" || decision === "reject") {
+// Clicking the verdict that is already set clears it back to unreviewed.
+function setVerdict(flagId, verdict) {
+  const flag = state.flags.find((f) => f.id === flagId);
+  if (!flag) return;
+  const next = liveVerdict(flag) === verdict ? "" : verdict;
+
+  const changes = { verdict: next };
+  // userConfirmed is kept in step so the scheduled scan and anything else reading
+  // the shared store still sees the yes or no it already understands.
+  changes.userConfirmed = next === "reject" ? false : next === "accept" ? true : null;
+  // Stamp the rejection so the six month clock starts now, and clear the stamp
+  // whenever the item stops being rejected.
+  changes.rejectedDate = next === "reject" ? new Date().toISOString().slice(0, 10) : null;
+  // You do not buy what you have just said is not going.
+  if (next === "reject") {
+    changes.action = "";
     changes.orderedQty = null;
     changes.orderedDate = null;
+  }
+  updateFlag(flagId, changes);
+}
+
+// Independent of the verdict: you can be buying something you have also accepted,
+// which is the normal case.
+function setAction(flagId, action) {
+  const flag = state.flags.find((f) => f.id === flagId);
+  if (!flag) return;
+  const next = actionOf(flag) === action ? "" : action;
+  const changes = { action: next };
+  if (!next) {
+    changes.orderedQty = null;
+    changes.orderedDate = null;
+  }
+  // Choosing to buy something implies you agree it is going, unless you have
+  // explicitly rejected it, in which case the reject button is the way back.
+  if (next && liveVerdict(flag) === "") {
+    changes.verdict = "accept";
+    changes.userConfirmed = true;
   }
   updateFlag(flagId, changes);
 }
@@ -381,10 +445,15 @@ function initSupabase() {
 }
 
 function decisionRow(f) {
-  const d = decisionOf(f);
+  const v = verdictOf(f);
+  const a = actionOf(f);
   return {
     flag_id: f.id,
-    decision: d || null,
+    verdict: v || null,
+    action: a || null,
+    rejected_date: v === "reject" ? f.rejectedDate || null : null,
+    // Still written for anything that reads the old single field.
+    decision: a || v || null,
     ordered_qty: f.orderedQty || null,
     ordered_date: f.orderedDate || null,
     note: f.note || null,
@@ -406,11 +475,14 @@ async function loadDecisions() {
     state.flags.forEach((f) => {
       const r = cloud.get(f.id);
       if (r) {
+        f.verdict = r.verdict !== undefined && r.verdict !== null ? r.verdict : (r.decision === "reject" ? "reject" : r.decision ? "accept" : "");
+        f.action = r.action !== undefined && r.action !== null ? r.action : (r.decision === "ordered" ? "ordered" : r.decision === "needbuy" ? "needbuy" : "");
+        f.rejectedDate = r.rejected_date || null;
         f.decision = r.decision || null;
         f.orderedQty = r.ordered_qty || null;
         f.orderedDate = r.ordered_date || null;
         f.note = r.note || null;
-        f.userConfirmed = r.decision === "reject" ? false : r.decision ? true : null;
+        f.userConfirmed = f.verdict === "reject" ? false : f.verdict ? true : null;
       } else if (local[f.id] && (local[f.id].decision || local[f.id].orderedQty || local[f.id].note)) {
         Object.assign(f, local[f.id]);
         catchUp.push(f);
@@ -581,11 +653,12 @@ function enrich(f) {
   const product = findProduct(f.productHandle);
   const ref = referenceVariant(product);
   const scored = scoreFlag(f, product);
-  const decision = decisionOf(f);
+  const verdict = liveVerdict(f);
+  const action = actionOf(f);
   const qty = parseInt(f.orderedQty, 10) || 0;
   // Committed money only counts once you have said you want it, not merely that
   // you agree it is being discontinued.
-  const counts = qty > 0 && BUYING_DECISIONS.indexOf(decision) !== -1;
+  const counts = qty > 0 && ACTIONS.indexOf(action) !== -1;
   return {
     flag: f,
     product: product,
@@ -596,7 +669,11 @@ function enrich(f) {
     score: scored.total,
     parts: scored.parts,
     band: band(scored.total),
-    decision: decision,
+    verdict: verdict,
+    action: action,
+    rejectedHidden: verdict === "reject",
+    rejectDaysLeft: rejectDaysLeft(f),
+    rejectReturned: rejectionExpired(f),
     qty: qty,
     committed: counts ? qty * (ref ? ref.price : 0) : 0,
     committedCost: counts ? qty * (ref ? ref.cost : 0) : 0,
@@ -624,8 +701,14 @@ function visibleFlags() {
   const q = state.search.trim().toLowerCase();
   let items = state.flags.map(enrich).filter((x) => {
     if (state.filterStatus && x.flag.status !== state.filterStatus) return false;
-    if (state.filterDecision === "none" && x.decision !== "") return false;
-    if (state.filterDecision && state.filterDecision !== "none" && x.decision !== state.filterDecision) return false;
+    // A live rejection drops out of the list until its six months are up. Choosing
+    // "Rejected" in the filter is the way to look at them on purpose.
+    if (state.filterDecision !== "reject" && x.verdict === "reject") return false;
+    if (state.filterDecision === "none" && (x.verdict !== "" || x.action !== "")) return false;
+    if (state.filterDecision === "accept" && x.verdict !== "accept") return false;
+    if (state.filterDecision === "reject" && x.verdict !== "reject") return false;
+    if (state.filterDecision === "needbuy" && x.action !== "needbuy") return false;
+    if (state.filterDecision === "ordered" && x.action !== "ordered") return false;
     if (q) {
       const hay = (x.flag.title + " " + (x.flag.vendor || "")).toLowerCase();
       if (!hay.includes(q)) return false;
@@ -674,7 +757,7 @@ function renderBrief() {
   const confirmed = open.filter((x) => x.flag.status === "confirmed");
   const rumored = open.filter((x) => x.flag.status === "rumored");
   const act = open.filter((x) => x.band.key === "act");
-  const undecided = act.filter((x) => x.decision === "").length;
+  const undecided = act.filter((x) => x.verdict === "").length;
   const houses = new Set(open.map((x) => x.flag.vendor || "").filter(Boolean));
 
   // Gross margin sitting in the at risk list. Gated on cost actually being present
@@ -758,16 +841,27 @@ function renderBrief() {
 }
 
 function decideButtons(x) {
-  return (
+  const row = (kind, keys, current) =>
     '<div class="decide">' +
-    DECISIONS.map(
+    keys.map(
       (d) =>
-        '<button class="dbtn ' + d + (x.decision === d ? " on" : "") + '" data-decision="' + d + '">' +
+        '<button class="dbtn ' + d + (current === d ? " on" : "") + '" data-' + kind + '="' + d + '">' +
         DECISION_LABEL[d] +
         "</button>"
     ).join("") +
-    "</div>"
-  );
+    "</div>";
+  // Rejecting hides an item from the list, so say so plainly and say when it is
+  // coming back. A silent disappearance is how people stop trusting a tool.
+  let note = "";
+  if (x.verdict === "reject") {
+    const left = x.rejectDaysLeft;
+    note = '<div class="decide-note">Hidden from the list, back in ' +
+      (left > 30 ? Math.round(left / 30) + " months" : left + " days") + "</div>";
+  } else if (x.rejectReturned) {
+    note = '<div class="decide-note back">Rejected six months ago, worth another look</div>';
+  }
+
+  return row("verdict", VERDICTS, x.verdict) + row("action", ACTIONS, x.action) + note;
 }
 
 function whyBlock(x) {
@@ -836,7 +930,7 @@ function renderFiches() {
           (state.productsLoaded ? "no price on file" : "loading catalog") +
           '</s></div><div class="v">&mdash;</div></div>';
 
-      const showQty = BUYING_DECISIONS.indexOf(x.decision) !== -1;
+      const showQty = ACTIONS.indexOf(x.action) !== -1;
       const qtyRow = showQty
         ? '<div class="qty-row">Quantity' +
           '<input type="number" min="0" step="1" class="qty" value="' + (x.qty || "") + '" placeholder="0" aria-label="Quantity">' +
@@ -855,7 +949,7 @@ function renderFiches() {
 
       return (
         '<article class="fiche is-' + escapeAttr(f.status) +
-        (x.decision === "reject" ? " is-rejected" : "") +
+        (x.verdict === "reject" ? " is-rejected" : "") +
         '" data-flag-id="' + escapeAttr(f.id) + '">' +
           '<div class="fiche-rank">' +
             '<input type="checkbox" class="pick"' + (state.selected.has(f.id) ? " checked" : "") +
@@ -912,10 +1006,8 @@ function initFicheEvents() {
 
     const dbtn = e.target.closest(".dbtn");
     if (dbtn) {
-      const next = dbtn.dataset.decision;
-      // Clicking the state an item is already in clears it back to not reviewed.
-      // Clicking the state it is already in clears it back to not reviewed.
-      setDecision(id, decisionOf(state.flags.find((f) => f.id === id)) === next ? "" : next);
+      if (dbtn.dataset.verdict) setVerdict(id, dbtn.dataset.verdict);
+      else if (dbtn.dataset.action) setAction(id, dbtn.dataset.action);
       return;
     }
 
@@ -1129,7 +1221,7 @@ function buyListRows() {
     status: x.flag.status,
     score: x.score,
     bandLabel: x.band.label,
-    decision: DECISION_LABEL[x.decision],
+    decision: [DECISION_LABEL[x.verdict], DECISION_LABEL[x.action]].filter(Boolean).join(" + ") || "Not reviewed",
     qty: x.qty || "",
     unit: x.unitPrice ? x.unitPrice.toFixed(2) : "",
     size: x.ref ? x.ref.size : "",
@@ -1259,6 +1351,23 @@ function exportWatchPdf() {
 // -------------------------------------------------------- supplier stock ---
 
 const HEADER_KEYWORDS = ["upc", "barcode", "ean", "item", "description", "price", "qty", "quantity", "designer", "sku", "stock"];
+
+// Who actually sent each list. Confirmed against the vendor emails, NOT guessed:
+// Perfume Center of America send PRICE-LIST, PriceList under 12 and NEW ARRIVALS,
+// Cosmopolitan send Fragrance Special, Fragrance Secret send the ASD show list.
+// Filenames alone had all three of the first group filed under Cosmopolitan, which
+// is why a file is never allowed to speak for its own supplier here.
+// Keep in step with supplierLabel() in scripts/build-master.mjs.
+const SUPPLIERS = [
+  { match: /asd|las.?vegas|fragrance.?secret/i, name: "Fragrance Secret" },
+  { match: /special/i,                          name: "Cosmopolitan Cosmetics" },
+  { match: /price-?list|lessthan12|new-?arrivals/i, name: "Perfume Center of America" },
+];
+
+function supplierOf(fileName) {
+  const hit = SUPPLIERS.find((s) => s.match.test(String(fileName || "")));
+  return hit ? hit.name : "Unidentified supplier";
+}
 
 // Words that appear in almost every fragrance name and so identify nothing on their
 // own. Note that size and concentration are NOT in here: they are the two things
@@ -1426,6 +1535,7 @@ function matchFlagInFile(flag, product, parsed) {
   const descOf = (r) => (parsed.cols.descCol === -1 ? "" : String(r[parsed.cols.descCol] || "").trim());
   const result = (row, confidence, exact) => ({
     fileName: parsed.fileName,
+    supplier: supplierOf(parsed.fileName),
     qty: hasQtyColumn ? cleanQty(row[parsed.cols.qtyCol]) : null,
     hasQtyColumn: hasQtyColumn,
     confidence: confidence,
@@ -1550,7 +1660,7 @@ function renderStockReport(parsedFiles) {
             r.matches
               .map(
                 (m) =>
-                  "<li><span><span class=\"f\">" + escapeHtml(m.fileName) + "</span> " +
+                  "<li><span><span class=\"f\">" + escapeHtml(m.supplier) + "</span> <span class=\"fromfile\">" + escapeHtml(m.fileName) + "</span> " +
                   escapeHtml(m.confidence) +
                   // Always show the supplier's own line. Without it a wrong match is
                   // invisible: the report says "matched on name" and you cannot see
@@ -1588,20 +1698,24 @@ function pickRecommendation(matches) {
     .sort((a, b) => b.exact - a.exact || b.qty - a.qty)[0].m;
 }
 
+// Found items first, everything not found pushed to the bottom, so a report is
+// read top down and the dead ends do not interrupt it.
 function stockReportRows() {
-  return lastReport.map((r) => {
+  const rows = lastReport.map((r) => {
     const best = pickRecommendation(r.matches);
     return {
       title: r.flag.title,
       house: r.flag.vendor || "",
       status: r.flag.status,
-      supplier: best ? best.fileName : "",
+      supplier: best ? best.supplier : "",
+      file: best ? best.fileName : "",
       qty: best && best.qty !== null ? best.qty : "",
       confidence: best ? best.confidence : "not found in any uploaded list",
       matchedLine: best ? best.desc : "",
-      all: r.matches.map((m) => m.fileName + " (" + (m.qty !== null ? m.qty : "qty n/a") + ")").join("; "),
+      all: r.matches.map((m) => m.supplier + " / " + m.fileName + " (" + (m.qty !== null ? m.qty : "qty n/a") + ")").join("; "),
     };
   });
+  return rows.sort((a, b) => (a.supplier ? 0 : 1) - (b.supplier ? 0 : 1));
 }
 
 function exportStockExcel() {
@@ -1611,14 +1725,15 @@ function exportStockExcel() {
       Item: r.title,
       House: r.house,
       "Scan status": r.status,
-      "Best supplier": r.supplier,
+      "Best supplier": r.supplier || "Not found",
+      "Found in file": r.file,
       "Available quantity": r.qty,
       "Match confidence": r.confidence,
       "Supplier line matched": r.matchedLine,
       "All lists checked": r.all,
     }))
   );
-  ws["!cols"] = [{ wch: 44 }, { wch: 22 }, { wch: 12 }, { wch: 28 }, { wch: 18 }, { wch: 38 }, { wch: 58 }, { wch: 40 }];
+  ws["!cols"] = [{ wch: 44 }, { wch: 22 }, { wch: 12 }, { wch: 26 }, { wch: 34 }, { wch: 18 }, { wch: 38 }, { wch: 58 }, { wch: 46 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Stock report");
   XLSX.writeFile(wb, "leparfumier-stock-report-" + stamp() + ".xlsx");
@@ -1640,9 +1755,9 @@ function exportStockPdf() {
 
   doc.autoTable({
     startY: 39,
-    head: [["Item", "House", "Best supplier", "Qty", "Match confidence", "Supplier line matched"]],
+    head: [["Item", "House", "Supplier", "Found in file", "Qty", "Match confidence", "Supplier line matched"]],
     body: rows.map((r) => [
-      r.title, r.house, r.supplier || "Not found",
+      r.title, r.house, r.supplier || "Not found", r.file || "",
       r.qty !== "" ? String(r.qty) : "-", r.confidence, r.matchedLine || "",
     ]),
     theme: "striped",
@@ -1650,15 +1765,15 @@ function exportStockPdf() {
     alternateRowStyles: { fillColor: [246, 244, 248] },
     styles: { fontSize: 8.5, cellPadding: 3.5, overflow: "linebreak" },
     columnStyles: {
-      0: { cellWidth: 58 }, 1: { cellWidth: 28 }, 2: { cellWidth: 40 },
-      3: { cellWidth: 12, halign: "right" }, 4: { cellWidth: 52 }, 5: { cellWidth: 68 },
+      0: { cellWidth: 52 }, 1: { cellWidth: 24 }, 2: { cellWidth: 34 }, 3: { cellWidth: 38 },
+      4: { cellWidth: 11, halign: "right" }, 5: { cellWidth: 44 }, 6: { cellWidth: 54 },
     },
     didParseCell: (data) => {
       if (data.section !== "body") return;
       if (data.column.index === 2 && data.cell.raw === "Not found") data.cell.styles.textColor = VERM_RGB;
       // Anything not confirmed by a barcode is flagged in the colour of a warning,
       // because a name match is a lead to check, not a fact to order against.
-      if (data.column.index === 4 && String(data.cell.raw).indexOf("name only") === 0) {
+      if (data.column.index === 5 && String(data.cell.raw).indexOf("name only") === 0) {
         data.cell.styles.textColor = [139, 103, 8];
       }
     },

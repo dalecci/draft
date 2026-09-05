@@ -819,6 +819,26 @@ input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--iris); c
 .dbtn.on.ordered { color: var(--moss);      border-color: var(--moss);      background: var(--moss-wash); }
 .dbtn.on.reject  { color: var(--vermilion); border-color: var(--vermilion); background: var(--vermilion-wash); }
 
+/* Two rows now, because the verdict on the scan and what you are doing about it
+   are separate questions. The second row sits tight under the first. */
+.decide + .decide { margin-top: 5px; }
+.decide-note {
+  margin-top: 7px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+.decide-note.back { color: var(--ochre); font-weight: 600; }
+
+/* The supplier's own filename, under the supplier name it belongs to. */
+.fromfile {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
 .qty-row { display: flex; align-items: center; gap: 9px; font-size: 11px; color: var(--ink-3); }
 .qty-row input {
   width: 64px;
