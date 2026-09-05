@@ -126,7 +126,7 @@ previewed; Manage shows an amber pill and the picker says so.
 
 ### Approval emails
 
-`supabase/functions/lps-notify/index.ts` via Resend. The function is deployed (Sept 2026; "Verify JWT" can stay on, the anon key satisfies it). To turn emails on: Edge Functions → Secrets → add `RESEND_API_KEY` (from resend.com → API Keys) and optionally `LPS_FROM_EMAIL` (defaults to the Resend test sender `onboarding@resend.dev`, which only delivers to the Resend account's own address until a domain is verified). Then Manage → Settings → *Send a test email*. Without it everything still works in-app; only the email is missing.
+`supabase/functions/lps-notify/index.ts` is deployed with "Verify JWT" **off** (the email buttons are plain links; POSTs from the app are checked against the project API key, links against an HMAC signature). Emails carry **Approve / Decline** buttons: either opens a one-screen confirm page where the approver picks their name, then the decision is applied server-side and the staff are notified; the next open client re-solves the affected weeks. To turn emails on: Edge Functions → Secrets → add `RESEND_API_KEY` (resend.com → API Keys) and optionally `LPS_FROM_EMAIL` (defaults to Resend's test sender `onboarding@resend.dev`, which only delivers to the Resend account's own address until a domain is verified). Then Manage → Settings → *Send a test email*. Without the key everything still works in-app; only the email is missing.
 
 ## Deploying
 
