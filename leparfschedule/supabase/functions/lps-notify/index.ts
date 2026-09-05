@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   // health check: names only, never values
-  if (url.searchParams.get("diag")) return json({ resendKeySet: !!RESEND_API_KEY, serviceKeySet: !!SERVICE, envNames: Object.keys(Deno.env.toObject()).filter((k) => /RESEND|LPS|SUPABASE_URL/i.test(k)).map((k) => JSON.stringify(k)) });
+  if (url.searchParams.get("diag")) return json({ resendKeySet: !!RESEND_API_KEY, serviceKeySet: !!SERVICE, envNames: Object.keys(Deno.env.toObject()).filter((k) => !/^(SB_|DENO|SUPABASE_(DB|SECRET|PUBLISHABLE|ANON|SERVICE|JWKS))/.test(k)).map((k) => JSON.stringify(k)) });
 
   // email buttons: GET shows the confirm page, POST (form) applies the decision
   if (req.method === "GET" || (req.method === "POST" && (req.headers.get("content-type") || "").includes("form"))) {
