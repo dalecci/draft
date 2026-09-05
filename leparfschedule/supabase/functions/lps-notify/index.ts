@@ -53,6 +53,14 @@ async function decideLinks(kind: string, id: string, base: string) {
   return { approve: mk("approve"), decline: mk("decline") };
 }
 
+// A caller is trusted if the key it presents is one of this project's API keys. Checked
+// against PostgREST itself, so it works for the legacy anon JWT and the new publishable keys.
+async function validProjectKey(k: string): Promise<boolean> {
+  if (!k || k.length < 20) return false;
+  if (ANON_KEY && k === ANON_KEY) return true;
+  try { const r = await fetch(`${SUPABASE_URL}/rest/v1/lps_settings?select=key&limit=1`, { headers: { apikey: k, Authorization: `Bearer ${k}` } }); return r.ok; } catch (_) { return false; }
+}
+
 // ---------------------------------------------------------------- database
 async function db(path: string, init: RequestInit = {}) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { ...init, headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json", Prefer: "return=representation", ...(init.headers || {}) } });
@@ -175,7 +183,7 @@ Deno.serve(async (req) => {
 
   // app → email
   if (req.method !== "POST") return json({ error: "POST only" }, 405);
-  if (ANON_KEY && req.headers.get("apikey") !== ANON_KEY && !(req.headers.get("authorization") || "").includes(ANON_KEY)) return json({ error: "unauthorized" }, 401);
+  if (!(await validProjectKey(req.headers.get("apikey") || (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "")))) return json({ error: "unauthorized" }, 401);
   if (!RESEND_API_KEY) return json({ error: "RESEND_API_KEY not set" }, 500);
   let payload: { to?: string[]; subject?: string; text?: string; decide?: { kind: string; id: string }; app?: string };
   try { payload = await req.json(); } catch { return json({ error: "bad json" }, 400); }
