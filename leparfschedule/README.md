@@ -111,7 +111,22 @@ shows "broken this week" when the current week violates it.
 - **Import text** — paste the spreadsheet (or `Maria (PV): Mon 10 to 6, Sat 10-5`) → preview
   → apply as the weekly template or as special availability for a date range; time off and
   needs-to-work columns come along.
-- **Settings** — supervisor email, supervisor names, store code, test email, learn log.
+- **AI** — natural-language command center (see below).
+- **Settings** — supervisor email, supervisor names, store code, admin PIN, test email, learn log.
+
+### AI command center (Manage → AI)
+
+A chat for managers. It runs through the `lps-ai` Edge Function, which holds the Anthropic key, sends a frozen system prompt plus live context (schema, roster, rules, dates) and only passes through tool names on its allowlist. The tools themselves live in `ai.js` and are executed by the app:
+
+- **read** (green): schema, table queries (PINs stripped), week schedule, coverage flags, employee profile, requests, settings. Run immediately.
+- **write** (amber): add/edit shifts, templates, special availability, time off, pins, employee fields. Shown as a preview card first; run only after Approve.
+- **danger** (red): delete shift, rebuild/restore a week, rules, temporary hours, approve/decline requests, notify people, send email. Same preview, labelled as sending / deleting / affecting many people; approvals of requests ask for the supervisor name.
+
+There are no payments in the app; the model is told so. Model: Claude Opus 5 with server-side refusal fallbacks. "Verify JWT" can stay on for `lps-ai` (the app calls it with the anon key).
+
+### Day / night
+
+The moon/sun button at the bottom of the rail switches themes; the choice is remembered per device.
 
 ## Supabase — one-time setup
 
