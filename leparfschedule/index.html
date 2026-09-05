@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Le Parfumier: Schedule</title>
-<meta name="description" content="Staff schedule, shift swaps and approvals for the three Le Parfumier stores.">
+<meta name="description" content="Staff schedule, shift swaps, time off and approvals for the three Le Parfumier stores.">
 <meta name="theme-color" content="#131019">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=3">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
@@ -38,7 +38,7 @@
   <div class="picker-inner">
     <div class="crest">LP</div>
     <h1 class="picker-title">Who's this?</h1>
-    <p class="picker-sub">Tap your name to see your schedule.</p>
+    <p class="picker-sub">Tap your name, then enter your PIN.</p>
     <div id="picker-grid" class="picker-grid"></div>
     <p id="picker-status" class="picker-status"></p>
   </div>
@@ -66,6 +66,10 @@
         <svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>
         <span>Requests</span><span class="rail-count" id="req-count" hidden>0</span>
       </button>
+      <button class="rail-btn" data-route="#timeoff" title="Block-outs and PTO">
+        <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>
+        <span>Time off</span>
+      </button>
       <button class="rail-btn admin-only" data-route="#admin" title="Manage" hidden>
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
         <span>Manage</span><span class="rail-count" id="admin-count" hidden>0</span>
@@ -80,13 +84,15 @@
   <main class="main" id="main"></main>
 </div>
 
-<!-- bottom sheet + toast -->
 <div id="sheet" class="sheet hidden" role="dialog" aria-modal="true">
   <div class="sheet-backdrop" id="sheet-backdrop"></div>
   <div class="sheet-card" id="sheet-card"></div>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=1"></script>
+<script src="app.js?v=3"></script>
+<script src="solver.js?v=3"></script>
+<script src="views.js?v=3"></script>
+<script src="admin.js?v=3"></script>
 </body>
 </html>

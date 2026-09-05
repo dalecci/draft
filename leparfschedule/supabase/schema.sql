@@ -19,6 +19,7 @@ create table if not exists lps_employees (
   flex        boolean not null default false,   -- can be called in on OFF days
   active      boolean not null default true,
   sort        int not null default 100,
+  pin         text,
   created_at  timestamptz not null default now()
 );
 
@@ -84,6 +85,7 @@ create table if not exists lps_swap_requests (
   peer_at         timestamptz,
   decided_at      timestamptz,
   decided_by      text,
+  decided_by_name text,
   created_at      timestamptz not null default now()
 );
 create index if not exists lps_swaps_status_idx on lps_swap_requests(status);
@@ -95,6 +97,7 @@ create table if not exists lps_notifications (
   title        text not null,
   body         text,
   swap_id      uuid references lps_swap_requests(id) on delete cascade,
+  off_id       uuid,
   read         boolean not null default false,
   created_at   timestamptz not null default now()
 );
@@ -132,3 +135,75 @@ end $$;
 -- One row per person / date / store / start. Lets two phones that both open a
 -- fresh week race to build it without producing duplicates.
 create unique index if not exists lps_shifts_unique_idx on lps_shifts(employee_id, date, store, start_min);
+
+-- ===== V2 ================================================================
+-- Block-out and PTO requests. Approved ones count as time off for the solver.
+create table if not exists lps_off_requests (
+  id               uuid primary key default gen_random_uuid(),
+  employee_id      text not null references lps_employees(id) on delete cascade,
+  kind             text not null default 'blockout' check (kind in ('blockout','pto')),
+  date_from        date not null,
+  date_to          date not null,
+  reason           text,
+  status           text not null default 'pending' check (status in ('pending','approved','declined','cancelled')),
+  supervisor_note  text,
+  decided_by       text,
+  decided_by_name  text,
+  decided_at       timestamptz,
+  created_at       timestamptz not null default now()
+);
+create index if not exists lps_off_emp_idx on lps_off_requests(employee_id, status);
+
+-- Week snapshots: automatic before every rebuild (undo), and named saves.
+create table if not exists lps_snapshots (
+  id          uuid primary key default gen_random_uuid(),
+  week_start  date not null,
+  label       text not null,
+  kind        text not null default 'auto' check (kind in ('auto','saved')),
+  shifts      jsonb not null default '[]',
+  created_at  timestamptz not null default now()
+);
+create index if not exists lps_snapshots_week_idx on lps_snapshots(week_start);
+
+-- Special availability: a different weekly pattern for a date range.
+create table if not exists lps_availability_periods (
+  id           uuid primary key default gen_random_uuid(),
+  employee_id  text not null references lps_employees(id) on delete cascade,
+  label        text,
+  date_from    date not null,
+  date_to      date not null,
+  pattern      jsonb not null default '{}',   -- { "1": {start_min, end_min, store}, ... }
+  created_at   timestamptz not null default now()
+);
+
+-- What the solver learned from manual edits (LEARN button), for the record.
+create table if not exists lps_learned (
+  id          uuid primary key default gen_random_uuid(),
+  week_start  date not null,
+  note        text,
+  by_name     text,
+  changes     jsonb not null default '[]',
+  created_at  timestamptz not null default now()
+);
+
+-- Upgrading from V1? These add the new columns to existing tables.
+alter table lps_employees      add column if not exists pin text;
+alter table lps_swap_requests  add column if not exists decided_by_name text;
+alter table lps_notifications  add column if not exists off_id uuid;
+
+do $$
+declare t text;
+begin
+  foreach t in array array['lps_off_requests','lps_snapshots','lps_availability_periods','lps_learned']
+  loop
+    execute format('alter table %I enable row level security', t);
+    execute format('drop policy if exists "anon all" on %I', t);
+    execute format('create policy "anon all" on %I for all to anon using (true) with check (true)', t);
+    execute format('drop policy if exists "authenticated all" on %I', t);
+    execute format('create policy "authenticated all" on %I for all to authenticated using (true) with check (true)', t);
+  end loop;
+end $$;
+do $$
+begin
+  begin alter publication supabase_realtime add table lps_off_requests; exception when duplicate_object then null; end;
+end $$;

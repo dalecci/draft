@@ -1,105 +1,135 @@
 # Le Parfumier: Schedule
 
-**Live: https://draft.j3taviation.com/leparfschedule/** — store code `4545`
+**Live: https://draft.j3taviation.com/leparfschedule/** — store code `4545`, then your name, then your PIN (Manager PIN `1212`).
 
 Staff scheduling for the three Le Parfumier stores (PL, PB, PV). Static app, no build
-step: `index.html`, `style.css`, `app.js`. Data lives in Supabase (same project as the
-FLAG pilot). Deploying is a push to `main` in `dalecci/draft`.
+step: `index.html`, `style.css`, `app.js` (core + text parser), `solver.js` (algorithm,
+rules, snapshots, learning), `views.js` (staff views, swaps, time off), `admin.js` (Manage,
+import, login). Data lives in Supabase (same project as the FLAG pilot). Deploying is a push
+to `main` in `dalecci/draft`.
 
 ## How people use it
 
-1. Type the store code `4545`. The device remembers it.
-2. Tap your name. That is the whole login.
+1. Type the store code `4545` (remembered on the device).
+2. Tap your name, type your 4-digit PIN. PINs are listed under Manage → Team & PINs.
 3. Left rail (bottom bar on a phone):
-   - **Your schedule** — next two weeks, hours this week and next, anything waiting on you.
-   - **Your week** — one week at a time, only your shifts.
-   - **Master** — everyone at every store for the week, coverage bars per store per day,
-     flags for anything the rules couldn't fix.
-   - **Requests** — covers and switches, with a timeline for each.
-   - **Manage** — only shows for people with the *supervisor* role.
+   - **Your schedule** — a month at a time, today outlined, your shifts as chips with a
+     status dot when a request touches them. Tap an empty day to ask for time off.
+   - **Your week** — one week, only your shifts.
+   - **Master** — everyone at every store, coverage bars per store per day (buffers
+     included), flags for every compromise the solver had to make.
+   - **Requests** — covers and switches with a timeline. After a decline, pick another
+     colleague from the dropdown on the card and re-send.
+   - **Time off** — a year calendar for block-outs and PTO.
+   - **Manage** — supervisors only.
 
-## Covers and switches
+### Status dots
 
-Tap any shift.
+| Dot | Meaning |
+|---|---|
+| amber | waiting on the colleague |
+| blue | waiting on the manager |
+| red | declined |
+| green | approved |
 
-- **Your own shift** → ask a colleague to *cover it* (they take it, you're off) or
-  *switch* (you take one of theirs in return). Only people who work that store are offered;
-  someone already scheduled that day or on a day off is shown as such.
-- **Someone else's shift** → ask to *take it*, optionally offering one of yours.
+### Covers and switches
 
-Flow: request → colleague sees it under **Your schedule → Needs your attention** and says
-yes or no → on yes the manager gets an in-app approval (badge on Manage/Requests) **and an
-email** → manager approves or declines → on approve the shifts are reassigned and **locked**
-so a later rebuild never undoes them. Both people are notified at every step.
+Tap a shift. Your own → ask a colleague to *cover* or *switch*. Someone else's → ask to
+*take it*, optionally offering one of yours. Colleague says yes → manager gets an in-app
+approval and an email → manager approves (signing with their name; several people share the
+Manager login) → shifts are reassigned and **locked** so a rebuild never undoes them.
 
-Approval shows rule checks first: double-booking, store eligibility, weekly hour limit.
+### Block-outs and PTO
+
+Tap a day under **Time off**, pick block-out or PTO, dates and a reason. The manager approves
+or declines (signed with a name). On approval the weeks in that range are re-solved around
+the absence; any locked shift of that person in the range is flagged for a manual fix.
 
 ## The algorithm
 
 Same shape as the Jaguars gym scheduler: hard rules filter what is allowed, a randomized
-greedy pass fills the demand, a soft score keeps the best of many restarts, and locked
-items are never touched.
+greedy pass fills demand, a soft score keeps the best of many restarts, locked items are
+never touched.
 
 For each week:
 
-1. **Fixed** — locked shifts already in the week (approved swaps, manager pins) plus every
-   *Needs to work* entry for those dates, inserted as a locked shift.
-2. **Template** — each person's weekly availability (the spreadsheet), clamped to the store's
-   hours, skipped on days they have off or already have a fixed shift.
-3. **Gaps** — every store, every open minute, coverage below *minimum staff* is a gap.
-4. **Fill** (repeated `restarts` times with shuffled order, keep the best score):
-   - extend a shift already at that store that day, if it stays under *max shift length*
-     and *max hours per week*;
-   - otherwise call in a **flex** person (Katherine) who is free that day, never shorter
-     than *min shift*, never past *max days per week*;
-   - if *Anyone can be called in* is on, anyone from that store who is free that day.
-5. **Score** — gap minutes weigh most, then hour/day limit breaches, then each call-in.
+1. **Demand** — per store per day: opening hours × minimum staff, plus custom rules
+   (someone 15 min before open / after close, at least N on Saturdays, N between 12 and 5…).
+   Temporary hours (holidays, seasons) replace the regular hours for their dates.
+2. **Fixed** — locked shifts (approved swaps, pins) and *needs to work* entries.
+3. **Template** — each person's weekly availability, or their *special availability* if the
+   date falls in one, trimmed to the demand window, skipped on time off / approved block-outs
+   / PTO / "never works Mondays" rules.
+4. **Gaps** — every minute where the count on the floor is below what is needed.
+5. **Fill**, escalating until the gap is closed (`neverLeaveGap` rule):
+   - tier 0: extend a shift already there that day, or call in a *flex* person, all within limits;
+   - tier 1: allow going over weekly hours / days, call in anyone from that store;
+   - tier 2: allow a long shift, call in from another store.
+   Small extensions (buffers) stay part of the template shift; anything more is a "fill".
+6. **Score** — uncovered minutes weigh most, then limit breaches, then soft rules (always
+   works Tuesdays, at least 30h, never more than 5 days in a row, two people together / never
+   together), then each compromise.
+7. Up to three distinct arrangements are kept. **Rebuild** shows Option 1 and Option 2 with
+   the differences between them; pick one.
 
-Anything still open is listed as a flag in Master and Week tools rather than papered over.
-Weeks are built on first view (current + 6 ahead). **Manage → Week tools → Rebuild** re-solves
-a week after a rule, availability or hours change; locked shifts stay.
+Every compromise is written on the shift ("Extended to cover 9:45a–10a (over hours)") and
+listed as a flag on Master and Week tools. Weeks are built on first view (current + 6, and
+whatever month you scroll to).
+
+### Undo and saved versions
+
+Every rebuild, restore or approval-triggered rebuild snapshots the week first. **Go back**
+restores the previous version; **Save this version** keeps a named copy to load later.
+
+### LEARN
+
+Edit shifts on Master (move, retime, add, delete; edits are marked *manual*). Press **LEARN**
+under Week tools: the solver diffs the week against the template and proposes one template
+change per edit, which you tick or untick. Swaps and pins are never learned. The note is
+optional, it only goes in the log (Manage → Settings). The following weeks can be rebuilt
+with the new template in the same step.
 
 ### Rules (Manage → Rules)
 
-| Rule | Default |
-|---|---|
-| Minimum staff on the floor | 1 |
-| Max hours per week | 40 |
-| Max days per week | 6 |
-| Shortest call-in shift | 3h |
-| Longest shift | 10h |
-| Trim template shifts to store hours | on |
-| Flex staff can be called in on OFF days | on |
-| Anyone from that store can be called in | off |
-| Solver attempts per week | 220 |
+Base rules: minimum staff, max hours/week, max days/week, shortest call-in, longest shift,
+trim to store hours, flex call-ins, anyone call-ins, never leave a gap, solver attempts.
 
-Also under Manage: **Team** (stores, home store, role, flex, email, active), **Availability**
-(the weekly template per person), **Stores & hours**, **Time off & must-work** (adding either
-rebuilds the affected week), **Settings** (supervisor email, store code).
+Custom rules (dropdowns): open buffer, close buffer, min staff on a day, min staff in a
+window, employee never works a day, always works a day (soft), can't work at a store, max
+hours, min hours (soft), max consecutive days, two people never together, always together
+(soft), prefer someone for call-ins, note. Each can be switched off without deleting it, and
+shows "broken this week" when the current week violates it.
+
+### Other Manage tabs
+
+- **Team & PINs** — stores, home store, role, flex, active, email, PIN.
+- **Availability** — weekly template per person, plus *special availability* periods.
+- **Stores & hours** — regular hours, plus *temporary hours* by date range (with "as usual"
+  per day) or typed dates: `Dec 24: 10 to 3`, `Dec 25: closed`, `Dec 26 - Dec 31: 12 to 5`.
+- **Time off & must-work** — pending block-out/PTO approvals, pre-approved days off, pins.
+- **Week tools** — rebuild with options, go back, saved versions, LEARN, flags, hours.
+- **Import text** — paste the spreadsheet (or `Maria (PV): Mon 10 to 6, Sat 10-5`) → preview
+  → apply as the weekly template or as special availability for a date range; time off and
+  needs-to-work columns come along.
+- **Settings** — supervisor email, supervisor names, store code, test email, learn log.
 
 ## Supabase — one-time setup
 
-1. Open the project's SQL editor and run `supabase/schema.sql` once. It creates eight
-   `lps_` tables, opens them to the anon role (the app is PIN-gated, same convention as
-   the other J3 apps) and enables realtime on shifts, swaps and notifications.
-2. Reload the app. It seeds the roster, availability, store hours, time off and must-work
-   from the spreadsheet on first load (`SEED` in `app.js`) and builds the first 7 weeks.
+1. SQL editor → run `supabase/schema.sql` once. Safe to re-run; it also upgrades a V1 install
+   (adds PIN and signature columns, the four V2 tables).
+2. Reload the app. It seeds the roster, availability, hours, rules, time off and must-work
+   from the spreadsheet on first load and builds the first 7 weeks. Existing installs get
+   PINs and new settings filled in automatically.
 
 Until the tables exist the app runs in **this-device-only** mode (localStorage) so it can be
 previewed; Manage shows an amber pill and the picker says so.
 
 ### Approval emails
 
-Emails go through the Edge Function in `supabase/functions/lps-notify/index.ts` via Resend.
-
-1. resend.com → create an API key (free tier). `onboarding@resend.dev` works as a sender for
-   testing; add your own domain for real mail.
-2. Supabase → Edge Functions → Deploy a new function → *Via editor* → name `lps-notify`,
-   paste the file, turn **off** "Verify JWT".
-3. Edge Functions → Secrets: `RESEND_API_KEY`, `LPS_FROM_EMAIL`.
-4. Manage → Settings → *Send a test email*.
-
-Without it, every request still lands in the manager's in-app queue; only the email is missing.
+`supabase/functions/lps-notify/index.ts` via Resend: create a key at resend.com, deploy the
+function from the Supabase dashboard (Edge Functions → Deploy → via editor, name `lps-notify`,
+"Verify JWT" off), set secrets `RESEND_API_KEY` and `LPS_FROM_EMAIL`, then Manage → Settings →
+*Send a test email*. Without it everything still works in-app; only the email is missing.
 
 ## Deploying
 
@@ -110,10 +140,9 @@ git commit -m "leparfschedule: ..."
 git push
 ```
 
-Bump `APP_VERSION` in `app.js` and the `?v=` on `style.css` / `app.js` in `index.html`
-whenever those files change, so phones don't keep the old build.
+Bump `APP_VERSION` in `app.js` and the `?v=` on every script/style tag in `index.html`.
 
 ## Storage rule
 
-Never rename the `lps_` tables or the settings keys. Add new columns and new settings keys;
-the app treats missing values as defaults.
+Never rename the `lps_` tables or the settings keys. Add columns and keys; the app treats
+missing values as defaults (`migrate()` in `app.js`).
