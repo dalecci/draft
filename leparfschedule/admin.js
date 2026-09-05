@@ -395,6 +395,7 @@ async function boot() {
   $("#lock-btn").onclick = tryUnlock;
   $("#lock-input").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
   $("#whoami").onclick = switchPerson;
+  $("#theme-btn").onclick = () => { const light = document.documentElement.getAttribute("data-theme") === "light"; if (light) document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", "light"); try { localStorage.setItem(KEYS.theme, light ? "dark" : "light"); } catch (e) {} };
   $$(".rail-btn").forEach((b) => (b.onclick = () => go(b.dataset.route)));
   window.addEventListener("hashchange", route);
 

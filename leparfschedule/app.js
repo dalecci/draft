@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes any js/css/html file, and bump the
 // matching ?v= query params in index.html.
 "use strict";
-const APP_VERSION = 6;
+const APP_VERSION = 7;
 
 // Same Supabase project as the FLAG pilot and the other J3 apps. The anon key is
 // public by design; the app is PIN-gated and row level security lets anon write.
@@ -19,7 +19,7 @@ const T = {
   settings: "lps_settings", snapshots: "lps_snapshots", learned: "lps_learned",
 };
 const TABLE_NAMES = Object.keys(T);
-const KEYS = { unlocked: "lps_unlocked", me: "lps_me", local: "lps_local_db", supName: "lps_sup_name" };
+const KEYS = { unlocked: "lps_unlocked", me: "lps_me", local: "lps_local_db", supName: "lps_sup_name", theme: "lps_theme" };
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DOW_LONG = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
