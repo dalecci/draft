@@ -7,8 +7,8 @@
 // up in the supervisor's in-app queue, only the email is missing.
 //
 // Deploy in Supabase: Edge Functions -> Deploy a new function -> Via Editor ->
-// name it "lps-notify" and paste this file. Turn OFF "Verify JWT" (the app is
-// PIN-gated and calls it with the anon key).
+// name it "lps-notify" and paste this file. "Verify JWT" may stay on: the app
+// calls it with the anon key, which satisfies the legacy check.
 //
 // Required secrets (Edge Functions -> Secrets):
 //   RESEND_API_KEY   — from resend.com (free tier is plenty)
