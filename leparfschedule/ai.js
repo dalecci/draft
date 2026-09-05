@@ -198,7 +198,10 @@ async function aiSend(text) {
 
 // --------------------------------------------------------------------- UI
 const AI_SUGGESTIONS = ["Who is short on hours next week?", "Show me every coverage gap for the next 4 weeks", "Give Mary next Thursday off and cover PB", "Add a rule: PL needs 2 people on Saturdays", "Approve the pending time-off requests", "What does Elodie's schedule look like this month?", "Set holiday hours: Dec 24 10-3, 25 closed, 26 open til 5"];
+const aiPin = () => String(state.data.settings.ai_pin || "1590");
+function aiUnlocked() { try { return sessionStorage.getItem("lps_ai_unlocked") === aiPin(); } catch (e) { return false; } }
 function adminAi() {
+  if (!aiUnlocked()) return `<div class="card" style="max-width:420px;margin:0 auto;text-align:center;padding:30px 26px"><div class="crest">LP</div><h2 class="sec" style="margin:8px 0 4px">AI command center</h2><p class="small muted" style="margin:0 0 16px">Locked. Enter the AI password to open it. Managers can change it under Settings.</p><input class="lock-input" id="ai-pin" type="password" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="••••" aria-label="AI password"><p class="lock-error" id="ai-pin-err"></p><button class="btn primary" id="ai-unlock" style="width:100%">Unlock</button></div>`;
   return `<div class="card ai-wrap">
     <div class="row" style="justify-content:space-between;margin-bottom:10px"><div><h2 class="sec" style="margin:0">AI command center</h2><p class="small muted" style="margin:4px 0 0">Ask in plain English. Reads run on their own; anything that changes the schedule, sends a message or affects many people shows you a preview first. Only the approved actions listed on the right exist.</p></div><button class="btn sm ghost" id="ai-clear" ${state.ai.messages.length ? "" : "disabled"}>New conversation</button></div>
     <div class="ai-grid">
@@ -245,6 +248,12 @@ function mdLite(t) {
   return out;
 }
 function wireAi(root) {
+  const pinIn = $("#ai-pin", root);
+  if (pinIn) {
+    const tryIt = () => { if (pinIn.value.trim() === aiPin()) { try { sessionStorage.setItem("lps_ai_unlocked", aiPin()); } catch (e) {} render(); } else { $("#ai-pin-err", root).textContent = "That's not it."; pinIn.value = ""; } };
+    $("#ai-unlock", root).onclick = tryIt; pinIn.addEventListener("keydown", (e) => { if (e.key === "Enter") tryIt(); }); setTimeout(() => pinIn.focus(), 0);
+    return;
+  }
   renderAiLog();
   const send = () => { const ta = $("#ai-text", root); const v = ta.value.trim(); if (!v) return; ta.value = ""; aiSend(v).then(() => { if (state.adminTab === "ai") { render(); setTimeout(() => { const t = $("#ai-text"); if (t) t.focus(); }, 0); } }); render(); };
   const b = $("#ai-send", root); if (b) b.onclick = send;

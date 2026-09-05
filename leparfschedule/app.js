@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes any js/css/html file, and bump the
 // matching ?v= query params in index.html.
 "use strict";
-const APP_VERSION = 7;
+const APP_VERSION = 8;
 
 // Same Supabase project as the FLAG pilot and the other J3 apps. The anon key is
 // public by design; the app is PIN-gated and row level security lets anon write.
