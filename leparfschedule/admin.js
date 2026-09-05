@@ -32,7 +32,7 @@ function adminTeam() {
       <td><button class="btn sm" data-save-emp="${esc(e.id)}">Save</button></td></tr>`).join("")}
   </tbody></table></div>
   <div class="row" style="margin-top:14px"><input class="field" id="new-emp" placeholder="New employee name" style="max-width:280px"><button class="btn" id="add-emp">Add</button></div>
-  <p class="small muted" style="margin-top:10px">Everyone types the store code, taps their name, then their own 4-digit PIN. The Manager login is <b>1212</b>. Flex = the solver may call them in on an OFF day. Supervisors see Manage, approve requests and get the emails.</p></div>`;
+  <p class="small muted" style="margin-top:10px">Everyone types the store code, taps their name, then their own 4-digit PIN. The admin PIN <b>${esc(state.data.settings.admin_pin || "1212")}</b> opens any name (change it under Settings). Flex = the solver may call them in on an OFF day. Supervisors see Manage, approve requests and get the emails.</p></div>`;
 }
 function avGrid(pattern, storesFor, prefix) {
   return `<div class="avgrid">${DOW.map((d, i) => { const dow = i + 1, a = pattern[dow];
@@ -170,7 +170,8 @@ function adminSettings() {
   const S = state.data.settings, log = state.data.learned.slice().sort(by((l) => -new Date(l.created_at).getTime())).slice(0, 20);
   return `<div class="card"><label class="lbl">Supervisor email (approval requests go here)</label><input class="field" id="sup-email" value="${esc(S.supervisor_email || "")}" placeholder="manager@store.com">
     <label class="lbl">Supervisor names (who can sign an approval, one per line)</label><textarea class="field" id="sup-names">${esc(supervisorNames().join("\n"))}</textarea>
-    <label class="lbl">Store code (the first PIN everyone types)</label><input class="field" id="pin" value="${esc(S.pin || SEED.pin)}" maxlength="8" style="max-width:160px">
+    <div class="field-row"><div><label class="lbl">Store code (the first PIN everyone types)</label><input class="field" id="pin" value="${esc(S.pin || SEED.pin)}" maxlength="8" style="max-width:160px"></div>
+    <div><label class="lbl">Admin PIN (opens any name)</label><input class="field" id="admin-pin" value="${esc(S.admin_pin || "1212")}" maxlength="4" style="max-width:160px"></div></div>
     <div class="actions"><button class="btn primary" id="save-settings">Save</button></div></div>
   <div class="card"><h2 class="sec">Email delivery</h2><p class="small muted">Approval emails go through the Supabase Edge Function <span class="mono">${NOTIFY_FN}</span> using Resend. Until it's deployed with a RESEND_API_KEY secret, requests still land in the in-app queue; only the email is missing. Steps are in the README.</p><button class="btn" id="test-email">Send a test email</button></div>
   <div class="card"><h2 class="sec">What the solver has learned</h2>${log.length ? `<table class="plain"><tbody>${log.map((l) => `<tr><td class="small"><b>Week of ${esc(fmtMonthDay(l.week_start))}</b> · ${esc(new Date(l.created_at).toLocaleDateString())}${l.by_name ? " · " + esc(l.by_name) : ""}${l.note ? `<br><i class="muted">“${esc(l.note)}”</i>` : ""}<ul style="margin:4px 0 0 16px;padding:0">${(l.changes || []).map((c) => `<li>${esc(c.text)}</li>`).join("")}</ul></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">Nothing yet. Edit a week on the Master schedule and press LEARN under Week tools.</p>`}</div>
@@ -254,7 +255,8 @@ function wireAdmin(root) {
   // settings
   on("#save-settings", () => guard(async () => {
     const pin = $("#pin", root).value.trim() || SEED.pin, supervisor_email = $("#sup-email", root).value.trim(), names = $("#sup-names", root).value.split(/\n|,/).map((s) => s.trim()).filter(Boolean);
-    await saveSetting("pin", pin); await saveSetting("supervisor_email", supervisor_email); await saveSetting("supervisor_names", names.length ? names : SEED.supervisor_names); render();
+    const admin_pin = $("#admin-pin", root).value.trim(); if (!/^d{4}$/.test(admin_pin)) throw new Error("Admin PIN must be 4 digits.");
+    await saveSetting("pin", pin); await saveSetting("admin_pin", admin_pin); await saveSetting("supervisor_email", supervisor_email); await saveSetting("supervisor_names", names.length ? names : SEED.supervisor_names); render();
   }, "Saved."));
   on("#test-email", async () => { const te = $("#test-email", root); te.disabled = true; const r = await sendEmail([state.data.settings.supervisor_email], "Le Parfumier schedule: test email", "If you can read this, approval emails are working."); te.disabled = false; if (r.error) toast("Not sent: " + r.error + ". Deploy the lps-notify function first (see README).", "err"); else if (r.skipped) toast("Skipped: " + r.skipped, "warn"); else toast("Sent. Check the inbox.", "ok"); });
 }
@@ -349,9 +351,9 @@ function renderPicker() {
 }
 function pinSheet(e) {
   if (!e) return;
-  if (!e.pin) { setMe(e); return; } // no PIN set yet: the manager can add one under Team
-  const c = openSheet(`<h3>${esc(firstName(e.name))}, your PIN</h3><p class="sub">${e.role === "supervisor" ? "The manager PIN." : "Your own 4-digit code. Ask the manager if you don't know it."}</p><input class="lock-input" id="pin-in" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" aria-label="PIN"><p class="lock-error" id="pin-err"></p><div class="actions"><button class="btn" id="no">Back</button><button class="btn primary" id="ok">Open</button></div>`);
-  const tryIt = () => { const v = $("#pin-in", c).value.trim(); if (v === String(e.pin)) { closeSheet(); setMe(e); } else { $("#pin-err", c).textContent = "That's not it."; $("#pin-in", c).value = ""; c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); } };
+  const adminPin = String(state.data.settings.admin_pin || "1212");
+  const c = openSheet(`<h3>${esc(firstName(e.name))}, your PIN</h3><p class="sub">${e.role === "supervisor" ? "The manager PIN." : "Your own 4-digit code. Ask the manager if you don't know it. The admin PIN opens any name."}</p><input class="lock-input" id="pin-in" type="password" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••" aria-label="PIN"><p class="lock-error" id="pin-err"></p><div class="actions"><button class="btn" id="no">Back</button><button class="btn primary" id="ok">Open</button></div>`);
+  const tryIt = () => { const v = $("#pin-in", c).value.trim(); if ((e.pin && v === String(e.pin)) || v === adminPin) { closeSheet(); setMe(e); } else { $("#pin-err", c).textContent = "That's not it."; $("#pin-in", c).value = ""; c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake"); } };
   $("#no", c).onclick = closeSheet; $("#ok", c).onclick = tryIt;
   $("#pin-in", c).addEventListener("keydown", (ev) => { if (ev.key === "Enter") tryIt(); });
   $("#pin-in", c).addEventListener("input", () => { if ($("#pin-in", c).value.length === 4) tryIt(); });
@@ -386,7 +388,7 @@ async function boot() {
   try { if (!sb) throw new Error("supabase-js failed to load"); await loadAll(); }
   catch (e) { console.warn("Cloud unavailable, using this device only:", e); state.offline = true; state.cloudError = e.message || String(e); await loadAll(); }
   try { await seedIfEmpty(); await migrate(); } catch (e) { console.error(e); toast("Couldn't seed: " + e.message, "err"); }
-  try { await ensureWeeks(); } catch (e) { console.error(e); toast("Couldn't build the weeks: " + e.message, "err"); }
+  try { await ensureWeeks(); await reconcileOffApprovals(); } catch (e) { console.error(e); toast("Couldn't build the weeks: " + e.message, "err"); }
   state.week = mondayOf(today()); state.month = today().slice(0, 7); state.year = Number(today().slice(0, 4)); state.loaded = true;
 
   $("#lock-btn").onclick = tryUnlock;
@@ -404,7 +406,7 @@ async function boot() {
 
   if (!state.offline && sb) {
     let t = null;
-    const bump = () => { clearTimeout(t); t = setTimeout(async () => { try { await refresh(["shifts", "swaps", "notes", "off_requests", "employees", "settings", "snapshots"]); if (state.me) { state.me = emp(state.me.id) || state.me; if (!$("#sheet").classList.contains("hidden")) return; render(); } } catch (e) {} }, 400); };
+    const bump = () => { clearTimeout(t); t = setTimeout(async () => { try { await refresh(["shifts", "swaps", "notes", "off_requests", "employees", "settings", "snapshots"]); if (await reconcileOffApprovals()) await refresh(["shifts", "snapshots"]); if (state.me) { state.me = emp(state.me.id) || state.me; if (!$("#sheet").classList.contains("hidden")) return; render(); } } catch (e) {} }, 400); };
     const ch = sb.channel("lps-live");
     [T.shifts, T.swaps, T.notes, T.off_requests].forEach((table) => ch.on("postgres_changes", { event: "*", schema: "public", table }, bump));
     ch.subscribe();

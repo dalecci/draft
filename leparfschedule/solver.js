@@ -331,6 +331,18 @@ async function restoreSnapshot(snap) {
   await refresh(["shifts"]);
 }
 
+// An approval made from the email (decided_by = "email") changes the database but no
+// browser ran the solver. Any client that notices re-solves the touched weeks.
+async function reconcileOffApprovals() {
+  const todo = new Set();
+  state.data.off_requests.filter((o) => o.status === "approved").forEach((o) => {
+    const clash = state.data.shifts.some((s) => s.employee_id === o.employee_id && !s.locked && inRange(s.date, o.date_from, o.date_to));
+    if (clash) for (let ws = mondayOf(o.date_from); ws <= mondayOf(o.date_to); ws = addDays(ws, 7)) if (weekShifts(ws).length) todo.add(ws);
+  });
+  for (const ws of todo) await rebuildWeek(ws);
+  return todo.size;
+}
+
 // ================================================================== learn
 // Compare the week as it stands (after the manager's manual edits) with what the
 // weekly template would have produced, and turn the differences into template changes.

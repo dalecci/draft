@@ -6,14 +6,14 @@ async function notify(empIds, kind, title, body, swapId, offId) {
   const rows = Array.from(new Set(empIds.filter(Boolean))).map((employee_id) => ({ employee_id, kind, title, body, swap_id: swapId || null, off_id: offId || null, read: false }));
   if (rows.length) await dbInsert(T.notes, rows);
 }
-async function sendEmail(to, subject, text, hash = "#requests") {
+// decide = { kind: "off" | "swap", id } adds signed Approve / Decline buttons to the email.
+async function sendEmail(to, subject, text, hash = "#requests", decide = null) {
   const recipients = Array.from(new Set(to.filter((x) => x && x.includes("@"))));
   if (!recipients.length) return { skipped: "no address" };
   const link = location.origin + location.pathname + hash;
-  const html = `<div style="font-family:Georgia,serif;max-width:560px"><p style="letter-spacing:.3em;font-size:11px;color:#a86fa5">LE PARFUMIER · SCHEDULE</p>${text.split("\n").map((l) => `<p style="margin:6px 0">${esc(l)}</p>`).join("")}<p style="margin-top:20px"><a href="${link}" style="background:#c68ec3;color:#1a1622;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700">Open the schedule to decide</a></p></div>`;
   if (state.offline || !sb) return { skipped: "offline" };
   try {
-    const { data, error } = await sb.functions.invoke(NOTIFY_FN, { body: { to: recipients, subject, text: text + "\n\n" + link, html } });
+    const { data, error } = await sb.functions.invoke(NOTIFY_FN, { body: { to: recipients, subject, text, app: link, decide } });
     if (error) throw error;
     return data || { ok: true };
   } catch (e) { console.warn("email not sent", e); return { error: String(e.message || e) }; }
@@ -74,7 +74,7 @@ async function peerRespond(swap, ok) {
     const text = swapText(swap);
     await notify([swap.from_employee], "swap_peer_ok", `${firstName(to.name)} said yes`, `Waiting on the manager's approval. ${text}`, swap.id);
     await notify(supervisors().map((s) => s.id), "swap_approve_needed", `Approve: ${firstName(from.name)} ↔ ${firstName(to.name)}`, text, swap.id);
-    const r = await sendEmail(supervisorAddresses(), `Schedule change needs your approval: ${from.name} & ${to.name}`, `${to.name} agreed to a request from ${from.name}.\n\n${text}\n\nApprove or decline it under Requests.`);
+    const r = await sendEmail(supervisorAddresses(), `Schedule change needs your approval: ${from.name} & ${to.name}`, `${to.name} agreed to a request from ${from.name}.\n\n${text}`, "#requests", { kind: "swap", id: swap.id });
     toast(r && (r.error || r.skipped) ? "Accepted. The manager will see it in the app (email not configured yet)." : "Accepted. The manager has been emailed for approval.", r && (r.error || r.skipped) ? "warn" : "ok");
   }
   await refresh(["swaps", "notes"]);
@@ -115,7 +115,7 @@ async function createOffRequest({ kind, from, to, reason }) {
   const [saved] = await dbInsert(T.off_requests, [{ employee_id: state.me.id, kind, date_from: from, date_to: to, reason: reason || null, status: "pending" }]);
   const what = `${kind === "pto" ? "PTO" : "block-out"} ${fmtRangeDates(from, to)}${reason ? " — “" + reason + "”" : ""}`;
   await notify(supervisors().map((s) => s.id), "off_approve_needed", `${firstName(state.me.name)} asks for ${kind === "pto" ? "PTO" : "a block-out"}`, `${state.me.name}: ${what}`, null, saved.id);
-  await sendEmail(supervisorAddresses(), `${kind === "pto" ? "PTO" : "Block-out"} request from ${state.me.name}`, `${state.me.name} asks for ${what}.\n\nApprove or decline it under Manage → Time off.`, "#admin");
+  await sendEmail(supervisorAddresses(), `${kind === "pto" ? "PTO" : "Block-out"} request from ${state.me.name}`, `${state.me.name} asks for ${what}.`, "#requests", { kind: "off", id: saved.id });
   await refresh(["off_requests", "notes"]);
   toast("Sent to the manager for approval.", "ok");
 }
