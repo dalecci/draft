@@ -191,7 +191,9 @@ Deno.serve(async (req) => {
   try { payload = await req.json(); } catch { return json({ error: "bad json" }, 400); }
   const to = (payload.to || []).filter((x) => typeof x === "string" && x.includes("@"));
   if (!to.length) return json({ error: "no recipients" }, 400);
-  const base = `${url.origin}${url.pathname}`;
+  // The gateway rewrites the request URL inside the runtime (http, no /functions/v1), so
+  // links must be built from the public project URL, never from req.url.
+  const base = `${SUPABASE_URL}/functions/v1/lps-notify`;
   const links = payload.decide && SERVICE && ["off", "swap"].includes(payload.decide.kind) && payload.decide.id ? await decideLinks(payload.decide.kind, payload.decide.id, base) : null;
   const appLink = payload.app || APP_URL + "#requests";
   const text = (payload.text || "") + (links ? `\n\nApprove: ${links.approve}\nDecline: ${links.decline}` : "") + `\n\nOpen the schedule: ${appLink}`;
