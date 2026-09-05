@@ -328,7 +328,7 @@ function render() {
 }
 function wire(root) {
   $$("[data-shift]", root).forEach((el) => (el.onclick = (ev) => { ev.stopPropagation(); const s = shiftById(el.dataset.shift); if (s) onShiftClick(s); }));
-  $$("[data-week]", root).forEach((el) => (el.onclick = () => { state.week = el.dataset.week === "today" ? mondayOf(today()) : addDays(state.week, Number(el.dataset.week)); render(); }));
+  $$("[data-week]", root).forEach((el) => (el.onclick = async () => { state.week = el.dataset.week === "today" ? mondayOf(today()) : addDays(state.week, Number(el.dataset.week)); render(); if (!weekShifts(state.week).length && state.week >= mondayOf(today()) && state.week <= addDays(today(), 400)) { try { if (await ensureRange(state.week, state.week)) render(); } catch (e) { console.warn(e); } } }));
   $$("[data-month]", root).forEach((el) => (el.onclick = () => { const [y, m] = state.month.split("-").map(Number); if (el.dataset.month === "today") state.month = today().slice(0, 7); else { const d = new Date(y, m - 1 + Number(el.dataset.month), 1); state.month = d.getFullYear() + "-" + pad(d.getMonth() + 1); } render(); ensureMonth(); }));
   $$("[data-year]", root).forEach((el) => (el.onclick = () => { const cur = state.toStart || defaultToStart(); if (el.dataset.year === "today") state.toStart = defaultToStart(); else { const [y, m] = cur.split("-").map(Number); const d = new Date(y, m - 1 + Number(el.dataset.year), 1); state.toStart = d.getFullYear() + "-" + pad(d.getMonth() + 1); } render(); }));
   $$("[data-mstore]", root).forEach((el) => (el.onclick = () => { state.masterStore = el.dataset.mstore; render(); }));

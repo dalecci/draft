@@ -9,13 +9,13 @@ async function rebuildAffected(from, to) {
 
 // =================================================================== admin
 function renderAdmin() {
-  const tabs = [["team", "Team & PINs"], ["avail", "Availability"], ["stores", "Stores & hours"], ["rules", "Rules"], ["off", "Time off & must-work"], ["weeks", "Week tools"], ["import", "Import text"], ["settings", "Settings"]];
+  const tabs = [["team", "Team & PINs"], ["avail", "Availability"], ["stores", "Stores & hours"], ["rules", "Rules"], ["off", "Time off & must-work"], ["weeks", "Week tools"], ["import", "Import text"], ["ai", "AI"], ["settings", "Settings"]];
   const pend = offNeedingMe().length;
   return `<section class="panel">
     <div class="panel-head"><div><div class="kicker">Manage</div><h1>Rules, roster, <em>rebuilds</em></h1><p class="panel-sub">Everything the solver uses lives here. Change a rule, then rebuild a week under Week tools to see the effect. Locked shifts always survive a rebuild, and every rebuild can be undone.</p></div>
       <span class="pill ${state.offline ? "warn" : "good"}">${state.offline ? "this device only · cloud tables missing" : "synced · Supabase"}</span></div>
     <div class="tabs">${tabs.map(([k, l]) => `<button class="tab ${state.adminTab === k ? "active" : ""}" data-admintab="${k}">${l}${k === "off" && pend ? ` <span class="pill bad" style="padding:0 6px">${pend}</span>` : ""}</button>`).join("")}</div>
-    <div id="admin-body">${({ team: adminTeam, avail: adminAvail, stores: adminStores, rules: adminRules, off: adminOff, weeks: adminWeeks, import: adminImport, settings: adminSettings })[state.adminTab]()}</div>
+    <div id="admin-body">${({ team: adminTeam, avail: adminAvail, stores: adminStores, rules: adminRules, off: adminOff, weeks: adminWeeks, import: adminImport, ai: adminAi, settings: adminSettings })[state.adminTab]()}</div>
   </section>`;
 }
 function adminTeam() {
@@ -180,6 +180,7 @@ function adminSettings() {
 
 // ------------------------------------------------------------ admin wiring
 function wireAdmin(root) {
+  if (state.adminTab === "ai") { wireAi(root); return; }
   const on = (sel, fn) => { const el = $(sel, root); if (el) el.onclick = fn; };
   const guard = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg, "ok"); } catch (e) { console.error(e); toast(e.message || String(e), "err"); } };
   // team
