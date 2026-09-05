@@ -315,7 +315,7 @@ function route() {
   if (state.route === "#admin" && !isSup()) state.route = "#mine";
   render();
 }
-function render() {
+function updateBadges() {
   if (!state.me) return;
   $$(".rail-btn").forEach((b) => b.classList.toggle("active", b.dataset.route === state.route));
   $$(".admin-only").forEach((b) => (b.hidden = !isSup()));
@@ -323,6 +323,18 @@ function render() {
   const rc = $("#req-count"); rc.hidden = !need; rc.textContent = need;
   const pend = state.data.swaps.filter((s) => s.status === "pending_supervisor").length + offNeedingMe().length;
   const ac = $("#admin-count"); ac.hidden = !(isSup() && pend); ac.textContent = pend;
+}
+// True while the manager is mid-edit somewhere a re-render would wipe (a form field with
+// text, or the AI tab). Live updates only refresh the badges in that case.
+function editingNow() {
+  const a = document.activeElement;
+  if (state.route === "#admin" && state.adminTab === "ai") return true;
+  if (!$("#sheet").classList.contains("hidden")) return true;
+  return !!(a && ["INPUT", "TEXTAREA", "SELECT"].includes(a.tagName) && a.id !== "lock-input");
+}
+function render() {
+  if (!state.me) return;
+  updateBadges();
   const view = { "#mine": renderMine, "#week": renderWeek, "#master": renderMaster, "#requests": renderRequests, "#timeoff": renderTimeOff, "#admin": renderAdmin }[state.route] || renderMine;
   const main = $("#main"); main.innerHTML = view(); wire(main);
 }

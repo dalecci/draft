@@ -410,7 +410,7 @@ async function boot() {
 
   if (!state.offline && sb) {
     let t = null;
-    const bump = () => { clearTimeout(t); t = setTimeout(async () => { try { await refresh(["shifts", "swaps", "notes", "off_requests", "employees", "settings", "snapshots"]); if (await reconcileOffApprovals()) await refresh(["shifts", "snapshots"]); if (state.me) { state.me = emp(state.me.id) || state.me; if (!$("#sheet").classList.contains("hidden")) return; render(); } } catch (e) {} }, 400); };
+    const bump = () => { clearTimeout(t); t = setTimeout(async () => { try { await refresh(["shifts", "swaps", "notes", "off_requests", "employees", "settings", "snapshots"]); if (await reconcileOffApprovals()) await refresh(["shifts", "snapshots"]); if (state.me) { state.me = emp(state.me.id) || state.me; if (editingNow()) { updateBadges(); return; } render(); } } catch (e) {} }, 400); };
     const ch = sb.channel("lps-live");
     [T.shifts, T.swaps, T.notes, T.off_requests].forEach((table) => ch.on("postgres_changes", { event: "*", schema: "public", table }, bump));
     ch.subscribe();

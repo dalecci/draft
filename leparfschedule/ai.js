@@ -129,7 +129,9 @@ const riskOf = (tool, input) => (tool.risker ? tool.risker(input) : tool.risk);
 
 // ------------------------------------------------------------------- loop
 state.ai = state.ai || { messages: [], log: [], busy: false, pending: null };
-function aiLog(entry) { state.ai.log.push({ ...entry, at: Date.now() }); renderAiLog(); }
+try { const saved = JSON.parse(sessionStorage.getItem("lps_ai_conv") || "null"); if (saved && Array.isArray(saved.messages)) { state.ai.messages = saved.messages; state.ai.log = (saved.log || []).filter((l) => !["thinking", "running"].includes(l.kind)); } } catch (e) {}
+function aiPersist() { try { const s = JSON.stringify({ messages: state.ai.messages, log: state.ai.log }); if (s.length < 1500000) sessionStorage.setItem("lps_ai_conv", s); } catch (e) {} }
+function aiLog(entry) { state.ai.log.push({ ...entry, at: Date.now() }); aiPersist(); renderAiLog(); }
 async function aiCall() {
   if (state.offline || !sb) throw new Error("The AI needs the cloud connection.");
   const { data, error } = await sb.functions.invoke(AI_FN, { body: { messages: state.ai.messages, tools: aiToolDefs(), context: aiContext() } });
@@ -181,7 +183,7 @@ async function aiSend(text) {
           aiLog({ kind: "error", text: `${tool.name}: ${e.message || e}` });
         }
       }
-      state.ai.messages.push({ role: "user", content: results });
+      state.ai.messages.push({ role: "user", content: results }); aiPersist();
       if (state.route === "#admin") { /* keep the data views fresh after writes */ }
     }
   } catch (e) {
@@ -191,7 +193,7 @@ async function aiSend(text) {
     const last = state.ai.messages[state.ai.messages.length - 1];
     if (last && last.role === "user" && typeof last.content === "string") state.ai.messages.pop();
   } finally {
-    state.ai.busy = false; state.ai.pending = null; renderAiLog();
+    state.ai.busy = false; state.ai.pending = null; aiPersist(); renderAiLog();
     if (state.route === "#admin" && state.adminTab !== "ai") render();
   }
 }
@@ -255,9 +257,9 @@ function wireAi(root) {
     return;
   }
   renderAiLog();
-  const send = () => { const ta = $("#ai-text", root); const v = ta.value.trim(); if (!v) return; ta.value = ""; aiSend(v).then(() => { if (state.adminTab === "ai") { render(); setTimeout(() => { const t = $("#ai-text"); if (t) t.focus(); }, 0); } }); render(); };
+  const send = () => { const ta = $("#ai-text", root); const v = ta.value.trim(); if (!v) return; ta.value = ""; aiSend(v).then(() => { if (state.adminTab === "ai" && state.route === "#admin") { const draft = ($("#ai-text") || {}).value || ""; render(); setTimeout(() => { const t = $("#ai-text"); if (t) { t.value = draft; t.focus(); } }, 0); } }); const draft0 = ""; render(); };
   const b = $("#ai-send", root); if (b) b.onclick = send;
   const ta = $("#ai-text", root); if (ta) { ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }); if (!state.ai.busy) setTimeout(() => ta.focus(), 0); }
   $$(".ai-sug", root).forEach((s) => (s.onclick = () => { const t = $("#ai-text", root); if (t) { t.value = s.textContent; t.focus(); } }));
-  const c = $("#ai-clear", root); if (c) c.onclick = () => { state.ai = { messages: [], log: [], busy: false, pending: null }; render(); };
+  const c = $("#ai-clear", root); if (c) c.onclick = () => { state.ai = { messages: [], log: [], busy: false, pending: null }; try { sessionStorage.removeItem("lps_ai_conv"); } catch (e) {} render(); };
 }
