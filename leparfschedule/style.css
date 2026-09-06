@@ -342,6 +342,11 @@ table.plain input.tm{width:74px;font-family:var(--mono)}
 .sheet .lock-input{font-size:22px;letter-spacing:.6em}
 tr.dim td{opacity:.5}
 details summary{cursor:pointer}
+/* the trail of after-the-fact manager changes on a request card */
+.hist{margin-top:8px;border-top:1px solid var(--rule-soft);padding-top:6px}
+.hist summary{list-style:none;color:var(--ink-4)}
+.hist ul{list-style:none}
+.hist li{margin:4px 0;line-height:1.45;color:var(--ink-3)}
 
 @media (max-width:820px){
   .mgrid{grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}

@@ -85,7 +85,7 @@ async function loadRow(kind: string, id: string) {
 }
 function isPending(kind: string, row: any) { return kind === "off" ? row.status === "pending" : row.status === "pending_supervisor"; }
 async function describe(kind: string, row: any) {
-  if (kind === "off") return { title: `${await nameOf(row.employee_id)} · ${row.kind === "pto" ? "PTO" : "Block-out"}`, detail: fmtRangeDates(row.date_from, row.date_to), quote: row.reason || "" };
+  if (kind === "off") return { title: `${await nameOf(row.employee_id)} · ${row.kind === "pto" ? "Vacation" : "Block-out"}`, detail: fmtRangeDates(row.date_from, row.date_to), quote: row.reason || "" };
   const from = await nameOf(row.from_employee), to = await nameOf(row.to_employee), a = row.from_snapshot, b = row.to_snapshot;
   const what = a && b ? `${from} gives ${fmtShift(a)} and takes ${to}'s ${fmtShift(b)}` : a ? `${to} covers ${from}'s shift: ${fmtShift(a)}` : `${from} takes ${to}'s shift: ${fmtShift(b)}`;
   return { title: `${from} ↔ ${to}`, detail: what, quote: row.message || "" };
@@ -99,7 +99,7 @@ async function applyDecision(act: string, kind: string, id: string, name: string
   const notes: unknown[] = [];
   if (kind === "off") {
     await patch("lps_off_requests", id, { status: approve ? "approved" : "declined", decided_at: now, decided_by: "email", decided_by_name: name, supervisor_note: note || null });
-    const what = `${row.kind === "pto" ? "PTO" : "block-out"} ${fmtRangeDates(row.date_from, row.date_to)}`;
+    const what = `${row.kind === "pto" ? "vacation" : "block-out"} ${fmtRangeDates(row.date_from, row.date_to)}`;
     notes.push({ employee_id: row.employee_id, kind: approve ? "off_approved" : "off_declined", title: `${approve ? "Approved" : "Declined"}: ${what}`, body: `${name} ${approve ? "approved" : "declined"} your ${what}.${note ? " “" + note + "”" : ""}`, off_id: id, read: false });
   } else {
     const from = await nameOf(row.from_employee), to = await nameOf(row.to_employee), a = row.from_snapshot, b = row.to_snapshot;

@@ -83,6 +83,7 @@ async function supervisorDecide(swap, approve, note, byName) {
   const now = new Date().toISOString();
   if (!approve) {
     await dbUpdate(T.swaps, { id: swap.id }, { status: "declined_supervisor", decided_at: now, decided_by: state.me.id, decided_by_name: byName, supervisor_note: note || null });
+    await logAudit({ area: "swap", action: "declined", subject: `${ename(swap.from_employee)} → ${ename(swap.to_employee)}`, target_id: swap.id, by: byName, text: `Declined: ${swapText(swap)}`, detail: note || null });
     await notify([swap.from_employee, swap.to_employee], "swap_declined", "Schedule change declined", `${byName} declined: ${swapText(swap)}${note ? " — “" + note + "”" : ""}`, swap.id);
   } else {
     const a = swap.from_shift_id ? shiftById(swap.from_shift_id) : null, b = swap.to_shift_id ? shiftById(swap.to_shift_id) : null;
@@ -90,11 +91,28 @@ async function supervisorDecide(swap, approve, note, byName) {
     if (a) await dbUpdate(T.shifts, { id: a.id }, { employee_id: swap.to_employee, locked: true, source: "swap", note: `Swap approved by ${byName} ${now.slice(0, 10)}`, updated_at: now });
     if (b) await dbUpdate(T.shifts, { id: b.id }, { employee_id: swap.from_employee, locked: true, source: "swap", note: `Swap approved by ${byName} ${now.slice(0, 10)}`, updated_at: now });
     await dbUpdate(T.swaps, { id: swap.id }, { status: "approved", decided_at: now, decided_by: state.me.id, decided_by_name: byName, supervisor_note: note || null });
+    await logAudit({ area: "swap", action: "approved", subject: `${ename(swap.from_employee)} → ${ename(swap.to_employee)}`, target_id: swap.id, by: byName, text: `Approved: ${swapText(swap)}`, detail: note || null });
     await notify([swap.from_employee, swap.to_employee], "swap_approved", "Schedule change approved", `${byName} approved: ${swapText(swap)} The schedule is updated.`, swap.id);
     sendEmail([emp(swap.from_employee), emp(swap.to_employee)].map((e) => e && e.email), "Your schedule change was approved", swapText(swap) + "\nThe schedule is updated.");
   }
   await refresh(["swaps", "notes", "shifts"]);
   toast(approve ? "Approved. The schedule is updated." : "Declined.", approve ? "ok" : "");
+}
+// A manager can undo an approved cover or switch afterwards: the shifts go back to their
+// original owners, they stop being locked, both people are told, and it is archived.
+async function revokeSwap(swap, byName, note) {
+  const now = new Date().toISOString();
+  const a = swap.from_shift_id ? shiftById(swap.from_shift_id) : null, b = swap.to_shift_id ? shiftById(swap.to_shift_id) : null;
+  if (swap.from_shift_id && !a && swap.to_shift_id && !b) throw new Error("Those shifts no longer exist — fix the week by hand on the Master schedule.");
+  const back = `Swap undone by ${byName} ${now.slice(0, 10)}${note ? " — " + note : ""}`;
+  if (a) await dbUpdate(T.shifts, { id: a.id }, { employee_id: swap.from_employee, locked: false, source: "manual", note: back, updated_at: now });
+  if (b) await dbUpdate(T.shifts, { id: b.id }, { employee_id: swap.to_employee, locked: false, source: "manual", note: back, updated_at: now });
+  await dbUpdate(T.swaps, { id: swap.id }, { status: "cancelled", decided_at: now, decided_by: state.me.id, decided_by_name: byName, supervisor_note: note ? "Undone after approval: " + note : "Undone after approval" });
+  await logAudit({ area: "swap", action: "revoked", subject: `${ename(swap.from_employee)} → ${ename(swap.to_employee)}`, target_id: swap.id, by: byName, text: `Undid an approved change: ${swapText(swap)} Shifts went back to their original owners.`, detail: note || null });
+  await notify([swap.from_employee, swap.to_employee], "swap_revoked", "A schedule change was undone", `${byName} undid this: ${swapText(swap)} The shifts are back with whoever had them before.${note ? " “" + note + "”" : ""}`, swap.id);
+  sendEmail([emp(swap.from_employee), emp(swap.to_employee)].map((e) => e && e.email), "A schedule change was undone", `${byName} undid this change: ${swapText(swap)}\nThe shifts are back with whoever had them before.${note ? "\n\n“" + note + "”" : ""}`);
+  await refresh(["swaps", "notes", "shifts"]);
+  toast("Undone. The shifts went back to their original owners.", "ok");
 }
 async function cancelSwap(swap) {
   await dbUpdate(T.swaps, { id: swap.id }, { status: "cancelled", decided_at: new Date().toISOString() });
@@ -113,9 +131,9 @@ async function reRequest(swap, toEmpId) {
 // ============================================================ time off flow
 async function createOffRequest({ kind, from, to, reason }) {
   const [saved] = await dbInsert(T.off_requests, [{ employee_id: state.me.id, kind, date_from: from, date_to: to, reason: reason || null, status: "pending" }]);
-  const what = `${kind === "pto" ? "PTO" : "block-out"} ${fmtRangeDates(from, to)}${reason ? " — “" + reason + "”" : ""}`;
-  await notify(supervisors().map((s) => s.id), "off_approve_needed", `${firstName(state.me.name)} asks for ${kind === "pto" ? "PTO" : "a block-out"}`, `${state.me.name}: ${what}`, null, saved.id);
-  await sendEmail(supervisorAddresses(), `Approve? ${kind === "pto" ? "PTO" : "Block-out"} for ${firstName(state.me.name)} · ${fmtRangeDates(from, to)} · ${saved.id.slice(0, 6)}`, `${state.me.name} asks for ${what}.`, "#requests", { kind: "off", id: saved.id });
+  const what = `${offKindWord(kind)} ${fmtRangeDates(from, to)}${reason ? " — “" + reason + "”" : ""}`;
+  await notify(supervisors().map((s) => s.id), "off_approve_needed", `${firstName(state.me.name)} asks for ${kind === "pto" ? "vacation" : "a block-out"}`, `${state.me.name}: ${what}`, null, saved.id);
+  await sendEmail(supervisorAddresses(), `Approve? ${offKindLabel(kind)} for ${firstName(state.me.name)} · ${fmtRangeDates(from, to)} · ${saved.id.slice(0, 6)}`, `${state.me.name} asks for ${what}.`, "#requests", { kind: "off", id: saved.id });
   await refresh(["off_requests", "notes"]);
   toast("Sent to the manager for approval.", "ok");
 }
@@ -123,18 +141,54 @@ async function decideOff(req, approve, byName, note) {
   const now = new Date().toISOString();
   await dbUpdate(T.off_requests, { id: req.id }, { status: approve ? "approved" : "declined", decided_at: now, decided_by: state.me.id, decided_by_name: byName, supervisor_note: note || null });
   await refresh(["off_requests"]);
-  const what = `${req.kind === "pto" ? "PTO" : "block-out"} ${fmtRangeDates(req.date_from, req.date_to)}`;
+  const what = `${offKindWord(req.kind)} ${fmtRangeDates(req.date_from, req.date_to)}`;
+  await logAudit({ area: "timeoff", action: approve ? "approved" : "declined", subject: ename(req.employee_id), target_id: req.id, by: byName, text: `${approve ? "Approved" : "Declined"} ${ename(req.employee_id)}'s ${what}`, detail: note || null });
   await notify([req.employee_id], approve ? "off_approved" : "off_declined", `${approve ? "Approved" : "Declined"}: ${what}`, `${byName} ${approve ? "approved" : "declined"} your ${what}.${note ? " “" + note + "”" : ""}`, null, req.id);
   if (approve) {
     // re-solve the weeks it touches so their shifts get re-covered; locked shifts stay and are flagged
-    let rebuilt = 0;
-    for (let ws = mondayOf(req.date_from); ws <= mondayOf(req.date_to); ws = addDays(ws, 7)) if (weekShifts(ws).length) { await rebuildWeek(ws); rebuilt++; }
+    const rebuilt = await rebuildAffected(req.date_from, req.date_to);
     const stuck = state.data.shifts.filter((s) => s.employee_id === req.employee_id && s.locked && inRange(s.date, req.date_from, req.date_to));
     toast(`Approved.${rebuilt ? ` ${rebuilt} week${rebuilt > 1 ? "s" : ""} rebuilt.` : ""}${stuck.length ? ` ${stuck.length} locked shift(s) still need a manual fix.` : ""}`, stuck.length ? "warn" : "ok");
   } else toast("Declined.");
   await refresh(["notes", "shifts"]);
 }
 async function withdrawOff(req) { await dbUpdate(T.off_requests, { id: req.id }, { status: "cancelled" }); await refresh(["off_requests"]); }
+
+// A manager can take back time off they already approved. The request becomes declined,
+// the person is told, those weeks are re-solved (they are available again), and the
+// change goes in the archive — nothing is quietly deleted.
+async function revokeOff(req, byName, note) {
+  const now = new Date().toISOString();
+  const what = `${offKindWord(req.kind)} ${fmtRangeDates(req.date_from, req.date_to)}`;
+  await dbUpdate(T.off_requests, { id: req.id }, { status: "declined", decided_at: now, decided_by: state.me.id, decided_by_name: byName, supervisor_note: note ? "Revoked after approval: " + note : "Revoked after approval" });
+  await refresh(["off_requests"]);
+  await logAudit({ area: "timeoff", action: "revoked", subject: ename(req.employee_id), target_id: req.id, by: byName, text: `Revoked ${ename(req.employee_id)}'s approved ${what} — they are back on the schedule for those days`, detail: note || null });
+  await notify([req.employee_id], "off_revoked", `Cancelled: ${what}`, `${byName} cancelled your approved ${what}. You are back on the schedule for those days.${note ? " “" + note + "”" : ""}`, null, req.id);
+  sendEmail([(emp(req.employee_id) || {}).email], `Your ${what} was cancelled`, `${byName} cancelled your approved ${what}.${note ? " Reason: " + note : ""}`);
+  const n = await rebuildAffected(req.date_from, req.date_to);
+  await refresh(["notes", "shifts"]);
+  toast(`Revoked and archived.${n ? ` ${n} week(s) rebuilt.` : ""}`, "ok");
+}
+// Change the dates, the kind or the reason of a request that was already decided.
+async function editOffRequest(req, patch, byName, note) {
+  const was = { kind: req.kind, date_from: req.date_from, date_to: req.date_to, reason: req.reason || "" };
+  const changes = [];
+  if (patch.kind !== was.kind) changes.push(`${offKindLabel(was.kind)} → ${offKindLabel(patch.kind)}`);
+  if (patch.date_from !== was.date_from || patch.date_to !== was.date_to) changes.push(`${fmtRangeDates(was.date_from, was.date_to)} → ${fmtRangeDates(patch.date_from, patch.date_to)}`);
+  if ((patch.reason || "") !== was.reason) changes.push(`reason “${was.reason || "—"}” → “${patch.reason || "—"}”`);
+  if (!changes.length) return toast("Nothing changed.");
+  await dbUpdate(T.off_requests, { id: req.id }, { kind: patch.kind, date_from: patch.date_from, date_to: patch.date_to, reason: patch.reason || null, decided_by_name: byName, supervisor_note: note || req.supervisor_note || null });
+  await refresh(["off_requests"]);
+  await logAudit({ area: "timeoff", action: "edited", subject: ename(req.employee_id), target_id: req.id, by: byName, text: `Edited ${ename(req.employee_id)}'s ${offKindWord(patch.kind)}: ${changes.join("; ")}`, detail: note || null });
+  await notify([req.employee_id], "off_edited", "Your time off was changed", `${byName} changed your ${offKindWord(patch.kind)}: ${changes.join("; ")}.${note ? " “" + note + "”" : ""}`, null, req.id);
+  let n = 0;
+  if (req.status === "approved") {
+    const a = [was.date_from, patch.date_from].sort()[0], b = [was.date_to, patch.date_to].sort().slice(-1)[0];
+    n = await rebuildAffected(a, b);
+  }
+  await refresh(["notes", "shifts"]);
+  toast(`Saved and archived.${n ? ` ${n} week(s) rebuilt.` : ""}`, "ok");
+}
 
 // =================================================================== sheet
 function openSheet(html) {
@@ -164,7 +218,9 @@ function shiftBox(s, who) {
 }
 function colleagueSub(e, date) {
   const busy = shiftsOf(e.id).find((x) => x.date === date), off = isOff(e.id, date);
-  return off ? `Has the day off (${offReason(e.id, date)})` : busy ? `Already on ${fmtRange(busy.start_min, busy.end_min)} at ${store(busy.store).name}` : availFor(e.id, date) ? "Usually works this day" : "Usually off this day";
+  // a manager sees why they are off; a colleague only sees that they are
+  const why = isSup() ? ` (${offReason(e.id, date)})` : "";
+  return off ? `Has the day off${why}` : busy ? `Already on ${fmtRange(busy.start_min, busy.end_min)} at ${store(busy.store).name}` : availFor(e.id, date) ? "Usually works this day" : "Usually off this day";
 }
 
 // my own shift → ask a colleague to cover or switch
@@ -272,8 +328,8 @@ function offRequestSheet(date) {
   let kind = "blockout", from = date, to = date, picking = false, view = date.slice(0, 7);
   const c = openSheet(`
     <h3>Ask for time off</h3>
-    <p class="sub">Block-outs are days you can't work (appointments, school). PTO is paid time off. Both go to the manager for approval, and the schedule is rebuilt around them once approved.</p>
-    <div class="tabs"><button class="tab active" data-k="blockout">Block out</button><button class="tab" data-k="pto">PTO</button></div>
+    <p class="sub">Block-outs are days you can't work (appointments, school). Vacation is paid time off. Both go to the manager for approval, and the schedule is rebuilt around them once approved.</p>
+    <div class="tabs"><button class="tab active" data-k="blockout">Block out</button><button class="tab" data-k="pto">Vacation</button></div>
     <label class="lbl">Days · tap the first day, then the last</label>
     <div class="rcal" id="rcal"></div>
     <p class="small muted" id="rsum" style="margin:8px 0 0"></p>
@@ -346,6 +402,7 @@ function wire(root) {
   $$("[data-year]", root).forEach((el) => (el.onclick = () => { const cur = state.toStart || defaultToStart(); if (el.dataset.year === "today") state.toStart = defaultToStart(); else { const [y, m] = cur.split("-").map(Number); const d = new Date(y, m - 1 + Number(el.dataset.year), 1); state.toStart = d.getFullYear() + "-" + pad(d.getMonth() + 1); } render(); }));
   $$("[data-mstore]", root).forEach((el) => (el.onclick = () => { state.masterStore = el.dataset.mstore; render(); }));
   $$("[data-go]", root).forEach((el) => (el.onclick = () => go(el.dataset.go)));
+  $$("[data-goadmin]", root).forEach((el) => (el.onclick = () => { state.adminTab = el.dataset.goadmin; go("#admin"); }));
   $$("[data-add]", root).forEach((el) => (el.onclick = () => { const [employee_id, date, st] = el.dataset.add.split("|"); editShiftSheet(null, { employee_id, date, store: st }); }));
   $$("[data-swap-act]", root).forEach((el) => (el.onclick = () => swapAction(el.dataset.swapAct, el.dataset.id)));
   $$("[data-rereq]", root).forEach((el) => (el.onclick = async () => { const sel = $(`select[data-rereq-sel="${el.dataset.rereq}"]`, root); if (!sel || !sel.value) return toast("Pick someone first.", "err"); const s = state.data.swaps.find((x) => x.id === el.dataset.rereq); el.disabled = true; try { await reRequest(s, sel.value); render(); } catch (e) { toast(e.message, "err"); el.disabled = false; } }));
@@ -370,9 +427,12 @@ function chip(s, opts = {}) {
   const mine = state.me && s.employee_id === state.me.id;
   return `<div class="chip ${mine ? "mine" : ""} ${s.locked ? "locked" : ""} ${s.source === "fill" ? "fill" : ""}" data-shift="${s.id}" title="${esc(s.note || s.source)}"><span class="t">${fmtRange(s.start_min, s.end_min)}${s.locked ? ' <span class="lockmark">🔒</span>' : ""}${shiftDot(s)}</span>${opts.name ? `<span class="n">${esc(opts.short ? firstName(ename(s.employee_id)) : ename(s.employee_id))}</span>` : ""}${opts.store ? `<span class="n">${esc(store(s.store).name)}</span>` : ""}</div>`;
 }
+// Only you (and a manager) see why someone is off; to everyone else it just says "Off".
 function offTag(empId, d) {
-  const r = offReason(empId, d); if (r) return `<div class="chip off tag">${esc(r)}</div>`;
-  const p = offRequestsFor(empId, d, "pending")[0]; if (p) return `<div class="chip off tag pend">${dot("pending")} ${p.kind === "pto" ? "PTO" : "block-out"} requested</div>`;
+  const open = !!(state.me && (state.me.id === empId || isSup()));
+  const r = offReason(empId, d); if (r) return `<div class="chip off tag">${esc(open ? r : "Off")}</div>`;
+  const p = offRequestsFor(empId, d, "pending")[0];
+  if (p) return open ? `<div class="chip off tag pend">${dot("pending")} ${esc(offKindWord(p.kind))} requested</div>` : "";
   return "";
 }
 
@@ -465,6 +525,7 @@ function reqCard(s) {
   if (s.status === "pending_peer" && s.to_employee === me.id) acts.push(`<button class="btn ok" data-swap-act="accept" data-id="${s.id}">Yes, I'll do it</button><button class="btn danger" data-swap-act="decline" data-id="${s.id}">No</button>`);
   if (s.status === "pending_supervisor" && isSup()) acts.push(`<button class="btn primary" data-swap-act="approve" data-id="${s.id}">Approve</button><button class="btn danger" data-swap-act="reject" data-id="${s.id}">Decline</button>`);
   if (["pending_peer", "pending_supervisor"].includes(s.status) && s.from_employee === me.id) acts.push(`<button class="btn ghost sm" data-swap-act="cancel" data-id="${s.id}">Withdraw</button>`);
+  if (s.status === "approved" && isSup()) acts.push(`<button class="btn danger sm" data-swap-act="revoke" data-id="${s.id}">Undo this approval</button>`);
   let again = "";
   if (s.status === "declined_peer" && s.from_employee === me.id && s.from_shift_id && !s.to_shift_id) {
     const shift = shiftById(s.from_shift_id);
@@ -476,18 +537,25 @@ function reqCard(s) {
   return `<div class="card ${acts.length ? "attn" : ""}"><div class="req"><div>
     <div class="who"><span class="av" style="--ac:${colorFor(from.name)}">${initials(from.name)}</span><b>${esc(s.from_employee === me.id ? "You" : from.name)}</b><span class="arrow">→</span><span class="av" style="--ac:${colorFor(to.name)}">${initials(to.name)}</span><b>${esc(s.to_employee === me.id ? "You" : to.name)}</b>${statusPill(s.status)}</div>
     <div class="shifts">${a ? shiftBox(a, `${firstName(from.name)} gives this`) : `<div class="box dim">Nothing given, just covering</div>`}<div class="sw">${a && b ? "⇄" : "→"}</div>${b ? shiftBox(b, `${firstName(from.name)} takes this from ${firstName(to.name)}`) : `<div class="box dim">${esc(firstName(to.name))} takes it over</div>`}</div>
-    ${s.message ? `<p class="msg">“${esc(s.message)}”</p>` : ""}${s.supervisor_note ? `<p class="msg">Manager: “${esc(s.supervisor_note)}”</p>` : ""}${tl}${again}
+    ${s.message ? `<p class="msg">“${esc(s.message)}”</p>` : ""}${s.supervisor_note ? `<p class="msg">Manager: “${esc(s.supervisor_note)}”</p>` : ""}${tl}${auditTrail(s.id)}${again}
   </div><div class="row" style="flex-direction:column;align-items:stretch">${acts.join("")}<span class="dim mono small" style="text-align:right">${esc(new Date(s.created_at).toLocaleDateString())}</span></div></div></div>`;
+}
+// Every after-the-fact change is shown on the card itself, so nothing is silently undone.
+function auditTrail(targetId) {
+  const h = auditFor(targetId); if (!h.length) return "";
+  return `<details class="hist"><summary class="small muted">History · ${h.length} change${h.length === 1 ? "" : "s"}</summary><ul class="small" style="margin:6px 0 0 16px;padding:0">${h.map((a) => `<li><span class="mono dim">${esc(new Date(a.at).toLocaleString())}</span> · ${esc(a.text)}${a.by ? " · " + esc(a.by) : ""}${a.detail ? ` — <i class="muted">“${esc(a.detail)}”</i>` : ""}</li>`).join("")}</ul></details>`;
 }
 function offCard(o) {
   const e = emp(o.employee_id), mine = state.me && o.employee_id === state.me.id, acts = [];
   if (o.status === "pending" && isSup()) acts.push(`<button class="btn primary" data-off-act="approve" data-id="${o.id}">Approve</button><button class="btn danger" data-off-act="decline" data-id="${o.id}">Decline</button>`);
   if (o.status === "pending" && mine) acts.push(`<button class="btn ghost sm" data-off-act="withdraw" data-id="${o.id}">Withdraw</button>`);
+  if (isSup() && o.status === "approved") acts.push(`<button class="btn danger sm" data-off-act="revoke" data-id="${o.id}">Revoke</button><button class="btn sm" data-off-act="edit" data-id="${o.id}">Edit</button>`);
+  if (isSup() && ["declined", "cancelled"].includes(o.status)) acts.push(`<button class="btn primary sm" data-off-act="approve" data-id="${o.id}">Approve after all</button><button class="btn sm" data-off-act="edit" data-id="${o.id}">Edit</button>`);
   const affected = state.data.shifts.filter((s) => s.employee_id === o.employee_id && inRange(s.date, o.date_from, o.date_to));
   return `<div class="card ${acts.length ? "attn" : ""}"><div class="req"><div>
-    <div class="who"><span class="av" style="--ac:${colorFor(e.name)}">${initials(e.name)}</span><b>${esc(mine ? "You" : e.name)}</b><span class="pill iris">${o.kind === "pto" ? "PTO" : "Block out"}</span>${statusPill(o.status)}</div>
+    <div class="who"><span class="av" style="--ac:${colorFor(e.name)}">${initials(e.name)}</span><b>${esc(mine ? "You" : e.name)}</b><span class="pill iris">${esc(offKindLabel(o.kind))}</span>${statusPill(o.status)}</div>
     <div class="box" style="margin:8px 0"><div class="t">${esc(fmtRangeDates(o.date_from, o.date_to))}</div>${o.reason ? `<div class="msg" style="margin-top:4px">“${esc(o.reason)}”</div>` : ""}${affected.length && o.status === "pending" ? `<div class="small warn-text" style="margin-top:6px">${affected.length} scheduled shift${affected.length > 1 ? "s" : ""} in that range: ${affected.map((s) => fmtDate(s.date) + " " + fmtRange(s.start_min, s.end_min)).join(", ")}</div>` : ""}</div>
-    ${o.supervisor_note ? `<p class="msg">Manager: “${esc(o.supervisor_note)}”</p>` : ""}${o.decided_by_name ? `<div class="timeline">${esc(o.status)} by ${esc(o.decided_by_name)} · ${esc(new Date(o.decided_at).toLocaleDateString())}</div>` : ""}
+    ${o.supervisor_note ? `<p class="msg">Manager: “${esc(o.supervisor_note)}”</p>` : ""}${o.decided_by_name ? `<div class="timeline">${esc(o.status)} by ${esc(o.decided_by_name)} · ${esc(new Date(o.decided_at).toLocaleDateString())}</div>` : ""}${auditTrail(o.id)}
   </div><div class="row" style="flex-direction:column;align-items:stretch">${acts.join("")}<span class="dim mono small" style="text-align:right">${esc(new Date(o.created_at).toLocaleDateString())}</span></div></div></div>`;
 }
 function renderRequests() {
@@ -507,6 +575,12 @@ async function swapAction(act, id) {
     if (act === "accept") await peerRespond(s, true);
     else if (act === "decline") await peerRespond(s, false);
     else if (act === "cancel") await cancelSwap(s);
+    else if (act === "revoke") {
+      const c = openSheet(`<h3>Undo this approval?</h3><p class="sub">${esc(swapText(s))}</p><p class="small muted">The shifts go back to whoever had them before and stop being locked, so the next rebuild can move them again. Both people are told, and the change is kept in the archive under Manage → History.</p>${supNameField()}<label class="lbl">Why (optional, both of them see it)</label><input class="field" id="note" placeholder="optional"><div class="actions"><button class="btn" id="no">Back</button><button class="btn danger" id="ok">Undo the approval</button></div>`);
+      $("#no", c).onclick = closeSheet;
+      $("#ok", c).onclick = async () => { const name = readSupName(c); if (!name) return; const note = $("#note", c).value.trim(); closeSheet(); try { await revokeSwap(s, name, note); } catch (e) { toast(e.message, "err"); } render(); };
+      return;
+    }
     else if (act === "approve" || act === "reject") {
       const c = openSheet(`<h3>${act === "approve" ? "Approve this change?" : "Decline this change?"}</h3><p class="sub">${esc(swapText(s))}</p>${act === "approve" ? approvalChecks(s) : ""}${supNameField()}<label class="lbl">Note to both (optional)</label><input class="field" id="note" placeholder="optional"><div class="actions"><button class="btn" id="no">Back</button><button class="btn ${act === "approve" ? "primary" : "danger"}" id="ok">${act === "approve" ? "Approve & update schedule" : "Decline"}</button></div>`);
       $("#no", c).onclick = closeSheet; $("#ok", c).onclick = async () => { const name = readSupName(c); if (!name) return; const note = $("#note", c).value.trim(); closeSheet(); await supervisorDecide(s, act === "approve", note, name); render(); };
@@ -519,10 +593,40 @@ async function offAction(act, id) {
   const o = state.data.off_requests.find((x) => x.id === id); if (!o) return;
   try {
     if (act === "withdraw") { await withdrawOff(o); render(); return; }
+    if (act === "edit") return editOffSheet(o);
+    if (act === "revoke") {
+      const what = `${offKindWord(o.kind)} · ${fmtRangeDates(o.date_from, o.date_to)}`;
+      const c = openSheet(`<h3>Revoke this time off?</h3><p class="sub">${esc(ename(o.employee_id))} · ${esc(what)}</p><p class="small muted">It goes back to declined, ${esc(firstName(ename(o.employee_id)))} is told, and the weeks in that range are re-solved with them available again. The change is kept in the archive under Manage → History. Use <b>Edit</b> instead if you only want to change the dates.</p>${supNameField()}<label class="lbl">Why (optional, they see it)</label><input class="field" id="note" placeholder="optional"><div class="actions"><button class="btn" id="no">Back</button><button class="btn danger" id="ok">Revoke</button></div>`);
+      $("#no", c).onclick = closeSheet;
+      $("#ok", c).onclick = async () => { const name = readSupName(c); if (!name) return; const note = $("#note", c).value.trim(); closeSheet(); await revokeOff(o, name, note); render(); };
+      return;
+    }
     const approve = act === "approve";
-    const c = openSheet(`<h3>${approve ? "Approve time off?" : "Decline time off?"}</h3><p class="sub">${esc(ename(o.employee_id))} · ${o.kind === "pto" ? "PTO" : "block-out"} · ${esc(fmtRangeDates(o.date_from, o.date_to))}${o.reason ? " · “" + esc(o.reason) + "”" : ""}</p>${approve ? `<p class="small muted">Weeks already built in that range are re-solved around the absence. Locked shifts (approved swaps, pins) stay and are flagged for you.</p>` : ""}${supNameField()}<label class="lbl">Note (optional)</label><input class="field" id="note" placeholder="optional"><div class="actions"><button class="btn" id="no">Back</button><button class="btn ${approve ? "primary" : "danger"}" id="ok">${approve ? "Approve" : "Decline"}</button></div>`);
+    const c = openSheet(`<h3>${approve ? "Approve time off?" : "Decline time off?"}</h3><p class="sub">${esc(ename(o.employee_id))} · ${esc(offKindWord(o.kind))} · ${esc(fmtRangeDates(o.date_from, o.date_to))}${o.reason ? " · “" + esc(o.reason) + "”" : ""}</p>${approve ? `<p class="small muted">Weeks already built in that range are re-solved around the absence. Locked shifts (approved swaps, pins) stay and are flagged for you.</p>` : ""}${supNameField()}<label class="lbl">Note (optional)</label><input class="field" id="note" placeholder="optional"><div class="actions"><button class="btn" id="no">Back</button><button class="btn ${approve ? "primary" : "danger"}" id="ok">${approve ? "Approve" : "Decline"}</button></div>`);
     $("#no", c).onclick = closeSheet; $("#ok", c).onclick = async () => { const name = readSupName(c); if (!name) return; const note = $("#note", c).value.trim(); closeSheet(); await decideOff(o, approve, name, note); render(); };
   } catch (e) { toast(e.message, "err"); }
+}
+// Change an already-decided request without losing what it used to say.
+function editOffSheet(o) {
+  const c = openSheet(`<h3>Edit time off</h3>
+    <p class="sub">${esc(ename(o.employee_id))} · ${esc(offKindLabel(o.kind))} · ${esc(fmtRangeDates(o.date_from, o.date_to))} · ${esc(o.status)}</p>
+    <p class="small muted">The old values stay in the archive under Manage → History and ${esc(firstName(ename(o.employee_id)))} is told what changed. If it is approved, the weeks the old and the new dates touch are rebuilt.</p>
+    <label class="lbl">Kind</label><select class="field" id="ekind"><option value="blockout" ${o.kind === "blockout" ? "selected" : ""}>Block-out</option><option value="pto" ${o.kind === "pto" ? "selected" : ""}>Vacation</option></select>
+    <div class="field-row"><div><label class="lbl">From</label><input class="field" id="efrom" type="date" value="${esc(o.date_from)}"></div><div><label class="lbl">To</label><input class="field" id="eto" type="date" value="${esc(o.date_to)}"></div></div>
+    <label class="lbl">Reason</label><input class="field" id="ereason" value="${esc(o.reason || "")}" maxlength="140">
+    ${supNameField()}
+    <label class="lbl">Note about the change (optional)</label><input class="field" id="enote" placeholder="e.g. moved a day later at her request">
+    <div class="actions"><button class="btn" id="no">Cancel</button><button class="btn primary" id="ok">Save changes</button></div>`);
+  $("#no", c).onclick = closeSheet;
+  $("#ok", c).onclick = async () => {
+    const name = readSupName(c); if (!name) return;
+    const from = $("#efrom", c).value, to = $("#eto", c).value;
+    if (!from || !to || to < from) return toast("Pick a from and to date, in order.", "err");
+    const patch = { kind: $("#ekind", c).value, date_from: from, date_to: to, reason: $("#ereason", c).value.trim() };
+    const note = $("#enote", c).value.trim(); closeSheet();
+    try { await editOffRequest(o, patch, name, note); } catch (e) { toast(e.message, "err"); }
+    render();
+  };
 }
 function approvalChecks(s) {
   const R = rules(), warns = [];
@@ -541,28 +645,30 @@ function approvalChecks(s) {
 
 // ---- Time off (year calendar)
 function defaultToStart() { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return d.getFullYear() + "-" + pad(d.getMonth() + 1); }
+// This is a personal page: everyone, managers included, sees only their own time off
+// here. Everyone else's lives under Manage → Time off.
 function renderTimeOff() {
   const me = state.me, t = today(); if (!state.toStart) state.toStart = defaultToStart();
   const [sy, sm] = state.toStart.split("-").map(Number);
   const months = Array.from({ length: 12 }, (_, i) => { const d = new Date(sy, sm - 1 + i, 1); return { y: d.getFullYear(), mi: d.getMonth() }; });
   const label = `${MONTHS[months[0].mi].slice(0, 3)} ${months[0].y} – ${MONTHS[months[11].mi].slice(0, 3)} ${months[11].y}`, isDefault = state.toStart === defaultToStart();
-  const mineReqs = state.data.off_requests.filter((o) => isSup() || o.employee_id === me.id).sort(by((o) => -new Date(o.created_at).getTime()));
+  const mineReqs = state.data.off_requests.filter((o) => o.employee_id === me.id).sort(by((o) => -new Date(o.created_at).getTime()));
   const statusFor = (d) => {
-    if (isSup()) { const all = state.data.off_requests.filter((o) => inRange(d, o.date_from, o.date_to) && ["pending", "approved"].includes(o.status)); return all.length ? { cls: all.some((o) => o.status === "pending") ? "pend" : "ok", n: all.length, names: all.map((o) => firstName(ename(o.employee_id)) + (o.status === "pending" ? " (pending)" : "")).join(", ") } : null; }
     const o = offRequestsFor(me.id, d).filter((x) => x.status !== "cancelled").sort(by((x) => ({ approved: 0, pending: 1, declined: 2 }[x.status] ?? 3)))[0];
-    if (o) return { cls: o.status === "approved" ? "ok" : o.status === "pending" ? "pend" : "no", n: 1, names: (o.kind === "pto" ? "PTO" : "Block-out") + " · " + o.status + (o.reason ? " · " + o.reason : "") };
+    if (o) return { cls: o.status === "approved" ? "ok" : o.status === "pending" ? "pend" : "no", n: 1, names: offKindLabel(o.kind) + " · " + o.status + (o.reason ? " · " + o.reason : "") };
     if (state.data.time_off.some((x) => x.employee_id === me.id && x.date === d)) return { cls: "ok", n: 1, names: "Day off" };
     return null;
   };
   return `<section class="panel">
-    <div class="panel-head"><div><div class="kicker">Time off</div><h1>Block-outs &amp; <em>PTO</em></h1><p class="panel-sub">${isSup() ? "Everyone's requests, all year. Pending ones are amber; approve or decline them below or under Manage." : "Tap a day to ask for a block-out (a day you can't work) or PTO. The manager approves it, and the schedule is rebuilt around it."}</p></div>
+    <div class="panel-head"><div><div class="kicker">Your time off</div><h1>Block-outs &amp; <em>vacation</em></h1><p class="panel-sub">Tap a day to ask for a block-out (a day you can't work) or vacation. The manager approves it, and the schedule is rebuilt around it. Only your own time off shows here.${isSup() ? " Everyone else's is under Manage → Time off." : ""}</p></div>
       <div class="weeknav"><button class="btn sm" data-year="-12">‹</button><div class="wk">${esc(label)}<small>${isDefault ? "last month onward" : ""}</small></div><button class="btn sm" data-year="12">›</button>${isDefault ? "" : `<button class="btn sm ghost" data-year="today">Today</button>`}</div></div>
+    ${isSup() ? `<div class="row" style="margin-bottom:14px"><button class="btn" data-goadmin="off">Everyone's time off &amp; approvals</button><span class="small muted">${offNeedingMe().length ? offNeedingMe().length + " waiting for you" : "nothing waiting"}</span></div>` : ""}
     <div class="ygrid">${months.map(({ y, mi }) => {
       const mn = MONTHS[mi] + (y !== Number(t.slice(0, 4)) ? " " + y : ""); const first = ymd(new Date(y, mi, 1)), last = ymd(new Date(y, mi + 1, 0)); const start = mondayOf(first); const cells = []; for (let d = start; d <= addDays(mondayOf(last), 6); d = addDays(d, 1)) cells.push(d);
-      return `<div class="ymonth"><div class="ym">${mn}</div><div class="yd">${DOW.map((d) => `<span>${d[0]}</span>`).join("")}${cells.map((d) => { const out = d < first || d > last; const st = out ? null : statusFor(d); return `<button class="yday ${out ? "out" : ""} ${d === t ? "today" : ""} ${d < t ? "past" : ""} ${st ? st.cls : ""}" ${out || d < t ? "disabled" : `data-offday="${d}"`} title="${st ? esc(st.names) : esc(d)}">${out ? "" : parseYmd(d).getDate()}${st && isSup() && st.n > 1 ? `<i>${st.n}</i>` : ""}</button>`; }).join("")}</div></div>`;
+      return `<div class="ymonth"><div class="ym">${mn}</div><div class="yd">${DOW.map((d) => `<span>${d[0]}</span>`).join("")}${cells.map((d) => { const out = d < first || d > last; const st = out ? null : statusFor(d); return `<button class="yday ${out ? "out" : ""} ${d === t ? "today" : ""} ${d < t ? "past" : ""} ${st ? st.cls : ""}" ${out || d < t ? "disabled" : `data-offday="${d}"`} title="${st ? esc(st.names) : esc(d)}">${out ? "" : parseYmd(d).getDate()}</button>`; }).join("")}</div></div>`;
     }).join("")}</div>
     <div class="legend"><span><i style="background:var(--moss)"></i>approved</span><span><i style="background:var(--ochre)"></i>waiting on manager</span><span><i style="background:var(--vermilion)"></i>declined</span></div>
-    <h2 class="sec">${isSup() ? "All requests" : "Your requests"}</h2>
+    <h2 class="sec">Your requests</h2>
     ${mineReqs.length ? mineReqs.map(offCard).join("") : `<div class="empty"><h3>No requests yet</h3>Tap a day above to make one.</div>`}
   </section>`;
 }

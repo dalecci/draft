@@ -101,7 +101,8 @@ function gapsFor(shifts, code, date) {
   });
   return gaps;
 }
-function allGaps(shifts, days) { const out = []; stores().forEach((st) => days.forEach((d) => out.push(...gapsFor(shifts, st.code, d)))); return out; }
+// `scope` limits the check to one store, so a store-only build leaves the others alone.
+function allGaps(shifts, days, scope) { const out = []; stores().filter((st) => !scope || st.code === scope).forEach((st) => days.forEach((d) => out.push(...gapsFor(shifts, st.code, d)))); return out; }
 
 // ================================================================ template
 function templateShifts(ws, days, c, fixed) {
@@ -109,6 +110,7 @@ function templateShifts(ws, days, c, fixed) {
   c.staff.forEach((e) => {
     days.forEach((date) => {
       const a = availFor(e.id, date); if (!a) return;
+      if (c.scope && a.store !== c.scope) return; // building one store only
       if (isOff(e.id, date)) return;
       if (fixed.some((f) => f.employee_id === e.id && f.date === date)) return;
       if (hardBlocked(e, date, a.store)) return;
@@ -169,7 +171,7 @@ function candidates(gap, shifts, c, tier) {
 // =================================================================== score
 function scoreWeek(shifts, days, c) {
   const R = c.R; let s = 0;
-  allGaps(shifts, days).forEach((g) => { s += ((g.end - g.start) / 30) * 5 * (g.need - g.count); });
+  allGaps(shifts, days, c.scope).forEach((g) => { s += ((g.end - g.start) / 30) * 5 * (g.need - g.count); });
   c.staff.forEach((e) => {
     const m = empMinutes(shifts, e.id), maxH = maxHoursFor(e, R);
     if (m > maxH) s += 40 + ((m - maxH) / 60) * 4;
@@ -192,14 +194,15 @@ function scoreWeek(shifts, days, c) {
 }
 
 // =================================================================== solve
-function solverCtx() { return { R: rules(), staff: staff() }; }
+function solverCtx(scope) { return { R: rules(), staff: staff(), scope: scope && scope !== "ALL" ? scope : null }; }
 function sig(shifts) { return shifts.map((s) => `${s.employee_id}|${s.date}|${s.store}|${s.start_min}|${s.end_min}`).sort().join(";"); }
 // Returns up to 3 distinct arrangements, best first. Each option lists only the NEW
 // rows (fixed rows already exist in the database) plus `all` for previews.
-function solveWeek(ws, fixedRows) {
-  const c = solverCtx(), R = c.R, days = weekDays(ws);
+// opts.store builds that store only; every other store's rows come in as fixed.
+function solveWeek(ws, fixedRows, opts = {}) {
+  const c = solverCtx(opts.store), R = c.R, days = weekDays(ws);
   const fixed = clone(fixedRows);
-  state.data.must_work.filter((m) => days.includes(m.date)).forEach((m) => {
+  state.data.must_work.filter((m) => days.includes(m.date) && (!c.scope || m.store === c.scope)).forEach((m) => {
     if (fixed.some((f) => f.employee_id === m.employee_id && f.date === m.date)) return;
     fixed.push({ week_start: ws, date: m.date, employee_id: m.employee_id, store: m.store, start_min: m.start_min, end_min: m.end_min, locked: true, source: "must", note: m.note || "Needs to work" });
   });
@@ -208,7 +211,7 @@ function solveWeek(ws, fixedRows) {
   const options = new Map();
   for (let run = 0; run < Math.max(1, R.restarts | 0); run++) {
     const shifts = clone(fixed.concat(base));
-    const gaps = shuffle(allGaps(shifts, days));
+    const gaps = shuffle(allGaps(shifts, days, c.scope));
     for (const g0 of gaps) {
       const still = gapsFor(shifts, g0.store, g0.date).filter((g) => g.start < g0.end && g.end > g0.start);
       for (const g of still) {
@@ -229,10 +232,10 @@ function solveWeek(ws, fixedRows) {
   }
   const list = Array.from(options.values()).sort((a, b) => a.score - b.score).slice(0, 3);
   list.forEach((o) => { o.shifts = o.all.filter((s) => !s.id); });
-  return { options: list, days };
+  return { options: list, days, scope: c.scope };
 }
-function optionSummary(o, ws) {
-  const days = weekDays(ws), fills = o.all.filter((s) => s.source === "fill").length, gaps = allGaps(o.all, days);
+function optionSummary(o, ws, scope) {
+  const days = weekDays(ws), fills = o.all.filter((s) => s.source === "fill").length, gaps = allGaps(o.all, days, scope);
   const hrs = staff().map((e) => empMinutes(o.all, e.id)).filter(Boolean);
   return { fills, gaps: gaps.length, gapMin: gaps.reduce((a, g) => a + g.end - g.start, 0), spread: hrs.length ? Math.max(...hrs) - Math.min(...hrs) : 0, flags: o.all.filter((s) => /\(/.test(s.note || "")).length };
 }
@@ -257,7 +260,7 @@ function weekIssues(ws) {
     Object.entries(byDate).forEach(([date, arr]) => { for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) if (arr[i].start_min < arr[j].end_min && arr[j].start_min < arr[i].end_min) add("overlap", "bad", `${e.name} is double-booked on ${fmtDate(date)}`); });
     mine.forEach((s) => {
       if (isOff(e.id, s.date)) add("off", "bad", `${e.name} is scheduled ${fmtDate(s.date)} but has that day off (${offReason(e.id, s.date)})`);
-      const pend = offRequestsFor(e.id, s.date, "pending")[0]; if (pend) add("pending", "warn", `${e.name} has a pending ${pend.kind === "pto" ? "PTO" : "block-out"} request for ${fmtDate(s.date)} and is scheduled — decide it under Manage`);
+      const pend = offRequestsFor(e.id, s.date, "pending")[0]; if (pend) add("pending", "warn", `${e.name} has a pending ${offKindWord(pend.kind)} request for ${fmtDate(s.date)} and is scheduled — decide it under Manage`);
       if (!worksStore(e, s.store)) add("cross", "info", `${e.name} covers at ${store(s.store).name} on ${fmtDate(s.date)} (not one of their stores)`);
     });
   });
@@ -303,10 +306,11 @@ async function takeSnapshot(ws, label, kind = "auto") {
 // Replaces the unlocked shifts of a week. A shift that survives the rebuild for the same
 // person / date / store keeps its id, so requests pointing at it stay valid; a shift a
 // pending request points at is kept (and locked) even if the solver dropped it.
-async function applyWeek(ws, newRows, label) {
+// `scope` (a store code) touches that store only and leaves the other stores untouched.
+async function applyWeek(ws, newRows, label, scope) {
   await takeSnapshot(ws, label || "Before rebuild", "auto");
   const pendingIds = new Set(state.data.swaps.filter((x) => ["pending_peer", "pending_supervisor"].includes(x.status)).flatMap((x) => [x.from_shift_id, x.to_shift_id]).filter(Boolean));
-  const loose = weekShifts(ws).filter((s) => !s.locked);
+  const loose = weekShifts(ws).filter((s) => !s.locked && (!scope || s.store === scope));
   const key = (s) => `${s.employee_id}|${s.date}|${s.store}`;
   const oldByKey = new Map(loose.map((s) => [key(s), s]));
   const rows = newRows.map((s) => { const { id, ...rest } = s; const o = oldByKey.get(key(s)); if (o) { rest.id = o.id; oldByKey.delete(key(s)); } return rest; });
@@ -316,11 +320,29 @@ async function applyWeek(ws, newRows, label) {
   for (const k of keep) await dbUpdate(T.shifts, { id: k.id }, { locked: true, note: "Kept for a pending swap request" });
   await refresh(["shifts"]);
 }
-async function rebuildWeek(ws) {
-  const locked = weekShifts(ws).filter((s) => s.locked);
-  const res = solveWeek(ws, locked);
-  await applyWeek(ws, res.options[0] ? res.options[0].shifts : [], "Before rebuild");
+// opts = { store, label }. With a store, every other store's shifts are held fixed so
+// only that one is re-solved.
+async function rebuildWeek(ws, opts = {}) {
+  const scope = opts.store && opts.store !== "ALL" ? opts.store : null;
+  const fixed = weekShifts(ws).filter((s) => s.locked || (scope && s.store !== scope));
+  const res = solveWeek(ws, fixed, { store: scope });
+  await applyWeek(ws, res.options[0] ? res.options[0].shifts : [], opts.label || "Before rebuild", scope);
   return res;
+}
+// Build or rebuild a run of weeks, optionally one store only. onStep(ws, i, n) reports
+// progress between weeks so the sheet can paint. Returns one line per week.
+async function buildRange(from, to, opts = {}) {
+  const first = mondayOf(from), last = mondayOf(to), weeks = [];
+  for (let ws = first; ws <= last; ws = addDays(ws, 7)) weeks.push(ws);
+  const out = [];
+  for (let i = 0; i < weeks.length; i++) {
+    const ws = weeks[i], existed = weekShifts(ws).length > 0;
+    if (opts.onStep) { opts.onStep(ws, i, weeks.length); await new Promise((r) => setTimeout(r, 0)); }
+    await rebuildWeek(ws, { store: opts.store, label: opts.label || (existed ? "Before rebuild" : "Before first build") });
+    const gaps = allGaps(weekShifts(ws), weekDays(ws), opts.store && opts.store !== "ALL" ? opts.store : null);
+    out.push({ week_start: ws, existed, shifts: weekShifts(ws).length, gaps: gaps.length, flags: weekIssues(ws).filter((x) => x.sev !== "info").length });
+  }
+  return out;
 }
 async function restoreSnapshot(snap) {
   const ws = snap.week_start;

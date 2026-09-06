@@ -20,7 +20,9 @@ to `main` in `dalecci/draft`.
      included), flags for every compromise the solver had to make.
    - **Requests** — covers and switches with a timeline. After a decline, pick another
      colleague from the dropdown on the card and re-send.
-   - **Time off** — a year calendar for block-outs and PTO.
+   - **Time off** — a year calendar for block-outs and vacation. This page is personal:
+     everyone, managers included, sees only their own days here. The whole team's year is
+     under Manage → Time off.
    - **Manage** — supervisors only.
 
 ### Status dots
@@ -39,11 +41,41 @@ Tap a shift. Your own → ask a colleague to *cover* or *switch*. Someone else's
 approval and an email → manager approves (signing with their name; several people share the
 Manager login) → shifts are reassigned and **locked** so a rebuild never undoes them.
 
-### Block-outs and PTO
+### Block-outs and vacation
 
-Tap a day under **Time off**, pick block-out or PTO, dates and a reason. The manager approves
-or declines (signed with a name). On approval the weeks in that range are re-solved around
-the absence; any locked shift of that person in the range is flagged for a manual fix.
+Tap a day under **Time off**, pick block-out or vacation, dates and a reason. The manager
+approves or declines (signed with a name). On approval the weeks in that range are re-solved
+around the absence; any locked shift of that person in the range is flagged for a manual fix.
+
+(The stored `kind` is still `blockout` / `pto` — never rename data — but everything a
+person reads says **Vacation**.)
+
+### Nothing is final: revoke, edit, and the archive
+
+Approved does not mean stuck. Under **Manage → Time off**, every approved request that is
+still to come has **Revoke** and **Edit**, and a request that was declined can still be
+approved after all:
+
+- **Revoke** puts it back to declined, tells the person, and re-solves those weeks with them
+  available again.
+- **Edit** changes the dates, the kind or the reason, tells the person exactly what changed,
+  and rebuilds the weeks the old and the new dates touch.
+- An approved cover or switch has **Undo this approval** on its card in Requests: the shifts
+  go back to whoever had them before and stop being locked, and both people are told.
+
+Every one of those changes — plus the approvals and declines themselves, pre-approved days
+off, pins, and each manual build — is appended to a **change archive**: what changed, who
+signed it, when, and the note they left. It shows up in two places: as a *History* line on
+the request card itself, and in full under **Manage → History**, filterable by area. Entries
+are only ever added, never edited or deleted (the last 400 are kept). It lives in the
+settings row `audit_log`, so no schema change is needed.
+
+### Who sees whose time off
+
+Someone else's reason is nobody's business. On **Time off** you see only your own days. On
+the Master schedule a colleague's day off reads just "Off"; you see "Vacation" or "Blocked
+out" only on your own days, and a manager sees the reason everywhere. The colleague picker
+in a swap says "Has the day off" without the why.
 
 ## The algorithm
 
@@ -59,7 +91,7 @@ For each week:
 2. **Fixed** — locked shifts (approved swaps, pins) and *needs to work* entries.
 3. **Template** — each person's weekly availability, or their *special availability* if the
    date falls in one, trimmed to the demand window, skipped on time off / approved block-outs
-   / PTO / "never works Mondays" rules.
+   / vacation / "never works Mondays" rules.
 4. **Gaps** — every minute where the count on the floor is below what is needed.
 5. **Fill**, escalating until the gap is closed (`neverLeaveGap` rule):
    - tier 0: extend a shift already there that day, or call in a *flex* person, all within limits;
@@ -71,6 +103,22 @@ For each week:
    together), then each compromise.
 7. Up to three distinct arrangements are kept. **Rebuild** shows Option 1 and Option 2 with
    the differences between them; pick one.
+
+### Building a range, or one store
+
+**Manage → Week tools → Build / rebuild…** asks two things before it runs:
+
+- **Which weeks** — this week, next week, the next 2 / 4 / 7, or any from–to (each date is
+  snapped to its Monday, so a range always covers whole weeks). Weeks that do not exist yet
+  are created; weeks that do are re-solved.
+- **Which store** — all three, or one store only. With one store, every other store's shifts
+  are handed to the solver as fixed rows: they come out byte-identical, nobody gets
+  double-booked across stores, and pins at the other stores are left alone.
+
+One week at a time still offers the two arrangements to choose from; a longer range takes the
+best option per week and reports the gaps and flags at the end. Every week is snapshotted
+first, so **Go back** works week by week either way. The AI command center has the same thing
+as `build_schedule` (week_from, week_to, store) and `rebuild_week` now takes a store too.
 
 Every compromise is written on the shift ("Extended to cover 9:45a–10a (over hours)") and
 listed as a flag on Master and Week tools. Weeks are built on first view (current + 6, and
@@ -106,8 +154,11 @@ shows "broken this week" when the current week violates it.
 - **Availability** — weekly template per person, plus *special availability* periods.
 - **Stores & hours** — regular hours, plus *temporary hours* by date range (with "as usual"
   per day) or typed dates: `Dec 24: 10 to 3`, `Dec 25: closed`, `Dec 26 - Dec 31: 12 to 5`.
-- **Time off & must-work** — pending block-out/PTO approvals, pre-approved days off, pins.
-- **Week tools** — rebuild with options, go back, saved versions, LEARN, flags, hours.
+- **Time off & must-work** — pending approvals, the whole team's year, approved requests you
+  can revoke or edit, pre-approved days off, pins.
+- **History** — the change archive described above.
+- **Week tools** — build / rebuild by week range and store, rebuild this week with options,
+  go back, saved versions, LEARN, flags, hours.
 - **Import text** — paste the spreadsheet (or `Maria (PV): Mon 10 to 6, Sat 10-5`) → preview
   → apply as the weekly template or as special availability for a date range; time off and
   needs-to-work columns come along.
@@ -157,4 +208,6 @@ Bump `APP_VERSION` in `app.js` and the `?v=` on every script/style tag in `index
 ## Storage rule
 
 Never rename the `lps_` tables or the settings keys. Add columns and keys; the app treats
-missing values as defaults (`migrate()` in `app.js`).
+missing values as defaults (`migrate()` in `app.js`). That is why `kind` stays `'pto'` even
+though the app says Vacation, and why the change archive is a settings key (`audit_log`)
+rather than a new table — nothing has to be run in Supabase for it to start working.

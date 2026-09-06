@@ -9,13 +9,13 @@ async function rebuildAffected(from, to) {
 
 // =================================================================== admin
 function renderAdmin() {
-  const tabs = [["team", "Team & PINs"], ["avail", "Availability"], ["stores", "Stores & hours"], ["rules", "Rules"], ["off", "Time off & must-work"], ["weeks", "Week tools"], ["import", "Import text"], ["ai", "AI"], ["settings", "Settings"]];
+  const tabs = [["team", "Team & PINs"], ["avail", "Availability"], ["stores", "Stores & hours"], ["rules", "Rules"], ["off", "Time off & must-work"], ["history", "History"], ["weeks", "Week tools"], ["import", "Import text"], ["ai", "AI"], ["settings", "Settings"]];
   const pend = offNeedingMe().length;
   return `<section class="panel">
     <div class="panel-head"><div><div class="kicker">Manage</div><h1>Rules, roster, <em>rebuilds</em></h1><p class="panel-sub">Everything the solver uses lives here. Change a rule, then rebuild a week under Week tools to see the effect. Locked shifts always survive a rebuild, and every rebuild can be undone.</p></div>
       <span class="pill ${state.offline ? "warn" : "good"}">${state.offline ? "this device only · cloud tables missing" : "synced · Supabase"}</span></div>
     <div class="tabs">${tabs.map(([k, l]) => `<button class="tab ${state.adminTab === k ? "active" : ""}" data-admintab="${k}">${l}${k === "off" && pend ? ` <span class="pill bad" style="padding:0 6px">${pend}</span>` : ""}</button>`).join("")}</div>
-    <div id="admin-body">${({ team: adminTeam, avail: adminAvail, stores: adminStores, rules: adminRules, off: adminOff, weeks: adminWeeks, import: adminImport, ai: adminAi, settings: adminSettings })[state.adminTab]()}</div>
+    <div id="admin-body">${(({ team: adminTeam, avail: adminAvail, stores: adminStores, rules: adminRules, off: adminOff, history: adminHistory, weeks: adminWeeks, import: adminImport, ai: adminAi, settings: adminSettings })[state.adminTab] || adminTeam)()}</div>
   </section>`;
 }
 function adminTeam() {
@@ -55,7 +55,7 @@ function adminAvail() {
   <div class="actions"><button class="btn primary" id="save-av">Save weekly template</button></div>
   <p class="small muted">Saving rebuilds the weeks that are already built (locked shifts stay). Tip: instead of retyping, edit shifts on the Master schedule and use Week tools → Learn.</p></div>
   <div class="card"><h2 class="sec">Special availability <small>a different pattern for a few weeks</small></h2>
-    <p class="small muted">Use this when someone's availability changes for a season or a month ("Thursdays instead of Wednesdays until Oct 30"). Inside the dates the solver uses this pattern instead of the weekly template. Block-outs and PTO still apply on top.</p>
+    <p class="small muted">Use this when someone's availability changes for a season or a month ("Thursdays instead of Wednesdays until Oct 30"). Inside the dates the solver uses this pattern instead of the weekly template. Block-outs and vacation still apply on top.</p>
     ${periods.length ? `<table class="plain"><tbody>${periods.map((p) => `<tr><td><b>${esc(p.label || "Special period")}</b><br><span class="small muted">${esc(fmtRangeDates(p.date_from, p.date_to))}</span></td><td class="small">${esc(patternSummary(p.pattern || {}))}</td><td style="text-align:right"><button class="btn sm danger" data-del-period="${p.id}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">None yet for ${esc(firstName(cur.name))}.</p>`}
     <div class="field-row" style="margin-top:12px"><div><label class="lbl">Label</label><input class="field" id="per-label" placeholder="e.g. School term"></div><div class="field-row"><div><label class="lbl">From</label><input class="field" id="per-from" type="date"></div><div><label class="lbl">To</label><input class="field" id="per-to" type="date"></div></div></div>
     <label class="lbl">Pattern during those dates</label>
@@ -130,11 +130,18 @@ function adminRules() {
   <div class="actions"><button class="btn primary" id="save-rules">Save base rules</button></div></div>`;
 }
 function adminOff() {
-  const pend = state.data.off_requests.filter((o) => o.status === "pending").sort(by((o) => o.date_from));
-  const hist = state.data.off_requests.filter((o) => o.status !== "pending").sort(by((o) => -new Date(o.created_at).getTime())).slice(0, 30);
+  const t = today();
+  const all = state.data.off_requests;
+  const pend = all.filter((o) => o.status === "pending").sort(by((o) => o.date_from));
+  const live = all.filter((o) => o.status === "approved" && o.date_to >= t).sort(by((o) => o.date_from));
+  const hist = all.filter((o) => o.status !== "pending" && !live.includes(o)).sort(by((o) => -new Date(o.created_at).getTime())).slice(0, 30);
   const off = state.data.time_off.slice().sort(by((o) => o.date)), must = state.data.must_work.slice().sort(by((m) => m.date));
   const opts = staff().map((e) => `<option value="${esc(e.id)}">${esc(e.name)}</option>`).join("");
   return `<div class="card"><h2 class="sec">Waiting for approval <small>${pend.length}</small></h2>${pend.length ? pend.map(offCard).join("") : `<p class="dim small">Nothing pending.</p>`}</div>
+  <div class="card"><h2 class="sec">Approved, still to come <small>${live.length} · revoke or edit any of them</small></h2>
+    <p class="small muted" style="margin:0 0 10px">Nothing here is set in stone. <b>Revoke</b> puts the request back to declined, tells the person and re-solves those weeks with them available again. <b>Edit</b> changes the dates, the kind or the reason. Either way the old version is kept in <b>History</b>, and the change shows on the card.</p>
+    ${live.length ? live.map(offCard).join("") : `<p class="dim small">Nothing approved for the days ahead.</p>`}</div>
+  ${adminYearGrid()}
   <div class="card"><h2 class="sec">Time off <small>pre-approved days the solver never schedules</small></h2>
     <table class="plain"><tbody>${off.map((o) => `<tr><td>${esc(ename(o.employee_id))}</td><td class="mono">${esc(fmtDate(o.date, true))}</td><td class="muted">${esc(o.note || "")}</td><td style="text-align:right"><button class="btn sm danger" data-del-off="${o.id}">Remove</button></td></tr>`).join("") || `<tr><td class="dim">None</td></tr>`}</tbody></table>
     <div class="row" style="margin-top:12px"><select class="field" id="off-emp" style="max-width:220px">${opts}</select><input class="field" id="off-date" type="date" style="max-width:180px"><input class="field" id="off-note" placeholder="note" style="max-width:220px"><button class="btn" id="add-off">Add day off</button></div></div>
@@ -142,7 +149,49 @@ function adminOff() {
     <table class="plain"><tbody>${must.map((m) => `<tr><td>${esc(ename(m.employee_id))}</td><td class="mono">${esc(fmtDate(m.date, true))} · ${fmtRange(m.start_min, m.end_min)}</td><td><span class="pill store s-${esc(m.store)}">${esc(m.store)}</span></td><td class="muted">${esc(m.note || "")}</td><td style="text-align:right"><button class="btn sm danger" data-del-must="${m.id}">Remove</button></td></tr>`).join("") || `<tr><td class="dim">None</td></tr>`}</tbody></table>
     <div class="row" style="margin-top:12px"><select class="field" id="must-emp" style="max-width:220px">${opts}</select><input class="field" id="must-date" type="date" style="max-width:170px"><input class="field tm" id="must-a" type="time" step="900" value="10:00" style="max-width:120px"><input class="field tm" id="must-b" type="time" step="900" value="14:00" style="max-width:120px"><select class="field" id="must-st" style="max-width:100px">${stores().map((s) => `<option>${esc(s.code)}</option>`).join("")}</select><button class="btn" id="add-must">Add</button></div>
     <p class="small muted">Adding either one rebuilds the affected week automatically (locked shifts stay).</p></div>
-  ${hist.length ? `<div class="card"><h2 class="sec">Decided requests</h2>${hist.map(offCard).join("")}</div>` : ""}`;
+  ${hist.length ? `<div class="card"><h2 class="sec">Past &amp; decided requests <small>declined ones can still be approved after all</small></h2>${hist.map(offCard).join("")}</div>` : ""}`;
+}
+// The whole team's year at a glance. This lives under Manage on purpose: on their own
+// Time off page people see only their own days.
+function adminYearGrid() {
+  const t = today(); if (!state.toStart) state.toStart = defaultToStart();
+  const [sy, sm] = state.toStart.split("-").map(Number);
+  const months = Array.from({ length: 12 }, (_, i) => { const d = new Date(sy, sm - 1 + i, 1); return { y: d.getFullYear(), mi: d.getMonth() }; });
+  const label = `${MONTHS[months[0].mi].slice(0, 3)} ${months[0].y} – ${MONTHS[months[11].mi].slice(0, 3)} ${months[11].y}`, isDefault = state.toStart === defaultToStart();
+  const statusFor = (d) => {
+    const reqs = state.data.off_requests.filter((o) => inRange(d, o.date_from, o.date_to) && ["pending", "approved"].includes(o.status));
+    const pre = state.data.time_off.filter((x) => x.date === d);
+    if (!reqs.length && !pre.length) return null;
+    return { cls: reqs.some((o) => o.status === "pending") ? "pend" : "ok", n: reqs.length + pre.length,
+      names: reqs.map((o) => `${firstName(ename(o.employee_id))} · ${offKindLabel(o.kind)}${o.status === "pending" ? " (pending)" : ""}`).concat(pre.map((x) => `${firstName(ename(x.employee_id))} · day off`)).join(", ") };
+  };
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h2 class="sec" style="margin:0">Everyone's year <small>approved is green, waiting on you is amber</small></h2>
+      <div class="weeknav"><button class="btn sm" data-year="-12">‹</button><div class="wk">${esc(label)}</div><button class="btn sm" data-year="12">›</button>${isDefault ? "" : `<button class="btn sm ghost" data-year="today">Today</button>`}</div></div>
+    <div class="ygrid" style="margin-top:12px">${months.map(({ y, mi }) => {
+      const mn = MONTHS[mi] + (y !== Number(t.slice(0, 4)) ? " " + y : ""); const first = ymd(new Date(y, mi, 1)), last = ymd(new Date(y, mi + 1, 0));
+      const cells = []; for (let d = mondayOf(first); d <= addDays(mondayOf(last), 6); d = addDays(d, 1)) cells.push(d);
+      return `<div class="ymonth"><div class="ym">${mn}</div><div class="yd">${DOW.map((d) => `<span>${d[0]}</span>`).join("")}${cells.map((d) => {
+        const out = d < first || d > last, st = out ? null : statusFor(d);
+        return `<button class="yday ${out ? "out" : ""} ${d === t ? "today" : ""} ${d < t ? "past" : ""} ${st ? st.cls : ""}" disabled title="${st ? esc(st.names) : esc(d)}">${out ? "" : parseYmd(d).getDate()}${st && st.n > 1 ? `<i>${st.n}</i>` : ""}</button>`;
+      }).join("")}</div></div>`;
+    }).join("")}</div></div>`;
+}
+
+// ---- the change archive: what a manager changed after it was already decided
+const AUDIT_AREAS = { timeoff: "Time off", swap: "Cover / switch", schedule: "Schedule", roster: "Roster" };
+const AUDIT_PILL = { approved: "good", declined: "bad", revoked: "bad", edited: "warn", removed: "bad", added: "" };
+function adminHistory() {
+  const log = auditLog(), filt = state.histArea || "all";
+  const shown = filt === "all" ? log : log.filter((a) => a.area === filt);
+  const areas = ["all"].concat(Object.keys(AUDIT_AREAS));
+  return `<div class="card"><h2 class="sec">Change archive <small>${log.length} recorded</small></h2>
+    <p class="small muted">Every approval, revocation and edit a manager makes, with who did it and when. Entries are only ever added, never changed or deleted, so the team can see exactly what happened to an approved day off or an approved swap. The last ${AUDIT_MAX} changes are kept.</p>
+    <div class="tabs" style="margin-top:12px">${areas.map((a) => `<button class="tab ${filt === a ? "active" : ""}" data-hist="${esc(a)}">${a === "all" ? "Everything" : esc(AUDIT_AREAS[a])}</button>`).join("")}</div>
+    ${shown.length ? `<div class="mwrap" style="border:0"><table class="plain"><tbody>${shown.map((a) => `<tr>
+      <td class="mono small" style="white-space:nowrap;vertical-align:top">${esc(new Date(a.at).toLocaleString())}</td>
+      <td style="vertical-align:top"><span class="pill ${AUDIT_PILL[a.action] || ""}">${esc(a.action)}</span></td>
+      <td class="small" style="vertical-align:top">${esc(a.text)}${a.detail ? `<br><i class="muted">“${esc(a.detail)}”</i>` : ""}</td>
+      <td class="small muted" style="white-space:nowrap;vertical-align:top">${esc(a.by || "—")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="dim small">Nothing here yet. Revoke or edit something that was already approved and it shows up.</p>`}</div>`;
 }
 function adminWeeks() {
   const ws = state.week, issues = weekIssues(ws), sh = weekShifts(ws);
@@ -150,8 +199,8 @@ function adminWeeks() {
   const snaps = state.data.snapshots.filter((s) => s.week_start === ws).sort(by((s) => -new Date(s.created_at).getTime()));
   const autos = snaps.filter((s) => s.kind === "auto"), saved = snaps.filter((s) => s.kind === "saved");
   const manual = sh.filter((s) => s.source === "manual").length;
-  return `<div class="card"><div class="row" style="justify-content:space-between">${weekNav()}<div class="row"><button class="btn primary" id="rebuild">Rebuild · choose a version</button><button class="btn" id="goback" ${autos.length ? "" : "disabled"} title="${autos.length ? esc("Back to: " + autos[0].label + " · " + new Date(autos[0].created_at).toLocaleString()) : "Nothing to go back to yet"}">↶ Go back</button><button class="btn" id="save-ver">Save this version</button></div></div>
-    <p class="small muted" style="margin-top:10px">Rebuild re-solves the week from templates, time off, must-work and rules and shows you two arrangements to pick from. Locked shifts (🔒) are kept exactly as they are. Every rebuild saves the previous version first, so <b>Go back</b> restores it. ${sh.length} shifts · ${sh.filter((s) => s.locked).length} locked · ${sh.filter((s) => s.source === "fill").length} solver fills · ${manual} manual edit${manual === 1 ? "" : "s"}.</p>
+  return `<div class="card"><div class="row" style="justify-content:space-between">${weekNav()}<div class="row"><button class="btn primary" id="build">Build / rebuild…</button><button class="btn" id="rebuild">This week · choose a version</button><button class="btn" id="goback" ${autos.length ? "" : "disabled"} title="${autos.length ? esc("Back to: " + autos[0].label + " · " + new Date(autos[0].created_at).toLocaleString()) : "Nothing to go back to yet"}">↶ Go back</button><button class="btn" id="save-ver">Save this version</button></div></div>
+    <p class="small muted" style="margin-top:10px"><b>Build / rebuild…</b> asks which weeks (one week, a date range, or the next few) and which store — one store only, or all three — then re-solves just that. <b>This week · choose a version</b> re-solves the week shown above and offers you two arrangements. Either way the schedule comes from the templates, time off, must-work and rules, locked shifts (🔒) are kept exactly as they are, and the previous version is saved first so <b>Go back</b> restores it. ${sh.length} shifts · ${sh.filter((s) => s.locked).length} locked · ${sh.filter((s) => s.source === "fill").length} solver fills · ${manual} manual edit${manual === 1 ? "" : "s"}.</p>
     ${saved.length ? `<label class="lbl">Saved versions</label><table class="plain"><tbody>${saved.map((s) => `<tr><td><b>${esc(s.label)}</b> <span class="dim small mono">${esc(new Date(s.created_at).toLocaleString())}</span></td><td class="small muted">${(s.shifts || []).length} shifts</td><td style="text-align:right"><button class="btn sm" data-load-snap="${s.id}">Load</button> <button class="btn sm danger" data-del-snap="${s.id}">Delete</button></td></tr>`).join("")}</tbody></table>` : ""}
     ${autos.length > 1 ? `<details style="margin-top:10px"><summary class="small muted">Earlier automatic versions (${autos.length})</summary><table class="plain"><tbody>${autos.map((s) => `<tr><td class="small">${esc(s.label)} <span class="dim mono">${esc(new Date(s.created_at).toLocaleString())}</span></td><td style="text-align:right"><button class="btn sm" data-load-snap="${s.id}">Restore</button></td></tr>`).join("")}</tbody></table></details>` : ""}</div>
   <div class="card"><div class="row" style="justify-content:space-between"><h2 class="sec" style="margin:0">Learn from this week</h2><button class="btn ${manual ? "primary" : ""}" id="learn" ${manual ? "" : "disabled"}>LEARN</button></div>
@@ -183,6 +232,7 @@ function adminSettings() {
 function wireAdmin(root) {
   if (state.adminTab === "ai") { wireAi(root); return; }
   const on = (sel, fn) => { const el = $(sel, root); if (el) el.onclick = fn; };
+  $$("[data-hist]", root).forEach((b) => (b.onclick = () => { state.histArea = b.dataset.hist; render(); }));
   const guard = async (fn, okMsg) => { try { await fn(); if (okMsg) toast(okMsg, "ok"); } catch (e) { console.error(e); toast(e.message || String(e), "err"); } };
   // team
   $$("[data-save-emp]", root).forEach((b) => (b.onclick = () => guard(async () => {
@@ -241,11 +291,12 @@ function wireAdmin(root) {
   $$("[data-del-rule]", root).forEach((b) => (b.onclick = () => guard(async () => { await saveSetting("custom_rules", customRules().filter((r) => r.id !== b.dataset.delRule)); render(); }, "Rule removed.")));
   on("#save-rules", () => guard(async () => { const R = { ...rules() }; $$("[data-rule]", root).forEach((i) => { R[i.dataset.rule] = i.type === "checkbox" ? i.checked : Number(i.value); }); await saveSetting("rules", R); render(); }, "Base rules saved. Rebuild a week to apply them."));
   // time off / must work
-  $$("[data-del-off]", root).forEach((b) => (b.onclick = () => guard(async () => { const o = state.data.time_off.find((x) => String(x.id) === b.dataset.delOff); await dbDelete(T.time_off, { id: o.id }); await refresh(["time_off"]); await rebuildAffected(o.date, o.date); render(); }, "Removed and week rebuilt.")));
-  $$("[data-del-must]", root).forEach((b) => (b.onclick = () => guard(async () => { const m = state.data.must_work.find((x) => String(x.id) === b.dataset.delMust); await dbDelete(T.must_work, { id: m.id }); const pinned = weekShifts(mondayOf(m.date)).filter((s) => s.employee_id === m.employee_id && s.date === m.date && s.source === "must"); await dbDeleteIn(T.shifts, "id", pinned.map((p) => p.id)); await refresh(["must_work", "shifts"]); await rebuildAffected(m.date, m.date); render(); }, "Removed and week rebuilt.")));
-  on("#add-off", () => guard(async () => { const employee_id = $("#off-emp", root).value, date = $("#off-date", root).value; if (!date) throw new Error("Pick a date."); await dbUpsert(T.time_off, [{ employee_id, date, note: $("#off-note", root).value.trim() || null }], "employee_id,date"); await refresh(["time_off"]); await rebuildAffected(date, date); render(); }, "Day off added; week rebuilt."));
-  on("#add-must", () => guard(async () => { const employee_id = $("#must-emp", root).value, date = $("#must-date", root).value, a = fromHHMM($("#must-a", root).value), b = fromHHMM($("#must-b", root).value), st = $("#must-st", root).value; if (!date || a == null || b == null || b <= a) throw new Error("Pick a date and a valid time."); await dbInsert(T.must_work, [{ employee_id, date, start_min: a, end_min: b, store: st, note: null }]); await refresh(["must_work"]); await rebuildAffected(date, date); render(); }, "Pinned; week rebuilt."));
+  $$("[data-del-off]", root).forEach((b) => (b.onclick = () => guard(async () => { const o = state.data.time_off.find((x) => String(x.id) === b.dataset.delOff); await dbDelete(T.time_off, { id: o.id }); await logAudit({ area: "timeoff", action: "removed", subject: ename(o.employee_id), text: `Removed ${ename(o.employee_id)}'s pre-approved day off on ${fmtDate(o.date, true)}`, detail: o.note || null }); await refresh(["time_off"]); await rebuildAffected(o.date, o.date); render(); }, "Removed, archived and week rebuilt.")));
+  $$("[data-del-must]", root).forEach((b) => (b.onclick = () => guard(async () => { const m = state.data.must_work.find((x) => String(x.id) === b.dataset.delMust); await dbDelete(T.must_work, { id: m.id }); const pinned = weekShifts(mondayOf(m.date)).filter((s) => s.employee_id === m.employee_id && s.date === m.date && s.source === "must"); await dbDeleteIn(T.shifts, "id", pinned.map((p) => p.id)); await logAudit({ area: "schedule", action: "removed", subject: ename(m.employee_id), text: `Removed the pinned shift for ${ename(m.employee_id)} on ${fmtDate(m.date, true)} ${fmtRange(m.start_min, m.end_min)} at ${store(m.store).name}`, detail: m.note || null }); await refresh(["must_work", "shifts"]); await rebuildAffected(m.date, m.date); render(); }, "Removed, archived and week rebuilt.")));
+  on("#add-off", () => guard(async () => { const employee_id = $("#off-emp", root).value, date = $("#off-date", root).value; if (!date) throw new Error("Pick a date."); const note = $("#off-note", root).value.trim(); await dbUpsert(T.time_off, [{ employee_id, date, note: note || null }], "employee_id,date"); await logAudit({ area: "timeoff", action: "added", subject: ename(employee_id), text: `Gave ${ename(employee_id)} ${fmtDate(date, true)} off (pre-approved)`, detail: note || null }); await refresh(["time_off"]); await rebuildAffected(date, date); render(); }, "Day off added; week rebuilt."));
+  on("#add-must", () => guard(async () => { const employee_id = $("#must-emp", root).value, date = $("#must-date", root).value, a = fromHHMM($("#must-a", root).value), b = fromHHMM($("#must-b", root).value), st = $("#must-st", root).value; if (!date || a == null || b == null || b <= a) throw new Error("Pick a date and a valid time."); await dbInsert(T.must_work, [{ employee_id, date, start_min: a, end_min: b, store: st, note: null }]); await logAudit({ area: "schedule", action: "added", subject: ename(employee_id), text: `Pinned ${ename(employee_id)} on ${fmtDate(date, true)} ${fmtRange(a, b)} at ${store(st).name}` }); await refresh(["must_work"]); await rebuildAffected(date, date); render(); }, "Pinned; week rebuilt."));
   // week tools
+  on("#build", () => buildSheet(state.week));
   on("#rebuild", () => rebuildSheet(state.week));
   on("#goback", () => guard(async () => { const snap = state.data.snapshots.filter((s) => s.week_start === state.week && s.kind === "auto").sort(by((s) => -new Date(s.created_at).getTime()))[0]; if (!snap) return; await restoreSnapshot(snap); render(); }, "Restored the previous version."));
   on("#save-ver", () => { const c = openSheet(`<h3>Save this version</h3><p class="sub">Snapshots the week exactly as it is, so you can load it back later.</p><label class="lbl">Name</label><input class="field" id="vname" placeholder="e.g. Approved by Michael"><div class="actions"><button class="btn" id="no">Cancel</button><button class="btn primary" id="ok">Save</button></div>`); $("#no", c).onclick = closeSheet; $("#ok", c).onclick = () => guard(async () => { const name = $("#vname", c).value.trim() || "Saved version"; closeSheet(); await takeSnapshot(state.week, name, "saved"); render(); }, "Saved."); });
@@ -264,19 +315,82 @@ function wireAdmin(root) {
   on("#test-email", async () => { const te = $("#test-email", root); te.disabled = true; const r = await sendEmail([state.data.settings.supervisor_email], "Le Parfumier schedule: test email", "If you can read this, approval emails are working."); te.disabled = false; if (r.error) toast("Not sent: " + r.error + (/RESEND_API_KEY/.test(r.error) ? ". Add the RESEND_API_KEY secret in Supabase → Edge Functions → Secrets." : ""), "err"); else if (r.skipped) toast("Skipped: " + r.skipped, "warn"); else toast("Sent. Check the inbox.", "ok"); });
 }
 
+// -------------------------------------------------- build / rebuild a range
+// Pick the weeks (one, a range, or the next few) and the store (one or all three).
+function buildSheet(startWs) {
+  const first = mondayOf(today());
+  let from = startWs || state.week || first, to = from, scope = "ALL", running = false;
+  const c = openSheet(`<h3>Build or rebuild the schedule</h3>
+    <p class="sub">Choose the weeks and the store. The solver re-solves from the templates, time off, must-work pins and rules. Locked shifts (🔒) are kept exactly as they are, and each week is saved first so <b>Go back</b> works.</p>
+    <label class="lbl">Weeks</label>
+    <div class="row" style="gap:6px;flex-wrap:wrap" id="b-quick">
+      <button type="button" class="tab" data-q="0">This week</button>
+      <button type="button" class="tab" data-q="1">Next week</button>
+      <button type="button" class="tab" data-q="2">Next 2 weeks</button>
+      <button type="button" class="tab" data-q="4">Next 4 weeks</button>
+      <button type="button" class="tab" data-q="${WEEKS_AHEAD + 1}">Next ${WEEKS_AHEAD + 1} weeks</button>
+    </div>
+    <div class="field-row"><div><label class="lbl">From (any day in the first week)</label><input class="field" id="b-from" type="date"></div>
+      <div><label class="lbl">To (any day in the last week)</label><input class="field" id="b-to" type="date"></div></div>
+    <label class="lbl">Store</label>
+    <select class="field" id="b-store"><option value="ALL">All stores</option>${stores().map((s) => `<option value="${esc(s.code)}">${esc(s.name)} only</option>`).join("")}</select>
+    <label class="check" id="b-optwrap"><input type="checkbox" id="b-opts" checked> Show me two arrangements to choose from</label>
+    <p class="small muted" id="b-sum" style="margin:10px 0 0"></p>
+    <div class="actions"><button class="btn" id="b-no">Cancel</button><button class="btn primary" id="b-go">Build</button></div>`);
+  const weeksIn = () => { const out = []; for (let ws = mondayOf(from); ws <= mondayOf(to); ws = addDays(ws, 7)) out.push(ws); return out; };
+  const draw = () => {
+    $("#b-from", c).value = mondayOf(from); $("#b-to", c).value = addDays(mondayOf(to), 6);
+    const w = weeksIn(), one = w.length === 1;
+    $("#b-optwrap", c).style.display = one ? "" : "none";
+    const fresh = w.filter((ws) => !weekShifts(ws).length).length;
+    $("#b-sum", c).innerHTML = w.length
+      ? `<b>${w.length} week${w.length === 1 ? "" : "s"}</b> · ${esc(weekLabel(w[0]))}${w.length > 1 ? " → " + esc(weekLabel(w[w.length - 1])) : ""} · ${scope === "ALL" ? "all three stores" : esc(store(scope).name) + " only, the others left exactly as they are"}${fresh ? ` · ${fresh} of them not built yet` : ""}`
+      : `<span class="warn-text">The last week is before the first one.</span>`;
+    $("#b-go", c).disabled = !w.length || running;
+    $("#b-go", c).textContent = w.length > 1 ? `Build ${w.length} weeks` : one && $("#b-opts", c).checked ? "Show me the options" : "Build this week";
+  };
+  $$("[data-q]", c).forEach((b) => (b.onclick = () => { const n = Number(b.dataset.q); from = n <= 1 ? addDays(first, 7 * n) : first; to = n <= 1 ? from : addDays(first, 7 * (n - 1)); draw(); }));
+  $("#b-from", c).onchange = () => { from = mondayOf($("#b-from", c).value || from); if (mondayOf(to) < from) to = from; draw(); };
+  $("#b-to", c).onchange = () => { to = mondayOf($("#b-to", c).value || to); if (to < mondayOf(from)) from = to; draw(); };
+  $("#b-store", c).onchange = () => { scope = $("#b-store", c).value; draw(); };
+  $("#b-opts", c).onchange = draw;
+  $("#b-no", c).onclick = closeSheet;
+  $("#b-go", c).onclick = async () => {
+    const w = weeksIn(); if (!w.length) return;
+    if (w.length === 1 && $("#b-opts", c).checked) { closeSheet(); state.week = w[0]; return rebuildSheet(w[0], scope); }
+    running = true; $("#b-go", c).disabled = true; $("#b-no", c).disabled = true;
+    const where = scope === "ALL" ? "all stores" : store(scope).name;
+    try {
+      const done = await buildRange(w[0], w[w.length - 1], { store: scope, onStep: (ws, i, n) => { $("#b-sum", c).innerHTML = `Building ${esc(weekLabel(ws))} · ${esc(where)} · week ${i + 1} of ${n}…`; } });
+      const gaps = done.reduce((a, x) => a + x.gaps, 0), flags = done.reduce((a, x) => a + x.flags, 0), fresh = done.filter((x) => !x.existed).length;
+      await logAudit({ area: "schedule", action: fresh === done.length ? "built" : "rebuilt", subject: where,
+        text: `${fresh === done.length ? "Built" : "Rebuilt"} ${done.length} week${done.length === 1 ? "" : "s"} (${weekLabel(done[0].week_start)}${done.length > 1 ? " → " + weekLabel(done[done.length - 1].week_start) : ""}) for ${where}`,
+        detail: gaps ? `${gaps} coverage gap(s) left` : "every open hour covered" });
+      state.week = w[0]; closeSheet(); render();
+      toast(`${done.length} week${done.length === 1 ? "" : "s"} built for ${where}. ${gaps ? gaps + " coverage gap(s)" : "Every open hour covered"} · ${flags} flag${flags === 1 ? "" : "s"}.`, gaps ? "warn" : "ok");
+    } catch (e) { running = false; $("#b-go", c).disabled = false; $("#b-no", c).disabled = false; toast(e.message || String(e), "err"); }
+  };
+  draw();
+}
+
 // ------------------------------------------------------------ rebuild sheet
-function rebuildSheet(ws) {
-  const locked = weekShifts(ws).filter((s) => s.locked);
-  const res = solveWeek(ws, locked);
+function rebuildSheet(ws, scope) {
+  scope = scope && scope !== "ALL" ? scope : null;
+  const locked = weekShifts(ws).filter((s) => s.locked || (scope && s.store !== scope));
+  const res = solveWeek(ws, locked, { store: scope });
   if (!res.options.length) return toast("Nothing could be built for that week.", "err");
   const opts = res.options.slice(0, 2);
   const cards = opts.map((o, i) => {
-    const sm = optionSummary(o, ws), diff = i ? optionDiff(opts[0], o) : [];
+    const sm = optionSummary(o, ws, scope), diff = i ? optionDiff(opts[0], o) : [];
     return `<button class="choice opt" data-opt="${i}"><span style="flex:1"><b>Option ${i + 1}${i === 0 ? " · best score" : ""}</b><small>${sm.gaps ? `${sm.gaps} gap${sm.gaps > 1 ? "s" : ""} (${fmtHours(sm.gapMin)} uncovered)` : "every hour covered"} · ${sm.fills} solver fill${sm.fills === 1 ? "" : "s"} · ${sm.flags} compromise${sm.flags === 1 ? "" : "s"} · hours spread ${fmtHours(sm.spread)}</small>${i ? `<small style="margin-top:6px">Differs from Option 1:<br>${diff.slice(0, 8).map(esc).join("<br>") || "identical arrangement"}${diff.length > 8 ? `<br>…and ${diff.length - 8} more` : ""}</small>` : ""}</span><span class="mono">score ${Math.round(o.score)}</span></button>`;
   }).join("");
-  const c = openSheet(`<h3>Rebuild ${esc(weekLabel(ws))}</h3><p class="sub">${locked.length} locked shift${locked.length === 1 ? "" : "s"} kept. ${opts.length > 1 ? "Two arrangements fit; pick one." : "Only one arrangement fits the rules."} The current version is saved first, so you can go back.</p>${cards}<div class="actions"><button class="btn" id="no">Cancel</button></div>`);
+  const kept = weekShifts(ws).filter((s) => s.locked && (!scope || s.store === scope)).length;
+  const c = openSheet(`<h3>Rebuild ${esc(weekLabel(ws))}${scope ? " · " + esc(store(scope).name) : ""}</h3><p class="sub">${kept} locked shift${kept === 1 ? "" : "s"} kept.${scope ? " The other stores are left exactly as they are." : ""} ${opts.length > 1 ? "Two arrangements fit; pick one." : "Only one arrangement fits the rules."} The current version is saved first, so you can go back.</p>${cards}<div class="actions"><button class="btn" id="no">Cancel</button></div>`);
   $("#no", c).onclick = closeSheet;
-  $$("[data-opt]", c).forEach((b) => (b.onclick = async () => { const o = opts[Number(b.dataset.opt)]; closeSheet(); try { await applyWeek(ws, o.shifts, `Before rebuild (chose option ${Number(b.dataset.opt) + 1})`); render(); toast(`Rebuilt with option ${Number(b.dataset.opt) + 1}. ${weekIssues(ws).length} flag(s).`, "ok"); } catch (e) { toast(e.message, "err"); } }));
+  $$("[data-opt]", c).forEach((b) => (b.onclick = async () => { const o = opts[Number(b.dataset.opt)]; closeSheet(); try {
+    await applyWeek(ws, o.shifts, `Before rebuild (chose option ${Number(b.dataset.opt) + 1})`, scope);
+    await logAudit({ area: "schedule", action: "rebuilt", subject: scope ? store(scope).name : "all stores", text: `Rebuilt ${weekLabel(ws)} for ${scope ? store(scope).name : "all stores"} (option ${Number(b.dataset.opt) + 1})` });
+    render(); toast(`Rebuilt with option ${Number(b.dataset.opt) + 1}. ${weekIssues(ws).length} flag(s).`, "ok"); } catch (e) { toast(e.message, "err"); } }));
 }
 // -------------------------------------------------------------- learn sheet
 function learnSheet(ws) {

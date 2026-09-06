@@ -137,7 +137,7 @@ end $$;
 create unique index if not exists lps_shifts_unique_idx on lps_shifts(employee_id, date, store, start_min);
 
 -- ===== V2 ================================================================
--- Block-out and PTO requests. Approved ones count as time off for the solver.
+-- Block-out and vacation requests (kind 'pto' is shown to people as "Vacation"). Approved ones count as time off for the solver.
 create table if not exists lps_off_requests (
   id               uuid primary key default gen_random_uuid(),
   employee_id      text not null references lps_employees(id) on delete cascade,

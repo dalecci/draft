@@ -4,7 +4,7 @@
 // Bump APP_VERSION on every deploy that changes any js/css/html file, and bump the
 // matching ?v= query params in index.html.
 "use strict";
-const APP_VERSION = 11;
+const APP_VERSION = 12;
 
 // Same Supabase project as the FLAG pilot and the other J3 apps. The anon key is
 // public by design; the app is PIN-gated and row level security lets anon write.
@@ -206,6 +206,27 @@ async function refresh(names) {
 }
 async function saveSetting(key, value) { await dbUpsert(T.settings, [{ key, value }], "key"); state.data.settings[key] = value; }
 
+// ============================================================ change archive
+// Anything a manager changes after the fact — revoking an approved vacation, editing
+// its dates, undoing an approved swap, removing a pinned shift — is appended here and
+// never edited or deleted, so the team can see what happened and who did it. It lives
+// in settings (key "audit_log"), so no schema change is needed.
+const AUDIT_MAX = 400;
+const auditAll = () => state.data.settings.audit_log || [];
+const auditLog = () => auditAll().slice().sort(by((a) => String(a.at))).reverse();
+const auditFor = (targetId) => auditAll().filter((a) => a.target_id === targetId).sort(by((a) => String(a.at)));
+async function logAudit(entry) {
+  const row = {
+    id: uid(), at: new Date().toISOString(),
+    by: entry.by || state.supName || (state.me && state.me.name) || "—",
+    area: entry.area || "other", action: entry.action || "changed",
+    subject: entry.subject || "", target_id: entry.target_id || null,
+    text: entry.text || "", detail: entry.detail || null,
+  };
+  try { await saveSetting("audit_log", auditAll().concat([row]).slice(-AUDIT_MAX)); } catch (e) { console.warn("change archive not saved", e); }
+  return row;
+}
+
 async function seedIfEmpty() {
   if (state.data.employees.length) return false;
   await dbInsert(T.employees, SEED.employees.map((e) => ({ id: e.id, name: e.name, stores: e.stores, home_store: e.home_store, role: e.role || "staff", email: e.email || null, flex: !!e.flex, active: true, sort: e.sort, pin: e.pin || randPin() })));
@@ -255,14 +276,19 @@ const weekDays = (ws) => Array.from({ length: 7 }, (_, i) => addDays(ws, i));
 function shiftById(id) { return state.data.shifts.find((s) => s.id === id); }
 function describeShift(s) { return s ? `${fmtDate(s.date)} · ${fmtRange(s.start_min, s.end_min)} · ${store(s.store).name}` : "—"; }
 
-// approved block-outs and PTO count as time off; plain time_off rows are pre-approved
+// What people are called in the app. The stored kind stays 'pto' (never rename data);
+// everything a person reads says "Vacation".
+const offKindLabel = (k) => (k === "pto" ? "Vacation" : "Block-out");
+const offKindWord = (k) => (k === "pto" ? "vacation" : "block-out");
+
+// approved block-outs and vacation count as time off; plain time_off rows are pre-approved
 function offRequestsFor(empId, date, status) {
   return state.data.off_requests.filter((o) => o.employee_id === empId && (!status || o.status === status) && inRange(date, o.date_from, o.date_to));
 }
 function isOff(empId, date) { return state.data.time_off.some((o) => o.employee_id === empId && o.date === date) || offRequestsFor(empId, date, "approved").length > 0; }
 function offReason(empId, date) {
   const t = state.data.time_off.find((o) => o.employee_id === empId && o.date === date); if (t) return t.note || "Day off";
-  const r = offRequestsFor(empId, date, "approved")[0]; return r ? (r.kind === "pto" ? "PTO" : "Blocked out") : null;
+  const r = offRequestsFor(empId, date, "approved")[0]; return r ? (r.kind === "pto" ? "Vacation" : "Blocked out") : null;
 }
 
 // Store hours for a date: temporary overrides (holiday hours, seasons) win over the weekly default.
