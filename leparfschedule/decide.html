@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approve · Le Parfumier</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2216%22 fill=%22%231a1622%22/><text x=%2250%22 y=%2270%22 text-anchor=%22middle%22 font-family=%22Georgia,serif%22 font-size=%2252%22 fill=%22%23c68ec3%22>LP</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#131019;color:#f1edf5;font:15px/1.5 Archivo,system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:20px;box-sizing:border-box}
+  .card{width:min(460px,100%);background:#1b1724;border:1px solid #322b3e;border-radius:20px;padding:28px 26px}
+  .k{font:10.5px 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.3em;color:#c68ec3;text-transform:uppercase}
+  h1{font:400 26px 'Bodoni Moda',Georgia,serif;margin:6px 0 10px}
+  p{color:#b6adc2;margin:0 0 14px}
+  .box{background:#221c2d;border:1px solid #272134;border-radius:12px;padding:12px 14px;margin:0 0 16px}
+  .box b{color:#f1edf5}.box i{color:#b6adc2}
+  label{display:block;font:10.5px 'IBM Plex Mono',ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:#978da6;margin:12px 0 6px}
+  select,input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #322b3e;background:#0c0a11;color:#f1edf5;font:inherit;box-sizing:border-box}
+  .btn{display:inline-block;padding:12px 18px;border-radius:11px;border:1px solid #a86fa5;background:#c68ec3;color:#1a1622;font:inherit;font-weight:700;text-decoration:none;cursor:pointer;margin-top:18px}
+  .btn.red{background:#e9796b;border-color:#c9584a}.btn.ghost{background:transparent;color:#c68ec3;border-color:#322b3e}
+  .btn:disabled{opacity:.6;cursor:default}
+  .ok{color:#87be90}.bad{color:#e9796b}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<div class="card" id="card"><div class="k">Le Parfumier · Schedule</div><h1>One moment…</h1><p>Loading the request.</p></div>
+<script>
+(async () => {
+  const FN = "https://ikypiznimyzidmyzzoys.supabase.co/functions/v1/lps-notify";
+  const APP = "https://draft.j3taviation.com/leparfschedule/#requests";
+  const q = new URLSearchParams(location.search);
+  const act = q.get("act"), kind = q.get("kind"), id = q.get("id"), t = q.get("t");
+  const card = document.getElementById("card");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const back = `<a class="btn ghost" href="${APP}">Open the schedule</a>`;
+  const show = (title, body, cls) => { card.innerHTML = `<div class="k">Le Parfumier · Schedule</div><h1 class="${cls || ""}">${title}</h1>${body}`; };
+  if (!act || !kind || !id || !t) return show("That link isn't complete", `<p>Open the schedule and decide there instead.</p>${back}`);
+  let info;
+  try {
+    const r = await fetch(`${FN}?act=${encodeURIComponent(act)}&kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}&json=1`);
+    info = await r.json();
+    if (!r.ok) throw new Error(info.error || r.statusText);
+  } catch (e) {
+    const msg = String(e.message || e);
+    return show(msg === "invalid link" ? "This link isn't valid" : msg === "not found" ? "Request not found" : "Couldn't load the request", `<p>${esc(msg === "invalid link" ? "It may have been altered. Open the schedule and decide there instead." : msg === "not found" ? "It may have been withdrawn." : msg)}</p>${back}`, "bad");
+  }
+  const desc = `<div class="box"><b>${esc(info.title)}</b><br>${esc(info.detail)}${info.quote ? `<br><i>“${esc(info.quote)}”</i>` : ""}</div>`;
+  if (!info.pending) return show("Already decided", `${desc}<p>Status: <b>${esc(info.status.replace(/_/g, " "))}</b>${info.decided_by_name ? ` by ${esc(info.decided_by_name)}` : ""}.</p>${back}`);
+  const approve = act === "approve";
+  const other = `?act=${approve ? "decline" : "approve"}&kind=${encodeURIComponent(kind)}&id=${encodeURIComponent(id)}&t=${encodeURIComponent(t)}`;
+  show(`${approve ? "Approve" : "Decline"} this ${kind === "off" ? "time off" : "schedule change"}?`, `${desc}
+    <label for="name">Deciding as</label><select id="name"><option value="">— pick your name —</option>${info.names.map((n) => `<option>${esc(n)}</option>`).join("")}</select>
+    <label for="note">Note to them (optional)</label><input id="note" maxlength="200" placeholder="optional">
+    <p id="err" class="bad" style="min-height:20px;margin:8px 0 0"></p>
+    <div class="row"><button class="btn ${approve ? "" : "red"}" id="go">${approve ? "Approve" : "Decline"}</button><a class="btn ghost" href="${other}">${approve ? "Decline instead" : "Approve instead"}</a></div>`);
+  document.getElementById("go").onclick = async () => {
+    const name = document.getElementById("name").value, note = document.getElementById("note").value.trim(), err = document.getElementById("err"), btn = document.getElementById("go");
+    if (!name) { err.textContent = "Pick your name first, approvals are signed."; return; }
+    btn.disabled = true; err.textContent = "";
+    try {
+      const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision: { act, kind, id, t, name, note } }) });
+      const out = await r.json();
+      if (!r.ok || !out.ok) throw new Error(out.msg || out.error || r.statusText);
+      show(approve ? "Approved" : "Declined", `<p>${esc(out.msg)}</p>${approve && kind === "off" ? "<p>The schedule rebuilds itself around the absence the next time anyone opens the app.</p>" : ""}${back}`, "ok");
+    } catch (e) { btn.disabled = false; err.textContent = String(e.message || e); }
+  };
+})();
+</script>
+</body>
+</html>
