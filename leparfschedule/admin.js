@@ -111,6 +111,9 @@ function adminRules() {
   const chk = (k, label, help) => `<label class="check"><input type="checkbox" data-rule="${k}" ${R[k] ? "checked" : ""}> <span><b>${label}</b><br><span class="small muted">${help}</span></span></label>`;
   return `<div class="card"><h2 class="sec">Our rules <small>${customRules().length} · dropdowns, like the gym scheduler</small></h2>
     ${customRules().length ? `<table class="plain"><tbody>${customRules().map((r) => `<tr class="${r.on === false ? "dim" : ""}"><td style="width:34px"><input type="checkbox" data-rule-on="${esc(r.id)}" ${r.on === false ? "" : "checked"} title="on / off"></td><td>${esc(ruleText(r))}${broken.has(r.id) ? ` <span class="pill bad">broken this week</span>` : ""}${r.t === "note" ? ` <span class="pill">note</span>` : ""}</td><td style="text-align:right"><button class="btn sm danger" data-del-rule="${esc(r.id)}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">No custom rules yet.</p>`}
+    <div class="card" style="margin-top:14px;background:var(--surface-2)"><label class="lbl" style="margin-top:0">Write your own rule</label>
+    <div class="row"><textarea class="field" id="rule-nl" rows="2" placeholder="e.g. Selena never works Mondays · PB needs 2 people on Saturdays · Nobody works more than 5 days in a row · Elodie and Maria are never on together" style="flex:1;min-height:0"></textarea><button class="btn primary" id="rule-nl-go">Understand it</button></div>
+    <div id="rule-nl-out" class="small muted" style="margin-top:8px">Type it the way you'd say it. The app turns it into a rule the solver can enforce, fills in the form below, and you press Add. If it can't be enforced yet, it tells you and can keep it as a note.</div></div>
     <div style="margin-top:14px"><label class="lbl">Add a rule</label><select class="field" id="rule-type"><option value="">— pick a rule —</option>${RULE_TYPES.map((x) => `<option value="${x.t}">${esc(x.label)}</option>`).join("")}</select>
     <div class="field-row" id="rule-fields" style="margin-top:8px"></div>
     <div class="actions"><button class="btn primary" id="add-rule" disabled>Add rule</button></div></div>
@@ -282,6 +285,22 @@ function wireAdmin(root) {
   $$("[data-del-ov]", root).forEach((b) => (b.onclick = () => guard(async () => { const o = (state.data.settings.store_hour_overrides || []).find((x) => x.id === b.dataset.delOv); await saveSetting("store_hour_overrides", (state.data.settings.store_hour_overrides || []).filter((x) => x.id !== b.dataset.delOv)); const ds = Object.keys(o.dates || {}); await rebuildAffected([o.from, ...ds].filter(Boolean).sort()[0], [o.to, ...ds].filter(Boolean).sort().slice(-1)[0]); render(); }, "Removed and weeks rebuilt.")));
   // rules
   const rt = $("#rule-type", root); if (rt) rt.onchange = () => { $("#rule-fields", root).innerHTML = ruleFieldsHtml(rt.value); $("#add-rule", root).disabled = !rt.value; };
+  const nlGo = $("#rule-nl-go", root); if (nlGo) nlGo.onclick = async () => {
+    const text = $("#rule-nl", root).value.trim(), out = $("#rule-nl-out", root); if (!text) return;
+    nlGo.disabled = true; out.innerHTML = "Reading it…";
+    try {
+      const res = await aiProposeRule(text);
+      if (res.rule) {
+        rt.value = res.rule.t; $("#rule-fields", root).innerHTML = ruleFieldsHtml(res.rule.t, res.rule); $("#add-rule", root).disabled = false;
+        out.innerHTML = `<span class="pill good">understood</span> <b>${esc(ruleText(res.rule))}</b> — check the form below and press <b>Add rule</b>.${res.note ? ` <span class="dim">${esc(res.note)}</span>` : ""}`;
+        $("#add-rule", root).scrollIntoView({ block: "center", behavior: "smooth" });
+      } else {
+        out.innerHTML = `<span class="pill warn">can't enforce that yet</span> ${esc(res.note)} <button class="btn sm" id="rule-nl-note">Keep it as a note</button> <span class="dim">Tell Claude to add this rule type and it can be built in.</span>`;
+        $("#rule-nl-note", root).onclick = () => guard(async () => { await saveSetting("custom_rules", customRules().concat([{ id: uid(), t: "note", on: true, text }])); render(); }, "Kept as a note (not enforced).");
+      }
+    } catch (e) { out.innerHTML = `<span class="pill bad">couldn't read it</span> ${esc(e.message || e)}`; }
+    nlGo.disabled = false;
+  };
   on("#add-rule", () => guard(async () => {
     const r = { id: uid(), t: rt.value, on: true }; $$("[data-rf]", root).forEach((i) => { r[i.dataset.rf] = i.type === "number" ? Number(i.value) : i.value; });
     if ((r.t === "notTogether" || r.t === "together") && r.emp === r.emp2) throw new Error("Pick two different people.");

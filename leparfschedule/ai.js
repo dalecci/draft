@@ -205,6 +205,32 @@ async function aiSend(text) {
   }
 }
 
+// ------------------------------------------------- free-text rule translator
+// Used by Manage -> Rules. Sends one message with only the add_custom_rule tool and reads
+// the proposed input back; nothing is executed here, the manager reviews it in the form.
+async function aiProposeRule(text) {
+  if (state.offline || !sb) throw new Error("The rule writer needs the cloud connection.");
+  const tool = aiTool("add_custom_rule");
+  const prompt = `Turn this scheduling rule, written by the manager, into exactly ONE add_custom_rule tool call using the closest rule type. Use employee ids from the context. Use store codes PL, PB, PV or ALL, days 1-7 or ANY, times as HH:MM.
+If the rule cannot be expressed with the available rule types, do NOT call any tool: reply with one line starting with "CANNOT:" followed by a short plain reason and, if there is a close alternative, what it would be.
+
+Rule: "${text.replace(/"/g, "'")}"`;
+  const { data, error } = await sb.functions.invoke(AI_FN, { body: { messages: [{ role: "user", content: prompt }], tools: [{ name: tool.name, description: tool.description, input_schema: tool.input_schema }], context: aiContext() } });
+  if (error) { let detail = ""; try { const b = error.context && error.context.json ? await error.context.json() : null; detail = b && b.error ? String(b.error) : ""; } catch (_) {} throw new Error(detail || error.message || String(error)); }
+  if (data && data.error) throw new Error(data.error);
+  const content = data.content || [];
+  const use = content.find((b) => b.type === "tool_use" && b.name === "add_custom_rule");
+  const txt = content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
+  if (use) {
+    const r = { ...use.input };
+    if (r.emp) { const e = empByRef(r.emp); if (!e) throw new Error(`Couldn't match "${r.emp}" to an employee.`); r.emp = e.id; }
+    if (r.emp2) { const e = empByRef(r.emp2); if (!e) throw new Error(`Couldn't match "${r.emp2}" to an employee.`); r.emp2 = e.id; }
+    if (!RULE_TYPES.some((x) => x.t === r.t)) throw new Error("Unknown rule type proposed: " + r.t);
+    return { rule: r, note: txt };
+  }
+  return { rule: null, note: txt.replace(/^CANNOT:\s*/i, "") || "This can't be expressed with the current rule types." };
+}
+
 // --------------------------------------------------------------------- UI
 const AI_SUGGESTIONS = ["Who is short on hours next week?", "Rebuild the next 4 weeks for PV only", "Show me every coverage gap for the next 4 weeks", "Give Mary next Thursday off and cover PB", "Add a rule: PL needs 2 people on Saturdays", "Approve the pending time-off requests", "Revoke Sarah's approved vacation next month", "What does Elodie's schedule look like this month?", "Set holiday hours: Dec 24 10-3, 25 closed, 26 open til 5"];
 const aiPin = () => String(state.data.settings.ai_pin || "1590");
