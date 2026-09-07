@@ -26,6 +26,7 @@ const RULE_TYPES = [
   { t: "notTogether",    label: "Two employees are never on together at the same store",  fields: ["emp", "emp2"] },
   { t: "together",       label: "Two employees are always scheduled together (soft)",     fields: ["emp", "emp2"] },
   { t: "preferFill",     label: "Prefer an employee for call-ins at a store",             fields: ["emp", "store"] },
+  { t: "coverPriority",  label: "If someone is off, cover with these people in this order",  fields: ["emp", "store", "order", "move"] },
   { t: "note",           label: "Note to ourselves (not enforced)",                       fields: ["text"] },
 ];
 const activeRules = () => customRules().filter((r) => r.on !== false);
@@ -54,6 +55,7 @@ function ruleText(r) {
     case "notTogether": return `${ename(r.emp)} and ${ename(r.emp2)} are never on together`;
     case "together": return `${ename(r.emp)} and ${ename(r.emp2)} are always scheduled together`;
     case "preferFill": return `Prefer ${who()} for call-ins at ${st()}`;
+    case "coverPriority": { const order = [].concat(r.order || []).map(ename); return `If ${ruleEmps(r).length ? who() : "anyone"} is off${ruleStores(r).length ? " at " + st() : ""}, cover with ${order.length ? order.join(", then ") : "nobody yet"}${r.move === false ? "" : " (may pull them off another store)"}`; }
     case "note": return r.text || "Note";
     default: return r.t;
   }
@@ -145,6 +147,12 @@ function maxRun(dates) {
 // that store. tier 2: may stretch a shift past the max length, call in from another store.
 function candidates(gap, shifts, c, tier) {
   const R = c.R, out = [], req = requirements(gap.store, gap.date);
+  // Who is missing at this store today (template says they'd be here, but they're off)?
+  const absent = c.staff.filter((p) => { const a = availFor(p.id, gap.date); return a && a.store === gap.store && (isOff(p.id, gap.date) || hardBlocked(p, gap.date, a.store)); });
+  const prio = new Map(), prioMove = new Set();
+  activeRules().filter((r) => r.t === "coverPriority" && ruleStoreOk(r, gap.store) && (ruleEmps(r).length ? absent.some((p) => ruleEmpOk(r, p.id)) : absent.length > 0)).forEach((r) => {
+    [].concat(r.order || []).forEach((id, i) => { if (!prio.has(id) || prio.get(id) > i) prio.set(id, i); if (r.move !== false) prioMove.add(id); });
+  });
   c.staff.forEach((e) => {
     if (isOff(e.id, gap.date) || hardBlocked(e, gap.date, gap.store)) return;
     const mins = empMinutes(shifts, e.id), maxH = maxHoursFor(e, R);
@@ -157,22 +165,30 @@ function candidates(gap, shifts, c, tier) {
       out.push({ kind: "extend", emp: e, shift: here, ns, ne, extra, cost: 1 + (Math.max(0, extra - (gap.end - gap.start)) / 30) + (mins / 60) * 0.15 + (overHrs ? 25 : 0) + (overLen ? 20 : 0), flags: [overHrs && "over hours", overLen && "long shift"].filter(Boolean) });
       return;
     }
-    if (same.length) return; // already somewhere else that day
+    if (same.length) {
+      // on the priority list and working elsewhere today: the rule may pull them over
+      if (prio.has(e.id) && prioMove.has(e.id)) {
+        const other = same.find((s) => !s.locked && s.store !== gap.store);
+        if (other) { const ns = Math.max(req.open, Math.min(other.start_min, gap.start)), ne = Math.min(req.close, Math.max(other.end_min, gap.end)); if (ne > ns) out.push({ kind: "move", emp: e, shift: other, ns, ne, from: other.store, cost: -98 + prio.get(e.id) * 10, flags: ["priority cover, moved from " + store(other.store).name] }); }
+      }
+      return; // otherwise: already somewhere else that day
+    }
     const inStore = worksStore(e, gap.store), flex = !!e.flex && R.allowFlexFill;
     let base;
-    if (inStore && flex) base = 6;
+    if (prio.has(e.id)) base = -100 + prio.get(e.id) * 10;
+    else if (inStore && flex) base = 6;
     else if (inStore && R.allowCallInAnyone) base = 12;
     else if (inStore && tier >= 1 && R.neverLeaveGap) base = 20;
     else if (!inStore && tier >= 2 && R.neverLeaveGap) base = 40;
     else return;
     const days = empDays(shifts, e.id), overDays = days >= R.maxDaysWeek;
-    if (overDays && tier < 1) return;
+    if (overDays && tier < 1 && !prio.has(e.id)) return;
     let ns = gap.start, ne = gap.end;
     if (ne - ns < R.minShiftMin) { ne = Math.min(req.close, ns + R.minShiftMin); ns = Math.max(req.open, ne - R.minShiftMin); }
     if (ne - ns > R.maxShiftMin) ne = ns + R.maxShiftMin;
-    const overHrs = mins + (ne - ns) > maxH; if (overHrs && tier < 1) return;
+    const overHrs = mins + (ne - ns) > maxH; if (overHrs && tier < 1 && !prio.has(e.id)) return;
     const prefer = activeRules().some((r) => r.t === "preferFill" && ruleEmpOk(r, e.id) && ruleStoreOk(r, gap.store));
-    out.push({ kind: "new", emp: e, ns, ne, cost: base + ((ne - ns - (gap.end - gap.start)) / 30) + (mins / 60) * 0.15 + (e.home_store === gap.store ? 0 : 2) + (overHrs ? 25 : 0) + (overDays ? 15 : 0) - (prefer ? 8 : 0), flags: [!inStore && "other store", overHrs && "over hours", overDays && "extra day", !flex && inStore && "called in on a day off"].filter(Boolean) });
+    out.push({ kind: "new", emp: e, ns, ne, cost: base + ((ne - ns - (gap.end - gap.start)) / 30) + (mins / 60) * 0.15 + (e.home_store === gap.store ? 0 : 2) + (overHrs ? 25 : 0) + (overDays ? 15 : 0) - (prefer ? 8 : 0), flags: [prio.has(e.id) && "priority cover", !inStore && !prio.has(e.id) && "other store", overHrs && "over hours", overDays && "extra day", !flex && inStore && !prio.has(e.id) && "called in on a day off"].filter(Boolean) });
   });
   return out;
 }
@@ -220,8 +236,7 @@ function solveWeek(ws, fixedRows, opts = {}) {
   const options = new Map();
   for (let run = 0; run < Math.max(1, R.restarts | 0); run++) {
     const shifts = clone(fixed.concat(base));
-    const gaps = shuffle(allGaps(shifts, days, c.scope));
-    for (const g0 of gaps) {
+    const fillGap = (g0) => {
       const still = gapsFor(shifts, g0.store, g0.date).filter((g) => g.start < g0.end && g.end > g0.start);
       for (const g of still) {
         for (let need = g.need - g.count; need > 0; need--) {
@@ -231,10 +246,13 @@ function solveWeek(ws, fixedRows, opts = {}) {
           cands.sort((a, b) => a.cost - b.cost + (Math.random() - 0.5) * 3);
           const pick = cands[0], fl = pick.flags.length ? ` (${pick.flags.join(", ")})` : "";
           if (pick.kind === "extend") { pick.shift.start_min = pick.ns; pick.shift.end_min = pick.ne; if (pick.shift.source === "template" && pick.extra > 30) pick.shift.source = "fill"; pick.shift.note = (pick.extra > 30 ? "Extended to cover " : "Covers ") + fmtRange(g.start, g.end) + fl; }
+          else if (pick.kind === "move") { pick.shift.store = g.store; pick.shift.start_min = pick.ns; pick.shift.end_min = pick.ne; pick.shift.source = "fill"; pick.shift.note = "Moved from " + store(pick.from).name + " to cover " + fmtRange(g.start, g.end) + fl; }
           else shifts.push({ week_start: ws, date: g.date, employee_id: pick.emp.id, store: g.store, start_min: pick.ns, end_min: pick.ne, locked: false, source: "fill", note: "Called in to cover " + fmtRange(g.start, g.end) + fl });
         }
       }
-    }
+    };
+    shuffle(allGaps(shifts, days, c.scope)).forEach(fillGap);
+    allGaps(shifts, days, c.scope).forEach(fillGap); // gaps opened by a move get their own fill
     const sc = scoreWeek(shifts, days, c), k = sig(shifts);
     if (!options.has(k)) options.set(k, { all: shifts, score: sc, sig: k });
     if (options.size >= 12 && sc === 0) break;
@@ -271,6 +289,7 @@ function weekIssues(ws) {
       if (isOff(e.id, s.date)) add("off", "bad", `${e.name} is scheduled ${fmtDate(s.date)} but has that day off (${offReason(e.id, s.date)})`);
       const pend = offRequestsFor(e.id, s.date, "pending")[0]; if (pend) add("pending", "warn", `${e.name} has a pending ${offKindWord(pend.kind)} request for ${fmtDate(s.date)} and is scheduled — decide it under Manage`);
       if (!worksStore(e, s.store)) add("cross", "info", `${e.name} covers at ${store(s.store).name} on ${fmtDate(s.date)} (not one of their stores)`);
+      if (/^Moved from/.test(s.note || "")) add("moved", "info", `${e.name}: ${s.note} on ${fmtDate(s.date)}`);
     });
   });
   activeRules().forEach((r) => { const t = ruleBroken(r, shifts, days); if (t) add("rule", "warn", t, { rule: r.id }); });

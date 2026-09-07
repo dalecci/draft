@@ -431,3 +431,8 @@ details summary{cursor:pointer}
 /* rule editor: tick several days / stores / people */
 .rgroup{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 10px;border:1px solid var(--rule);border-radius:10px;background:var(--paper-sunk)}
 .rgroup .rchk{padding:2px 0;font-size:13px}
+
+/* ordered cover list in the rule editor */
+.rorder{list-style:none;margin:0;padding:0;counter-reset:ro}
+.rorder li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid var(--rule-soft);border-radius:9px;background:var(--paper-sunk);margin-bottom:4px;counter-increment:ro}
+.rorder li>span:first-child::before{content:counter(ro) ". ";font-family:var(--mono);color:var(--iris);margin-right:4px}

@@ -87,6 +87,7 @@ function adminStores() {
     <textarea class="field" id="ov-text" placeholder="Dec 24 10-3&#10;25 closed&#10;26 open til 5&#10;Dec 28 - Jan 2: 12 to 5"></textarea>
     <div class="actions"><button class="btn primary" id="save-ov">Add temporary hours</button></div></div>`;
 }
+function orderLi(id) { return `<li data-id="${esc(id)}"><span>${esc(ename(id))}</span><span class="row" style="gap:4px"><button type="button" class="btn sm ghost" data-ro-up title="Earlier">↑</button><button type="button" class="btn sm ghost" data-ro-down title="Later">↓</button><button type="button" class="btn sm danger" data-ro-del title="Remove">✕</button></span></li>`; }
 function ruleFieldsHtml(t, r = {}) {
   const def = RULE_TYPES.find((x) => x.t === t); if (!def) return "";
   const pair = t === "notTogether" || t === "together";
@@ -105,6 +106,8 @@ function ruleFieldsHtml(t, r = {}) {
     if (f === "from") return `<div><label class="lbl">From</label><input class="field" type="time" step="900" data-rf="from" value="${esc(r.from || "12:00")}"></div>`;
     if (f === "to") return `<div><label class="lbl">To</label><input class="field" type="time" step="900" data-rf="to" value="${esc(r.to || "17:00")}"></div>`;
     if (f === "text") return `<div style="grid-column:1/-1"><label class="lbl">Note</label><input class="field" data-rf="text" value="${esc(r.text || "")}"></div>`;
+    if (f === "order") return `<div style="grid-column:1/-1"><label class="lbl">Cover with, in this order (first is tried first)</label><ol class="rorder" id="rorder-list">${[].concat(r.order || []).map(orderLi).join("")}</ol><div class="row" style="margin-top:6px"><select class="field" id="rorder-sel" style="max-width:260px">${staff().map((e) => `<option value="${esc(e.id)}">${esc(e.name)}</option>`).join("")}</select><button type="button" class="btn sm" id="rorder-add">Add to list</button></div></div>`;
+    if (f === "move") return `<label class="check" style="grid-column:1/-1"><input type="checkbox" data-rf="move" ${r.move === false ? "" : "checked"}> <span><b>May pull them off another store's shift that day</b><br><span class="small muted">Their other-store shift moves here; the solver then refills the store they left.</span></span></label>`;
     return "";
   }).join("");
 }
@@ -289,6 +292,12 @@ function wireAdmin(root) {
   $$("[data-ov-on]", root).forEach((c) => (c.onchange = () => guard(async () => { const list = (state.data.settings.store_hour_overrides || []).map((o) => (o.id === c.dataset.ovOn ? { ...o, on: c.checked } : o)); await saveSetting("store_hour_overrides", list); const o = list.find((x) => x.id === c.dataset.ovOn); const ds = Object.keys(o.dates || {}); await rebuildAffected([o.from, ...ds].filter(Boolean).sort()[0], [o.to, ...ds].filter(Boolean).sort().slice(-1)[0]); render(); }, "Updated and weeks rebuilt.")));
   $$("[data-del-ov]", root).forEach((b) => (b.onclick = () => guard(async () => { const o = (state.data.settings.store_hour_overrides || []).find((x) => x.id === b.dataset.delOv); await saveSetting("store_hour_overrides", (state.data.settings.store_hour_overrides || []).filter((x) => x.id !== b.dataset.delOv)); const ds = Object.keys(o.dates || {}); await rebuildAffected([o.from, ...ds].filter(Boolean).sort()[0], [o.to, ...ds].filter(Boolean).sort().slice(-1)[0]); render(); }, "Removed and weeks rebuilt.")));
   // rules
+  const rf = $("#rule-fields", root); if (rf && !rf.dataset.wired) { rf.dataset.wired = "1"; rf.addEventListener("click", (ev) => {
+    const b = ev.target.closest("button"); if (!b) return;
+    if (b.id === "rorder-add") { const sel = $("#rorder-sel", root), list = $("#rorder-list", root); if (sel && list && !$$("#rorder-list li", root).some((li) => li.dataset.id === sel.value)) list.insertAdjacentHTML("beforeend", orderLi(sel.value)); return; }
+    const li = b.closest("li"); if (!li) return;
+    if (b.hasAttribute("data-ro-del")) li.remove(); else if (b.hasAttribute("data-ro-up") && li.previousElementSibling) li.parentNode.insertBefore(li, li.previousElementSibling); else if (b.hasAttribute("data-ro-down") && li.nextElementSibling) li.parentNode.insertBefore(li.nextElementSibling, li);
+  }); }
   const wireGroups = () => $$("[data-rfm]", root).forEach((i) => (i.onchange = () => { const k = i.dataset.rfm, isAll = i.value === "ALL" || i.value === "ANY"; $$(`[data-rfm="${k}"]`, root).forEach((o) => { if (isAll && o !== i && i.checked) o.checked = false; if (!isAll && (o.value === "ALL" || o.value === "ANY") && i.checked) o.checked = false; }); }));
   wireGroups();
   const rt = $("#rule-type", root); if (rt) rt.onchange = () => { $("#rule-fields", root).innerHTML = ruleFieldsHtml(rt.value); $("#add-rule", root).disabled = !rt.value; wireGroups(); };
@@ -309,7 +318,8 @@ function wireAdmin(root) {
     nlGo.disabled = false;
   };
   on("#add-rule", () => guard(async () => {
-    const r = { id: uid(), t: rt.value, on: true }; $$("[data-rf]", root).forEach((i) => { r[i.dataset.rf] = i.type === "number" ? Number(i.value) : i.value; });
+    const r = { id: uid(), t: rt.value, on: true }; $$("[data-rf]", root).forEach((i) => { r[i.dataset.rf] = i.type === "number" ? Number(i.value) : i.type === "checkbox" ? i.checked : i.value; });
+    if ($("#rorder-list", root)) { r.order = $$("#rorder-list li", root).map((li) => li.dataset.id); if (!r.order.length) throw new Error("Add at least one person to the cover list."); }
     const groups = {}; $$("[data-rfm]", root).forEach((i) => { (groups[i.dataset.rfm] ||= { all: [], on: [] }); groups[i.dataset.rfm].all.push(i); if (i.checked) groups[i.dataset.rfm].on.push(i.value); });
     Object.entries(groups).forEach(([k, g]) => { const vals = g.on.filter((v) => v !== "ALL" && v !== "ANY"); if (k === "emp" && !vals.length) throw new Error("Tick at least one employee."); r[k] = vals.length ? (vals.length === 1 ? vals[0] : vals) : (k === "day" ? "ANY" : k === "store" ? "ALL" : undefined); });
     if ((r.t === "notTogether" || r.t === "together") && r.emp === r.emp2) throw new Error("Pick two different people.");
