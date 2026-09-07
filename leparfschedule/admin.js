@@ -110,16 +110,18 @@ function ruleFieldsHtml(t, r = {}) {
 }
 function adminRules() {
   const R = rules(), broken = new Set(weekIssues(state.week || mondayOf(today())).filter((i) => i.rule).map((i) => i.rule));
+  const editing = state.editRuleId ? customRules().find((r) => r.id === state.editRuleId) : null;
+  if (state.editRuleId && !editing) state.editRuleId = null;
   const num = (k, label, help, step = 1) => `<div><label class="lbl">${label}</label><input class="field" type="number" step="${step}" data-rule="${k}" value="${R[k]}"><div class="small muted" style="margin-top:4px">${help}</div></div>`;
   const chk = (k, label, help) => `<label class="check"><input type="checkbox" data-rule="${k}" ${R[k] ? "checked" : ""}> <span><b>${label}</b><br><span class="small muted">${help}</span></span></label>`;
   return `<div class="card"><h2 class="sec">Our rules <small>${customRules().length} · dropdowns, like the gym scheduler</small></h2>
-    ${customRules().length ? `<table class="plain"><tbody>${customRules().map((r) => `<tr class="${r.on === false ? "dim" : ""}"><td style="width:34px"><input type="checkbox" data-rule-on="${esc(r.id)}" ${r.on === false ? "" : "checked"} title="on / off"></td><td>${esc(ruleText(r))}${broken.has(r.id) ? ` <span class="pill bad">broken this week</span>` : ""}${r.t === "note" ? ` <span class="pill">note</span>` : ""}</td><td style="text-align:right"><button class="btn sm danger" data-del-rule="${esc(r.id)}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">No custom rules yet.</p>`}
+    ${customRules().length ? `<table class="plain"><tbody>${customRules().map((r) => `<tr class="${r.on === false ? "dim" : ""}"><td style="width:34px"><input type="checkbox" data-rule-on="${esc(r.id)}" ${r.on === false ? "" : "checked"} title="on / off"></td><td>${esc(ruleText(r))}${broken.has(r.id) ? ` <span class="pill bad">broken this week</span>` : ""}${r.t === "note" ? ` <span class="pill">note</span>` : ""}</td><td style="text-align:right;white-space:nowrap">${r.t === "note" ? "" : `<button class="btn sm" data-edit-rule="${esc(r.id)}">Edit</button> `}<button class="btn sm danger" data-del-rule="${esc(r.id)}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">No custom rules yet.</p>`}
     <div class="card" style="margin-top:14px;background:var(--surface-2)"><label class="lbl" style="margin-top:0">Write your own rule</label>
     <div class="row"><textarea class="field" id="rule-nl" rows="2" placeholder="e.g. Selena never works Mondays · PB needs 2 people on Saturdays · Nobody works more than 5 days in a row · Elodie and Maria are never on together" style="flex:1;min-height:0"></textarea><button class="btn primary" id="rule-nl-go">Understand it</button></div>
     <div id="rule-nl-out" class="small muted" style="margin-top:8px">Type it the way you'd say it. The app turns it into a rule the solver can enforce, fills in the form below, and you press Add. If it can't be enforced yet, it tells you and can keep it as a note.</div></div>
-    <div style="margin-top:14px"><label class="lbl">Add a rule</label><select class="field" id="rule-type"><option value="">— pick a rule —</option>${RULE_TYPES.map((x) => `<option value="${x.t}">${esc(x.label)}</option>`).join("")}</select>
-    <div class="field-row" id="rule-fields" style="margin-top:8px"></div>
-    <div class="actions"><button class="btn primary" id="add-rule" disabled>Add rule</button></div></div>
+    <div style="margin-top:14px" id="rule-form"><label class="lbl">${state.editRuleId ? "Edit rule" : "Add a rule"}</label><select class="field" id="rule-type"><option value="">— pick a rule —</option>${RULE_TYPES.map((x) => `<option value="${x.t}" ${editing && editing.t === x.t ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
+    <div class="field-row" id="rule-fields" style="margin-top:8px">${editing ? ruleFieldsHtml(editing.t, editing) : ""}</div>
+    <div class="actions">${state.editRuleId ? `<button class="btn" id="cancel-edit-rule">Cancel</button>` : ""}<button class="btn primary" id="add-rule" ${editing ? "" : "disabled"}>${state.editRuleId ? "Save changes" : "Add rule"}</button></div></div>
     <p class="small muted">Buffers and minimum-staff rules change what the solver has to cover. Employee rules are hard (never / can't) or soft (always / should, scored). Rules apply on the next rebuild; anything already broken is flagged on the Master schedule.</p></div>
   <div class="card"><h2 class="sec">Base rules</h2><div class="field-row">
     ${num("minStaff", "Minimum staff on the floor", "Every open minute at every store needs at least this many people.")}
@@ -311,8 +313,12 @@ function wireAdmin(root) {
     const groups = {}; $$("[data-rfm]", root).forEach((i) => { (groups[i.dataset.rfm] ||= { all: [], on: [] }); groups[i.dataset.rfm].all.push(i); if (i.checked) groups[i.dataset.rfm].on.push(i.value); });
     Object.entries(groups).forEach(([k, g]) => { const vals = g.on.filter((v) => v !== "ALL" && v !== "ANY"); if (k === "emp" && !vals.length) throw new Error("Tick at least one employee."); r[k] = vals.length ? (vals.length === 1 ? vals[0] : vals) : (k === "day" ? "ANY" : k === "store" ? "ALL" : undefined); });
     if ((r.t === "notTogether" || r.t === "together") && r.emp === r.emp2) throw new Error("Pick two different people.");
-    await saveSetting("custom_rules", customRules().concat([r])); render();
-  }, "Rule added. Rebuild a week to apply it."));
+    if (state.editRuleId) { const old = customRules().find((x) => x.id === state.editRuleId); r.id = state.editRuleId; r.on = old ? old.on !== false : true; await saveSetting("custom_rules", customRules().map((x) => (x.id === r.id ? r : x))); state.editRuleId = null; }
+    else await saveSetting("custom_rules", customRules().concat([r]));
+    render();
+  }, "Rule saved. Rebuild a week to apply it."));
+  $$("[data-edit-rule]", root).forEach((b) => (b.onclick = () => { state.editRuleId = b.dataset.editRule; render(); setTimeout(() => { const f = $("#rule-form"); if (f) f.scrollIntoView({ block: "center", behavior: "smooth" }); }, 0); }));
+  on("#cancel-edit-rule", () => { state.editRuleId = null; render(); });
   $$("[data-rule-on]", root).forEach((c) => (c.onchange = () => guard(async () => { await saveSetting("custom_rules", customRules().map((r) => (r.id === c.dataset.ruleOn ? { ...r, on: c.checked } : r))); render(); })));
   $$("[data-del-rule]", root).forEach((b) => (b.onclick = () => guard(async () => { await saveSetting("custom_rules", customRules().filter((r) => r.id !== b.dataset.delRule)); render(); }, "Rule removed.")));
   on("#save-rules", () => guard(async () => { const R = { ...rules() }; $$("[data-rule]", root).forEach((i) => { R[i.dataset.rule] = i.type === "checkbox" ? i.checked : Number(i.value); }); await saveSetting("rules", R); render(); }, "Base rules saved. Rebuild a week to apply them."));
