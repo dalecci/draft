@@ -89,13 +89,16 @@ function adminStores() {
 }
 function ruleFieldsHtml(t, r = {}) {
   const def = RULE_TYPES.find((x) => x.t === t); if (!def) return "";
-  const storeSel = `<select class="field" data-rf="store"><option value="ALL">every store</option>${stores().map((s) => `<option value="${esc(s.code)}" ${r.store === s.code ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>`;
-  const daySel = `<select class="field" data-rf="day"><option value="ANY">any day</option>${DOW_LONG.map((d, i) => `<option value="${i + 1}" ${String(r.day) === String(i + 1) ? "selected" : ""}>${d}s</option>`).join("")}</select>`;
-  const empSel = (k) => `<select class="field" data-rf="${k}">${staff().map((e) => `<option value="${esc(e.id)}" ${r[k] === e.id ? "selected" : ""}>${esc(e.name)}</option>`).join("")}</select>`;
+  const pair = t === "notTogether" || t === "together";
+  const has = (k, v) => [].concat(r[k] || []).map(String).includes(String(v));
+  const chk = (k, v, label, on) => `<label class="check rchk"><input type="checkbox" data-rfm="${k}" value="${esc(v)}" ${on ? "checked" : ""}> ${esc(label)}</label>`;
+  const storeSel = `<div class="rgroup">${chk("store", "ALL", "every store", !r.store || r.store === "ALL")}${stores().map((s) => chk("store", s.code, s.name, has("store", s.code))).join("")}</div>`;
+  const daySel = `<div class="rgroup">${chk("day", "ANY", "any day", !r.day || r.day === "ANY")}${DOW_LONG.map((d, i) => chk("day", i + 1, d + "s", has("day", i + 1))).join("")}</div>`;
+  const empSel = (k) => pair || k === "emp2" ? `<select class="field" data-rf="${k}">${staff().map((e) => `<option value="${esc(e.id)}" ${r[k] === e.id ? "selected" : ""}>${esc(e.name)}</option>`).join("")}</select>` : `<div class="rgroup">${staff().map((e) => chk(k, e.id, e.name, has(k, e.id))).join("")}</div>`;
   return def.fields.map((f) => {
     if (f === "store") return `<div><label class="lbl">Store</label>${storeSel}</div>`;
     if (f === "day") return `<div><label class="lbl">Day</label>${daySel}</div>`;
-    if (f === "emp") return `<div><label class="lbl">Employee</label>${empSel("emp")}</div>`;
+    if (f === "emp") return `<div style="${pair ? "" : "grid-column:1/-1"}"><label class="lbl">${pair ? "Employee" : "Employees (tick one or several)"}</label>${empSel("emp")}</div>`;
     if (f === "emp2") return `<div><label class="lbl">And</label>${empSel("emp2")}</div>`;
     if (f === "n") return `<div><label class="lbl">N</label><input class="field" type="number" min="0" data-rf="n" value="${esc(r.n ?? (t.includes("Hours") ? 30 : t === "maxConsecutive" ? 5 : 2))}"></div>`;
     if (f === "minutes") return `<div><label class="lbl">Minutes</label><input class="field" type="number" min="0" step="5" data-rf="minutes" value="${esc(r.minutes ?? 15)}"></div>`;
@@ -284,14 +287,16 @@ function wireAdmin(root) {
   $$("[data-ov-on]", root).forEach((c) => (c.onchange = () => guard(async () => { const list = (state.data.settings.store_hour_overrides || []).map((o) => (o.id === c.dataset.ovOn ? { ...o, on: c.checked } : o)); await saveSetting("store_hour_overrides", list); const o = list.find((x) => x.id === c.dataset.ovOn); const ds = Object.keys(o.dates || {}); await rebuildAffected([o.from, ...ds].filter(Boolean).sort()[0], [o.to, ...ds].filter(Boolean).sort().slice(-1)[0]); render(); }, "Updated and weeks rebuilt.")));
   $$("[data-del-ov]", root).forEach((b) => (b.onclick = () => guard(async () => { const o = (state.data.settings.store_hour_overrides || []).find((x) => x.id === b.dataset.delOv); await saveSetting("store_hour_overrides", (state.data.settings.store_hour_overrides || []).filter((x) => x.id !== b.dataset.delOv)); const ds = Object.keys(o.dates || {}); await rebuildAffected([o.from, ...ds].filter(Boolean).sort()[0], [o.to, ...ds].filter(Boolean).sort().slice(-1)[0]); render(); }, "Removed and weeks rebuilt.")));
   // rules
-  const rt = $("#rule-type", root); if (rt) rt.onchange = () => { $("#rule-fields", root).innerHTML = ruleFieldsHtml(rt.value); $("#add-rule", root).disabled = !rt.value; };
+  const wireGroups = () => $$("[data-rfm]", root).forEach((i) => (i.onchange = () => { const k = i.dataset.rfm, isAll = i.value === "ALL" || i.value === "ANY"; $$(`[data-rfm="${k}"]`, root).forEach((o) => { if (isAll && o !== i && i.checked) o.checked = false; if (!isAll && (o.value === "ALL" || o.value === "ANY") && i.checked) o.checked = false; }); }));
+  wireGroups();
+  const rt = $("#rule-type", root); if (rt) rt.onchange = () => { $("#rule-fields", root).innerHTML = ruleFieldsHtml(rt.value); $("#add-rule", root).disabled = !rt.value; wireGroups(); };
   const nlGo = $("#rule-nl-go", root); if (nlGo) nlGo.onclick = async () => {
     const text = $("#rule-nl", root).value.trim(), out = $("#rule-nl-out", root); if (!text) return;
     nlGo.disabled = true; out.innerHTML = "Reading it…";
     try {
       const res = await aiProposeRule(text);
       if (res.rule) {
-        rt.value = res.rule.t; $("#rule-fields", root).innerHTML = ruleFieldsHtml(res.rule.t, res.rule); $("#add-rule", root).disabled = false;
+        rt.value = res.rule.t; $("#rule-fields", root).innerHTML = ruleFieldsHtml(res.rule.t, res.rule); $("#add-rule", root).disabled = false; wireGroups();
         out.innerHTML = `<span class="pill good">understood</span> <b>${esc(ruleText(res.rule))}</b> — check the form below and press <b>Add rule</b>.${res.note ? ` <span class="dim">${esc(res.note)}</span>` : ""}`;
         $("#add-rule", root).scrollIntoView({ block: "center", behavior: "smooth" });
       } else {
@@ -303,6 +308,8 @@ function wireAdmin(root) {
   };
   on("#add-rule", () => guard(async () => {
     const r = { id: uid(), t: rt.value, on: true }; $$("[data-rf]", root).forEach((i) => { r[i.dataset.rf] = i.type === "number" ? Number(i.value) : i.value; });
+    const groups = {}; $$("[data-rfm]", root).forEach((i) => { (groups[i.dataset.rfm] ||= { all: [], on: [] }); groups[i.dataset.rfm].all.push(i); if (i.checked) groups[i.dataset.rfm].on.push(i.value); });
+    Object.entries(groups).forEach(([k, g]) => { const vals = g.on.filter((v) => v !== "ALL" && v !== "ANY"); if (k === "emp" && !vals.length) throw new Error("Tick at least one employee."); r[k] = vals.length ? (vals.length === 1 ? vals[0] : vals) : (k === "day" ? "ANY" : k === "store" ? "ALL" : undefined); });
     if ((r.t === "notTogether" || r.t === "together") && r.emp === r.emp2) throw new Error("Pick two different people.");
     await saveSetting("custom_rules", customRules().concat([r])); render();
   }, "Rule added. Rebuild a week to apply it."));

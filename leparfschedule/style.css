@@ -427,3 +427,7 @@ details summary{cursor:pointer}
 :root[data-theme="light"] .toast{background:#fff;color:var(--ink)}
 :root[data-theme="light"] .sheet-backdrop{background:rgba(26,22,34,.45)}
 @media (max-width:820px){.rail-icon{width:34px;height:34px;border-radius:10px}.rail-icon svg{width:17px;height:17px}}
+
+/* rule editor: tick several days / stores / people */
+.rgroup{display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 10px;border:1px solid var(--rule);border-radius:10px;background:var(--paper-sunk)}
+.rgroup .rchk{padding:2px 0;font-size:13px}

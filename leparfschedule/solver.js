@@ -29,33 +29,42 @@ const RULE_TYPES = [
   { t: "note",           label: "Note to ourselves (not enforced)",                       fields: ["text"] },
 ];
 const activeRules = () => customRules().filter((r) => r.on !== false);
+// A rule's day / store / emp field may be one value or a list. These normalise them.
+const ruleDays = (r) => (!r.day || r.day === "ANY" ? [] : [].concat(r.day).filter((d) => d !== "ANY" && d !== "").map(Number));
+const ruleStores = (r) => (!r.store || r.store === "ALL" ? [] : [].concat(r.store).filter((s) => s !== "ALL" && s !== ""));
+const ruleEmps = (r) => (!r.emp ? [] : [].concat(r.emp).filter(Boolean));
+const ruleEmpOk = (r, id) => ruleEmps(r).includes(id);
+const listWords = (arr) => (arr.length <= 1 ? arr.join("") : arr.slice(0, -1).join(", ") + " and " + arr[arr.length - 1]);
 function ruleText(r) {
-  const st = (c) => (!c || c === "ALL" ? "every store" : store(c).name), dy = (d) => (!d || d === "ANY" ? "any day" : DOW_LONG[Number(d) - 1] + "s");
+  const st = () => { const s = ruleStores(r); return s.length ? listWords(s.map((c) => store(c).name)) : "every store"; };
+  const dy = () => { const d = ruleDays(r); return d.length ? listWords(d.map((x) => DOW_LONG[x - 1] + "s")) : "any day"; };
+  const who = () => { const e = ruleEmps(r); return e.length ? listWords(e.map(ename)) : "Someone"; };
+  const plural = ruleEmps(r).length > 1;
   switch (r.t) {
-    case "openBuffer": return `At ${st(r.store)}, someone starts ${r.minutes} min before opening`;
-    case "closeBuffer": return `At ${st(r.store)}, someone stays ${r.minutes} min after closing`;
-    case "minStaffDay": return `${st(r.store)} needs at least ${r.n} on ${dy(r.day)}`;
-    case "minStaffWindow": return `${st(r.store)} needs at least ${r.n} between ${fmtT(fromHHMM(r.from))} and ${fmtT(fromHHMM(r.to))} on ${dy(r.day)}`;
-    case "noDay": return `${ename(r.emp)} never works ${dy(r.day)}`;
-    case "mustDay": return `${ename(r.emp)} always works ${dy(r.day)}`;
-    case "noStore": return `${ename(r.emp)} can't work at ${st(r.store)}`;
-    case "maxHoursEmp": return `${ename(r.emp)} works at most ${r.n}h a week`;
-    case "minHoursEmp": return `${ename(r.emp)} should get at least ${r.n}h a week`;
-    case "maxConsecutive": return `${ename(r.emp)} never works more than ${r.n} days in a row`;
+    case "openBuffer": return `At ${st()}, someone starts ${r.minutes} min before opening`;
+    case "closeBuffer": return `At ${st()}, someone stays ${r.minutes} min after closing`;
+    case "minStaffDay": return `${st()} needs at least ${r.n} on ${dy()}`;
+    case "minStaffWindow": return `${st()} needs at least ${r.n} between ${fmtT(fromHHMM(r.from))} and ${fmtT(fromHHMM(r.to))} on ${dy()}`;
+    case "noDay": return `${who()} never ${plural ? "work" : "works"} ${dy()}`;
+    case "mustDay": return `${who()} always ${plural ? "work" : "works"} ${dy()}`;
+    case "noStore": return `${who()} can't work at ${st()}`;
+    case "maxHoursEmp": return `${who()} ${plural ? "work" : "works"} at most ${r.n}h a week`;
+    case "minHoursEmp": return `${who()} should get at least ${r.n}h a week`;
+    case "maxConsecutive": return `${who()} never ${plural ? "work" : "works"} more than ${r.n} days in a row`;
     case "notTogether": return `${ename(r.emp)} and ${ename(r.emp2)} are never on together`;
     case "together": return `${ename(r.emp)} and ${ename(r.emp2)} are always scheduled together`;
-    case "preferFill": return `Prefer ${ename(r.emp)} for call-ins at ${st(r.store)}`;
+    case "preferFill": return `Prefer ${who()} for call-ins at ${st()}`;
     case "note": return r.text || "Note";
     default: return r.t;
   }
 }
-const ruleStoreOk = (r, code) => !r.store || r.store === "ALL" || r.store === code;
-const ruleDayOk = (r, date) => !r.day || r.day === "ANY" || Number(r.day) === dowOf(date);
+const ruleStoreOk = (r, code) => { const s = ruleStores(r); return !s.length || s.includes(code); };
+const ruleDayOk = (r, date) => { const d = ruleDays(r); return !d.length || d.includes(dowOf(date)); };
 function hardBlocked(e, date, code) {
-  return activeRules().some((r) => (r.t === "noDay" && r.emp === e.id && ruleDayOk(r, date)) || (r.t === "noStore" && r.emp === e.id && r.store === code));
+  return activeRules().some((r) => (r.t === "noDay" && ruleEmpOk(r, e.id) && ruleDayOk(r, date)) || (r.t === "noStore" && ruleEmpOk(r, e.id) && ruleStoreOk(r, code)));
 }
 function maxHoursFor(e, R) {
-  const r = activeRules().find((x) => x.t === "maxHoursEmp" && x.emp === e.id);
+  const r = activeRules().find((x) => x.t === "maxHoursEmp" && ruleEmpOk(x, e.id));
   return (r ? Math.min(Number(r.n), R.maxHoursWeek) : R.maxHoursWeek) * 60;
 }
 
@@ -162,7 +171,7 @@ function candidates(gap, shifts, c, tier) {
     if (ne - ns < R.minShiftMin) { ne = Math.min(req.close, ns + R.minShiftMin); ns = Math.max(req.open, ne - R.minShiftMin); }
     if (ne - ns > R.maxShiftMin) ne = ns + R.maxShiftMin;
     const overHrs = mins + (ne - ns) > maxH; if (overHrs && tier < 1) return;
-    const prefer = activeRules().some((r) => r.t === "preferFill" && r.emp === e.id && ruleStoreOk(r, gap.store));
+    const prefer = activeRules().some((r) => r.t === "preferFill" && ruleEmpOk(r, e.id) && ruleStoreOk(r, gap.store));
     out.push({ kind: "new", emp: e, ns, ne, cost: base + ((ne - ns - (gap.end - gap.start)) / 30) + (mins / 60) * 0.15 + (e.home_store === gap.store ? 0 : 2) + (overHrs ? 25 : 0) + (overDays ? 15 : 0) - (prefer ? 8 : 0), flags: [!inStore && "other store", overHrs && "over hours", overDays && "extra day", !flex && inStore && "called in on a day off"].filter(Boolean) });
   });
   return out;
@@ -184,9 +193,9 @@ function scoreWeek(shifts, days, c) {
   });
   activeRules().forEach((r) => {
     const mine = (id) => shifts.filter((x) => x.employee_id === id);
-    if (r.t === "mustDay" && r.emp) { const has = days.some((d) => ruleDayOk(r, d) && mine(r.emp).some((x) => x.date === d)); if (!has) s += 25; }
-    if (r.t === "minHoursEmp" && r.emp && empMinutes(shifts, r.emp) < Number(r.n) * 60) s += 15;
-    if (r.t === "maxConsecutive" && r.emp && maxRun(mine(r.emp).map((x) => x.date)) > Number(r.n)) s += 30;
+    if (r.t === "mustDay") ruleEmps(r).forEach((id) => { const has = days.some((d) => ruleDayOk(r, d) && mine(id).some((x) => x.date === d)); if (!has) s += 25; });
+    if (r.t === "minHoursEmp") ruleEmps(r).forEach((id) => { if (empMinutes(shifts, id) < Number(r.n) * 60) s += 15; });
+    if (r.t === "maxConsecutive") ruleEmps(r).forEach((id) => { if (maxRun(mine(id).map((x) => x.date)) > Number(r.n)) s += 30; });
     if (r.t === "notTogether" && r.emp && r.emp2) days.forEach((d) => { const a = mine(r.emp).filter((x) => x.date === d), b = mine(r.emp2).filter((x) => x.date === d); if (a.some((x) => b.some((y) => x.store === y.store && x.start_min < y.end_min && y.start_min < x.end_min))) s += 30; });
     if (r.t === "together" && r.emp && r.emp2) days.forEach((d) => { if (mine(r.emp).some((x) => x.date === d) !== mine(r.emp2).some((x) => x.date === d)) s += 20; });
   });
@@ -270,12 +279,12 @@ function weekIssues(ws) {
 function ruleBroken(r, shifts, days) {
   const mine = (id) => shifts.filter((x) => x.employee_id === id);
   switch (r.t) {
-    case "noDay": { const x = mine(r.emp).find((s) => ruleDayOk(r, s.date)); return x ? `${ename(r.emp)} is scheduled ${fmtDate(x.date)} (never works ${DOW_LONG[Number(r.day) - 1]}s)` : null; }
-    case "mustDay": return days.some((d) => ruleDayOk(r, d) && storesOpenOn(d) && mine(r.emp).some((s) => s.date === d)) ? null : `${ename(r.emp)} has nothing on ${r.day === "ANY" ? "any day" : DOW_LONG[Number(r.day) - 1]}`;
-    case "noStore": { const x = mine(r.emp).find((s) => s.store === r.store); return x ? `${ename(r.emp)} is at ${store(r.store).name} on ${fmtDate(x.date)} (not allowed)` : null; }
-    case "maxHoursEmp": { const m = empMinutes(shifts, r.emp); return m > Number(r.n) * 60 ? `${ename(r.emp)} is at ${fmtHours(m)} (their limit is ${r.n}h)` : null; }
-    case "minHoursEmp": { const m = empMinutes(shifts, r.emp); return m < Number(r.n) * 60 ? `${ename(r.emp)} only has ${fmtHours(m)} (wants at least ${r.n}h)` : null; }
-    case "maxConsecutive": { const run = maxRun(mine(r.emp).map((s) => s.date)); return run > Number(r.n) ? `${ename(r.emp)} works ${run} days in a row (limit ${r.n})` : null; }
+    case "noDay": { for (const id of ruleEmps(r)) { const x = mine(id).find((s) => ruleDayOk(r, s.date)); if (x) return `${ename(id)} is scheduled ${fmtDate(x.date)} (never works ${DOW_LONG[dowOf(x.date) - 1]}s)`; } return null; }
+    case "mustDay": { for (const id of ruleEmps(r)) { const ok = days.some((d) => ruleDayOk(r, d) && storesOpenOn(d) && mine(id).some((s) => s.date === d)); if (!ok) return `${ename(id)} has nothing on ${ruleDays(r).length ? listWords(ruleDays(r).map((x) => DOW_LONG[x - 1])) : "any day"}`; } return null; }
+    case "noStore": { for (const id of ruleEmps(r)) { const x = mine(id).find((s) => ruleStoreOk(r, s.store)); if (x) return `${ename(id)} is at ${store(x.store).name} on ${fmtDate(x.date)} (not allowed)`; } return null; }
+    case "maxHoursEmp": { for (const id of ruleEmps(r)) { const m = empMinutes(shifts, id); if (m > Number(r.n) * 60) return `${ename(id)} is at ${fmtHours(m)} (their limit is ${r.n}h)`; } return null; }
+    case "minHoursEmp": { for (const id of ruleEmps(r)) { const m = empMinutes(shifts, id); if (m < Number(r.n) * 60) return `${ename(id)} only has ${fmtHours(m)} (wants at least ${r.n}h)`; } return null; }
+    case "maxConsecutive": { for (const id of ruleEmps(r)) { const run = maxRun(mine(id).map((s) => s.date)); if (run > Number(r.n)) return `${ename(id)} works ${run} days in a row (limit ${r.n})`; } return null; }
     case "notTogether": { for (const d of days) { const a = mine(r.emp).filter((x) => x.date === d), b = mine(r.emp2).filter((x) => x.date === d); if (a.some((x) => b.some((y) => x.store === y.store && x.start_min < y.end_min && y.start_min < x.end_min))) return `${ename(r.emp)} and ${ename(r.emp2)} are on together ${fmtDate(d)}`; } return null; }
     case "together": { for (const d of days) if (mine(r.emp).some((x) => x.date === d) !== mine(r.emp2).some((x) => x.date === d)) return `${ename(r.emp)} and ${ename(r.emp2)} aren't both on ${fmtDate(d)}`; return null; }
     default: return null;
