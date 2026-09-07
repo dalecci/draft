@@ -117,8 +117,16 @@ function adminRules() {
   if (state.editRuleId && !editing) state.editRuleId = null;
   const num = (k, label, help, step = 1) => `<div><label class="lbl">${label}</label><input class="field" type="number" step="${step}" data-rule="${k}" value="${R[k]}"><div class="small muted" style="margin-top:4px">${help}</div></div>`;
   const chk = (k, label, help) => `<label class="check"><input type="checkbox" data-rule="${k}" ${R[k] ? "checked" : ""}> <span><b>${label}</b><br><span class="small muted">${help}</span></span></label>`;
-  return `<div class="card"><h2 class="sec">Our rules <small>${customRules().length} · dropdowns, like the gym scheduler</small></h2>
-    ${customRules().length ? `<table class="plain"><tbody>${customRules().map((r) => `<tr class="${r.on === false ? "dim" : ""}"><td style="width:34px"><input type="checkbox" data-rule-on="${esc(r.id)}" ${r.on === false ? "" : "checked"} title="on / off"></td><td>${esc(ruleText(r))}${broken.has(r.id) ? ` <span class="pill bad">broken this week</span>` : ""}${r.t === "note" ? ` <span class="pill">note</span>` : ""}</td><td style="text-align:right;white-space:nowrap">${r.t === "note" ? "" : `<button class="btn sm" data-edit-rule="${esc(r.id)}">Edit</button> `}<button class="btn sm danger" data-del-rule="${esc(r.id)}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">No custom rules yet.</p>`}
+  const rf = state.ruleFilter || { emp: "", t: "" };
+  const ruleMentions = (r, id) => ruleEmps(r).includes(id) || r.emp2 === id || [].concat(r.order || []).includes(id);
+  const shown = customRules().filter((r) => (!rf.emp || ruleMentions(r, rf.emp)) && (!rf.t || r.t === rf.t));
+  const empsInRules = staff().filter((e) => customRules().some((r) => ruleMentions(r, e.id)));
+  const typesInRules = RULE_TYPES.filter((x) => customRules().some((r) => r.t === x.t));
+  return `<div class="card"><h2 class="sec">Our rules <small>${shown.length === customRules().length ? customRules().length : shown.length + " of " + customRules().length}</small></h2>
+    <div class="row" style="margin-bottom:12px"><select class="field" id="rule-f-emp" style="max-width:240px"><option value="">Everyone</option>${empsInRules.map((e) => `<option value="${esc(e.id)}" ${rf.emp === e.id ? "selected" : ""}>${esc(e.name)}</option>`).join("")}</select>
+      <select class="field" id="rule-f-type" style="max-width:340px"><option value="">Every type of rule</option>${typesInRules.map((x) => `<option value="${x.t}" ${rf.t === x.t ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select>
+      ${rf.emp || rf.t ? `<button class="btn sm ghost" id="rule-f-clear">Clear</button>` : ""}<span class="small muted">Filter by who a rule mentions and by kind.</span></div>
+    ${shown.length ? `<table class="plain"><tbody>${shown.map((r) => `<tr class="${r.on === false ? "dim" : ""}"><td style="width:34px"><input type="checkbox" data-rule-on="${esc(r.id)}" ${r.on === false ? "" : "checked"} title="on / off"></td><td>${esc(ruleText(r))}${broken.has(r.id) ? ` <span class="pill bad">broken this week</span>` : ""}${r.t === "note" ? ` <span class="pill">note</span>` : ""}</td><td style="text-align:right;white-space:nowrap">${r.t === "note" ? "" : `<button class="btn sm" data-edit-rule="${esc(r.id)}">Edit</button> `}<button class="btn sm danger" data-del-rule="${esc(r.id)}">Remove</button></td></tr>`).join("")}</tbody></table>` : `<p class="dim small">${customRules().length ? "No rules match that filter." : "No custom rules yet."}</p>`}
     <div class="card" style="margin-top:14px;background:var(--surface-2)"><label class="lbl" style="margin-top:0">Write your own rule</label>
     <div class="row"><textarea class="field" id="rule-nl" rows="2" placeholder="e.g. Selena never works Mondays · PB needs 2 people on Saturdays · Nobody works more than 5 days in a row · Elodie and Maria are never on together" style="flex:1;min-height:0"></textarea><button class="btn primary" id="rule-nl-go">Understand it</button></div>
     <div id="rule-nl-out" class="small muted" style="margin-top:8px">Type it the way you'd say it. The app turns it into a rule the solver can enforce, fills in the form below, and you press Add. If it can't be enforced yet, it tells you and can keep it as a note.</div></div>
@@ -300,6 +308,10 @@ function wireAdmin(root) {
   }); }
   const wireGroups = () => $$("[data-rfm]", root).forEach((i) => (i.onchange = () => { const k = i.dataset.rfm, isAll = i.value === "ALL" || i.value === "ANY"; $$(`[data-rfm="${k}"]`, root).forEach((o) => { if (isAll && o !== i && i.checked) o.checked = false; if (!isAll && (o.value === "ALL" || o.value === "ANY") && i.checked) o.checked = false; }); }));
   wireGroups();
+  const fe = $("#rule-f-emp", root), ft = $("#rule-f-type", root);
+  if (fe) fe.onchange = () => { state.ruleFilter = { ...(state.ruleFilter || {}), emp: fe.value }; render(); };
+  if (ft) ft.onchange = () => { state.ruleFilter = { ...(state.ruleFilter || {}), t: ft.value }; render(); };
+  on("#rule-f-clear", () => { state.ruleFilter = { emp: "", t: "" }; render(); });
   const rt = $("#rule-type", root); if (rt) rt.onchange = () => { $("#rule-fields", root).innerHTML = ruleFieldsHtml(rt.value); $("#add-rule", root).disabled = !rt.value; wireGroups(); };
   const nlGo = $("#rule-nl-go", root); if (nlGo) nlGo.onclick = async () => {
     const text = $("#rule-nl", root).value.trim(), out = $("#rule-nl-out", root); if (!text) return;
