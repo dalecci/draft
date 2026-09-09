@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07090d">
 <title>J3T App Hub</title>
+<meta name="description" content="Every app, tool and site built by J3T - searchable and filterable in one place.">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -28,122 +29,90 @@
     min-height: 100vh;
     padding: 24px 16px 48px;
   }
-  .gate {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-    padding: 20px;
-  }
-  .gate-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 32px 28px;
-    max-width: 360px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .gate-logo {
-    font-family: "Cormorant Garamond", "Times New Roman", serif;
-    font-size: 36px;
-    font-weight: 600;
-    color: var(--gold);
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-  }
-  .gate-sub {
-    color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 28px;
-  }
-  .pin-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 28px;
-    text-align: center;
-    letter-spacing: 12px;
-    padding: 16px;
-    font-family: -apple-system, system-ui, sans-serif;
-    font-weight: 600;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
+
+  /* ---------- gate ---------- */
+  .gate { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .gate-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 32px 28px; max-width: 360px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .gate-logo { font-family: "Cormorant Garamond", "Times New Roman", serif; font-size: 36px; font-weight: 600; color: var(--gold); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .gate-sub { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 28px; }
+  .pin-input { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--text); font-size: 28px; text-align: center; letter-spacing: 12px; padding: 16px; font-weight: 600; outline: none; transition: border-color .15s, box-shadow .15s; }
   .pin-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
-  .pin-input.error { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2); animation: shake 0.4s; }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-6px); }
-    75% { transform: translateX(6px); }
-  }
-  .gate-btn {
-    width: 100%;
-    margin-top: 14px;
-    padding: 14px;
-    background: var(--gold);
-    color: #1a1300;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .gate-btn:active { transform: scale(0.98); }
+  .pin-input.error { border-color: #f87171; box-shadow: 0 0 0 3px rgba(248,113,113,.2); animation: shake .4s; }
+  @keyframes shake { 0%,100% { transform: translateX(0);} 25% { transform: translateX(-6px);} 75% { transform: translateX(6px);} }
+  .gate-btn { width: 100%; margin-top: 14px; padding: 14px; background: var(--gold); color: #1a1300; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+  .gate-btn:active { transform: scale(.98); }
   .gate-hint { color: var(--muted); font-size: 12px; margin-top: 18px; }
 
-  header {
-    max-width: 920px;
-    margin: 0 auto 32px;
-    text-align: center;
+  /* ---------- header ---------- */
+  header { max-width: 1080px; margin: 0 auto 22px; text-align: center; }
+  .brand { font-family: "Cormorant Garamond", "Times New Roman", serif; font-size: 44px; font-weight: 600; color: var(--gold); letter-spacing: 1px; }
+  .tagline { color: var(--muted); font-size: 12px; letter-spacing: 4px; text-transform: uppercase; margin-top: 6px; }
+  main { max-width: 1080px; margin: 0 auto; }
+
+  /* ---------- toolbar ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 30;
+    background: linear-gradient(180deg, var(--bg) 70%, rgba(7,9,13,0.92) 88%, rgba(7,9,13,0));
+    padding: 10px 0 16px;
+    margin-bottom: 8px;
   }
-  .brand {
-    font-family: "Cormorant Garamond", "Times New Roman", serif;
-    font-size: 44px;
-    font-weight: 600;
-    color: var(--gold);
-    letter-spacing: 1px;
+  .search-wrap { position: relative; }
+  .search-icon {
+    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none; display: flex;
   }
-  .tagline {
+  #search {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 14px 84px 14px 44px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none;
+  }
+  #search::-webkit-search-cancel-button { display: none; }
+  #search::placeholder { color: var(--muted); }
+  #search:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  .search-kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 6px; }
+  .kbd { border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-size: 11px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .clear-btn { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; display: none; }
+  .clear-btn:hover { color: var(--gold); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; align-items: center; }
+  .chip {
+    background: var(--panel);
+    border: 1px solid var(--line);
     color: var(--muted);
+    padding: 7px 13px;
+    border-radius: 20px;
     font-size: 12px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-top: 6px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+    white-space: nowrap;
+    font-family: inherit;
   }
-  main { max-width: 920px; margin: 0 auto; }
+  .chip:hover { border-color: var(--gold); color: var(--text); }
+  .chip.on { background: var(--gold-soft); border-color: var(--gold); color: var(--gold); }
+  .chip .n { opacity: .55; font-weight: 500; margin-left: 5px; }
+  .chips-sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
 
-  .section { margin-bottom: 32px; }
-  .section-title {
-    font-size: 12px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 12px;
-    padding-left: 4px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-title::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--gold-soft), transparent);
-  }
+  .meta-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding: 0 3px; }
+  .count { color: var(--muted); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; }
+  .reset { background: none; border: none; color: var(--gold); font-size: 12px; cursor: pointer; letter-spacing: .5px; font-family: inherit; padding: 0; text-decoration: underline; text-underline-offset: 3px; visibility: hidden; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
-  }
+  /* ---------- sections + cards ---------- */
+  .section { margin-bottom: 30px; }
+  .section-title { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; padding-left: 4px; display: flex; align-items: center; gap: 10px; }
+  .section-title .sc { color: var(--muted); letter-spacing: 1px; font-size: 11px; font-weight: 400; }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-soft), transparent); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
 
   .card {
     background: var(--panel);
@@ -152,88 +121,48 @@
     padding: 18px 18px 16px;
     text-decoration: none;
     color: var(--text);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-    position: relative;
-    overflow: hidden;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    position: relative; overflow: hidden;
   }
-  .card::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
+  .card::before { content: ""; position: absolute; top:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity .2s; }
   .card:hover { border-color: var(--gold); transform: translateY(-2px); background: var(--panel-2); }
   .card:hover::before { opacity: 1; }
   .card-row { display: flex; align-items: center; gap: 10px; }
-  .icon {
-    font-size: 22px;
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--gold-soft);
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-  .card-title { font-size: 16px; font-weight: 600; }
-  .card-url {
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 0.3px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    word-break: break-all;
-  }
-  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.45; margin-top: 4px; }
-  .badge {
-    display: inline-block;
-    background: var(--gold-soft);
-    color: var(--gold);
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-weight: 700;
-    margin-left: auto;
-  }
-  .badge.draft { background: rgba(74, 222, 128, 0.15); color: var(--green); }
-  .badge.preview { background: rgba(96, 165, 250, 0.15); color: #93c5fd; }
-  .badge.local { background: rgba(248, 113, 113, 0.15); color: #fca5a5; }
+  .icon { font-size: 22px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--gold-soft); border-radius: 8px; flex-shrink: 0; }
+  .card-title { font-size: 16px; font-weight: 600; line-height: 1.2; }
+  .card-url { font-size: 11px; color: var(--gold); letter-spacing: .3px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.45; margin-top: 4px; flex: 1; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .tag { font-size: 10px; color: var(--muted); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 5px; padding: 2px 6px; letter-spacing: .3px; }
+  .badge { display: inline-block; background: var(--gold-soft); color: var(--gold); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; font-weight: 700; margin-left: auto; flex-shrink: 0; }
+  .badge.new { background: rgba(74,222,128,.15); color: var(--green); }
+  .badge.preview { background: rgba(96,165,250,.15); color: #93c5fd; }
+  .badge.local { background: rgba(248,113,113,.15); color: #fca5a5; }
+  .card.disabled { opacity: .55; cursor: default; pointer-events: none; }
 
-  .card.disabled { opacity: 0.55; cursor: default; pointer-events: none; }
+  mark { background: rgba(212,175,55,.3); color: var(--text); border-radius: 3px; padding: 0 1px; }
 
-  footer {
-    max-width: 920px;
-    margin: 40px auto 0;
-    text-align: center;
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 1px;
-  }
+  .empty { text-align: center; padding: 64px 20px; color: var(--muted); }
+  .empty-icon { font-size: 40px; opacity: .45; margin-bottom: 14px; }
+  .empty-title { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .empty-sub { font-size: 13px; }
+
+  footer { max-width: 1080px; margin: 40px auto 0; text-align: center; color: var(--muted); font-size: 11px; letter-spacing: 1px; }
   footer a { color: var(--gold); text-decoration: none; cursor: pointer; }
 
-  .logout-btn {
-    position: fixed;
-    top: 16px; right: 16px;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    color: var(--muted);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
+  .logout-btn { position: fixed; top: 16px; right: 16px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); padding: 8px 12px; border-radius: 8px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; z-index: 40; }
   .logout-btn:hover { color: var(--gold); border-color: var(--gold); }
 
   @media (max-width: 600px) {
     .brand { font-size: 34px; }
     body { padding: 18px 12px 32px; }
+    .search-kbd .kbd { display: none; }
+    #search { padding-right: 46px; }
+    .grid { grid-template-columns: 1fr; }
+    .logout-btn { top: 10px; right: 10px; padding: 6px 10px; }
+    header { padding-top: 30px; }
+    .chips-sep { display: none; }
   }
 </style>
 </head>
@@ -243,7 +172,7 @@
   <div class="gate-card">
     <div class="gate-logo">J3T</div>
     <div class="gate-sub">App Hub</div>
-    <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" class="pin-input" id="pin" placeholder="••••" autocomplete="off">
+    <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" class="pin-input" id="pin" placeholder="&bull;&bull;&bull;&bull;" autocomplete="off">
     <button class="gate-btn" id="unlockBtn">Unlock</button>
     <div class="gate-hint">4-digit code required</div>
   </div>
@@ -258,374 +187,560 @@
 
 <main id="main" style="display:none">
 
-  <section class="section">
-    <div class="section-title">Aviation</div>
-    <div class="grid">
-      <a class="card" href="https://j3taviation.com" target="_blank">
-        <div class="card-row">
-          <div class="icon">✈️</div>
-          <div class="card-title">J3T Main Site</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3taviation.com</div>
-        <div class="card-desc">Marketing site — Home / About / Programs / Contact / Links.</div>
-      </a>
-      <a class="card" href="https://j3taviation.com/jetdata" target="_blank">
-        <div class="card-row">
-          <div class="icon">📊</div>
-          <div class="card-title">Jet Data</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3taviation.com/jetdata</div>
-        <div class="card-desc">22-aircraft cost & performance comparator with trip calculator + winds aloft.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/portal/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🛩️</div>
-          <div class="card-title">Owner Portal</div>
-          <span class="badge preview">Preview</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/portal/</div>
-        <div class="card-desc">Customer portal prototype — flights, invoices, docs, maintenance. Demo logins inside.</div>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-title">Warriors Basketball</div>
-    <div class="grid">
-      <a class="card" href="https://draft.j3taviation.com/warriors/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🏀</div>
-          <div class="card-title">Training Portal</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/warriors/</div>
-        <div class="card-desc">Video training for Warriors players — Lessons, playbook, coach's notes, auto-advance. PIN sign-in.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/hoops.html" target="_blank">
-        <div class="card-row">
-          <div class="icon">📈</div>
-          <div class="card-title">Hoops Stats</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/hoops.html</div>
-        <div class="card-desc">Game-day stat tracker — shot chart, +/-, subs, plus per-player breakdowns.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/" target="_blank">
-        <div class="card-row">
-          <div class="icon">✏️</div>
-          <div class="card-title">Playmaker</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com</div>
-        <div class="card-desc">Play designer — drag players, animate motion paths, save to playbook, share with team.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/draft/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🎯</div>
-          <div class="card-title">12U Draft Board</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/draft/</div>
-        <div class="card-desc">Live draft board for 60-kid draft night — clock, locked picks, undo, rosters.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/quest3" target="_blank">
-        <div class="card-row">
-          <div class="icon">🥽</div>
-          <div class="card-title">J3 HOOPS VR Trainer</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">j3hoops.com/quest3</div>
-        <div class="card-desc">Meta Quest 3 basketball IQ trainer — step into your plays in passthrough, read the defense, set picks, catch & finish. Open in the Quest browser.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/quest3/designer/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🎬</div>
-          <div class="card-title">VR Play Designer</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">j3hoops.com/quest3/designer/</div>
-        <div class="card-desc">Desktop designer for the VR trainer — build step-by-step plays with picks, passes, words, tags & bendable cuts; publishes straight to the headset.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/brain/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🧠</div>
-          <div class="card-title">Brain • Warriors</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">j3hoops.com/brain/</div>
-        <div class="card-desc">Coaching-insight portal — mirrors game stats and surfaces Claude-powered reads, matchups, and film notes.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/formcheck/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🎯</div>
-          <div class="card-title">FormCheck</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3hoops.com/formcheck/</div>
-        <div class="card-desc">AI shooting-form analyzer — per-shot breakdown, phase checkpoints, jump height, consistency and trends from video.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/jaguars/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🐆</div>
-          <div class="card-title">Jaguars Portal</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3hoops.com/jaguars/</div>
-        <div class="card-desc">Coach Dale's SW FL Jaguars hub — coaching structure and the PIN-gated Tryout Day Playbook.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/tryouts/" target="_blank">
-        <div class="card-row">
-          <div class="icon">📋</div>
-          <div class="card-title">Jaguars Tryouts</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3hoops.com/tryouts/</div>
-        <div class="card-desc">AAU tryout evaluation — coach 1–10 scoring, per-player averages, and live rankings.</div>
-      </a>
-      <a class="card" href="https://j3hoops.com/admin/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🧰</div>
-          <div class="card-title">Basketball Toolkit</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3hoops.com/admin/</div>
-        <div class="card-desc">Internal basketball toolkit / admin dashboard.</div>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="section-title">Other Projects</div>
-    <div class="grid">
-      <a class="card" href="https://draft.j3taviation.com/health/" target="_blank">
-        <div class="card-row">
-          <div class="icon">❤️‍🔥</div>
-          <div class="card-title">J3 Health</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/health/</div>
-        <div class="card-desc">InvisaRed tracker — every-2-day due reminders, 15/30-min check-off, daily weight, water & measurements, AI report review. Code sign-in per person.</div>
-      </a>
-      <a class="card" href="https://family.j3taviation.com" target="_blank">
-        <div class="card-row">
-          <div class="icon">👨‍👩‍👧</div>
-          <div class="card-title">Family Sit</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">family.j3taviation.com</div>
-        <div class="card-desc">Private family babysitting coordinator — invite-based, Supabase-backed.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/clf-training/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🎚️</div>
-          <div class="card-title">CLF Sound Training</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/clf-training/</div>
-        <div class="card-desc">DiGiCo Quantum 338 volunteer LMS for Christian Life Fellowship sound team.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/summer/" target="_blank">
-        <div class="card-row">
-          <div class="icon">☀️</div>
-          <div class="card-title">Summer Schedule</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/summer/</div>
-        <div class="card-desc">Daily summer schedule for the boys — tap-a-face check-off, swap on the fly, streaks + badges, realtime sync across devices.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/sport-etudes/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🏫</div>
-          <div class="card-title">Sport-Études FL · V1</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/sport-etudes/</div>
-        <div class="card-desc">Elite-prep design — navy + cream, Fraunces serif. Marketing site for the dual-pathway basketball + academics program.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/sport-etudes-v2/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🔥</div>
-          <div class="card-title">Sports Scholar Academy · V2</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/sport-etudes-v2/</div>
-        <div class="card-desc">Athletic-design marketing site for Sports Scholar Academy — dark navy + basketball orange, kinetic hero, stats ticker, manifesto type.</div>
-      </a>
-      <div class="card disabled">
-        <div class="card-row">
-          <div class="icon">🌿</div>
-          <div class="card-title">Vibrant Health</div>
-          <span class="badge local">Local</span>
-        </div>
-        <div class="card-url">not deployed yet</div>
-        <div class="card-desc">Sister's chiropractic site rebuild — static, replaces WordPress at vibranthealthswfl.com.</div>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.6-3.6"></path></svg>
+      </span>
+      <input id="search" type="search" autocomplete="off" spellcheck="false"
+             placeholder="Search apps, tools and keywords..." aria-label="Search apps">
+      <div class="search-kbd">
+        <button class="clear-btn" id="clearBtn" aria-label="Clear search" title="Clear">&times;</button>
+        <span class="kbd">/</span>
       </div>
     </div>
-  </section>
-
-  <section class="section">
-    <div class="section-title">Family &amp; Kids</div>
-    <div class="grid">
-      <a class="card" href="https://draft.j3taviation.com/budget/" target="_blank">
-        <div class="card-row">
-          <div class="icon">💰</div>
-          <div class="card-title">J3 Budget</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/budget/</div>
-        <div class="card-desc">Digital envelope budgeting (Dave Ramsey style) for Dale + wife — Supabase-synced.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/behavior/" target="_blank">
-        <div class="card-row">
-          <div class="icon">⭐</div>
-          <div class="card-title">Family Behavior</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/behavior/</div>
-        <div class="card-desc">Green/red points, consequence calendar, and rewards for the boys.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/food/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🍎</div>
-          <div class="card-title">Fuel — Food &amp; Nutrition</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/food/</div>
-        <div class="card-desc">Kids nutrition — barcode + search, traffic-light + Nutri-Score, food comparison tool.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/j3prep/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🧮</div>
-          <div class="card-title">J3Prep</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/j3prep/</div>
-        <div class="card-desc">AI adaptive math tutor (Grade 5–6) — student portal. Also at j3prep.com.</div>
-      </a>
-      <a class="card" href="https://j3prep.com/homeschool/" target="_blank">
-        <div class="card-row">
-          <div class="icon">📚</div>
-          <div class="card-title">J3 Homeschool</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">j3prep.com/homeschool/</div>
-        <div class="card-desc">Daily homeschool checklist + weekly reward score for the boys.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/ascend/" target="_blank">
-        <div class="card-row">
-          <div class="icon">➗</div>
-          <div class="card-title">Ascend — Grade 5 Math</div>
-          <span class="badge draft">New</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/ascend/</div>
-        <div class="card-desc">Grade 5 math practice app.</div>
-      </a>
+    <div class="chips" id="chipRow"></div>
+    <div class="meta-row">
+      <span class="count" id="count"></span>
+      <button class="reset" id="resetBtn">Reset filters</button>
     </div>
-  </section>
+  </div>
 
-  <section class="section">
-    <div class="section-title">Client Sites</div>
-    <div class="grid">
-      <a class="card" href="https://draft.j3taviation.com/melissa/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🏡</div>
-          <div class="card-title">Melissa Slattery · Realtor</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/melissa/</div>
-        <div class="card-desc">SW Florida realtor site — Cape Coral &amp; Fort Myers, Canadian-buyer niche.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/areaiq/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🗺️</div>
-          <div class="card-title">Area IQ™</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/areaiq/</div>
-        <div class="card-desc">Melissa's Cape Coral neighborhood map — 18 zones, filters, heatmaps, compare, TV mode.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/BioScan/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🌿</div>
-          <div class="card-title">Vibrant BioScan</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/BioScan/</div>
-        <div class="card-desc">Dr. Kassandra Francis, DC — find-the-root-cause bioscan site.</div>
-      </a>
-      <a class="card" href="https://draft.j3taviation.com/BioScan-portal/" target="_blank">
-        <div class="card-row">
-          <div class="icon">🔬</div>
-          <div class="card-title">Vibrant BioScan Portal</div>
-          <span class="badge">Live</span>
-        </div>
-        <div class="card-url">draft.j3taviation.com/BioScan-portal/</div>
-        <div class="card-desc">Client portal for Vibrant BioScan.</div>
-      </a>
-    </div>
-  </section>
-
+  <div id="results"></div>
 </main>
 
 <footer>
-  <span id="footerText">Locked</span> · <a id="logoutLink" style="display:none">Lock again</a>
+  <span id="footerText">Locked</span> &middot; <a id="logoutLink" style="display:none">Lock again</a>
 </footer>
 
 <script>
-  const PIN = "4545";
-  const KEY = "j3t-hub-unlocked";
+/* ============================================================
+   APP DATA
+   status: live | new | preview | local
+   Add a new app by adding one object here. Nothing else to touch.
+   ============================================================ */
+const CATEGORIES = [
+  "Aviation",
+  "Basketball · Tools",
+  "Basketball · Teams",
+  "Le Parfumier",
+  "Family & Kids",
+  "Health & Wellness",
+  "Client Sites",
+  "Schools & Community"
+];
 
-  const gate = document.getElementById("gate");
-  const main = document.getElementById("main");
-  const pin = document.getElementById("pin");
-  const unlockBtn = document.getElementById("unlockBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const logoutLink = document.getElementById("logoutLink");
-  const footerText = document.getElementById("footerText");
+const APPS = [
+  /* ---------------- Aviation ---------------- */
+  { name: "J3T Main Site", icon: "✈️", url: "https://j3taviation.com", label: "j3taviation.com",
+    cat: "Aviation", status: "live",
+    desc: "Marketing site - Home / About / Programs / Contact / Links.",
+    tags: ["aviation", "marketing", "charter", "flight training", "website"] },
 
-  function unlock() {
-    gate.style.display = "none";
-    main.style.display = "block";
-    logoutBtn.style.display = "block";
-    logoutLink.style.display = "inline";
-    footerText.textContent = "Session unlocked";
+  { name: "Jet Data", icon: "📊", url: "https://j3taviation.com/jetdata", label: "j3taviation.com/jetdata",
+    cat: "Aviation", status: "live",
+    desc: "22-aircraft cost & performance comparator with trip calculator and winds aloft.",
+    tags: ["aviation", "aircraft", "comparator", "calculator", "winds aloft", "performance", "cost", "jet"] },
+
+  { name: "Owner Portal", icon: "🛩️", url: "https://draft.j3taviation.com/portal/", label: "draft.j3taviation.com/portal/",
+    cat: "Aviation", status: "preview",
+    desc: "Customer portal prototype - flights, invoices, docs, maintenance. Demo logins inside.",
+    tags: ["aviation", "portal", "invoices", "maintenance", "documents", "prototype"] },
+
+  /* ---------------- Basketball - Tools ---------------- */
+  { name: "J3 Hoops", icon: "🏀", url: "https://j3hoops.com/", label: "j3hoops.com",
+    cat: "Basketball · Tools", status: "live",
+    desc: "Coach Dale's basketball portal - Cape Coral hoops that teaches decisions, not just effort. Home of the Warriors 12U.",
+    tags: ["basketball", "portal", "coaching", "cape coral", "warriors", "website"] },
+
+  { name: "Basketball Toolkit", icon: "🧰", url: "https://j3hoops.com/admin/", label: "j3hoops.com/admin/",
+    cat: "Basketball · Tools", status: "live",
+    desc: "Internal admin dashboard - stats, film, plays, training and playbook for every team you coach.",
+    tags: ["basketball", "admin", "dashboard", "stats", "film", "playbook", "coaching"] },
+
+  { name: "Film Room", icon: "🎬", url: "https://j3hoops.com/filmroom/", label: "j3hoops.com/filmroom/",
+    cat: "Basketball · Tools", status: "new",
+    desc: "Live play breakdown on the big screen - iPad + Apple Pencil in, TV out. Telestration, spotlight beam and follow, YouTube mode with the Warriors library.",
+    tags: ["basketball", "film", "video", "telestration", "ipad", "apple pencil", "airplay", "youtube", "breakdown", "coaching"] },
+
+  { name: "Playmaker", icon: "✏️", url: "https://draft.j3taviation.com/", label: "draft.j3taviation.com",
+    cat: "Basketball · Tools", status: "live",
+    desc: "Play designer - drag players, animate motion paths, save to the playbook, share with the team.",
+    tags: ["basketball", "play designer", "playbook", "animation", "whiteboard", "coaching"] },
+
+  { name: "Playmaker · Hoops", icon: "📱", url: "https://j3hoops.com/hoops/", label: "j3hoops.com/hoops/",
+    cat: "Basketball · Tools", status: "live",
+    desc: "The Warriors build of Playmaker, tuned for phone and iPad on the bench.",
+    tags: ["basketball", "play designer", "playbook", "warriors", "mobile", "ipad"] },
+
+  { name: "Playmaker 3D · Wave", icon: "🧊", url: "https://draft.j3taviation.com/playmaker3d/", label: "draft.j3taviation.com/playmaker3d/",
+    cat: "Basketball · Tools", status: "preview",
+    desc: "Three-dimensional play viewer - step through the action from broadcast, baseline or overhead cameras.",
+    tags: ["basketball", "3d", "play designer", "camera", "visualization", "prototype"] },
+
+  { name: "J3 HOOPS VR Trainer", icon: "🥽", url: "https://j3hoops.com/quest3", label: "j3hoops.com/quest3",
+    cat: "Basketball · Tools", status: "new",
+    desc: "Meta Quest 3 basketball IQ trainer - step into your plays in passthrough, read the defense, set picks, catch & finish. Open in the Quest browser.",
+    tags: ["basketball", "vr", "quest 3", "meta", "passthrough", "basketball iq", "training", "headset"] },
+
+  { name: "VR Play Designer", icon: "🖥️", url: "https://j3hoops.com/quest3/designer/", label: "j3hoops.com/quest3/designer/",
+    cat: "Basketball · Tools", status: "new",
+    desc: "Desktop designer for the VR trainer - build step-by-step plays with picks, passes, words, tags and bendable cuts, then publish straight to the headset.",
+    tags: ["basketball", "vr", "quest 3", "play designer", "desktop", "publishing"] },
+
+  { name: "FormCheck", icon: "🎯", url: "https://j3hoops.com/formcheck/", label: "j3hoops.com/formcheck/",
+    cat: "Basketball · Tools", status: "live",
+    desc: "AI shooting-form analyzer - per-shot breakdown, phase checkpoints, jump height, consistency and trends from video.",
+    tags: ["basketball", "ai", "shooting", "form", "video analysis", "biomechanics", "trends"] },
+
+  { name: "Brain · Warriors", icon: "🧠", url: "https://j3hoops.com/brain/", label: "j3hoops.com/brain/",
+    cat: "Basketball · Tools", status: "new",
+    desc: "Coaching-insight portal - mirrors game stats and surfaces Claude-powered reads, matchups and film notes.",
+    tags: ["basketball", "ai", "claude", "analytics", "stats", "matchups", "insight", "warriors"] },
+
+  { name: "Hoops Stats", icon: "📈", url: "https://draft.j3taviation.com/hoops.html", label: "draft.j3taviation.com/hoops.html",
+    cat: "Basketball · Tools", status: "live",
+    desc: "Game-day stat tracker - shot chart, plus/minus, substitutions and per-player breakdowns.",
+    tags: ["basketball", "stats", "shot chart", "plus minus", "substitutions", "game day", "tracker"] },
+
+  { name: "12U Draft Board", icon: "🗂️", url: "https://draft.j3taviation.com/draft/", label: "draft.j3taviation.com/draft/",
+    cat: "Basketball · Tools", status: "live",
+    desc: "Live draft board for a 60-kid draft night - clock, locked picks, undo and rosters.",
+    tags: ["basketball", "draft", "league", "rosters", "draft night", "12u"] },
+
+  /* ---------------- Basketball - Teams ---------------- */
+  { name: "Warriors Training", icon: "🏀", url: "https://j3hoops.com/warriors/", label: "j3hoops.com/warriors/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "Video training for Warriors players - lessons, playbook, coach's notes, auto-advance. PIN sign-in. Also mirrored at draft.j3taviation.com/warriors/.",
+    tags: ["basketball", "warriors", "training", "video", "lessons", "playbook", "drills", "nba breakdown"] },
+
+  { name: "Jaguars Portal", icon: "🐆", url: "https://j3hoops.com/jaguars/", label: "j3hoops.com/jaguars/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "Coach Dale's SW FL Jaguars hub - coaching structure and the PIN-gated Tryout Day Playbook.",
+    tags: ["basketball", "jaguars", "aau", "swfl", "hub", "coaching"] },
+
+  { name: "Jaguars Tryout Playbook", icon: "📖", url: "https://j3hoops.com/jaguars/tryout/", label: "j3hoops.com/jaguars/tryout/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "Tryout Day launch playbook - the gym zone by zone, run of show, and the first ten minutes that win family buy-in.",
+    tags: ["basketball", "jaguars", "tryouts", "playbook", "run of show", "aau", "parents"] },
+
+  { name: "Jaguars Practice Scheduler", icon: "🗓️", url: "https://j3hoops.com/jaguars/schedule/", label: "j3hoops.com/jaguars/schedule/",
+    cat: "Basketball · Teams", status: "new",
+    desc: "Court-time solver for 7 Jaguars teams at two practices each per week.",
+    tags: ["basketball", "jaguars", "scheduling", "practice", "court time", "solver", "aau"] },
+
+  { name: "Jaguars Tryouts", icon: "📋", url: "https://j3hoops.com/tryouts/", label: "j3hoops.com/tryouts/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "AAU tryout evaluation - coach 1-10 scoring, per-player averages and live rankings.",
+    tags: ["basketball", "jaguars", "tryouts", "evaluation", "scoring", "rankings", "aau"] },
+
+  { name: "Player Development", icon: "🌱", url: "https://j3hoops.com/development/", label: "j3hoops.com/development/",
+    cat: "Basketball · Teams", status: "new",
+    desc: "Jaguars development tracker - player cards, ratings, testing, attendance streaks, creed and assignments.",
+    tags: ["basketball", "jaguars", "development", "player cards", "ratings", "testing", "attendance", "assignments"] },
+
+  { name: "Athlete Portal", icon: "👟", url: "https://j3hoops.com/parent/", label: "j3hoops.com/parent/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "Jaguars athlete and parent portal - schedule, expectations and the player's own page.",
+    tags: ["basketball", "jaguars", "athlete", "parent", "portal", "schedule"] },
+
+  { name: "Athlete Portal V2", icon: "🚀", url: "https://j3hoops.com/portal2/", label: "j3hoops.com/portal2/",
+    cat: "Basketball · Teams", status: "preview",
+    desc: "Next-gen athlete portal - season objectives, terminology, playbook and notes from your coach.",
+    tags: ["basketball", "jaguars", "athlete", "portal", "objectives", "terminology", "playbook", "v2"] },
+
+  { name: "Coach Availability", icon: "⏱️", url: "https://j3hoops.com/schedule/", label: "j3hoops.com/schedule/",
+    cat: "Basketball · Teams", status: "live",
+    desc: "Jaguars availability board - when Coach Dale is free, at a glance.",
+    tags: ["basketball", "jaguars", "availability", "schedule", "calendar", "coaching"] },
+
+  /* ---------------- Le Parfumier ---------------- */
+  { name: "Le Parfumier", icon: "🌸", url: "https://leparf.com/", label: "leparf.com",
+    cat: "Le Parfumier", status: "live",
+    desc: "Landing page for the Le Parfumier internal tools, served by Cloudflare Pages.",
+    tags: ["le parfumier", "retail", "fragrance", "perfume", "landing", "cloudflare"] },
+
+  { name: "Le Parfumier: Schedule", icon: "🗓️", url: "https://leparf.com/schedule/", label: "leparf.com/schedule/",
+    cat: "Le Parfumier", status: "live",
+    desc: "Staff scheduling for three stores - shift swaps, time off, approvals, coverage rules and an AI-assisted solver.",
+    tags: ["le parfumier", "retail", "fragrance", "perfume", "scheduling", "staff", "shifts", "time off", "approvals", "supabase", "ai", "solver"] },
+
+  { name: "Le Parfumier: FLAG", icon: "🚩", url: "https://leparf.com/flag/", label: "leparf.com/flag/",
+    cat: "Le Parfumier", status: "live",
+    desc: "Discontinuation watch for the fragrance catalog - what to act on, and which houses are under pressure.",
+    tags: ["le parfumier", "retail", "fragrance", "perfume", "catalog", "discontinued", "inventory", "monitoring", "scan"] },
+
+  { name: "Le Parfumier · Concepts", icon: "🎨", url: "https://j3taviation.com/leparf/", label: "j3taviation.com/leparf/",
+    cat: "Le Parfumier", status: "preview",
+    desc: "Three storefront design directions - L'Apothicaire, La Galerie and L'Éditorial.",
+    tags: ["le parfumier", "retail", "design", "concepts", "storefront", "branding", "mockup"] },
+
+  /* ---------------- Family & Kids ---------------- */
+  { name: "J3 Budget", icon: "💰", url: "https://draft.j3taviation.com/budget/", label: "draft.j3taviation.com/budget/",
+    cat: "Family & Kids", status: "live",
+    desc: "Digital envelope budgeting, Dave Ramsey style, for Dale and his wife. Supabase-synced.",
+    tags: ["family", "budget", "envelopes", "money", "dave ramsey", "finance", "supabase"] },
+
+  { name: "Family Behavior", icon: "⭐", url: "https://draft.j3taviation.com/behavior/", label: "draft.j3taviation.com/behavior/",
+    cat: "Family & Kids", status: "live",
+    desc: "Green and red points, a consequence calendar, and rewards for the boys.",
+    tags: ["family", "kids", "behavior", "points", "rewards", "chores", "parenting"] },
+
+  { name: "Fuel - Food & Nutrition", icon: "🍎", url: "https://draft.j3taviation.com/food/", label: "draft.j3taviation.com/food/",
+    cat: "Family & Kids", status: "live",
+    desc: "Kids nutrition - barcode scan and search, traffic-light and Nutri-Score ratings, plus a food comparison tool.",
+    tags: ["family", "kids", "nutrition", "food", "barcode", "nutri-score", "health", "comparison"] },
+
+  { name: "J3Prep", icon: "🧮", url: "https://j3prep.com/", label: "j3prep.com",
+    cat: "Family & Kids", status: "live",
+    desc: "AI adaptive math tutor for grades 5-6, student portal. Also at draft.j3taviation.com/j3prep/.",
+    tags: ["family", "kids", "education", "math", "tutor", "ai", "adaptive", "grade 5", "grade 6"] },
+
+  { name: "J3 Homeschool", icon: "📚", url: "https://j3prep.com/homeschool/", label: "j3prep.com/homeschool/",
+    cat: "Family & Kids", status: "live",
+    desc: "Daily homeschool checklist plus a weekly reward score for the boys.",
+    tags: ["family", "kids", "education", "homeschool", "checklist", "rewards", "routine"] },
+
+  { name: "J3 Prep Gym", icon: "🏋️", url: "https://j3prep.com/gym/", label: "j3prep.com/gym/",
+    cat: "Family & Kids", status: "new",
+    desc: "Strength and conditioning log - build your own exercise list, track progress up or down over time.",
+    tags: ["family", "kids", "fitness", "gym", "strength", "progress", "tracker", "workout"] },
+
+  { name: "Ascend - Grade 5 Math", icon: "➗", url: "https://draft.j3taviation.com/ascend/", label: "draft.j3taviation.com/ascend/",
+    cat: "Family & Kids", status: "live",
+    desc: "Grade 5 math practice app.",
+    tags: ["family", "kids", "education", "math", "practice", "grade 5"] },
+
+  { name: "Summer Schedule", icon: "☀️", url: "https://draft.j3taviation.com/summer/", label: "draft.j3taviation.com/summer/",
+    cat: "Family & Kids", status: "live",
+    desc: "Daily summer schedule for the boys - tap-a-face check-off, swap on the fly, streaks and badges, realtime sync across devices.",
+    tags: ["family", "kids", "schedule", "summer", "routine", "streaks", "badges", "realtime", "supabase"] },
+
+  { name: "Family Sit", icon: "👨‍👩‍👧", url: "https://family.j3taviation.com", label: "family.j3taviation.com",
+    cat: "Family & Kids", status: "live",
+    desc: "Private family babysitting coordinator - invite-based, Supabase-backed.",
+    tags: ["family", "babysitting", "childcare", "coordination", "invites", "supabase"] },
+
+  /* ---------------- Health & Wellness ---------------- */
+  { name: "J3 Health", icon: "❤️‍🔥", url: "https://draft.j3taviation.com/health/", label: "draft.j3taviation.com/health/",
+    cat: "Health & Wellness", status: "live",
+    desc: "InvisaRed tracker - every-2-day due reminders, 15/30-minute check-off, daily weight, water and measurements, AI report review. Code sign-in per person.",
+    tags: ["health", "invisared", "red light", "tracker", "weight", "measurements", "ai", "reminders"] },
+
+  { name: "Vibrant BioScan", icon: "🌿", url: "https://draft.j3taviation.com/BioScan/", label: "draft.j3taviation.com/BioScan/",
+    cat: "Health & Wellness", status: "live",
+    desc: "Dr. Kassandra Francis, DC - find-the-root-cause bioscan site.",
+    tags: ["health", "bioscan", "bioresonance", "chiropractic", "root cause", "marketing", "website"] },
+
+  { name: "Vibrant BioScan Portal", icon: "🔬", url: "https://draft.j3taviation.com/BioScan-portal/", label: "draft.j3taviation.com/BioScan-portal/",
+    cat: "Health & Wellness", status: "live",
+    desc: "Client portal for Vibrant BioScan - reports, protocols and follow-ups.",
+    tags: ["health", "bioscan", "portal", "clients", "reports", "protocols", "qest"] },
+
+  { name: "Vibrant Resonance", icon: "🎵", url: "https://draft.j3taviation.com/Vibeplate/", label: "draft.j3taviation.com/Vibeplate/",
+    cat: "Health & Wellness", status: "preview",
+    desc: "Frequency studio - tone generator, protocol bank, measured output and a session log. Admin-gated.",
+    tags: ["health", "frequency", "rife", "resonance", "audio", "protocols", "generator", "vibeplate", "session log"] },
+
+  { name: "Vibrant Health · V1", icon: "🌿", url: "https://draft.j3taviation.com/vibrant/", label: "draft.j3taviation.com/vibrant/",
+    cat: "Health & Wellness", status: "preview",
+    desc: "Chiropractic site rebuild, direction one - chiropractic, pediatric care, Softwave, bioresonance, massage and hyperbaric oxygen in Cape Coral.",
+    tags: ["health", "chiropractic", "vibrant", "cape coral", "softwave", "hyperbaric", "redesign", "wordpress replacement"] },
+
+  { name: "Vibrant Health · V2", icon: "🍃", url: "https://draft.j3taviation.com/vibrant2/", label: "draft.j3taviation.com/vibrant2/",
+    cat: "Health & Wellness", status: "preview",
+    desc: "Direction two - root-cause healing made personal, inside one calm, considered space.",
+    tags: ["health", "chiropractic", "vibrant", "cape coral", "redesign", "concept"] },
+
+  { name: "Vibrant Health · V3", icon: "🌺", url: "https://draft.j3taviation.com/vibrant3/", label: "draft.j3taviation.com/vibrant3/",
+    cat: "Health & Wellness", status: "preview",
+    desc: "Direction three - root-cause healing for the whole family.",
+    tags: ["health", "chiropractic", "vibrant", "cape coral", "redesign", "concept", "family"] },
+
+  { name: "Vibrant Health · V4", icon: "🌻", url: "https://draft.j3taviation.com/vibrant4/", label: "draft.j3taviation.com/vibrant4/",
+    cat: "Health & Wellness", status: "preview",
+    desc: "Direction four - realize your vibrant life. The current front-runner to replace the WordPress site.",
+    tags: ["health", "chiropractic", "vibrant", "cape coral", "redesign", "concept", "softwave"] },
+
+  /* ---------------- Client Sites ---------------- */
+  { name: "Melissa Slattery · Realtor", icon: "🏡", url: "https://draft.j3taviation.com/melissa/", label: "draft.j3taviation.com/melissa/",
+    cat: "Client Sites", status: "live",
+    desc: "SW Florida realtor site - Cape Coral and Fort Myers, Canadian-buyer niche.",
+    tags: ["client", "real estate", "realtor", "cape coral", "fort myers", "canadian", "marketing", "website"] },
+
+  { name: "Area IQ™", icon: "🗺️", url: "https://draft.j3taviation.com/areaiq/", label: "draft.j3taviation.com/areaiq/",
+    cat: "Client Sites", status: "live",
+    desc: "Melissa's Cape Coral neighborhood map - 18 zones, filters, heatmaps, compare and a TV mode.",
+    tags: ["client", "real estate", "map", "neighborhoods", "cape coral", "heatmap", "filters", "tv mode"] },
+
+  { name: "Cibo Fort Myers", icon: "🍝", url: "https://draft.j3taviation.com/cibo/", label: "draft.j3taviation.com/cibo/",
+    cat: "Client Sites", status: "preview",
+    desc: "Italian restaurant site - tonight's service, story, menu, reservations and happy hour. Private preview, code-gated.",
+    tags: ["client", "restaurant", "italian", "fort myers", "menu", "reservations", "hospitality", "website"] },
+
+  /* ---------------- Schools & Community ---------------- */
+  { name: "Sport-Études FL · V1", icon: "🏫", url: "https://draft.j3taviation.com/sport-etudes/", label: "draft.j3taviation.com/sport-etudes/",
+    cat: "Schools & Community", status: "live",
+    desc: "Elite-prep design - navy and cream, Fraunces serif. Marketing site for the dual-pathway basketball and academics program.",
+    tags: ["school", "sport-etudes", "academy", "basketball", "academics", "marketing", "website", "prep"] },
+
+  { name: "Sports Scholar Academy · V2", icon: "🔥", url: "https://draft.j3taviation.com/sport-etudes-v2/", label: "draft.j3taviation.com/sport-etudes-v2/",
+    cat: "Schools & Community", status: "live",
+    desc: "Athletic-design marketing site - dark navy and basketball orange, kinetic hero, stats ticker, manifesto type.",
+    tags: ["school", "sport-etudes", "academy", "basketball", "academics", "marketing", "website", "v2"] },
+
+  { name: "CLF Sound Training", icon: "🎚️", url: "https://draft.j3taviation.com/clf-training/", label: "draft.j3taviation.com/clf-training/",
+    cat: "Schools & Community", status: "live",
+    desc: "DiGiCo Quantum 338 volunteer LMS for the Christian Life Fellowship sound team.",
+    tags: ["church", "clf", "audio", "sound", "digico", "quantum 338", "training", "lms", "volunteers"] }
+];
+
+/* ============================================================
+   RENDER + FILTER
+   ============================================================ */
+const STATUS_LABEL = { live: "Live", "new": "New", preview: "Preview", local: "Local" };
+const STATUS_FILTERS = ["live", "new", "preview"];
+
+const searchEl  = document.getElementById("search");
+const clearBtn  = document.getElementById("clearBtn");
+const chipRow   = document.getElementById("chipRow");
+const resultsEl = document.getElementById("results");
+const countEl   = document.getElementById("count");
+const resetBtn  = document.getElementById("resetBtn");
+
+let activeCat = "all";
+let activeStatus = "all";
+let query = "";
+
+/* precompute a lowercase haystack per app */
+APPS.forEach(function (a) {
+  a._hay = [a.name, a.desc, a.label, a.cat, STATUS_LABEL[a.status] || "", a.tags.join(" ")]
+    .join(" ").toLowerCase();
+});
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+
+function highlight(text, terms) {
+  var out = esc(text);
+  if (!terms.length) return out;
+  var pattern = terms
+    .map(function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); })
+    .filter(Boolean)
+    .join("|");
+  if (!pattern) return out;
+  return out.replace(new RegExp("(" + pattern + ")", "gi"), "<mark>$1</mark>");
+}
+
+function terms() {
+  return query.split(/\s+/).filter(Boolean);
+}
+
+function matches(a) {
+  if (activeCat !== "all" && a.cat !== activeCat) return false;
+  if (activeStatus !== "all" && a.status !== activeStatus) return false;
+  var t = terms();
+  for (var i = 0; i < t.length; i++) {
+    if (a._hay.indexOf(t[i]) === -1) return false;
   }
+  return true;
+}
 
-  function tryUnlock() {
-    if (pin.value === PIN) {
-      sessionStorage.setItem(KEY, "1");
-      unlock();
+/* count what would match if only this one facet changed */
+function countFor(kind, value) {
+  return APPS.filter(function (a) {
+    if (kind === "cat") {
+      if (value !== "all" && a.cat !== value) return false;
+      if (activeStatus !== "all" && a.status !== activeStatus) return false;
     } else {
-      pin.classList.add("error");
-      pin.value = "";
-      setTimeout(() => pin.classList.remove("error"), 500);
-      pin.focus();
+      if (activeCat !== "all" && a.cat !== activeCat) return false;
+      if (value !== "all" && a.status !== value) return false;
     }
+    var t = terms();
+    for (var i = 0; i < t.length; i++) {
+      if (a._hay.indexOf(t[i]) === -1) return false;
+    }
+    return true;
+  }).length;
+}
+
+function buildChips() {
+  var html = "";
+  html += chip("cat", "all", "All apps", countFor("cat", "all"));
+  CATEGORIES.forEach(function (c) {
+    html += chip("cat", c, c, countFor("cat", c));
+  });
+  html += '<span class="chips-sep"></span>';
+  STATUS_FILTERS.forEach(function (s) {
+    html += chip("status", s, STATUS_LABEL[s], countFor("status", s));
+  });
+  chipRow.innerHTML = html;
+}
+
+function chip(kind, value, label, n) {
+  var on = (kind === "cat" ? activeCat : activeStatus) === value;
+  var dim = n === 0 ? ' style="opacity:.4"' : "";
+  return '<button class="chip' + (on ? " on" : "") + '" data-kind="' + kind + '" data-value="' +
+    esc(value) + '"' + dim + '>' + esc(label) + '<span class="n">' + n + "</span></button>";
+}
+
+function cardHTML(a, t) {
+  var tagHTML = a.tags.map(function (x) { return '<span class="tag">' + highlight(x, t) + "</span>"; }).join("");
+  var badge = '<span class="badge ' + (a.status === "live" ? "" : a.status) + '">' +
+    (STATUS_LABEL[a.status] || a.status) + "</span>";
+  var inner =
+    '<div class="card-row"><div class="icon">' + a.icon + "</div>" +
+    '<div class="card-title">' + highlight(a.name, t) + "</div>" + badge + "</div>" +
+    '<div class="card-url">' + highlight(a.label, t) + "</div>" +
+    '<div class="card-desc">' + highlight(a.desc, t) + "</div>" +
+    '<div class="card-tags">' + tagHTML + "</div>";
+  if (a.status === "local") return '<div class="card disabled">' + inner + "</div>";
+  return '<a class="card" href="' + esc(a.url) + '" target="_blank" rel="noopener">' + inner + "</a>";
+}
+
+function render() {
+  var t = terms();
+  var hits = APPS.filter(matches);
+
+  countEl.textContent = hits.length === APPS.length
+    ? APPS.length + " apps"
+    : hits.length + " of " + APPS.length + " apps";
+
+  var filtering = query !== "" || activeCat !== "all" || activeStatus !== "all";
+  resetBtn.style.visibility = filtering ? "visible" : "hidden";
+  clearBtn.style.display = query ? "block" : "none";
+
+  if (!hits.length) {
+    resultsEl.innerHTML =
+      '<div class="empty"><div class="empty-icon">🔎</div>' +
+      '<div class="empty-title">Nothing matches that</div>' +
+      '<div class="empty-sub">Try a different keyword, or reset the filters.</div></div>';
+    buildChips();
+    return;
   }
 
-  function lock() {
-    sessionStorage.removeItem(KEY);
-    gate.style.display = "flex";
-    main.style.display = "none";
-    logoutBtn.style.display = "none";
-    logoutLink.style.display = "none";
-    footerText.textContent = "Locked";
-    pin.value = "";
-    pin.focus();
+  var html = "";
+  CATEGORIES.forEach(function (c) {
+    var group = hits.filter(function (a) { return a.cat === c; });
+    if (!group.length) return;
+    html += '<section class="section"><div class="section-title">' + esc(c) +
+      '<span class="sc">' + group.length + "</span></div><div class=\"grid\">" +
+      group.map(function (a) { return cardHTML(a, t); }).join("") +
+      "</div></section>";
+  });
+  resultsEl.innerHTML = html;
+  buildChips();
+}
+
+/* ---- events ---- */
+searchEl.addEventListener("input", function () {
+  query = searchEl.value.trim().toLowerCase();
+  render();
+});
+
+searchEl.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    searchEl.value = "";
+    query = "";
+    render();
+    searchEl.blur();
   }
+});
 
-  unlockBtn.addEventListener("click", tryUnlock);
-  pin.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
-  logoutBtn.addEventListener("click", lock);
-  logoutLink.addEventListener("click", lock);
+clearBtn.addEventListener("click", function () {
+  searchEl.value = "";
+  query = "";
+  render();
+  searchEl.focus();
+});
 
-  if (sessionStorage.getItem(KEY) === "1") {
+chipRow.addEventListener("click", function (e) {
+  var b = e.target.closest(".chip");
+  if (!b) return;
+  var kind = b.dataset.kind, value = b.dataset.value;
+  if (kind === "cat") activeCat = (activeCat === value) ? "all" : value;
+  else activeStatus = (activeStatus === value) ? "all" : value;
+  render();
+});
+
+resetBtn.addEventListener("click", function () {
+  searchEl.value = "";
+  query = "";
+  activeCat = "all";
+  activeStatus = "all";
+  render();
+});
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "/" && document.activeElement !== searchEl && main.style.display !== "none") {
+    var tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+    searchEl.focus();
+    searchEl.select();
+  }
+});
+
+/* ============================================================
+   PIN GATE
+   ============================================================ */
+const PIN = "4545";
+const KEY = "j3t-hub-unlocked";
+
+const gate = document.getElementById("gate");
+const main = document.getElementById("main");
+const pin = document.getElementById("pin");
+const unlockBtn = document.getElementById("unlockBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const logoutLink = document.getElementById("logoutLink");
+const footerText = document.getElementById("footerText");
+
+function unlock() {
+  gate.style.display = "none";
+  main.style.display = "block";
+  logoutBtn.style.display = "block";
+  logoutLink.style.display = "inline";
+  footerText.textContent = APPS.length + " apps · session unlocked";
+  render();
+}
+
+function tryUnlock() {
+  if (pin.value === PIN) {
+    sessionStorage.setItem(KEY, "1");
     unlock();
   } else {
-    setTimeout(() => pin.focus(), 100);
+    pin.classList.add("error");
+    pin.value = "";
+    setTimeout(function () { pin.classList.remove("error"); }, 500);
+    pin.focus();
   }
+}
+
+function lock() {
+  sessionStorage.removeItem(KEY);
+  gate.style.display = "flex";
+  main.style.display = "none";
+  logoutBtn.style.display = "none";
+  logoutLink.style.display = "none";
+  footerText.textContent = "Locked";
+  pin.value = "";
+  pin.focus();
+}
+
+unlockBtn.addEventListener("click", tryUnlock);
+pin.addEventListener("keydown", function (e) { if (e.key === "Enter") tryUnlock(); });
+pin.addEventListener("input", function () { if (pin.value.length === 4) tryUnlock(); });
+logoutBtn.addEventListener("click", lock);
+logoutLink.addEventListener("click", lock);
+
+if (sessionStorage.getItem(KEY) === "1") {
+  unlock();
+} else {
+  pin.focus();
+}
 </script>
 
 </body>
