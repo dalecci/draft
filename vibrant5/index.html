@@ -55,6 +55,21 @@
   .hero-chips span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--pink); }
   .hero-chips span.stars::before { display: none; }
 
+  /* Symptom color tiles */
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  @media (max-width: 980px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile {
+    background: var(--tint); border-left: 3px solid var(--dot);
+    padding: 1.8rem 1.4rem 1.4rem; min-height: 150px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: background .3s ease, transform .3s ease;
+  }
+  .tile h3 { font-size: 1.12rem; letter-spacing: .1em; line-height: 1.3; transition: color .3s ease; }
+  .tile span { font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); margin-top: 1rem; transition: color .3s ease; }
+  .tile:hover { background: var(--dot); transform: translateY(-3px); }
+  .tile:hover h3, .tile:hover span { color: #fff; }
+  @media (max-width: 560px) { .tile { min-height: 120px; padding: 1.4rem 1.1rem 1.1rem; } .tile h3 { font-size: 1rem; } }
+
   /* Steps */
   .steps-cta { text-align: center; margin-top: 2.6rem; }
   .steps-cta .note { display: block; margin-top: .9rem; font-size: .74rem; letter-spacing: .22em; text-transform: uppercase; color: var(--text-dim); }
@@ -159,34 +174,34 @@
 <section style="padding-top: 5.5rem;">
   <div class="wrap">
     <div class="shead reveal">
-      <span class="kicker">Start Here</span>
-      <h2>What Brings You In?</h2>
-      <p>Tap what's bothering you — we'll show you exactly how we treat it, and how fast you can be seen.</p>
+      <span class="kicker">Your Problem, Our Plan</span>
+      <h2>Let's Fix What's Bothering You.</h2>
+      <p>Pick your symptom — see the treatment, the team, and how fast you can get in.</p>
     </div>
-    <div class="cond-grid reveal">
-      <a class="cond-card" style="--dot: var(--blue);" href="services/chiropractic.html">
-        <h3>Back Pain</h3><span>How we treat it →</span>
+    <div class="tiles reveal">
+      <a class="tile" style="--dot: var(--blue); --tint: rgba(14,134,200,.08);" href="services/chiropractic.html">
+        <h3>Back Pain</h3><span>The fix →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--blue);" href="services/chiropractic.html">
-        <h3>Neck Pain &amp; Sciatica</h3><span>How we treat it →</span>
+      <a class="tile" style="--dot: var(--blue); --tint: rgba(14,134,200,.08);" href="services/chiropractic.html">
+        <h3>Neck Pain &amp; Sciatica</h3><span>The fix →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--blue-deep);" href="services/cranial-sacral.html">
-        <h3>Headaches &amp; Migraines</h3><span>How we treat it →</span>
+      <a class="tile" style="--dot: var(--blue-deep); --tint: rgba(6,92,140,.08);" href="services/cranial-sacral.html">
+        <h3>Headaches &amp; Migraines</h3><span>The fix →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--pink);" href="services/pediatric.html">
-        <h3>My Baby — Colic, Reflux, Sleep</h3><span>How we help →</span>
+      <a class="tile" style="--dot: var(--pink); --tint: rgba(214,69,128,.08);" href="services/pediatric.html">
+        <h3>My Baby Isn't Sleeping or Settling</h3><span>How we help →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--pink);" href="services/pediatric.html">
+      <a class="tile" style="--dot: var(--pink); --tint: rgba(214,69,128,.08);" href="services/pediatric.html">
         <h3>Pregnancy Discomfort</h3><span>How we help →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--orange);" href="services/softwave.html">
-        <h3>Sports Injury</h3><span>How we treat it →</span>
+      <a class="tile" style="--dot: var(--orange); --tint: rgba(226,112,58,.08);" href="services/softwave.html">
+        <h3>Sports Injury</h3><span>The fix →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--orange);" href="services/softwave.html">
-        <h3>Arthritis &amp; Joint Pain</h3><span>How we treat it →</span>
+      <a class="tile" style="--dot: var(--orange); --tint: rgba(226,112,58,.08);" href="services/softwave.html">
+        <h3>Arthritis &amp; Joint Pain</h3><span>The fix →</span>
       </a>
-      <a class="cond-card" style="--dot: var(--purple);" href="services/bioresonance.html">
-        <h3>Fatigue &amp; Mystery Symptoms</h3><span>How we help →</span>
+      <a class="tile" style="--dot: var(--purple); --tint: rgba(122,79,208,.08);" href="services/bioresonance.html">
+        <h3>Tired, Foggy &amp; No Answers</h3><span>How we help →</span>
       </a>
     </div>
   </div>
