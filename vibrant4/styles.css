@@ -107,6 +107,8 @@ h1, h2, h3 {
 }
 .nav-logo { display: flex; align-items: center; gap: .8rem; }
 .nav-logo img { height: 44px; width: auto; }
+@media (min-width: 981px) and (max-width: 1240px) { .nav-logo img { height: 36px; } }
+@media (max-width: 460px) { .nav-logo img { height: 36px; } }
 .nav-logo .logo-light { display: none; }
 .nav:not(.scrolled):not(.solid) .nav-logo .logo-dark { display: none; }
 .nav:not(.scrolled):not(.solid) .nav-logo .logo-light { display: block; }
