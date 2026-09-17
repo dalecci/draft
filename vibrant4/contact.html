@@ -13,6 +13,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media=&#39;all&#39;">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="styles.css" />
+<style>
+  .hello-grid { display: grid; grid-template-columns: 1.05fr .9fr; gap: 4.5rem; align-items: center; }
+  @media (max-width: 880px) { .hello-grid { grid-template-columns: 1fr; gap: 2.4rem; } }
+  .hello-media { position: relative; margin: 14px 14px 0 0; }
+  .hello-media::before {
+    content: ''; position: absolute; top: -14px; right: -14px; left: 14px; bottom: 14px;
+    border: 1px solid var(--blue); opacity: .5; pointer-events: none;
+  }
+  .hello-media img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; filter: saturate(.95); }
+  .hello-tag {
+    position: absolute; right: -14px; bottom: 34px; background: var(--blue-deep); color: #fff;
+    padding: .8rem 1.3rem; box-shadow: 0 14px 34px rgba(6, 92, 140, .3);
+  }
+  .hello-tag b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; letter-spacing: .06em; }
+  .hello-tag span { font-size: .6rem; letter-spacing: .26em; text-transform: uppercase; opacity: .9; }
+</style>
 </head>
 <body>
 
@@ -52,10 +68,16 @@
 
 <!-- Page hero -->
 <header class="page-hero" style="padding-bottom: 3.5rem;">
-  <div class="wrap reveal">
-    <span class="kicker">Get In Touch</span>
-    <h1>Say Hello.</h1>
-    <p class="lead">Questions, bookings, or just want to know if we can help with what you've got going on — reach out any way you like. A real human answers.</p>
+  <div class="wrap hello-grid">
+    <div class="reveal">
+      <span class="kicker">Get In Touch</span>
+      <h1>Say Hello.</h1>
+      <p class="lead">Questions, bookings, or just want to know if we can help with what you've got going on — reach out any way you like. A real human answers.</p>
+    </div>
+    <div class="hello-media reveal">
+      <img src="img/chapter-grand.jpg" alt="A warm welcome at Vibrant Health & Wellness" loading="eager" />
+      <div class="hello-tag"><b>(239) 789-6959</b><span>Front Desk</span></div>
+    </div>
   </div>
 </header>
 
