@@ -106,7 +106,10 @@ h1, h2, h3 {
   color: var(--ink);
 }
 .nav-logo { display: flex; align-items: center; gap: .8rem; }
-.nav-logo img { height: 34px; width: auto; }
+.nav-logo img { height: 44px; width: auto; }
+.nav-logo .logo-light { display: none; }
+.nav:not(.scrolled):not(.solid) .nav-logo .logo-dark { display: none; }
+.nav:not(.scrolled):not(.solid) .nav-logo .logo-light { display: block; }
 .nav-logo span { font-family: var(--font-display); font-size: .95rem; letter-spacing: .3em; text-transform: uppercase; color: currentColor; }
 .nav-links { display: flex; gap: 2.2rem; align-items: center; }
 .nav-links a:not(.btn) {
