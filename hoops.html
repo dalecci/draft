@@ -3970,6 +3970,48 @@ function openSmartPartnerModal(q, slot) {
   openModal(body);
 }
 
+// Dale's scouting-note-derived ratings for the 13-player roster.
+// Looked up by exact name match. Scale 1-10. One-click apply from Ratings view.
+const SUGGESTED_RATINGS = {
+  'Bernardo Kaotzmann': { def: 7, sh: 8, dr: 6, db: 6, pm: 6, rb: 8, sp: 5 },
+  'Michael Duran':      { def: 5, sh: 2, dr: 3, db: 3, pm: 3, rb: 7, sp: 3 },
+  'Jason Facenda':      { def: 5, sh: 7, dr: 4, db: 4, pm: 4, rb: 7, sp: 3 },
+  'Ronan Martinez':     { def: 5, sh: 5, dr: 5, db: 5, pm: 5, rb: 7, sp: 5 },
+  'Ethan Cooper':       { def: 4, sh: 4, dr: 4, db: 4, pm: 3, rb: 5, sp: 5 },
+  'Madison Cooper':     { def: 5, sh: 7, dr: 5, db: 5, pm: 5, rb: 5, sp: 5 },
+  'Harrison Page':      { def: 6, sh: 6, dr: 7, db: 6, pm: 6, rb: 5, sp: 8 },
+  'Tristan Guess':      { def: 7, sh: 6, dr: 6, db: 6, pm: 6, rb: 8, sp: 5 },
+  'Efdyamil Cancel':    { def: 8, sh: 4, dr: 5, db: 8, pm: 6, rb: 3, sp: 7 },
+  'Jason Molinaro':     { def: 3, sh: 3, dr: 3, db: 3, pm: 3, rb: 4, sp: 4 },
+  'Maxwell Weickson':   { def: 6, sh: 3, dr: 6, db: 5, pm: 5, rb: 8, sp: 7 },
+  'Nathan Scarsellato': { def: 7, sh: 6, dr: 8, db: 6, pm: 6, rb: 8, sp: 8 },
+  'Ryan Kithcart':      { def: 6, sh: 6, dr: 5, db: 5, pm: 7, rb: 5, sp: 5 },
+};
+
+function loadSuggestedRatings() {
+  const names = Object.keys(SUGGESTED_RATINGS);
+  const missing = [];
+  let applied = 0, overwritten = 0;
+  const confirmMsg = `Apply suggested ratings to ${names.length} players? Any existing ratings for those players will be overwritten.`;
+  if (!confirm(confirmMsg)) return;
+  for (const name of names) {
+    const player = state.players.find(p => p.name === name);
+    if (!player) { missing.push(name); continue; }
+    const existing = getPlayerRatings(player.id);
+    if (existing && Object.keys(existing).length) overwritten++;
+    const ratings = SUGGESTED_RATINGS[name];
+    for (const [key, val] of Object.entries(ratings)) {
+      setPlayerRating(player.id, key, val);
+    }
+    applied++;
+  }
+  render();
+  const parts = [`Applied to ${applied} player${applied === 1 ? '' : 's'}`];
+  if (overwritten) parts.push(`overwrote ${overwritten}`);
+  if (missing.length) parts.push(`missing: ${missing.join(', ')}`);
+  toast(parts.join(' · '));
+}
+
 function renderRatings(root) {
   const wrap = el('div');
   wrap.append(el('div', { class: 'game-header' },
@@ -3994,7 +4036,12 @@ function renderRatings(root) {
   }
 
   wrap.append(el('div', { class: 'lu-hint' },
-    'Rate each player 1–10 on five abilities. Used to score lineups. Unrated abilities are skipped from averages.'
+    'Rate each player 1–10 on seven abilities. Used to score lineups. Unrated abilities are skipped from averages.'
+  ));
+
+  wrap.append(el('div', { class: 'lu-actions' },
+    el('button', { class: 'nav-btn', onclick: loadSuggestedRatings },
+      '✨ Load suggested ratings (13 scouting notes)'),
   ));
 
   const sorted = [...state.players].filter(p => p.active !== false)
