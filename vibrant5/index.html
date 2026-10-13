@@ -55,6 +55,24 @@
   .hero-chips span::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--pink); }
   .hero-chips span.stars::before { display: none; }
 
+  /* Welcome */
+  .welcome-media { position: relative; margin: 14px 14px 0 0; max-width: 460px; justify-self: center; }
+  .welcome-media::before {
+    content: ''; position: absolute; top: -14px; right: -14px; left: 14px; bottom: 14px;
+    border: 1px solid var(--pink); opacity: .5; pointer-events: none;
+  }
+  .welcome-media img { width: 100%; aspect-ratio: 3/4; object-fit: cover; object-position: center 20%; display: block; }
+  .welcome-media .w-tag {
+    position: absolute; right: -14px; bottom: 34px; background: var(--pink); color: #fff;
+    padding: .75rem 1.25rem; box-shadow: 0 14px 34px rgba(214, 69, 128, .3);
+  }
+  .welcome-media .w-tag b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; letter-spacing: .08em; }
+  .welcome-media .w-tag span { font-size: .58rem; letter-spacing: .26em; text-transform: uppercase; opacity: .92; }
+  .welcome-copy .kicker { color: var(--pink); }
+  .welcome-copy .lead { font-family: var(--font-display); font-size: clamp(1.15rem, 2.2vw, 1.5rem); color: var(--ink); letter-spacing: .04em; margin-bottom: 1.2rem; }
+  .welcome-copy .sig { font-style: italic; color: var(--text); margin-top: 1.4rem; font-size: 1rem; }
+  .welcome-copy .textlink { margin-top: 1.2rem; display: inline-block; }
+
   /* Symptom color tiles */
   .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
   @media (max-width: 980px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
@@ -170,8 +188,27 @@
   <div class="hero-scroll">Scroll</div>
 </header>
 
-<!-- What brings you in -->
+<!-- Welcome -->
 <section style="padding-top: 5.5rem;">
+  <div class="wrap feature">
+    <div class="welcome-copy reveal">
+      <span class="kicker">Healthy Families · Brighter Tomorrows</span>
+      <h2>Welcome To<br />Vibrant.</h2>
+      <p class="lead">We're so glad you found us.</p>
+      <p>We're a team of three doctors and eight specialists in Cape Coral, caring for families across Southwest Florida with whole-body, root-cause healing — chiropractic, SoftWave, massage, bioresonance and more, all under one roof.</p>
+      <p>What makes us different is simple: we listen first. We take the time to understand your story, explain everything in plain English, and build a plan around you — not a template. Whether you're carrying years of pain or a brand-new baby, you'll be met with patience, kindness, and a team that genuinely cares.</p>
+      <p class="sig">— Dr. Kassie &amp; the Vibrant team</p>
+      <a class="textlink" href="team.html">Meet The Team →</a>
+    </div>
+    <div class="welcome-media reveal">
+      <img src="img/welcome-kassie.jpg" alt="Dr. Kassie laughing with a happy baby at Vibrant Health & Wellness" loading="lazy" />
+      <div class="w-tag"><b>Cape Coral, FL</b><span>Serving Southwest Florida</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- What brings you in -->
+<section style="background: var(--bg-2);">
   <div class="wrap">
     <div class="shead reveal">
       <span class="kicker">Your Problem, Our Plan</span>
@@ -208,7 +245,7 @@
 </section>
 
 <!-- We see you (promise) -->
-<section class="promise">
+<section class="promise" style="background: var(--bg);">
   <div class="wrap feature">
     <div class="reveal">
       <span class="kicker">We See You. We Understand.</span>
