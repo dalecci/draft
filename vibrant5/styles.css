@@ -548,11 +548,12 @@ footer .blurb { font-size: .94rem; max-width: 24rem; }
 .pn .pn-label { font-size: .64rem; letter-spacing: .3em; text-transform: uppercase; color: var(--text-dim); }
 .pn .pn-title { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .1em; color: var(--ink); font-size: 1.05rem; }
 
-/* ---------- Reveal ---------- */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; }
-.reveal.in { opacity: 1; transform: none; }
+/* ---------- Reveal (gated behind .js so content is never hidden if the script fails) ---------- */
+.reveal { opacity: 1; }
+.js .reveal { opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; }
+.js .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal, .js .reveal { opacity: 1; transform: none; transition: none; }
   .hero-scroll::after { animation: none; }
   html { scroll-behavior: auto; }
 }

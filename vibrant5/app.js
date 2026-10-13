@@ -1,5 +1,8 @@
 // Vibrant V4 — shared behavior (guards let any page use any subset)
 (function () {
+  // Reveal animations only when JS is alive — otherwise everything stays visible
+  document.documentElement.classList.add('js');
+
   document.querySelectorAll('[data-year]').forEach(function (el) {
     el.textContent = new Date().getFullYear();
   });
@@ -77,11 +80,15 @@
     }
   }
 
-  // Reveal on scroll
-  var io = new IntersectionObserver(function (entries) {
-    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: .12 });
-  document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  // Reveal on scroll (fail open: any problem reveals everything)
+  try {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } catch (err) {
+    document.documentElement.classList.remove('js');
+  }
 
   // Testimonial rotator
   var quotes = Array.prototype.slice.call(document.querySelectorAll('.quote'));
