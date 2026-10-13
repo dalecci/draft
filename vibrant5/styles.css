@@ -181,11 +181,11 @@ h1, h2, h3 {
 
 /* ---------- Full-screen video hero (home) ---------- */
 .hero { position: relative; height: 100svh; min-height: 640px; display: grid; place-items: center; text-align: center; overflow: hidden; }
-.hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.78) saturate(.9); }
+.hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(.89) saturate(.95); }
 .hero::after {
   content: '';
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20, 17, 14, .42) 0%, rgba(20, 17, 14, .18) 45%, var(--bg) 100%);
+  background: linear-gradient(180deg, rgba(20, 17, 14, .21) 0%, rgba(20, 17, 14, .09) 45%, rgba(242, 238, 231, 0) 72%, var(--bg) 100%);
 }
 .hero-inner { position: relative; z-index: 2; padding: 0 1.6rem; max-width: 940px; }
 .hero .kicker { color: rgba(255, 255, 255, .8); }
