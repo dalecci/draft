@@ -271,6 +271,7 @@ section { padding: 7rem 0; }
 .feature-media:hover img { transform: scale(1.045); }
 .feature-media.portrait { max-width: 430px; justify-self: center; }
 .feature-media.portrait video { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+.feature-media.portrait img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; }
 .feature h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); margin-bottom: 1.6rem; }
 .feature .lead { color: var(--ink); font-size: 1.08rem; letter-spacing: .02em; margin-bottom: 1.2rem; }
 .feature ul { list-style: none; margin: 1.8rem 0 2.4rem; border-top: 1px solid var(--line-soft); counter-reset: fli; }
