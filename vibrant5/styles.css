@@ -152,7 +152,7 @@ h1, h2, h3 {
 .drop .drop-all { border-top: 1px solid var(--line-soft) !important; margin-top: .5rem; padding-top: .9rem !important; color: var(--ink) !important; }
 .has-drop.open > a .caret { transform: rotate(180deg); }
 @media (max-width: 980px) {
-  .has-drop { width: 100%; }
+  .has-drop { width: 100%; text-align: center; }
   .has-drop::after { display: none; }
   .has-drop > a { justify-content: center; }
   .drop {
@@ -160,10 +160,10 @@ h1, h2, h3 {
     position: static; transform: none; opacity: 1; visibility: visible;
     box-shadow: none; border: none; border-bottom: 1px solid var(--line-soft);
     min-width: 0; padding: .2rem 0 .8rem;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
   .has-drop.open .drop { display: grid; }
-  .drop a { padding: .5rem .6rem !important; font-size: .62rem; }
+  .drop a { padding: .5rem .6rem !important; font-size: .62rem; justify-content: center; text-align: center !important; }
 }
 @media (max-width: 980px) {
   .nav-links {
