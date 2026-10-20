@@ -385,7 +385,7 @@ section { padding: 7rem 0; }
 .insta-head .btn:hover { background: #fff; color: var(--ink); }
 .insta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255, 250, 243, .14); border: 1px solid rgba(255, 250, 243, .14); }
 @media (max-width: 720px) { .insta-grid { grid-template-columns: repeat(2, 1fr); } }
-.ig-tile { position: relative; aspect-ratio: 1/1; overflow: hidden; display: block; background: #000; }
+.ig-tile { position: relative; aspect-ratio: 3/4; overflow: hidden; display: block; background: #000; }
 .ig-tile img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.96); transition: transform 1s cubic-bezier(.2,.6,.2,1); }
 .ig-tile:hover img { transform: scale(1.07); }
 .ig-tile .veil {
