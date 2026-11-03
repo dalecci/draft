@@ -416,7 +416,7 @@ footer { border-top: 1px solid var(--line-soft); padding: 3.4rem 0 2.4rem; }
 .foot-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 2.5rem; margin-bottom: 2.6rem; }
 @media (max-width: 820px) { .foot-top { grid-template-columns: 1fr; } }
 .foot-brand { display: flex; align-items: center; gap: .8rem; margin-bottom: 1rem; }
-.foot-brand img { height: 30px; }
+.foot-brand img { height: 30px; width: auto; }
 .foot-brand span { font-family: var(--font-display); font-size: .82rem; letter-spacing: .28em; text-transform: uppercase; color: var(--ink); }
 footer h5, footer .foot-h5 { font-size: .68rem; letter-spacing: .3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem; font-weight: 400; }
 footer a { display: block; color: var(--text); padding: .18rem 0; font-size: .94rem; transition: color .3s ease; }

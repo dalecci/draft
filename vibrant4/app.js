@@ -7,11 +7,13 @@
     el.textContent = new Date().getFullYear();
   });
 
-  // Hero video — source appended after paint so the poster shows instantly
+  // Hero video — source appended after paint so the poster shows instantly; portrait phones get the vertical cut
   var hv = document.querySelector('.hero video');
   if (hv && !hv.querySelector('source')) {
     var src = document.createElement('source');
-    src.src = hv.getAttribute('data-src') || 'img/hero.mp4';
+    var heroMobile = hv.getAttribute('data-src-mobile');
+    var portraitPhone = window.matchMedia('(max-width: 640px) and (orientation: portrait)').matches;
+    src.src = (heroMobile && portraitPhone ? heroMobile : hv.getAttribute('data-src')) || 'img/hero.mp4';
     src.type = 'video/mp4';
     hv.appendChild(src);
     hv.load();
@@ -33,8 +35,23 @@
     window.addEventListener('scroll', function () {
       if (!ticking) { ticking = true; requestAnimationFrame(applyScroll); }
     }, { passive: true });
-    applyScroll();
+    requestAnimationFrame(function () { setTimeout(applyScroll, 0); });
   }
+
+  // Below-the-fold videos: phones fetch them only as they approach the screen; larger screens load right away
+  document.querySelectorAll('video[data-lazy]').forEach(function (v) {
+    var loadVideo = function () {
+      v.querySelectorAll('source[data-src]').forEach(function (s) { s.src = s.getAttribute('data-src'); s.removeAttribute('data-src'); });
+      v.load();
+    };
+    try {
+      if (!window.matchMedia('(max-width: 640px)').matches || !('IntersectionObserver' in window)) { loadVideo(); return; }
+      var vio = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { vio.disconnect(); loadVideo(); }
+      }, { rootMargin: '600px 0px' });
+      vio.observe(v);
+    } catch (err) { loadVideo(); }
+  });
   var toggle = document.getElementById('navToggle');
   var links = document.getElementById('navLinks');
   var isMobileNav = function () { return window.matchMedia('(max-width: 980px)').matches; };
