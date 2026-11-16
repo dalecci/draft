@@ -3,6 +3,7 @@ const SUPABASE_URL = 'https://ikypiznimyzidmyzzoys.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlreXBpem5pbXl6aWRteXp6b3lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzUzODIsImV4cCI6MjA5MzMxMTM4Mn0.Ee0FWPHjLBSOIFXWmdPSjG8oT3QmKyKG14BF8oPGgjk';
 const GATE_PIN = '4545';
 const ADMIN_PIN = '1212';
+const ADMIN_SHORTCUT_PIN = '9999'; // at the first code screen: skip straight into admin
 
 const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -49,7 +50,24 @@ function updatePinDisplay() {
   dots.forEach(function (d, i) { d.classList.toggle('filled', i < pinBuffer.length); });
   if (pinBuffer.length === 4) { setTimeout(checkPin, 120); }
 }
+function enterAdmin() {
+  state.isAdmin = true;
+  sessionStorage.setItem('isAdmin', '1');
+  state.currentKidId = (state.kids[0] && state.kids[0].id) || null;
+  showScreen('adminScreen');
+  renderAdmin();
+}
 function checkPin() {
+  if (pinBuffer === ADMIN_SHORTCUT_PIN && (pinTarget === GATE_PIN || pinTarget === ADMIN_PIN)) {
+    pinBuffer = '';
+    updatePinDisplay();
+    pinCallback = null;
+    document.getElementById('gateErr').textContent = '';
+    document.getElementById('gateSub').textContent = 'Enter the code to continue';
+    sessionStorage.setItem('gateUnlocked', '1');
+    enterAdmin();
+    return;
+  }
   if (pinBuffer === pinTarget) {
     pinBuffer = '';
     updatePinDisplay();
@@ -126,13 +144,7 @@ function renderLogin() {
   admin.className = 'kid-tile admin';
   admin.innerHTML = '<div class="avatar">⚙️</div><div>Admin</div>';
   admin.onclick = function () {
-    askPin(ADMIN_PIN, 'Admin code', function () {
-      state.isAdmin = true;
-      sessionStorage.setItem('isAdmin', '1');
-      state.currentKidId = (state.kids[0] && state.kids[0].id) || null;
-      showScreen('adminScreen');
-      renderAdmin();
-    });
+    askPin(ADMIN_PIN, 'Admin code', enterAdmin);
   };
   grid.appendChild(admin);
 }
