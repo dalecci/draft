@@ -89,7 +89,7 @@ async function loadAll() {
   try {
     const results = await Promise.all([
       supa.from('behavior_kids').select('*').eq('active', true).order('sort_order'),
-      supa.from('behavior_points').select('*').order('recorded_at', { ascending: false }),
+      fetchAllRows('behavior_points', 'recorded_at').then(function (rows) { return { data: rows.reverse(), error: null }; }, function (e) { return { data: null, error: e }; }),
       supa.from('behavior_consequences').select('*').order('start_date', { ascending: false }),
       supa.from('behavior_templates').select('*').order('description'),
       supa.from('behavior_rewards').select('*').order('points_required'),
@@ -103,6 +103,7 @@ async function loadAll() {
     state.consequences = consequences.data || [];
     state.templates = templates.data || [];
     state.rewards = rewards.data || [];
+    await loadGoals();
   } catch (e) {
     console.error('loadAll failed', e);
     toast('Sync error: ' + (e.message || e), 'error');
@@ -189,6 +190,7 @@ function renderKid() {
   }
 
   const rewardsWrap = document.getElementById('kidRewards');
+  renderKidGoals(kid);
   const congratsWrap = document.getElementById('kidCongrats');
   const rewards = state.rewards.filter(function (r) {
     return (r.kid_id === kid.id || r.kid_id === null) && !r.claimed_at;
@@ -295,6 +297,8 @@ function renderAdmin() {
     c.classList.toggle('hidden', c.dataset.tab !== state.currentTab);
   });
 
+  document.getElementById('kidSwitcher').classList.toggle('hidden', state.currentTab === 'goals');
+  if (state.currentTab === 'goals') renderGoalsTab();
   if (state.currentTab === 'overview') renderAdminOverview();
   if (state.currentTab === 'points') renderAdminPoints();
   if (state.currentTab === 'consequences') renderAdminConsequences();
@@ -858,13 +862,16 @@ async function boot() {
       renderLogin();
     });
   }
-  setInterval(async function () {
-    if (document.hidden) return;
+  async function refreshFromServer() {
+    if (document.hidden || gs.drag) return;
     try {
       await loadAll();
+      if (gs.drag) return;
       if (!document.getElementById('kidScreen').classList.contains('hidden')) renderKid();
       else if (!document.getElementById('adminScreen').classList.contains('hidden')) renderAdmin();
     } catch (e) {}
-  }, 30000);
+  }
+  setInterval(refreshFromServer, 30000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshFromServer(); });
 }
 boot();
