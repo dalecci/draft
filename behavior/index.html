@@ -8,6 +8,7 @@
 <title>Family Behavior</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<link rel="stylesheet" href="goals.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -244,6 +245,8 @@
 
   <div id="kidCongrats" class="hidden"></div>
 
+  <div id="kidGoals"></div>
+
   <div class="card">
     <h3>Active consequences</h3>
     <div id="kidConsequences"></div>
@@ -270,6 +273,7 @@
 
   <div class="tabs">
     <button class="active" data-tab="overview">Overview</button>
+    <button data-tab="goals">🏆 Goals</button>
     <button data-tab="points">Points</button>
     <button data-tab="consequences">Conseq.</button>
     <button data-tab="rewards">Rewards</button>
@@ -288,6 +292,8 @@
       <div style="height: 280px; position: relative;"><canvas id="lineChart"></canvas></div>
     </div>
   </div>
+
+  <div class="tab-content hidden" data-tab="goals" id="goalsTab"></div>
 
   <div class="tab-content hidden" data-tab="points">
     <div class="card">
@@ -418,6 +424,8 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="goals-engine.js"></script>
+<script src="goals.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
